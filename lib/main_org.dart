@@ -7,8 +7,8 @@ void main() {
   runApp(
     const SmartLunchApp(
       config: AppConfig(
-        flavor: AppFlavor.all,
-        appName: 'SmartLunch',
+        flavor: AppFlavor.org,
+        appName: 'SmartLunch Organization',
       ),
     ),
   );
