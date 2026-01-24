@@ -1,6 +1,176 @@
 @smartlunch_backend_HostAddress = http://localhost:5072
 
-GET {{smartlunch_backend_HostAddress}}/weatherforecast/
-Accept: application/json
+### Variables
+@accessToken = 
+@refreshToken = 
+
+###############################################
+# AUTH ENDPOINTS
+###############################################
+
+### Register - Create new user account
+POST {{smartlunch_backend_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "password": "Password123!",
+  "confirmPassword": "Password123!"
+}
+
+### Register - Invalid (password mismatch)
+POST {{smartlunch_backend_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "user2@example.com",
+  "password": "Password123!",
+  "confirmPassword": "DifferentPassword123!"
+}
+
+### Register - Invalid (missing fields)
+POST {{smartlunch_backend_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "",
+  "password": "",
+  "confirmPassword": ""
+}
 
 ###
+
+### Login - Authenticate user
+POST {{smartlunch_backend_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "user@example.com",
+  "password": "Password123!"
+}
+
+### Login - Invalid credentials
+POST {{smartlunch_backend_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "invalid@example.com",
+  "password": "WrongPassword123!"
+}
+
+### Login - Missing fields
+POST {{smartlunch_backend_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "",
+  "password": ""
+}
+
+###
+
+### Refresh Token - Get new access token using refresh token
+POST {{smartlunch_backend_HostAddress}}/api/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Refresh Token - Invalid refresh token
+POST {{smartlunch_backend_HostAddress}}/api/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "invalid-refresh-token-here"
+}
+
+### Refresh Token - Missing refresh token
+POST {{smartlunch_backend_HostAddress}}/api/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": ""
+}
+
+###
+
+### Logout - Revoke access token (Requires Authorization)
+POST {{smartlunch_backend_HostAddress}}/api/auth/logout
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "token": "{{accessToken}}"
+}
+
+### Logout - Without Authorization header (should fail)
+POST {{smartlunch_backend_HostAddress}}/api/auth/logout
+Content-Type: application/json
+
+{
+  "token": "some-token-here"
+}
+
+### Logout - Invalid token
+POST {{smartlunch_backend_HostAddress}}/api/auth/logout
+Content-Type: application/json
+Authorization: Bearer invalid-token
+
+{
+  "token": "invalid-token"
+}
+
+###
+
+###############################################
+# EXAMPLE WORKFLOW
+###############################################
+
+### Step 1: Register a new user
+# @name register
+POST {{smartlunch_backend_HostAddress}}/api/auth/register
+Content-Type: application/json
+
+{
+  "email": "newuser@example.com",
+  "password": "SecurePassword123!",
+  "confirmPassword": "SecurePassword123!"
+}
+
+### Step 2: Login with registered credentials
+# @name login
+POST {{smartlunch_backend_HostAddress}}/api/auth/login
+Content-Type: application/json
+
+{
+  "username": "newuser@example.com",
+  "password": "SecurePassword123!"
+}
+
+### Step 3: Extract tokens from login response and use them
+# After login, copy the accessToken and refreshToken from response
+# Then update the variables at the top of this file:
+# @accessToken = <paste-access-token-here>
+# @refreshToken = <paste-refresh-token-here>
+
+### Step 4: Use protected endpoint with access token
+# GET {{smartlunch_backend_HostAddress}}/api/some-protected-endpoint
+# Authorization: Bearer {{accessToken}}
+
+### Step 5: Refresh token when access token expires
+POST {{smartlunch_backend_HostAddress}}/api/auth/refresh-token
+Content-Type: application/json
+
+{
+  "refreshToken": "{{refreshToken}}"
+}
+
+### Step 6: Logout when done
+POST {{smartlunch_backend_HostAddress}}/api/auth/logout
+Content-Type: application/json
+Authorization: Bearer {{accessToken}}
+
+{
+  "token": "{{accessToken}}"
+}

@@ -1,0 +1,18 @@
+using SmartLunch.Backend.Service.Domain.Entities;
+
+namespace SmartLunch.Backend.Service.Application.Interfaces;
+
+public interface IUserTokenRepository
+{
+    Task<UserToken?> GetByIdAsync(Guid id);
+    Task<UserToken?> GetByAccessTokenAsync(string accessToken);
+    Task<UserToken?> GetByRefreshTokenAsync(string refreshToken);
+    Task<IEnumerable<UserToken>> GetByUserIdAsync(Guid userId);
+    Task<IEnumerable<UserToken>> GetActiveByUserIdAsync(Guid userId);
+    Task<UserToken> CreateAsync(UserToken userToken);
+    Task<UserToken> UpdateAsync(UserToken userToken);
+    Task<bool> DeleteAsync(Guid id);
+    Task<bool> RevokeTokenAsync(string refreshToken);
+    Task<bool> RevokeAllUserTokensAsync(Guid userId);
+    Task<bool> ExistsByRefreshTokenAsync(string refreshToken);
+}

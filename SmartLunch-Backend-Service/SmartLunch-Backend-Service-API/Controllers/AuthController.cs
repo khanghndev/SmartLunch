@@ -1,12 +1,19 @@
 using MediatR;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartLunch.Backend.Service.Application.Commands.Auth;
 using SmartLunch.Backend.Service.Application.DTOs;
+using SmartLunch.Backend.Service.Application.DTOs.Request.Auth;
+using SmartLunch.Backend.Service.Application.DTOs.Response.Auth;
+using System.Net;
 
 namespace SmartLunch.Backend.Service.API.Controllers
 {
+    /// <summary>
+    /// Authentication controller for user login, registration, and token management
+    /// </summary>
     [ApiController]
-    [Route("api/[controller]")]
+    [ApiVersion("1.0")]
+    [Route("api/v{version:apiVersion}/[controller]")]
     public class AuthController : ControllerBase
     {
         private readonly ILogger<AuthController> _logger;
@@ -19,24 +26,103 @@ namespace SmartLunch.Backend.Service.API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<ActionResult<BaseApiResponse>> Login([FromBody] LoginRequest request)
+        public async Task<ActionResult<BaseApiResponse<LoginResponse>>> Login(LoginRequest request)
         {
-            var response = await _mediator.Send(new LoginCommand(request));
-            return Ok(new BaseApiResponse(response));
+            try
+            {
+                var response = await _mediator.Send(new LoginCommand(request));
+                return Ok(CreateSuccessResponse(response, "Login successful"));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(CreateErrorResponse<LoginResponse>(ex.Message, (int)HttpStatusCode.BadRequest));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(CreateErrorResponse<LoginResponse>(ex.Message, (int)HttpStatusCode.Unauthorized));
+            }
         }
 
         [HttpPost("register")]
-        public async Task<ActionResult<BaseApiResponse>> Register([FromBody] RegisterRequest request)
+        public async Task<ActionResult<BaseApiResponse<RegisterResponse>>> Register(RegisterRequest request)
         {
-            var response = await _mediator.Send(new RegisterRequest(request));
-            return Ok(new BaseApiResponse(response));
+            try
+            {
+                var response = await _mediator.Send(new RegisterCommand(request));
+                return Ok(CreateSuccessResponse(response, "User registered successfully"));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(CreateErrorResponse<RegisterResponse>(ex.Message, (int)HttpStatusCode.BadRequest));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(CreateErrorResponse<RegisterResponse>(ex.Message, (int)HttpStatusCode.BadRequest));
+            }
         }
 
         [HttpPost("logout")]
-        public async Task<ActionResult<BaseApiResponse>> Logout([FromBody] LogoutRequest request)
+        [Microsoft.AspNetCore.Authorization.Authorize]
+        public async Task<ActionResult<BaseApiResponse<LogoutResponse>>> Logout(LogoutRequest request)
         {
-            var response = await _mediator.Send(new LogoutCommand(request));
-            return Ok(new BaseApiResponse(response));
+            try
+            {
+                var response = await _mediator.Send(new LogoutCommand(request));
+                return Ok(CreateSuccessResponse(response, "Logout successful"));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(CreateErrorResponse<LogoutResponse>(ex.Message, (int)HttpStatusCode.BadRequest));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(CreateErrorResponse<LogoutResponse>(ex.Message, (int)HttpStatusCode.Unauthorized));
+            }
+        }
+
+        [HttpPost("refresh-token")]
+        public async Task<ActionResult<BaseApiResponse<RefreshTokenResponse>>> RefreshToken(RefreshTokenRequest request)
+        {
+            try
+            {
+                var response = await _mediator.Send(new RefreshTokenCommand(request));
+                return Ok(CreateSuccessResponse(response, "Token refreshed successfully"));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(CreateErrorResponse<RefreshTokenResponse>(ex.Message, (int)HttpStatusCode.BadRequest));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(CreateErrorResponse<RefreshTokenResponse>(ex.Message, (int)HttpStatusCode.Unauthorized));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(CreateErrorResponse<RefreshTokenResponse>(ex.Message, (int)HttpStatusCode.NotFound));
+            }
+        }
+
+        /// <summary>
+        /// Helper method to create a successful API response
+        /// </summary>
+        private BaseApiResponse<T> CreateSuccessResponse<T>(T data, string message) where T : class
+        {
+            return new BaseApiResponse<T>
+            {
+                Success = true,
+                ResponseStatus = "Success",
+                ResponseMessage = message,
+                ResponseData = data,
+                ResponseTimestamp = DateTime.UtcNow
+            };
+        }
+
+        /// <summary>
+        /// Helper method to create an error API response
+        /// </summary>
+        private BaseApiResponse<T> CreateErrorResponse<T>(string message, int statusCode) where T : class
+        {
+            return BaseApiResponse<T>.ErrorResult(message, new[] { message }, statusCode);
         }
     }
 }
