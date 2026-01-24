@@ -7,7 +7,12 @@
       "launchUrl": "swagger",
       "applicationUrl": "http://localhost:5001",
       "environmentVariables": {
-        "ASPNETCORE_ENVIRONMENT": "Development"
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "MYSQL_SERVER": "localhost",
+        "MYSQL_PORT": "3307",
+        "MYSQL_DATABASE": "SmartLunch",
+        "MYSQL_USER": "root",
+        "MYSQL_PASSWORD": "root"
       }
     }
   }

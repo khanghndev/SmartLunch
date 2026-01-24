@@ -1,0 +1,546 @@
+-- =====================================
+-- SmartLunch Database Schema - Optimized
+-- MySQL 8.0+ Compatible
+-- ACID Compliant with InnoDB Engine
+-- Performance Optimized with Strategic Indexes
+-- =====================================
+
+-- =====================================
+-- Reset Database
+-- =====================================
+DROP DATABASE IF EXISTS SmartLunch;
+CREATE DATABASE SmartLunch
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE SmartLunch;
+
+-- =====================================================
+-- Table: users
+-- Description: User accounts for RBAC system
+-- Optimizations: Composite indexes for common queries
+-- =====================================================
+CREATE TABLE users (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    Username VARCHAR(100) NOT NULL COMMENT 'Unique username',
+    Email VARCHAR(255) NOT NULL COMMENT 'Unique email address',
+    PasswordHash VARCHAR(500) NOT NULL COMMENT 'Hashed password (BCrypt/Argon2)',
+    FirstName VARCHAR(100) NULL COMMENT 'User first name',
+    LastName VARCHAR(100) NULL COMMENT 'User last name',
+    PhoneNumber VARCHAR(20) NULL COMMENT 'Phone number',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Account active status',
+    IsEmailVerified TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Email verification status',
+    EmailVerifiedAt DATETIME NULL COMMENT 'Email verification timestamp',
+    LastLoginAt DATETIME NULL COMMENT 'Last login timestamp',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+    CreatedBy CHAR(36) NULL COMMENT 'User ID who created this record',
+    UpdatedBy CHAR(36) NULL COMMENT 'User ID who last updated this record',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_users_username (Username),
+    UNIQUE KEY UK_users_email (Email),
+    
+    -- Optimized composite indexes for common query patterns
+    INDEX IX_users_active_created (IsActive, CreatedAt DESC),
+    INDEX IX_users_email_verified_active (IsEmailVerified, IsActive),
+    INDEX IX_users_created_by (CreatedBy),
+    INDEX IX_users_updated_by (UpdatedBy),
+    
+    CONSTRAINT FK_users_created_by FOREIGN KEY (CreatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_users_updated_by FOREIGN KEY (UpdatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'User accounts table';
+
+-- =====================================================
+-- Table: roles
+-- Description: Roles for RBAC system
+-- =====================================================
+CREATE TABLE roles (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    Name VARCHAR(100) NOT NULL COMMENT 'Unique role name',
+    Description VARCHAR(500) NULL COMMENT 'Role description',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Role active status',
+    IsSystemRole TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'System role flag (cannot be deleted)',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+    CreatedBy CHAR(36) NULL COMMENT 'User ID who created this record',
+    UpdatedBy CHAR(36) NULL COMMENT 'User ID who last updated this record',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_roles_name (Name),
+    
+    -- Optimized composite indexes
+    INDEX IX_roles_active_system (IsActive, IsSystemRole),
+    INDEX IX_roles_created_at (CreatedAt DESC),
+    INDEX IX_roles_created_by (CreatedBy),
+    INDEX IX_roles_updated_by (UpdatedBy),
+    
+    CONSTRAINT FK_roles_created_by FOREIGN KEY (CreatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_roles_updated_by FOREIGN KEY (UpdatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Roles table';
+
+-- =====================================================
+-- Table: permissions
+-- Description: Permissions for RBAC system
+-- Optimizations: Covering index for permission lookups
+-- =====================================================
+CREATE TABLE permissions (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    Name VARCHAR(200) NOT NULL COMMENT 'Unique permission name (e.g., users.create)',
+    Description VARCHAR(500) NULL COMMENT 'Permission description',
+    Resource VARCHAR(100) NOT NULL COMMENT 'Resource name (e.g., users, courses)',
+    Action VARCHAR(50) NOT NULL COMMENT 'Action name (e.g., create, read, update, delete)',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Permission active status',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+    CreatedBy CHAR(36) NULL COMMENT 'User ID who created this record',
+    UpdatedBy CHAR(36) NULL COMMENT 'User ID who last updated this record',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_permissions_name (Name),
+    
+    -- Optimized indexes for permission queries
+    INDEX IX_permissions_resource_action_active (Resource, Action, IsActive),
+    INDEX IX_permissions_active_resource (IsActive, Resource),
+    INDEX IX_permissions_created_at (CreatedAt DESC),
+    INDEX IX_permissions_created_by (CreatedBy),
+    INDEX IX_permissions_updated_by (UpdatedBy),
+    
+    CONSTRAINT FK_permissions_created_by FOREIGN KEY (CreatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_permissions_updated_by FOREIGN KEY (UpdatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Permissions table';
+
+-- =====================================================
+-- Table: user_roles
+-- Description: Many-to-many relationship between users and roles
+-- Optimizations: Covering index for user role lookups
+-- =====================================================
+CREATE TABLE user_roles (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    UserId CHAR(36) NOT NULL COMMENT 'Foreign key to users table',
+    RoleId CHAR(36) NOT NULL COMMENT 'Foreign key to roles table',
+    AssignedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Assignment timestamp',
+    AssignedBy CHAR(36) NULL COMMENT 'User ID who assigned this role',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Assignment active status',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_user_roles_user_role (UserId, RoleId),
+    
+    -- Optimized indexes for common queries
+    INDEX IX_user_roles_user_active (UserId, IsActive),
+    INDEX IX_user_roles_role_active (RoleId, IsActive),
+    INDEX IX_user_roles_assigned_at (AssignedAt DESC),
+    INDEX IX_user_roles_assigned_by (AssignedBy),
+    
+    CONSTRAINT FK_user_roles_user_id FOREIGN KEY (UserId) 
+        REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_user_roles_role_id FOREIGN KEY (RoleId) 
+        REFERENCES roles (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_user_roles_assigned_by FOREIGN KEY (AssignedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'User-Role junction table';
+
+-- =====================================================
+-- Table: user_permissions
+-- Description: Direct permission assignments to users (bypassing roles)
+-- Optimizations: Covering index for permission checks
+-- =====================================================
+CREATE TABLE user_permissions (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    UserId CHAR(36) NOT NULL COMMENT 'Foreign key to users table',
+    PermissionId CHAR(36) NOT NULL COMMENT 'Foreign key to permissions table',
+    AssignedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Assignment timestamp',
+    AssignedBy CHAR(36) NULL COMMENT 'User ID who assigned this permission',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Assignment active status',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_user_permissions_user_permission (UserId, PermissionId),
+    
+    -- Optimized indexes for permission checks
+    INDEX IX_user_permissions_user_active (UserId, IsActive),
+    INDEX IX_user_permissions_permission_active (PermissionId, IsActive),
+    INDEX IX_user_permissions_assigned_at (AssignedAt DESC),
+    INDEX IX_user_permissions_assigned_by (AssignedBy),
+    
+    CONSTRAINT FK_user_permissions_user_id FOREIGN KEY (UserId) 
+        REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_user_permissions_permission_id FOREIGN KEY (PermissionId) 
+        REFERENCES permissions (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_user_permissions_assigned_by FOREIGN KEY (AssignedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'User-Permission junction table';
+
+-- =====================================================
+-- Table: role_permissions
+-- Description: Permission assignments to roles
+-- Optimizations: Covering index for role permission lookups
+-- =====================================================
+CREATE TABLE role_permissions (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    RoleId CHAR(36) NOT NULL COMMENT 'Foreign key to roles table',
+    PermissionId CHAR(36) NOT NULL COMMENT 'Foreign key to permissions table',
+    AssignedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Assignment timestamp',
+    AssignedBy CHAR(36) NULL COMMENT 'User ID who assigned this permission',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Assignment active status',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_role_permissions_role_permission (RoleId, PermissionId),
+    
+    -- Optimized indexes for role permission queries
+    INDEX IX_role_permissions_role_active (RoleId, IsActive),
+    INDEX IX_role_permissions_permission_active (PermissionId, IsActive),
+    INDEX IX_role_permissions_assigned_at (AssignedAt DESC),
+    INDEX IX_role_permissions_assigned_by (AssignedBy),
+    
+    CONSTRAINT FK_role_permissions_role_id FOREIGN KEY (RoleId) 
+        REFERENCES roles (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_role_permissions_permission_id FOREIGN KEY (PermissionId) 
+        REFERENCES permissions (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_role_permissions_assigned_by FOREIGN KEY (AssignedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Role-Permission junction table';
+
+-- =====================================================
+-- Table: user_token
+-- Description: Stores access and refresh tokens for user authentication
+-- Optimizations: Indexes for fast lookup and token revocation
+-- =====================================================
+CREATE TABLE user_token (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    UserId CHAR(36) NOT NULL COMMENT 'Foreign key to users table',
+    AccessToken VARCHAR(512) NOT NULL COMMENT 'JWT access token',
+    RefreshToken VARCHAR(512) NOT NULL COMMENT 'Refresh token for renewing access',
+    IssuedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Token issue time',
+    ExpiresAt DATETIME NOT NULL COMMENT 'Token expiry time',
+    RevokedAt DATETIME NULL COMMENT 'Timestamp when the token was revoked',
+    ReplacedByToken VARCHAR(512) NULL COMMENT 'If refresh token was rotated, reference to the new token',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Whether token is valid (not expired/revoked)',
+
+    PRIMARY KEY (Id),
+    INDEX IX_user_token_user_id (UserId),
+    INDEX IX_user_token_access_token (AccessToken),
+    INDEX IX_user_token_refresh_token (RefreshToken),
+    INDEX IX_user_token_is_active (IsActive),
+    INDEX IX_user_token_expires_at (ExpiresAt),
+
+    CONSTRAINT FK_user_token_user_id FOREIGN KEY (UserId) 
+        REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Stores issued access and refresh tokens for secure authentication';
+
+-- =====================================================
+-- Performance Views for Common Queries
+-- =====================================================
+
+-- View: Active users with their roles (optimized for read operations)
+CREATE OR REPLACE VIEW vw_active_users_with_roles AS
+SELECT 
+    u.Id,
+    u.Username,
+    u.Email,
+    u.FirstName,
+    u.LastName,
+    u.IsActive,
+    u.IsEmailVerified,
+    u.LastLoginAt,
+    u.CreatedAt,
+    GROUP_CONCAT(DISTINCT r.Name ORDER BY r.Name SEPARATOR ', ') AS Roles,
+    GROUP_CONCAT(DISTINCT r.Id ORDER BY r.Id SEPARATOR ', ') AS RoleIds
+FROM users u
+LEFT JOIN user_roles ur ON u.Id = ur.UserId AND ur.IsActive = 1
+LEFT JOIN roles r ON ur.RoleId = r.Id AND r.IsActive = 1
+WHERE u.IsActive = 1
+GROUP BY u.Id, u.Username, u.Email, u.FirstName, u.LastName, u.IsActive, u.IsEmailVerified, u.LastLoginAt, u.CreatedAt;
+
+-- View: User permissions (from roles + direct assignments) - optimized for permission checks
+CREATE OR REPLACE VIEW vw_user_permissions AS
+SELECT DISTINCT
+    u.Id AS UserId,
+    u.Username,
+    p.Id AS PermissionId,
+    p.Name AS PermissionName,
+    p.Resource,
+    p.Action,
+    CASE 
+        WHEN up.Id IS NOT NULL THEN 'direct'
+        WHEN rp.Id IS NOT NULL THEN 'role'
+        ELSE 'none'
+    END AS PermissionSource,
+    COALESCE(ur.RoleId, '') AS RoleId,
+    COALESCE(r.Name, '') AS RoleName
+FROM users u
+LEFT JOIN user_permissions up ON u.Id = up.UserId AND up.IsActive = 1
+LEFT JOIN permissions p1 ON up.PermissionId = p1.Id AND p1.IsActive = 1
+LEFT JOIN user_roles ur ON u.Id = ur.UserId AND ur.IsActive = 1
+LEFT JOIN roles r ON ur.RoleId = r.Id AND r.IsActive = 1
+LEFT JOIN role_permissions rp ON r.Id = rp.RoleId AND rp.IsActive = 1
+LEFT JOIN permissions p ON (p1.Id = p.Id OR rp.PermissionId = p.Id) AND p.IsActive = 1
+WHERE u.IsActive = 1 AND p.Id IS NOT NULL;
+
+-- View: Role permissions summary
+CREATE OR REPLACE VIEW vw_role_permissions_summary AS
+SELECT 
+    r.Id AS RoleId,
+    r.Name AS RoleName,
+    r.IsActive AS RoleIsActive,
+    COUNT(DISTINCT rp.PermissionId) AS PermissionCount,
+    GROUP_CONCAT(DISTINCT p.Name ORDER BY p.Name SEPARATOR ', ') AS Permissions
+FROM roles r
+LEFT JOIN role_permissions rp ON r.Id = rp.RoleId AND rp.IsActive = 1
+LEFT JOIN permissions p ON rp.PermissionId = p.Id AND p.IsActive = 1
+GROUP BY r.Id, r.Name, r.IsActive;
+
+-- =====================================================
+-- Stored Procedures for Common Operations
+-- =====================================================
+
+DELIMITER //
+
+-- Procedure: Check if user has specific permission
+CREATE PROCEDURE sp_check_user_permission(
+    IN p_user_id CHAR(36),
+    IN p_permission_name VARCHAR(200),
+    OUT p_has_permission TINYINT(1)
+)
+BEGIN
+    DECLARE v_count INT DEFAULT 0;
+    
+    SELECT COUNT(*) INTO v_count
+    FROM vw_user_permissions vup
+    WHERE vup.UserId = p_user_id
+      AND vup.PermissionName = p_permission_name
+      AND vup.UserId IS NOT NULL;
+    
+    SET p_has_permission = IF(v_count > 0, 1, 0);
+END //
+
+-- Procedure: Get all permissions for a user
+CREATE PROCEDURE sp_get_user_permissions(IN p_user_id CHAR(36))
+BEGIN
+    SELECT 
+        PermissionId,
+        PermissionName,
+        Resource,
+        Action,
+        PermissionSource,
+        RoleId,
+        RoleName
+    FROM vw_user_permissions
+    WHERE UserId = p_user_id
+    ORDER BY Resource, Action;
+END //
+
+-- Procedure: Get all roles for a user
+CREATE PROCEDURE sp_get_user_roles(IN p_user_id CHAR(36))
+BEGIN
+    SELECT 
+        r.Id,
+        r.Name,
+        r.Description,
+        r.IsActive,
+        ur.AssignedAt,
+        ur.AssignedBy
+    FROM user_roles ur
+    INNER JOIN roles r ON ur.RoleId = r.Id
+    WHERE ur.UserId = p_user_id 
+      AND ur.IsActive = 1 
+      AND r.IsActive = 1
+    ORDER BY ur.AssignedAt DESC;
+END //
+
+-- Procedure: Get users by role
+CREATE PROCEDURE sp_get_users_by_role(IN p_role_name VARCHAR(100))
+BEGIN
+    SELECT 
+        u.Id,
+        u.Username,
+        u.Email,
+        u.FirstName,
+        u.LastName,
+        u.IsActive,
+        ur.AssignedAt
+    FROM users u
+    INNER JOIN user_roles ur ON u.Id = ur.UserId
+    INNER JOIN roles r ON ur.RoleId = r.Id
+    WHERE r.Name = p_role_name
+      AND u.IsActive = 1
+      AND ur.IsActive = 1
+      AND r.IsActive = 1
+    ORDER BY ur.AssignedAt DESC;
+END //
+
+DELIMITER ;
+
+-- =====================================================
+-- Initial Data: System Roles
+-- =====================================================
+INSERT INTO roles (Id, Name, Description, IsSystemRole, CreatedAt) VALUES
+(UUID(), 'SuperAdmin', 'Super Administrator with all permissions', 1, NOW()),
+(UUID(), 'Admin', 'Administrator with management permissions', 1, NOW()),
+(UUID(), 'User', 'Regular user with basic permissions', 1, NOW()),
+(UUID(), 'Instructor', 'Course instructor with teaching permissions', 1, NOW()),
+(UUID(), 'Student', 'Student with learning permissions', 1, NOW());
+
+-- =====================================================
+-- Initial Data: Common Permissions
+-- =====================================================
+
+-- Users resource permissions
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'users.create', 'Create new users', 'users', 'create', NOW()),
+(UUID(), 'users.read', 'Read user information', 'users', 'read', NOW()),
+(UUID(), 'users.update', 'Update user information', 'users', 'update', NOW()),
+(UUID(), 'users.delete', 'Delete users', 'users', 'delete', NOW()),
+(UUID(), 'users.list', 'List all users', 'users', 'list', NOW());
+
+-- Roles resource permissions
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'roles.create', 'Create new roles', 'roles', 'create', NOW()),
+(UUID(), 'roles.read', 'Read role information', 'roles', 'read', NOW()),
+(UUID(), 'roles.update', 'Update role information', 'roles', 'update', NOW()),
+(UUID(), 'roles.delete', 'Delete roles', 'roles', 'delete', NOW()),
+(UUID(), 'roles.list', 'List all roles', 'roles', 'list', NOW()),
+(UUID(), 'roles.assign', 'Assign roles to users', 'roles', 'assign', NOW());
+
+-- Permissions resource permissions
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'permissions.create', 'Create new permissions', 'permissions', 'create', NOW()),
+(UUID(), 'permissions.read', 'Read permission information', 'permissions', 'read', NOW()),
+(UUID(), 'permissions.update', 'Update permission information', 'permissions', 'update', NOW()),
+(UUID(), 'permissions.delete', 'Delete permissions', 'permissions', 'delete', NOW()),
+(UUID(), 'permissions.list', 'List all permissions', 'permissions', 'list', NOW()),
+(UUID(), 'permissions.assign', 'Assign permissions to users/roles', 'permissions', 'assign', NOW());
+
+-- Courses resource permissions
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'courses.create', 'Create new courses', 'courses', 'create', NOW()),
+(UUID(), 'courses.read', 'Read course information', 'courses', 'read', NOW()),
+(UUID(), 'courses.update', 'Update course information', 'courses', 'update', NOW()),
+(UUID(), 'courses.delete', 'Delete courses', 'courses', 'delete', NOW()),
+(UUID(), 'courses.list', 'List all courses', 'courses', 'list', NOW()),
+(UUID(), 'courses.publish', 'Publish courses', 'courses', 'publish', NOW()),
+(UUID(), 'courses.enroll', 'Enroll in courses', 'courses', 'enroll', NOW());
+
+-- Assessments resource permissions
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'assessments.create', 'Create new assessments', 'assessments', 'create', NOW()),
+(UUID(), 'assessments.read', 'Read assessment information', 'assessments', 'read', NOW()),
+(UUID(), 'assessments.update', 'Update assessment information', 'assessments', 'update', NOW()),
+(UUID(), 'assessments.delete', 'Delete assessments', 'assessments', 'delete', NOW()),
+(UUID(), 'assessments.grade', 'Grade assessments', 'assessments', 'grade', NOW());
+
+-- =====================================================
+-- Initial Data: Role-Permission Assignments
+-- =====================================================
+
+-- SuperAdmin gets all permissions
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT 
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'SuperAdmin';
+
+-- Admin gets management permissions (users, roles, permissions, courses)
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT 
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Admin'
+  AND (p.Resource IN ('users', 'roles', 'permissions', 'courses') 
+       OR p.Name LIKE 'courses.%');
+
+-- Instructor gets course management permissions
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT 
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Instructor'
+  AND (p.Resource = 'courses' OR p.Resource = 'assessments');
+
+-- Student gets basic read permissions
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT 
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Student'
+  AND (p.Action = 'read' OR p.Name = 'courses.enroll');
+
+-- User gets minimal permissions
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT 
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'User'
+  AND p.Name IN ('users.read', 'courses.read', 'courses.list');
+
+-- =====================================================
+-- Performance Analysis Queries (for monitoring)
+-- =====================================================
+
+-- Query to check index usage (run after some operations)
+ANALYZE TABLE users, roles, permissions, user_roles, user_permissions, role_permissions;
+
+-- Query to optimize tables
+OPTIMIZE TABLE users, roles, permissions, user_roles, user_permissions, role_permissions;
+
+-- =====================================================
+-- End of Schema
+-- =====================================================
