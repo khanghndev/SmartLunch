@@ -1,0 +1,20 @@
+namespace SmartLunch.Backend.Service.Domain.Entities;
+
+/// <summary>
+/// UserPermission junction entity for direct permission assignment to users
+/// </summary>
+public class UserToken
+{
+    public Guid Id { get; set; }
+    public Guid UserId { get; set; }
+    public string AccessToken { get; set; } = string.Empty;
+    public string RefreshToken { get; set; } = string.Empty;
+    public DateTime IssuedAt { get; set; } = DateTime.UtcNow;
+    public DateTime ExpiresAt { get; set; } = DateTime.UtcNow.AddMinutes(30);
+    public DateTime? RevokedAt { get; set; }
+    public string? ReplacedByToken { get; set; }
+    public bool IsActive { get; set; } = true;
+
+    // Navigation property
+    public virtual User User { get; set; } = null!;
+}

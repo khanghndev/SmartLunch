@@ -1,10 +1,8 @@
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using rhetorai_service_api.Models.DTO;
 using System.Net;
 using System.Text.Json;
+using SmartLunch.Backend.Service.Application.DTOs;
 
-namespace rhetorai_service_api.Middleware
+namespace SmartLunch.Backend.Service.API.Middlewares
 {
     /// <summary>
     /// Global exception handling middleware for consistent error responses
@@ -28,9 +26,9 @@ namespace rhetorai_service_api.Middleware
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An unhandled exception occurred. RequestId: {RequestId}", 
+                _logger.LogError(ex, "An unhandled exception occurred. RequestId: {RequestId}",
                     httpContext.TraceIdentifier);
-                
+
                 await HandleExceptionAsync(httpContext, ex);
             }
         }
@@ -40,38 +38,53 @@ namespace rhetorai_service_api.Middleware
             context.Response.ContentType = "application/json";
             var requestId = context.TraceIdentifier;
 
-            var response = exception switch
+            var baseResponse = exception switch
             {
-                ArgumentException ex => ApiResponse<object>.ErrorResult(
-                    ex.Message, 
-                    new List<string> { ex.Message }, 
+                ArgumentException ex => BaseApiResponse<object>.ErrorResult(
+                    ex.Message,
+                    new List<string> { ex.Message },
                     (int)HttpStatusCode.BadRequest),
-                
-                UnauthorizedAccessException ex => ApiResponse<object>.ErrorResult(
-                    "Unauthorized access", 
-                    new List<string> { ex.Message }, 
+
+                UnauthorizedAccessException ex => BaseApiResponse<object>.ErrorResult(
+                    "Unauthorized access",
+                    new List<string> { ex.Message },
                     (int)HttpStatusCode.Unauthorized),
-                
-                KeyNotFoundException ex => ApiResponse<object>.NotFoundResult(ex.Message),
-                
-                InvalidOperationException ex => ApiResponse<object>.ErrorResult(
-                    ex.Message, 
-                    new List<string> { ex.Message }, 
+
+                KeyNotFoundException ex => BaseApiResponse<object>.NotFoundResult(ex.Message),
+
+                InvalidOperationException ex => BaseApiResponse<object>.ErrorResult(
+                    ex.Message,
+                    new List<string> { ex.Message },
                     (int)HttpStatusCode.BadRequest),
-                
-                TimeoutException ex => ApiResponse<object>.ErrorResult(
-                    "Request timeout", 
-                    new List<string> { ex.Message }, 
+
+                TimeoutException ex => BaseApiResponse<object>.ErrorResult(
+                    "Request timeout",
+                    new List<string> { ex.Message },
                     (int)HttpStatusCode.RequestTimeout),
-                
-                _ => ApiResponse<object>.ErrorResult(
-                    "An internal server error occurred", 
-                    new List<string> { "Please contact support if the problem persists" }, 
+
+                _ => BaseApiResponse<object>.ErrorResult(
+                    "An internal server error occurred",
+                    new List<string> { "Please contact support if the problem persists" },
                     (int)HttpStatusCode.InternalServerError)
             };
 
-            response.RequestId = requestId;
-            response.Timestamp = DateTime.UtcNow;
+            // Create a new response with RequestId included (since properties are init-only)
+            var response = new BaseApiResponse<object>
+            {
+                Success = baseResponse.Success,
+                ResponseTimestamp = baseResponse.ResponseTimestamp,
+                ResponseType = baseResponse.ResponseType,
+                ResponseSource = baseResponse.ResponseSource,
+                ResponseMessage = baseResponse.ResponseMessage,
+                ResponseStatus = baseResponse.ResponseStatus,
+                ResponseData = default!,
+                ResponseError = baseResponse.ResponseError,
+                ResponseErrorDetails = baseResponse.ResponseErrorDetails,
+                RequestId = requestId,
+                Timestamp = baseResponse.Timestamp,
+                StatusCode = baseResponse.StatusCode,
+                Errors = baseResponse.Errors
+            };
 
             context.Response.StatusCode = response.StatusCode;
 

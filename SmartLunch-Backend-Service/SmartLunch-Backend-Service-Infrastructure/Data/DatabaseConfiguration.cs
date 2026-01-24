@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
 
 namespace SmartLunch.Backend.Service.Infrastructure.Data
 {
@@ -66,114 +69,176 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
     /// </summary>
     public static class DatabaseConfigurationExtensions
     {
-        public static IServiceCollection AddEnhancedDatabase(this IServiceCollection services, IConfiguration configuration, bool usePooling = true)
+        /// <summary>
+        /// Adds enhanced database configuration with support for all DatabaseOptions settings
+        /// </summary>
+        public static IServiceCollection AddEnhancedDatabase(
+            this IServiceCollection services,
+            IConfiguration configuration,
+            bool usePooling = true)
         {
-            var databaseOptions = configuration.GetSection(DatabaseOptions.SectionName).Get<DatabaseOptions>() ?? new DatabaseOptions();
-
-            // Fallback to ConnectionStrings:DefaultConnection if Database:ConnectionString is not set
-            if (string.IsNullOrEmpty(databaseOptions.ConnectionString))
+            // Register DatabaseOptions
+            services.Configure<DatabaseOptions>(options =>
             {
-                databaseOptions.ConnectionString = configuration.GetConnectionString("DefaultConnection") ?? string.Empty;
-            }
-
-            services.Configure<DatabaseOptions>(configuration.GetSection(DatabaseOptions.SectionName));
-
-            // Configure Npgsql options
-            Action<DbContextOptionsBuilder> configureOptions = options =>
-            {
-                options.UseNpgsql(databaseOptions.ConnectionString, npgsqlOptions =>
+                var section = configuration.GetSection(DatabaseOptions.SectionName);
+                if (section.Exists())
                 {
-                    npgsqlOptions.UseVector(); // Enable pgvector support
-                    npgsqlOptions.CommandTimeout(databaseOptions.CommandTimeout);
-                    npgsqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: databaseOptions.MaxRetryCount,
-                        maxRetryDelay: TimeSpan.FromSeconds(databaseOptions.MaxRetryDelay),
-                        errorCodesToAdd: null);
-                });
+                    options.ConnectionString = section[nameof(DatabaseOptions.ConnectionString)] ?? string.Empty;
 
-                // Apply snake case naming convention for PostgreSQL
-                options.UseSnakeCaseNamingConvention();
+                    var autoMigrateValue = section[nameof(DatabaseOptions.AutoMigrate)];
+                    if (bool.TryParse(autoMigrateValue, out var autoMigrate))
+                        options.AutoMigrate = autoMigrate;
 
-                if (databaseOptions.EnableSensitiveDataLogging)
-                {
-                    options.EnableSensitiveDataLogging();
+                    var enableSensitiveDataLoggingValue = section[nameof(DatabaseOptions.EnableSensitiveDataLogging)];
+                    if (bool.TryParse(enableSensitiveDataLoggingValue, out var enableSensitiveDataLogging))
+                        options.EnableSensitiveDataLogging = enableSensitiveDataLogging;
+
+                    var commandTimeoutValue = section[nameof(DatabaseOptions.CommandTimeout)];
+                    if (int.TryParse(commandTimeoutValue, out var commandTimeout) && commandTimeout > 0)
+                        options.CommandTimeout = commandTimeout;
+
+                    var maxRetryCountValue = section[nameof(DatabaseOptions.MaxRetryCount)];
+                    if (int.TryParse(maxRetryCountValue, out var maxRetryCount) && maxRetryCount > 0)
+                        options.MaxRetryCount = maxRetryCount;
+
+                    var maxRetryDelayValue = section[nameof(DatabaseOptions.MaxRetryDelay)];
+                    if (int.TryParse(maxRetryDelayValue, out var maxRetryDelay) && maxRetryDelay > 0)
+                        options.MaxRetryDelay = maxRetryDelay;
+
+                    var enableQuerySplittingValue = section[nameof(DatabaseOptions.EnableQuerySplitting)];
+                    if (bool.TryParse(enableQuerySplittingValue, out var enableQuerySplitting))
+                        options.EnableQuerySplitting = enableQuerySplitting;
+
+                    var poolSizeValue = section[nameof(DatabaseOptions.PoolSize)];
+                    if (int.TryParse(poolSizeValue, out var poolSize) && poolSize > 0)
+                        options.PoolSize = poolSize;
+
+                    var enableHealthChecksValue = section[nameof(DatabaseOptions.EnableHealthChecks)];
+                    if (bool.TryParse(enableHealthChecksValue, out var enableHealthChecks))
+                        options.EnableHealthChecks = enableHealthChecks;
+
+                    var healthCheckIntervalValue = section[nameof(DatabaseOptions.HealthCheckInterval)];
+                    if (int.TryParse(healthCheckIntervalValue, out var healthCheckInterval) && healthCheckInterval > 0)
+                        options.HealthCheckInterval = healthCheckInterval;
                 }
+            });
 
-                options.EnableDetailedErrors();
-                options.EnableServiceProviderCaching();
-            };
+            // Get the options to use during configuration
+            var databaseOptions = GetDatabaseOptions(configuration);
 
-            // Use pooling for better performance (recommended for production)
+            // Determine connection string with fallback logic
+            var connectionString = !string.IsNullOrWhiteSpace(databaseOptions.ConnectionString)
+                ? databaseOptions.ConnectionString
+                : configuration.GetConnectionString("SmartLunchDatabase")
+                ?? configuration.GetConnectionString("DefaultConnection")
+                ?? throw new InvalidOperationException("Database connection string is not configured. Please set Database:ConnectionString or ConnectionStrings:SmartLunchDatabase or ConnectionStrings:DefaultConnection");
+
+            // Configure DbContext
             if (usePooling)
             {
-                services.AddPooledDbContextFactory<RhetorAIServiceDBContext>(configureOptions, poolSize: databaseOptions.PoolSize);
-                // Also register regular DbContext for services that need it
-                services.AddDbContext<RhetorAIServiceDBContext>(configureOptions, ServiceLifetime.Scoped);
+                services.AddDbContextPool<SmartLunchDBContext>(options =>
+                {
+                    ConfigureDbContextOptions(options, connectionString, databaseOptions);
+                }, databaseOptions.PoolSize);
             }
             else
             {
-                // Use factory pattern without pooling
-                services.AddDbContextFactory<RhetorAIServiceDBContext>(configureOptions);
-                services.AddDbContext<RhetorAIServiceDBContext>(configureOptions, ServiceLifetime.Scoped);
+                services.AddDbContext<SmartLunchDBContext>(options =>
+                {
+                    ConfigureDbContextOptions(options, connectionString, databaseOptions);
+                });
             }
-
-            //// Add health checks if enabled
-            //if (databaseOptions.EnableHealthChecks)
-            //{
-            //    services.AddHealthChecks()
-            //        .AddDbContextCheck<RhetorAIServiceDBContext>("database", tags: new[] { "ready", "live" });
-            //}
 
             return services;
         }
 
-        public static async Task<IHost> MigrateDatabase(this IHost host)
+        /// <summary>
+        /// Gets database options from configuration
+        /// </summary>
+        private static DatabaseOptions GetDatabaseOptions(IConfiguration configuration)
         {
-            using var scope = host.Services.CreateScope();
-            var services = scope.ServiceProvider;
-            var logger = services.GetRequiredService<ILogger<RhetorAIServiceDBContext>>();
-            var databaseOptions = services.GetRequiredService<IOptions<DatabaseOptions>>().Value;
+            var options = new DatabaseOptions();
+            var section = configuration.GetSection(DatabaseOptions.SectionName);
 
-            if (databaseOptions.AutoMigrate)
+            if (section.Exists())
             {
-                try
-                {
-                    // Try to use DbContextFactory first, fallback to regular DbContext
-                    RhetorAIServiceDBContext context;
-                    var contextFactory = services.GetService<IDbContextFactory<RhetorAIServiceDBContext>>();
+                options.ConnectionString = section[nameof(DatabaseOptions.ConnectionString)] ?? string.Empty;
 
-                    if (contextFactory != null)
-                    {
-                        context = contextFactory.CreateDbContext();
-                    }
-                    else
-                    {
-                        context = services.GetRequiredService<RhetorAIServiceDBContext>();
-                    }
+                var autoMigrateValue = section[nameof(DatabaseOptions.AutoMigrate)];
+                if (bool.TryParse(autoMigrateValue, out var autoMigrate))
+                    options.AutoMigrate = autoMigrate;
 
-                    using (context)
-                    {
-                        var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
-                        if (pendingMigrations.Any())
-                        {
-                            logger.LogInformation("Applying {Count} pending migrations...", pendingMigrations.Count());
-                            await context.Database.MigrateAsync();
-                            logger.LogInformation("Database migrations applied successfully");
-                        }
-                        else
-                        {
-                            logger.LogInformation("Database is up to date");
-                        }
-                    }
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError(ex, "An error occurred while migrating the database");
-                    throw;
-                }
+                var enableSensitiveDataLoggingValue = section[nameof(DatabaseOptions.EnableSensitiveDataLogging)];
+                if (bool.TryParse(enableSensitiveDataLoggingValue, out var enableSensitiveDataLogging))
+                    options.EnableSensitiveDataLogging = enableSensitiveDataLogging;
+
+                var commandTimeoutValue = section[nameof(DatabaseOptions.CommandTimeout)];
+                if (int.TryParse(commandTimeoutValue, out var commandTimeout) && commandTimeout > 0)
+                    options.CommandTimeout = commandTimeout;
+
+                var maxRetryCountValue = section[nameof(DatabaseOptions.MaxRetryCount)];
+                if (int.TryParse(maxRetryCountValue, out var maxRetryCount) && maxRetryCount > 0)
+                    options.MaxRetryCount = maxRetryCount;
+
+                var maxRetryDelayValue = section[nameof(DatabaseOptions.MaxRetryDelay)];
+                if (int.TryParse(maxRetryDelayValue, out var maxRetryDelay) && maxRetryDelay > 0)
+                    options.MaxRetryDelay = maxRetryDelay;
+
+                var enableQuerySplittingValue = section[nameof(DatabaseOptions.EnableQuerySplitting)];
+                if (bool.TryParse(enableQuerySplittingValue, out var enableQuerySplitting))
+                    options.EnableQuerySplitting = enableQuerySplitting;
+
+                var poolSizeValue = section[nameof(DatabaseOptions.PoolSize)];
+                if (int.TryParse(poolSizeValue, out var poolSize) && poolSize > 0)
+                    options.PoolSize = poolSize;
+
+                var enableHealthChecksValue = section[nameof(DatabaseOptions.EnableHealthChecks)];
+                if (bool.TryParse(enableHealthChecksValue, out var enableHealthChecks))
+                    options.EnableHealthChecks = enableHealthChecks;
+
+                var healthCheckIntervalValue = section[nameof(DatabaseOptions.HealthCheckInterval)];
+                if (int.TryParse(healthCheckIntervalValue, out var healthCheckInterval) && healthCheckInterval > 0)
+                    options.HealthCheckInterval = healthCheckInterval;
             }
 
-            return host;
+            return options;
+        }
+
+        /// <summary>
+        /// Configures DbContext options with all settings from DatabaseOptions
+        /// </summary>
+        private static void ConfigureDbContextOptions(
+            DbContextOptionsBuilder optionsBuilder,
+            string connectionString,
+            DatabaseOptions options)
+        {
+            var serverVersion = ServerVersion.AutoDetect(connectionString);
+
+            optionsBuilder.UseMySql(connectionString, serverVersion, mysqlOptions =>
+            {
+                mysqlOptions.EnableRetryOnFailure(
+                    maxRetryCount: options.MaxRetryCount,
+                    maxRetryDelay: TimeSpan.FromSeconds(options.MaxRetryDelay),
+                    errorNumbersToAdd: null);
+
+                // Apply command timeout
+                if (options.CommandTimeout > 0)
+                {
+                    mysqlOptions.CommandTimeout(options.CommandTimeout);
+                }
+
+                // Enable query splitting if configured
+                if (options.EnableQuerySplitting)
+                {
+                    mysqlOptions.EnableStringComparisonTranslations();
+                }
+            });
+
+            // Enable sensitive data logging if configured (must be on optionsBuilder, not inside UseMySql)
+            if (options.EnableSensitiveDataLogging)
+            {
+                optionsBuilder.EnableSensitiveDataLogging();
+            }
         }
     }
 }
