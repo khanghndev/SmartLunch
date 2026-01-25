@@ -6,6 +6,8 @@ using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Roles;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Roles;
 using SmartLunch.Backend.Service.Application.Queries.Roles.GetRole;
 using SmartLunch.Backend.Service.Application.Queries.Roles.GetRoles;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Roles.GrantRoleToUser;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Roles.RevokeRoleFromUser;
 using System.Net;
 
 namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
@@ -16,7 +18,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-[Authorize]
+[Authorize(Policy = "roles:Admin")]
 public class RoleController : ControllerBase
 {
     private readonly ILogger<RoleController> _logger;
@@ -32,6 +34,7 @@ public class RoleController : ControllerBase
     /// Get list of roles
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = "permission:roles.read")]
     public async Task<ActionResult<BaseApiResponse<GetRolesResponse>>> GetRoles([FromQuery] GetRolesRequest request)
     {
         try
@@ -58,6 +61,7 @@ public class RoleController : ControllerBase
     /// Get role by ID
     /// </summary>
     [HttpGet("{id}")]
+    [Authorize(Policy = "permission:roles.read")]
     public async Task<ActionResult<BaseApiResponse<GetRoleResponse>>> GetRole(Guid id)
     {
         try
@@ -76,6 +80,74 @@ public class RoleController : ControllerBase
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetRoleResponse>.ErrorResult("An error occurred while retrieving role", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Grant role to user
+    /// </summary>
+    [HttpPost("grant")]
+    [Authorize(Policy = "permission:roles.update")]
+    public async Task<ActionResult<BaseApiResponse<GrantRoleToUserResponse>>> GrantRoleToUser([FromBody] GrantRoleToUserRequest request)
+    {
+        try
+        {
+            var command = new GrantRoleToUserCommand(request);
+            var response = await _mediator.Send(command);
+            return Ok(BaseApiResponse<GrantRoleToUserResponse>.SuccessResult(response, response.Message));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GrantRoleToUserResponse>.NotFoundResult(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(BaseApiResponse<GrantRoleToUserResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GrantRoleToUserResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error granting role to user");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GrantRoleToUserResponse>.ErrorResult("An error occurred while granting role", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Revoke role from user
+    /// </summary>
+    [HttpPost("revoke")]
+    [Authorize(Policy = "permission:roles.update")]
+    public async Task<ActionResult<BaseApiResponse<RevokeRoleFromUserResponse>>> RevokeRoleFromUser([FromBody] RevokeRoleFromUserRequest request)
+    {
+        try
+        {
+            var command = new RevokeRoleFromUserCommand(request);
+            var response = await _mediator.Send(command);
+            return Ok(BaseApiResponse<RevokeRoleFromUserResponse>.SuccessResult(response, response.Message));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<RevokeRoleFromUserResponse>.NotFoundResult(ex.Message));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(BaseApiResponse<RevokeRoleFromUserResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<RevokeRoleFromUserResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error revoking role from user");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<RevokeRoleFromUserResponse>.ErrorResult("An error occurred while revoking role", new[] { ex.Message }));
         }
     }
 }
