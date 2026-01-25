@@ -5,6 +5,8 @@ using SmartLunch.Backend.Service.Application.Commands.Auth;
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.Auth;
 using SmartLunch.Backend.Service.Application.DTOs.Response.Auth;
+using FirebaseLoginRequest = SmartLunch.Backend.Service.Application.DTOs.Request.Auth.FirebaseLoginRequest;
+using FirebaseLoginCommand = SmartLunch.Backend.Service.Application.Commands.Auth.FirebaseLoginCommand;
 using System.Net;
 
 namespace SmartLunch.Backend.Service.API.Controllers
@@ -41,6 +43,28 @@ namespace SmartLunch.Backend.Service.API.Controllers
             catch (UnauthorizedAccessException ex)
             {
                 return Unauthorized(BaseApiResponse<LoginResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+        }
+
+        [HttpPost("firebase-login")]
+        public async Task<ActionResult<BaseApiResponse<LoginResponse>>> FirebaseLogin(FirebaseLoginRequest request)
+        {
+            try
+            {
+                var response = await _mediator.Send(new FirebaseLoginCommand(request));
+                return Ok(BaseApiResponse<LoginResponse>.SuccessResult(response, "Firebase login successful"));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(BaseApiResponse<LoginResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(BaseApiResponse<LoginResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(BaseApiResponse<LoginResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
         }
 
