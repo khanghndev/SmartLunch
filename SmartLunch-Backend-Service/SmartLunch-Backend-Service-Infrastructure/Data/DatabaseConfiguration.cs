@@ -212,7 +212,19 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
             string connectionString,
             DatabaseOptions options)
         {
-            var serverVersion = ServerVersion.AutoDetect(connectionString);
+            // Try to auto-detect server version, fall back to MySQL 8.0 if it fails
+            // This handles cases where connection might not be ready during startup
+            ServerVersion serverVersion;
+            try
+            {
+                serverVersion = ServerVersion.AutoDetect(connectionString);
+            }
+            catch
+            {
+                // Fall back to MySQL 8.0 if auto-detection fails
+                // This is safe since docker-compose.yml uses mysql:8.0
+                serverVersion = ServerVersion.Parse("8.0.0-mysql");
+            }
 
             optionsBuilder.UseMySql(connectionString, serverVersion, mysqlOptions =>
             {

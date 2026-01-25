@@ -20,13 +20,12 @@ namespace SmartLunch.Backend.Service.Application.DTOs
         // Additional properties for middleware compatibility
         public string RequestId { get; init; } = string.Empty;
         public DateTime Timestamp { get; init; } = DateTime.UtcNow;
-        public int StatusCode { get; init; }
         public IReadOnlyList<string> Errors { get; init; } = Array.Empty<string>();
 
         /// <summary>
         /// Creates an error response with the specified message, errors, and status code.
         /// </summary>
-        public static BaseApiResponse<T> ErrorResult(string message, IEnumerable<string> errors, int statusCode) =>
+        public static BaseApiResponse<T> ErrorResult(string message, IEnumerable<string> errors) =>
             new BaseApiResponse<T>
             {
                 Success = false,
@@ -34,7 +33,6 @@ namespace SmartLunch.Backend.Service.Application.DTOs
                 ResponseMessage = message,
                 ResponseError = message,
                 ResponseErrorDetails = errors != null ? string.Join("; ", errors) : string.Empty,
-                StatusCode = statusCode,
                 Errors = errors != null ? errors.ToList().AsReadOnly() : Array.Empty<string>(),
                 Timestamp = DateTime.UtcNow,
                 ResponseTimestamp = DateTime.UtcNow
@@ -51,10 +49,29 @@ namespace SmartLunch.Backend.Service.Application.DTOs
                 ResponseMessage = message,
                 ResponseError = message,
                 ResponseErrorDetails = message,
-                StatusCode = 404,
                 Errors = new List<string> { message }.AsReadOnly(),
                 Timestamp = DateTime.UtcNow,
                 ResponseTimestamp = DateTime.UtcNow
             };
+
+        /// <summary>
+        /// Creates a successful response with the specified data and message.
+        /// </summary>
+        public static BaseApiResponse<T> SuccessResult(T data, string message) =>
+            new BaseApiResponse<T>
+            {
+                Success = true,
+                ResponseStatus = "Success",
+                ResponseMessage = message,
+                ResponseData = data,
+                Timestamp = DateTime.UtcNow,
+                ResponseTimestamp = DateTime.UtcNow
+            };
+
+        /// <summary>
+        /// Creates a successful response with the specified data and default message.
+        /// </summary>
+        public static BaseApiResponse<T> SuccessResult(T data) =>
+            SuccessResult(data, "Operation completed successfully");
     }
 }

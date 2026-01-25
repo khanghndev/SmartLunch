@@ -11,12 +11,9 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
     /// </summary>
     public class SmartLunchDBContext : DbContext
     {
-        private readonly ILogger<SmartLunchDBContext>? _logger;
+        private readonly ILogger<SmartLunchDBContext> _logger;
 
-        public SmartLunchDBContext(DbContextOptions<SmartLunchDBContext> options) : base(options)
-        {
-        }
-
+        // Logger can be injected via service locator pattern if needed, but is optional
         public SmartLunchDBContext(
             DbContextOptions<SmartLunchDBContext> options,
             ILogger<SmartLunchDBContext> logger) : base(options)
@@ -146,6 +143,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.FirstName).HasMaxLength(100);
                 entity.Property(e => e.LastName).HasMaxLength(100);
                 entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+                entity.Property(e => e.Provider).IsRequired().HasMaxLength(50).HasDefaultValue("system");
             });
 
             // Configure Role entity
@@ -253,8 +251,9 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.IsActive);
                 entity.HasIndex(e => e.ExpiresAt);
                 entity.Property(e => e.Id).ValueGeneratedNever();
-                entity.Property(e => e.AccessToken).IsRequired().HasMaxLength(1000);
-                entity.Property(e => e.RefreshToken).IsRequired().HasMaxLength(1000);
+                entity.Property(e => e.AccessToken).IsRequired().HasMaxLength(2000);
+                entity.Property(e => e.RefreshToken).IsRequired().HasMaxLength(2000);
+                entity.Property(e => e.ReplacedByToken).HasMaxLength(2000);
 
                 entity.HasOne(ut => ut.User)
                     .WithMany(u => u.UserTokens)
