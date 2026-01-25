@@ -59,6 +59,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
             Username = req.Email, // Use email as username
             Email = req.Email,
             PasswordHash = _passwordHasher.HashPassword(req.Password),
+            Provider = "system",
             IsActive = true,
             IsEmailVerified = false,
             CreatedAt = DateTime.UtcNow

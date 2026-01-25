@@ -1,5 +1,5 @@
 using MediatR;
-using SmartLunch.Backend.Service.Application.DTOs.Users;
+using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Users;
 
 namespace SmartLunch.Backend.Service.Application.Queries.Users.GetUsers;
 
