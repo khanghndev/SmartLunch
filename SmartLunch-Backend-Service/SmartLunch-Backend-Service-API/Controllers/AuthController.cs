@@ -1,4 +1,5 @@
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartLunch.Backend.Service.Application.Commands.Auth;
 using SmartLunch.Backend.Service.Application.DTOs;
@@ -31,15 +32,15 @@ namespace SmartLunch.Backend.Service.API.Controllers
             try
             {
                 var response = await _mediator.Send(new LoginCommand(request));
-                return Ok(CreateSuccessResponse(response, "Login successful"));
+                return Ok(BaseApiResponse<LoginResponse>.SuccessResult(response, "Login successful"));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(CreateErrorResponse<LoginResponse>(ex.Message, (int)HttpStatusCode.BadRequest));
+                return BadRequest(BaseApiResponse<LoginResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Unauthorized(CreateErrorResponse<LoginResponse>(ex.Message, (int)HttpStatusCode.Unauthorized));
+                return Unauthorized(BaseApiResponse<LoginResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
         }
 
@@ -49,34 +50,34 @@ namespace SmartLunch.Backend.Service.API.Controllers
             try
             {
                 var response = await _mediator.Send(new RegisterCommand(request));
-                return Ok(CreateSuccessResponse(response, "User registered successfully"));
+                return Ok(BaseApiResponse<RegisterResponse>.SuccessResult(response, "User registered successfully"));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(CreateErrorResponse<RegisterResponse>(ex.Message, (int)HttpStatusCode.BadRequest));
+                return BadRequest(BaseApiResponse<RegisterResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
             catch (InvalidOperationException ex)
             {
-                return BadRequest(CreateErrorResponse<RegisterResponse>(ex.Message, (int)HttpStatusCode.BadRequest));
+                return BadRequest(BaseApiResponse<RegisterResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
         }
 
         [HttpPost("logout")]
-        [Microsoft.AspNetCore.Authorization.Authorize]
+        [Authorize]
         public async Task<ActionResult<BaseApiResponse<LogoutResponse>>> Logout(LogoutRequest request)
         {
             try
             {
                 var response = await _mediator.Send(new LogoutCommand(request));
-                return Ok(CreateSuccessResponse(response, "Logout successful"));
+                return Ok(BaseApiResponse<LogoutResponse>.SuccessResult(response, "Logout successful"));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(CreateErrorResponse<LogoutResponse>(ex.Message, (int)HttpStatusCode.BadRequest));
+                return BadRequest(BaseApiResponse<LogoutResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Unauthorized(CreateErrorResponse<LogoutResponse>(ex.Message, (int)HttpStatusCode.Unauthorized));
+                return Unauthorized(BaseApiResponse<LogoutResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
         }
 
@@ -86,43 +87,20 @@ namespace SmartLunch.Backend.Service.API.Controllers
             try
             {
                 var response = await _mediator.Send(new RefreshTokenCommand(request));
-                return Ok(CreateSuccessResponse(response, "Token refreshed successfully"));
+                return Ok(BaseApiResponse<RefreshTokenResponse>.SuccessResult(response, "Token refreshed successfully"));
             }
             catch (ArgumentException ex)
             {
-                return BadRequest(CreateErrorResponse<RefreshTokenResponse>(ex.Message, (int)HttpStatusCode.BadRequest));
+                return BadRequest(BaseApiResponse<RefreshTokenResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
             catch (UnauthorizedAccessException ex)
             {
-                return Unauthorized(CreateErrorResponse<RefreshTokenResponse>(ex.Message, (int)HttpStatusCode.Unauthorized));
+                return Unauthorized(BaseApiResponse<RefreshTokenResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
             catch (KeyNotFoundException ex)
             {
-                return NotFound(CreateErrorResponse<RefreshTokenResponse>(ex.Message, (int)HttpStatusCode.NotFound));
+                return NotFound(BaseApiResponse<RefreshTokenResponse>.NotFoundResult(ex.Message));
             }
-        }
-
-        /// <summary>
-        /// Helper method to create a successful API response
-        /// </summary>
-        private BaseApiResponse<T> CreateSuccessResponse<T>(T data, string message) where T : class
-        {
-            return new BaseApiResponse<T>
-            {
-                Success = true,
-                ResponseStatus = "Success",
-                ResponseMessage = message,
-                ResponseData = data,
-                ResponseTimestamp = DateTime.UtcNow
-            };
-        }
-
-        /// <summary>
-        /// Helper method to create an error API response
-        /// </summary>
-        private BaseApiResponse<T> CreateErrorResponse<T>(string message, int statusCode) where T : class
-        {
-            return BaseApiResponse<T>.ErrorResult(message, new[] { message }, statusCode);
         }
     }
 }

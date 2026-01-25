@@ -38,33 +38,40 @@ namespace SmartLunch.Backend.Service.API.Middlewares
             context.Response.ContentType = "application/json";
             var requestId = context.TraceIdentifier;
 
-            var baseResponse = exception switch
+            var (baseResponse, statusCode) = exception switch
             {
-                ArgumentException ex => BaseApiResponse<object>.ErrorResult(
-                    ex.Message,
-                    new List<string> { ex.Message },
+                ArgumentException ex => (
+                    BaseApiResponse<object>.ErrorResult(
+                        ex.Message,
+                        new List<string> { ex.Message }),
                     (int)HttpStatusCode.BadRequest),
 
-                UnauthorizedAccessException ex => BaseApiResponse<object>.ErrorResult(
-                    "Unauthorized access",
-                    new List<string> { ex.Message },
+                UnauthorizedAccessException ex => (
+                    BaseApiResponse<object>.ErrorResult(
+                        "Unauthorized access",
+                        new List<string> { ex.Message }),
                     (int)HttpStatusCode.Unauthorized),
 
-                KeyNotFoundException ex => BaseApiResponse<object>.NotFoundResult(ex.Message),
+                KeyNotFoundException ex => (
+                    BaseApiResponse<object>.NotFoundResult(ex.Message),
+                    (int)HttpStatusCode.NotFound),
 
-                InvalidOperationException ex => BaseApiResponse<object>.ErrorResult(
-                    ex.Message,
-                    new List<string> { ex.Message },
+                InvalidOperationException ex => (
+                    BaseApiResponse<object>.ErrorResult(
+                        ex.Message,
+                        new List<string> { ex.Message }),
                     (int)HttpStatusCode.BadRequest),
 
-                TimeoutException ex => BaseApiResponse<object>.ErrorResult(
-                    "Request timeout",
-                    new List<string> { ex.Message },
+                TimeoutException ex => (
+                    BaseApiResponse<object>.ErrorResult(
+                        "Request timeout",
+                        new List<string> { ex.Message }),
                     (int)HttpStatusCode.RequestTimeout),
 
-                _ => BaseApiResponse<object>.ErrorResult(
-                    "An internal server error occurred",
-                    new List<string> { "Please contact support if the problem persists" },
+                _ => (
+                    BaseApiResponse<object>.ErrorResult(
+                        "An internal server error occurred",
+                        new List<string> { "Please contact support if the problem persists" }),
                     (int)HttpStatusCode.InternalServerError)
             };
 
@@ -82,11 +89,10 @@ namespace SmartLunch.Backend.Service.API.Middlewares
                 ResponseErrorDetails = baseResponse.ResponseErrorDetails,
                 RequestId = requestId,
                 Timestamp = baseResponse.Timestamp,
-                StatusCode = baseResponse.StatusCode,
                 Errors = baseResponse.Errors
             };
 
-            context.Response.StatusCode = response.StatusCode;
+            context.Response.StatusCode = statusCode;
 
             var jsonResponse = JsonSerializer.Serialize(response, new JsonSerializerOptions
             {
