@@ -16,7 +16,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-[Authorize]
+[Authorize(Policy = "roles:Admin")]
 public class UserController : ControllerBase
 {
     private readonly ILogger<UserController> _logger;
@@ -32,6 +32,7 @@ public class UserController : ControllerBase
     /// Get list of users with pagination
     /// </summary>
     [HttpGet]
+    [Authorize(Policy = "permission:users.read")]
     public async Task<ActionResult<BaseApiResponse<GetUsersResponse>>> GetUsers([FromQuery] GetUsersRequest request)
     {
         try
@@ -57,6 +58,7 @@ public class UserController : ControllerBase
     /// Get user by ID
     /// </summary>
     [HttpGet("{id}")]
+    [Authorize(Policy = "permission:users.read")]
     public async Task<ActionResult<BaseApiResponse<GetUserResponse>>> GetUser(Guid id)
     {
         try
