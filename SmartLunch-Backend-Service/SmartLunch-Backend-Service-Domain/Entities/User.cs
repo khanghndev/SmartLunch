@@ -12,6 +12,7 @@ public class User
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string? PhoneNumber { get; set; }
+    public string Provider { get; set; } = "system"; // "system", "google", "facebook", "firebase", etc.
     public bool IsActive { get; set; } = true;
     public bool IsEmailVerified { get; set; } = false;
     public DateTime? EmailVerifiedAt { get; set; }
