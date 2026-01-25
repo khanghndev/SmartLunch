@@ -5,6 +5,7 @@ using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 
 namespace SmartLunch.Backend.Service.Application.Handlers.Auth;
 
@@ -14,6 +15,8 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
     private readonly IUserTokenRepository _userTokenRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtService _jwtService;
+    private readonly IConfiguration _configuration;
+    private readonly int _expireDays;
     private readonly ILogger<LoginCommandHandler> _logger;
 
     public LoginCommandHandler(
@@ -21,12 +24,15 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         IUserTokenRepository userTokenRepository,
         IPasswordHasher passwordHasher,
         IJwtService jwtService,
+        IConfiguration configuration,
         ILogger<LoginCommandHandler> logger)
     {
         _userRepository = userRepository;
         _userTokenRepository = userTokenRepository;
         _passwordHasher = passwordHasher;
         _jwtService = jwtService;
+        _configuration = configuration;
+        _expireDays = int.Parse(_configuration["Jwt:RefreshTokenExpireDays"] ?? "7");
         _logger = logger;
     }
 
@@ -48,8 +54,15 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
             throw new UnauthorizedAccessException("Invalid username or password");
         }
 
+        // Check if user is using system login (not social login)
+        if (user.Provider != "system")
+        {
+            _logger.LogWarning("Login attempt with password for social login user: {Username}, Provider: {Provider}", req.Username, user.Provider);
+            throw new UnauthorizedAccessException($"This account uses {user.Provider} authentication. Please use the appropriate login method.");
+        }
+
         // Verify password
-        if (!_passwordHasher.VerifyPassword(req.Password, user.PasswordHash))
+        if (!_passwordHasher.VerifyHashedPassword(user.PasswordHash, req.Password))
         {
             _logger.LogWarning("Login attempt with invalid password for user: {Username}", req.Username);
             throw new UnauthorizedAccessException("Invalid username or password");
@@ -74,8 +87,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         // Generate tokens
         var accessToken = _jwtService.GenerateAccessToken(user, roles);
         var refreshToken = _jwtService.GenerateRefreshToken();
-        var expiresAt = DateTime.UtcNow.AddMinutes(60);
-        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(_expireDays);
 
         // Revoke all existing active tokens for this user
         await _userTokenRepository.RevokeAllUserTokensAsync(user.Id);

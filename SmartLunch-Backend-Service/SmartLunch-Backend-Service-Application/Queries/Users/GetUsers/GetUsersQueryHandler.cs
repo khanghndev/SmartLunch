@@ -1,5 +1,5 @@
 using MediatR;
-using SmartLunch.Backend.Service.Application.DTOs.Users;
+using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Users;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using Microsoft.Extensions.Logging;
 
@@ -38,12 +38,12 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, GetUsersRespo
             CreatedAt = u.CreatedAt
         }).ToList();
 
-        _logger.LogInformation("Retrieved {Count} users (Page {Page}, PageSize {PageSize})", 
+        _logger.LogInformation("Retrieved {Count} users (Page {Page}, PageSize {PageSize})",
             userDtos.Count, request.Page, request.PageSize);
 
         return new GetUsersResponse
         {
-            Users = userDtos,
+            Data = userDtos,
             TotalCount = totalCount,
             Page = request.Page,
             PageSize = request.PageSize

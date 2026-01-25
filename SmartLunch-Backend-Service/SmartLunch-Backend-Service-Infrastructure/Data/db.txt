@@ -28,6 +28,7 @@ CREATE TABLE users (
     FirstName VARCHAR(100) NULL COMMENT 'User first name',
     LastName VARCHAR(100) NULL COMMENT 'User last name',
     PhoneNumber VARCHAR(20) NULL COMMENT 'Phone number',
+    Provider VARCHAR(50) NOT NULL DEFAULT 'system' COMMENT 'Authentication provider (system, google, facebook, firebase, etc.)',
     IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Account active status',
     IsEmailVerified TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Email verification status',
     EmailVerifiedAt DATETIME NULL COMMENT 'Email verification timestamp',
@@ -231,29 +232,29 @@ CREATE TABLE role_permissions (
   COMMENT = 'Role-Permission junction table';
 
 -- =====================================================
--- Table: user_token
+-- Table: user_tokens
 -- Description: Stores access and refresh tokens for user authentication
 -- Optimizations: Indexes for fast lookup and token revocation
 -- =====================================================
-CREATE TABLE user_token (
+CREATE TABLE user_tokens (
     Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
     UserId CHAR(36) NOT NULL COMMENT 'Foreign key to users table',
-    AccessToken VARCHAR(512) NOT NULL COMMENT 'JWT access token',
-    RefreshToken VARCHAR(512) NOT NULL COMMENT 'Refresh token for renewing access',
+    AccessToken VARCHAR(2000) NOT NULL COMMENT 'JWT access token',
+    RefreshToken VARCHAR(2000) NOT NULL COMMENT 'Refresh token for renewing access',
     IssuedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Token issue time',
     ExpiresAt DATETIME NOT NULL COMMENT 'Token expiry time',
     RevokedAt DATETIME NULL COMMENT 'Timestamp when the token was revoked',
-    ReplacedByToken VARCHAR(512) NULL COMMENT 'If refresh token was rotated, reference to the new token',
+    ReplacedByToken VARCHAR(2000) NULL COMMENT 'If refresh token was rotated, reference to the new token',
     IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Whether token is valid (not expired/revoked)',
 
     PRIMARY KEY (Id),
-    INDEX IX_user_token_user_id (UserId),
-    INDEX IX_user_token_access_token (AccessToken),
-    INDEX IX_user_token_refresh_token (RefreshToken),
-    INDEX IX_user_token_is_active (IsActive),
-    INDEX IX_user_token_expires_at (ExpiresAt),
+    INDEX IX_user_tokens_user_id (UserId),
+    INDEX IX_user_tokens_access_token (AccessToken(191)),
+    INDEX IX_user_tokens_refresh_token (RefreshToken(191)),
+    INDEX IX_user_tokens_is_active (IsActive),
+    INDEX IX_user_tokens_expires_at (ExpiresAt),
 
-    CONSTRAINT FK_user_token_user_id FOREIGN KEY (UserId) 
+    CONSTRAINT FK_user_tokens_user_id FOREIGN KEY (UserId) 
         REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE = InnoDB 
   DEFAULT CHARSET = utf8mb4 
@@ -532,6 +533,170 @@ WHERE r.Name = 'User'
   AND p.Name IN ('users.read', 'courses.read', 'courses.list');
 
 -- =====================================================
+-- Sample Data: Test Users
+-- =====================================================
+
+-- Note: Password for all test users is "123"
+
+-- SuperAdmin User
+SET @superadmin_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, CreatedAt) VALUES
+(@superadmin_id, 'superadmin', 'superadmin@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Super', 'Administrator', '+84123456789', 1, 1, NOW(), NOW());
+
+-- Admin Users
+SET @admin1_id = UUID();
+SET @admin2_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, CreatedAt) VALUES
+(@admin1_id, 'admin1', 'admin1@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'John', 'Admin', '+84987654321', 1, 1, NOW(), NOW()),
+(@admin2_id, 'admin2', 'admin2@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Jane', 'Manager', '+84987654322', 1, 1, NOW(), NOW());
+
+-- Instructor Users
+SET @instructor1_id = UUID();
+SET @instructor2_id = UUID();
+SET @instructor3_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, CreatedAt) VALUES
+(@instructor1_id, 'instructor1', 'instructor1@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Michael', 'Chen', '+84987654323', 1, 1, NOW(), NOW()),
+(@instructor2_id, 'instructor2', 'instructor2@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Sarah', 'Nguyen', '+84987654324', 1, 1, NOW(), NOW()),
+(@instructor3_id, 'instructor3', 'instructor3@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'David', 'Tran', '+84987654325', 1, 0, NULL, NOW());
+
+-- Student Users
+SET @student1_id = UUID();
+SET @student2_id = UUID();
+SET @student3_id = UUID();
+SET @student4_id = UUID();
+SET @student5_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, LastLoginAt, CreatedAt) VALUES
+(@student1_id, 'student1', 'student1@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Alice', 'Pham', '+84987654326', 1, 1, NOW(), DATE_SUB(NOW(), INTERVAL 2 DAY), NOW()),
+(@student2_id, 'student2', 'student2@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Bob', 'Le', '+84987654327', 1, 1, NOW(), DATE_SUB(NOW(), INTERVAL 1 DAY), NOW()),
+(@student3_id, 'student3', 'student3@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Charlie', 'Vo', '+84987654328', 1, 1, NOW(), DATE_SUB(NOW(), INTERVAL 5 HOUR), NOW()),
+(@student4_id, 'student4', 'student4@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Diana', 'Hoang', '+84987654329', 1, 0, NULL, NULL, NOW()),
+(@student5_id, 'student5', 'student5@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Edward', 'Bui', '+84987654330', 1, 1, NOW(), DATE_SUB(NOW(), INTERVAL 30 MINUTE), NOW());
+
+-- Regular Users
+SET @user1_id = UUID();
+SET @user2_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, CreatedAt) VALUES
+(@user1_id, 'user1', 'user1@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Frank', 'Lam', '+84987654331', 1, 1, NOW(), NOW()),
+(@user2_id, 'user2', 'user2@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Grace', 'Do', '+84987654332', 0, 0, NULL, NOW());
+
+-- Inactive User (for testing)
+SET @inactive_user_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, CreatedAt) VALUES
+(@inactive_user_id, 'inactive_user', 'inactive@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Inactive', 'User', '+84987654333', 0, 1, NOW(), DATE_SUB(NOW(), INTERVAL 10 DAY));
+
+-- =====================================================
+-- Sample Data: User-Role Assignments
+-- =====================================================
+
+-- Assign SuperAdmin role to superadmin user
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @superadmin_id, r.Id, NOW(), @superadmin_id, 1
+FROM roles r
+WHERE r.Name = 'SuperAdmin';
+
+-- Assign Admin role to admin users
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @admin1_id, r.Id, NOW(), @superadmin_id, 1
+FROM roles r
+WHERE r.Name = 'Admin';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @admin2_id, r.Id, NOW(), @superadmin_id, 1
+FROM roles r
+WHERE r.Name = 'Admin';
+
+-- Assign Instructor role to instructor users
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @instructor1_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Instructor';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @instructor2_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Instructor';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @instructor3_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Instructor';
+
+-- Assign Student role to student users
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student1_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student2_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student3_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student4_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student5_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+-- Assign User role to regular users
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @user1_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'User';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @user2_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'User';
+
+-- Assign Student role to inactive user (for testing inactive users with roles)
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @inactive_user_id, r.Id, DATE_SUB(NOW(), INTERVAL 10 DAY), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+-- =====================================================
+-- Sample Data: Direct User Permissions (Optional)
+-- =====================================================
+
+-- Give instructor1 additional direct permission to grade assessments
+INSERT INTO user_permissions (Id, UserId, PermissionId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @instructor1_id, p.Id, NOW(), @admin1_id, 1
+FROM permissions p
+WHERE p.Name = 'assessments.grade';
+
+-- Give student1 direct permission to read courses (in addition to role permissions)
+INSERT INTO user_permissions (Id, UserId, PermissionId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student1_id, p.Id, NOW(), @admin1_id, 1
+FROM permissions p
+WHERE p.Name = 'courses.read';
+
+-- =====================================================
+-- Sample Data: User Tokens (for testing authentication)
+-- =====================================================
+
+-- Active token for student1 (recently logged in)
+INSERT INTO user_tokens (Id, UserId, AccessToken, RefreshToken, IssuedAt, ExpiresAt, IsActive) VALUES
+(UUID(), @student1_id, 'sample_access_token_student1', 'sample_refresh_token_student1', DATE_SUB(NOW(), INTERVAL 1 HOUR), DATE_ADD(NOW(), INTERVAL 23 HOUR), 1);
+
+-- Expired token for student2 (for testing token refresh)
+INSERT INTO user_tokens (Id, UserId, AccessToken, RefreshToken, IssuedAt, ExpiresAt, RevokedAt, IsActive) VALUES
+(UUID(), @student2_id, 'expired_access_token_student2', 'expired_refresh_token_student2', DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY), NULL, 0);
+
+-- Revoked token for instructor1 (for testing token revocation)
+INSERT INTO user_tokens (Id, UserId, AccessToken, RefreshToken, IssuedAt, ExpiresAt, RevokedAt, IsActive) VALUES
+(UUID(), @instructor1_id, 'revoked_access_token_instructor1', 'revoked_refresh_token_instructor1', DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_ADD(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY), 0);
+
+-- =====================================================
 -- Performance Analysis Queries (for monitoring)
 -- =====================================================
 
@@ -540,6 +705,51 @@ ANALYZE TABLE users, roles, permissions, user_roles, user_permissions, role_perm
 
 -- Query to optimize tables
 OPTIMIZE TABLE users, roles, permissions, user_roles, user_permissions, role_permissions;
+
+-- =====================================================
+-- Migration Scripts
+-- =====================================================
+
+-- Migration: Increase token column sizes to support longer JWT tokens
+-- Date: 2026-01-25
+-- Description: JWT tokens can exceed 512 characters, especially with multiple roles/claims
+--              This migration updates AccessToken, RefreshToken, and ReplacedByToken columns
+--              from VARCHAR(512) to VARCHAR(2000) and updates indexes to use prefix indexing
+
+-- Step 1: Drop existing indexes on token columns
+ALTER TABLE user_tokens 
+    DROP INDEX IX_user_tokens_access_token,
+    DROP INDEX IX_user_tokens_refresh_token;
+
+-- Step 2: Modify column sizes
+ALTER TABLE user_tokens 
+    MODIFY COLUMN AccessToken VARCHAR(2000) NOT NULL COMMENT 'JWT access token',
+    MODIFY COLUMN RefreshToken VARCHAR(2000) NOT NULL COMMENT 'Refresh token for renewing access',
+    MODIFY COLUMN ReplacedByToken VARCHAR(2000) NULL COMMENT 'If refresh token was rotated, reference to the new token';
+
+-- Step 3: Recreate indexes with prefix (191 characters) to stay within MySQL index size limits
+-- Note: utf8mb4 uses up to 4 bytes per character, so 191 chars = 764 bytes (within 767 byte limit)
+ALTER TABLE user_tokens 
+    ADD INDEX IX_user_tokens_access_token (AccessToken(191)),
+    ADD INDEX IX_user_tokens_refresh_token (RefreshToken(191));
+
+-- Migration: Add Provider column to users table
+-- Date: 2026-01-25
+-- Description: Add Provider column to distinguish between system login and social login (google, facebook, firebase, etc.)
+--              This allows the system to track authentication method for each user
+
+ALTER TABLE users 
+    ADD COLUMN Provider VARCHAR(50) NOT NULL DEFAULT 'system' COMMENT 'Authentication provider (system, google, facebook, firebase, etc.)' 
+    AFTER PhoneNumber;
+
+-- Add index for provider queries
+ALTER TABLE users 
+    ADD INDEX IX_users_provider (Provider);
+
+-- Update existing users to have 'system' provider (if not already set)
+UPDATE users 
+SET Provider = 'system' 
+WHERE Provider IS NULL OR Provider = '';
 
 -- =====================================================
 -- End of Schema
