@@ -29,6 +29,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<UserPermission> UserPermissions { get; set; }
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<UserToken> UserTokens { get; set; }
+        public DbSet<MediaFile> MediaFiles { get; set; }
         #endregion
 
         #region Utilities
@@ -258,6 +259,32 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasOne(ut => ut.User)
                     .WithMany(u => u.UserTokens)
                     .HasForeignKey(ut => ut.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure MediaFile entity
+            modelBuilder.Entity<MediaFile>(entity =>
+            {
+                entity.ToTable("media_files");
+                entity.HasKey(e => e.Id);
+
+                entity.HasIndex(e => e.OwnerUserId);
+                entity.HasIndex(e => new { e.OwnerUserId, e.CreatedAt });
+                entity.HasIndex(e => e.MediaType);
+                entity.HasIndex(e => new { e.Bucket, e.ObjectName }).IsUnique();
+
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.OwnerUserId).IsRequired();
+                entity.Property(e => e.Bucket).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.ObjectName).IsRequired().HasMaxLength(1024);
+                entity.Property(e => e.OriginalFileName).HasMaxLength(255);
+                entity.Property(e => e.ContentType).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.MediaType).IsRequired().HasMaxLength(20).HasDefaultValue("unknown");
+                entity.Property(e => e.Md5HashBase64).HasMaxLength(128);
+
+                entity.HasOne(e => e.OwnerUser)
+                    .WithMany()
+                    .HasForeignKey(e => e.OwnerUserId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
         }

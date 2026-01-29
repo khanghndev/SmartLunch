@@ -56,7 +56,7 @@ public class FirebaseLoginCommandHandler : IRequestHandler<FirebaseLoginCommand,
 
         // Find or create user
         var user = await _userRepository.GetByEmailAsync(firebaseUserInfo.Email);
-        
+
         if (user == null)
         {
             // Create new user from Firebase info
@@ -69,7 +69,7 @@ public class FirebaseLoginCommandHandler : IRequestHandler<FirebaseLoginCommand,
                 FirstName = firebaseUserInfo.DisplayName?.Split(' ').FirstOrDefault(),
                 LastName = firebaseUserInfo.DisplayName?.Split(' ').Skip(1).FirstOrDefault(),
                 PhoneNumber = firebaseUserInfo.PhoneNumber,
-                Provider = "firebase",
+                Provider = firebaseUserInfo.Provider ?? "firebase",
                 IsActive = true,
                 IsEmailVerified = firebaseUserInfo.EmailVerified,
                 EmailVerifiedAt = firebaseUserInfo.EmailVerified ? DateTime.UtcNow : null,
@@ -82,10 +82,11 @@ public class FirebaseLoginCommandHandler : IRequestHandler<FirebaseLoginCommand,
         else
         {
             // Update existing user info if needed
-            if (user.Provider != "firebase")
+            var firebaseProvider = firebaseUserInfo.Provider ?? "firebase";
+            if (user.Provider != firebaseProvider)
             {
-                // User exists but was created via system login - update provider
-                user.Provider = "firebase";
+                // User exists but provider doesn't match Firebase - update provider
+                user.Provider = firebaseProvider;
             }
 
             // Update email verification status if Firebase says it's verified

@@ -47,8 +47,25 @@ namespace SmartLunch.Backend.Service.API.Controllers
         }
 
         [HttpPost("firebase-login")]
-        public async Task<ActionResult<BaseApiResponse<LoginResponse>>> FirebaseLogin(FirebaseLoginRequest request)
+        public async Task<ActionResult<BaseApiResponse<LoginResponse>>> FirebaseLogin([FromBody] FirebaseLoginRequest request)
         {
+            // Check model validation
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                _logger.LogWarning("Firebase login validation failed: {Errors}", string.Join(", ", errors));
+                return BadRequest(BaseApiResponse<LoginResponse>.ErrorResult("Invalid request", errors));
+            }
+
+            if (request == null || string.IsNullOrWhiteSpace(request.IdToken))
+            {
+                _logger.LogWarning("Firebase login request is null or IdToken is empty");
+                return BadRequest(BaseApiResponse<LoginResponse>.ErrorResult("IdToken is required", new[] { "IdToken is required" }));
+            }
+
             try
             {
                 var response = await _mediator.Send(new FirebaseLoginCommand(request));
@@ -56,14 +73,17 @@ namespace SmartLunch.Backend.Service.API.Controllers
             }
             catch (ArgumentException ex)
             {
+                _logger.LogWarning(ex, "Firebase login argument exception");
                 return BadRequest(BaseApiResponse<LoginResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
             catch (UnauthorizedAccessException ex)
             {
+                _logger.LogWarning(ex, "Firebase login unauthorized");
                 return Unauthorized(BaseApiResponse<LoginResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
             catch (InvalidOperationException ex)
             {
+                _logger.LogError(ex, "Firebase login invalid operation");
                 return BadRequest(BaseApiResponse<LoginResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
         }
