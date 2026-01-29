@@ -23,6 +23,7 @@
 ### Variables
 @accessToken = 
 @refreshToken = 
+@firebaseIdToken = YOUR_FIREBASE_ID_TOKEN_HERE
 
 ###############################################
 # AUTH ENDPOINTS
@@ -85,6 +86,69 @@ Content-Type: application/json
 {
   "username": "",
   "password": ""
+}
+
+###
+
+###############################################
+# FIREBASE LOGIN ENDPOINTS
+###############################################
+# 
+# HOW TO GET FIREBASE ID TOKEN FOR TESTING:
+# 
+# Option 1: Using Test HTML Page (Recommended - Supports Google Login!)
+# 1. Open test-firebase-login.html in your browser
+# 2. Update Firebase config in the HTML file with your Firebase project config
+# 3. Choose sign-in method:
+#    - Click "Sign in with Google" button for Google OAuth login
+#    - OR use Email/Password form for email-based login
+# 4. After signing in, copy the Firebase ID Token displayed
+# 5. Paste the token in @firebaseIdToken variable above
+# 
+# Option 2: Using Firebase Console
+# 1. Go to Firebase Console: https://console.firebase.google.com/
+# 2. Select your project: smartlunch-2b5a7
+# 3. Go to Authentication > Users
+# 4. Create a test user or use existing user
+# 5. Use Firebase Web SDK to sign in and get ID token
+# 
+# Option 3: Using Firebase CLI
+# 1. Install Firebase CLI: npm install -g firebase-tools
+# 2. Login: firebase login
+# 3. Use Firebase Auth REST API to get token
+# 
+# Option 4: Using Postman/Insomnia with Firebase Auth API
+# POST https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=YOUR_API_KEY
+# Body: { "email": "test@example.com", "password": "password", "returnSecureToken": true }
+# Response will contain "idToken" field
+#
+# NOTE: Google Sign-In requires Firebase Authentication to be enabled with Google provider
+# Configure in Firebase Console > Authentication > Sign-in method > Google
+#
+###############################################
+
+### Firebase Login - Authenticate with Firebase ID token
+POST {{smartlunch_backend_HostAddress}}/api/v1/auth/firebase-login
+Content-Type: application/json
+
+{
+  "idToken": "{{firebaseIdToken}}"
+}
+
+### Firebase Login - Invalid token
+POST {{smartlunch_backend_HostAddress}}/api/v1/auth/firebase-login
+Content-Type: application/json
+
+{
+  "idToken": "invalid-firebase-token-here"
+}
+
+### Firebase Login - Missing token
+POST {{smartlunch_backend_HostAddress}}/api/v1/auth/firebase-login
+Content-Type: application/json
+
+{
+  "idToken": ""
 }
 
 ###

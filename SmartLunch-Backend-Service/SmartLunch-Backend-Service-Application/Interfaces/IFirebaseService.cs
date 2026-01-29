@@ -13,4 +13,5 @@ public class FirebaseUserInfo
     public string? PhotoUrl { get; set; }
     public bool EmailVerified { get; set; }
     public string? PhoneNumber { get; set; }
+    public string? Provider { get; set; }
 }

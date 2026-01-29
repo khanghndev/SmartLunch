@@ -12,6 +12,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using System.Text;
+using SmartLunch.Backend.Service.Infrastructure.ExternalServices;
 
 var builder = WebApplication.CreateBuilder(args);
 

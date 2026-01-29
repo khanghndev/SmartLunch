@@ -45,6 +45,7 @@ CREATE TABLE users (
     -- Optimized composite indexes for common query patterns
     INDEX IX_users_active_created (IsActive, CreatedAt DESC),
     INDEX IX_users_email_verified_active (IsEmailVerified, IsActive),
+    INDEX IX_users_provider (Provider),
     INDEX IX_users_created_by (CreatedBy),
     INDEX IX_users_updated_by (UpdatedBy),
     
@@ -261,6 +262,41 @@ CREATE TABLE user_tokens (
   COLLATE = utf8mb4_unicode_ci 
   ROW_FORMAT = DYNAMIC
   COMMENT = 'Stores issued access and refresh tokens for secure authentication';
+
+-- =====================================================
+-- Table: media_files
+-- Description: Stores media metadata; bytes are stored in Firebase Storage (GCS)
+-- Optimizations: Owner/time indexes; unique key for (bucket, object)
+-- =====================================================
+CREATE TABLE media_files (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    OwnerUserId CHAR(36) NOT NULL COMMENT 'Owner user id (FK to users)',
+    Bucket VARCHAR(255) NOT NULL COMMENT 'Firebase Storage bucket',
+    ObjectName VARCHAR(1024) NOT NULL COMMENT 'Object path in bucket',
+    OriginalFileName VARCHAR(255) NULL COMMENT 'Original file name from client',
+    ContentType VARCHAR(100) NOT NULL COMMENT 'MIME type',
+    SizeBytes BIGINT NOT NULL COMMENT 'Object size in bytes',
+    Md5HashBase64 VARCHAR(128) NULL COMMENT 'MD5 hash (base64) from GCS metadata',
+    MediaType VARCHAR(20) NOT NULL DEFAULT 'unknown' COMMENT 'image | video',
+    IsPublic TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Public visibility flag',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+
+    PRIMARY KEY (Id),
+
+    -- Note: index prefix used for ObjectName for MySQL compatibility
+    UNIQUE KEY UK_media_files_bucket_object (Bucket, ObjectName(191)),
+    INDEX IX_media_files_owner (OwnerUserId),
+    INDEX IX_media_files_owner_created (OwnerUserId, CreatedAt DESC),
+    INDEX IX_media_files_type_created (MediaType, CreatedAt DESC),
+
+    CONSTRAINT FK_media_files_owner_user FOREIGN KEY (OwnerUserId)
+        REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Media metadata (actual bytes stored in Firebase Storage)';
 
 -- =====================================================
 -- Performance Views for Common Queries
@@ -705,51 +741,6 @@ ANALYZE TABLE users, roles, permissions, user_roles, user_permissions, role_perm
 
 -- Query to optimize tables
 OPTIMIZE TABLE users, roles, permissions, user_roles, user_permissions, role_permissions;
-
--- =====================================================
--- Migration Scripts
--- =====================================================
-
--- Migration: Increase token column sizes to support longer JWT tokens
--- Date: 2026-01-25
--- Description: JWT tokens can exceed 512 characters, especially with multiple roles/claims
---              This migration updates AccessToken, RefreshToken, and ReplacedByToken columns
---              from VARCHAR(512) to VARCHAR(2000) and updates indexes to use prefix indexing
-
--- Step 1: Drop existing indexes on token columns
-ALTER TABLE user_tokens 
-    DROP INDEX IX_user_tokens_access_token,
-    DROP INDEX IX_user_tokens_refresh_token;
-
--- Step 2: Modify column sizes
-ALTER TABLE user_tokens 
-    MODIFY COLUMN AccessToken VARCHAR(2000) NOT NULL COMMENT 'JWT access token',
-    MODIFY COLUMN RefreshToken VARCHAR(2000) NOT NULL COMMENT 'Refresh token for renewing access',
-    MODIFY COLUMN ReplacedByToken VARCHAR(2000) NULL COMMENT 'If refresh token was rotated, reference to the new token';
-
--- Step 3: Recreate indexes with prefix (191 characters) to stay within MySQL index size limits
--- Note: utf8mb4 uses up to 4 bytes per character, so 191 chars = 764 bytes (within 767 byte limit)
-ALTER TABLE user_tokens 
-    ADD INDEX IX_user_tokens_access_token (AccessToken(191)),
-    ADD INDEX IX_user_tokens_refresh_token (RefreshToken(191));
-
--- Migration: Add Provider column to users table
--- Date: 2026-01-25
--- Description: Add Provider column to distinguish between system login and social login (google, facebook, firebase, etc.)
---              This allows the system to track authentication method for each user
-
-ALTER TABLE users 
-    ADD COLUMN Provider VARCHAR(50) NOT NULL DEFAULT 'system' COMMENT 'Authentication provider (system, google, facebook, firebase, etc.)' 
-    AFTER PhoneNumber;
-
--- Add index for provider queries
-ALTER TABLE users 
-    ADD INDEX IX_users_provider (Provider);
-
--- Update existing users to have 'system' provider (if not already set)
-UPDATE users 
-SET Provider = 'system' 
-WHERE Provider IS NULL OR Provider = '';
 
 -- =====================================================
 -- End of Schema
