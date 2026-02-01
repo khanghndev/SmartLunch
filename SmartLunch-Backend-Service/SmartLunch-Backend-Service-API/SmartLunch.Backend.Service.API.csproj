@@ -24,7 +24,8 @@
 
     <!-- Copy Firebase config file to output directory -->
     <ItemGroup>
-        <None Include="..\..\smartlunch-2b5a7-firebase-adminsdk-fbsvc-93e6045e22.json">
+        <None Include="$(MSBuildProjectDirectory)\..\..\smartlunch-2b5a7-firebase-adminsdk-fbsvc-93e6045e22.json"
+              Condition="Exists('$(MSBuildProjectDirectory)\..\..\smartlunch-2b5a7-firebase-adminsdk-fbsvc-93e6045e22.json')">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>
