@@ -318,6 +318,22 @@ paket-files/
 __pycache__/
 *.pyc
 
+# Python virtual environments
+.venv/
+venv/
+env/
+.envrc
+.python-version
+
+# Project-specific venv (SmartLunch-AI-Service)
+SmartLunch-AI-Service/.smartlunch-ai-service-venv/
+
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+pip-wheel-metadata/
+
 # Cake - Uncomment if you are using it
 # tools/**
 # !tools/packages.config

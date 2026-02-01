@@ -5,6 +5,7 @@ using SmartLunch.Backend.Service.API.Authorization;
 using SmartLunch.Backend.Service.API.Authorization.Role;
 using SmartLunch.Backend.Service.API.Authorization.Permission;
 using SmartLunch.Backend.Service.API.Extensions;
+using SmartLunch.Backend.Service.API.Hubs;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
@@ -114,6 +115,9 @@ builder.Services.AddKafkaMessaging(kafkaBootstrapServers, kafkaGroupId);
 
 builder.Services.AddLogging();
 
+// SignalR (Real-time)
+builder.Services.AddSignalR();
+
 // JWT Authentication
 var jwtSecret = builder.Configuration["Jwt:Secret"] ?? throw new InvalidOperationException("JWT Secret not configured");
 var key = Encoding.UTF8.GetBytes(jwtSecret);
@@ -135,6 +139,25 @@ builder.Services.AddAuthentication(options =>
         ValidAudience = builder.Configuration["Jwt:Audience"],
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
+    };
+
+    // Important for SignalR over WebSockets:
+    // browsers can't always send Authorization header in the WebSocket handshake,
+    // so SignalR sends the token via query string `access_token`.
+    options.Events = new JwtBearerEvents
+    {
+        OnMessageReceived = context =>
+        {
+            var accessToken = context.Request.Query["access_token"];
+            var path = context.HttpContext.Request.Path;
+
+            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/chat"))
+            {
+                context.Token = accessToken;
+            }
+
+            return Task.CompletedTask;
+        }
     };
 });
 
@@ -217,6 +240,9 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapControllers();
+
+// SignalR hubs
+app.MapHub<ChatHub>("/hubs/chat");
 
 app.Run();
 
