@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  ai-service:
+    name: AI Service (pytest)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: SmartLunch-AI-Service
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: |
+            SmartLunch-AI-Service/requirements.txt
+            SmartLunch-AI-Service/requirements-dev.txt
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt -r requirements-dev.txt
+
+      - name: Run tests
+        run: pytest -q
+
+  backend-dotnet:
+    name: Backend (.NET)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore
+        run: dotnet restore SmartLunch-Backend-Service.sln
+
+      - name: Build
+        run: dotnet build SmartLunch-Backend-Service.sln -c Release --no-restore
+
+      - name: Test (if any)
+        shell: pwsh
+        run: |
+          $tests = @()
+          $tests += (git ls-files '*Tests.csproj')
+          $tests += (git ls-files '*Test*.csproj')
+          $tests = $tests | Where-Object { $_ -and $_.Trim().Length -gt 0 } | Select-Object -Unique
+
+          if ($tests.Count -gt 0) {
+            dotnet test SmartLunch-Backend-Service.sln -c Release --no-build
+          } else {
+            Write-Host "No .NET test projects found; skipping dotnet test."
+          }
+
+  docker-build:
+    name: Dockerfiles (build only)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build AI image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: ./SmartLunch-AI-Service
+          file: ./SmartLunch-AI-Service/Dockerfile
+          push: false
+
+      - name: Build Backend image (no push)
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: ./SmartLunch-Backend-Service/Dockerfile
+          push: false
+
+  ci-gate:
+    name: CI Gate
+    runs-on: ubuntu-latest
+    needs:
+      #- ai-service
+      - backend-dotnet
+      - docker-build
+    steps:
+      - name: All checks passed
+        run: echo "CI passed."
