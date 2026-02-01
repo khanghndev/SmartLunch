@@ -155,6 +155,20 @@ services:
         max-size: "10m"
         max-file: "3"
 
+  # ----------------------------------------------------------
+  # AI MODEL SERVICE (FastAPI)
+  # ----------------------------------------------------------
+  smartlunch-ai-service:
+    build:
+      context: ./SmartLunch-AI-Service
+      dockerfile: Dockerfile
+    container_name: smartlunch-ai-service
+    restart: unless-stopped
+    ports:
+      - "8001:8001"
+    networks:
+      - smart-lunch-net
+
 #--------------------------
 # PERSISTENT NAMED VOLUMES for all data stores and logs
 # --------------------------
