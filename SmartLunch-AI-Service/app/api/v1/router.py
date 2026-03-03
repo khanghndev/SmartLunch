@@ -9,4 +9,3 @@ api_router = APIRouter()
 api_router.include_router(chat_router, tags=["chat"])
 api_router.include_router(recommend_router, tags=["recommendation"])
 api_router.include_router(feedback_router, tags=["feedback"])
-

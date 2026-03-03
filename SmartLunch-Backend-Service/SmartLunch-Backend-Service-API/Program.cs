@@ -6,7 +6,9 @@ using SmartLunch.Backend.Service.API.Authorization.Role;
 using SmartLunch.Backend.Service.API.Authorization.Permission;
 using SmartLunch.Backend.Service.API.Extensions;
 using SmartLunch.Backend.Service.API.Hubs;
+using SmartLunch.Backend.Service.API.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Serilog;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
@@ -16,6 +18,12 @@ using System.Text;
 using SmartLunch.Backend.Service.Infrastructure.ExternalServices;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Serilog from appsettings (Serilog section)
+builder.Host.UseSerilog((context, services, configuration) =>
+{
+    configuration.ReadFrom.Configuration(context.Configuration);
+});
 
 // Add services to the container
 builder.Services.AddControllers();
@@ -112,8 +120,6 @@ var kafkaGroupId = builder.Configuration["Kafka:GroupId"]
     ?? "smartlunch-backend-service";
 
 builder.Services.AddKafkaMessaging(kafkaBootstrapServers, kafkaGroupId);
-
-builder.Services.AddLogging();
 
 // SignalR (Real-time)
 builder.Services.AddSignalR();
@@ -228,6 +234,20 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+// Global exception handling - must be early in pipeline to catch all downstream exceptions
+app.UseGlobalExceptionHandling();
+
+// Serilog HTTP request logging (method, path, status code, duration)
+app.UseSerilogRequestLogging(options =>
+{
+    options.MessageTemplate = "HTTP {RequestMethod} {RequestPath} responded {StatusCode} in {Elapsed:0.0000} ms";
+    options.EnrichDiagnosticContext = (diagnosticContext, httpContext) =>
+    {
+        diagnosticContext.Set("RequestHost", httpContext.Request.Host.Value);
+        diagnosticContext.Set("UserAgent", httpContext.Request.Headers["User-Agent"].ToString());
+    };
+});
+
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
@@ -244,5 +264,18 @@ app.MapControllers();
 // SignalR hubs
 app.MapHub<ChatHub>("/hubs/chat");
 
-app.Run();
+try
+{
+    Log.Information("SmartLunch Backend Service starting");
+    app.Run();
+}
+catch (Exception ex)
+{
+    Log.Fatal(ex, "Application terminated unexpectedly");
+    throw;
+}
+finally
+{
+    Log.CloseAndFlush();
+}
 

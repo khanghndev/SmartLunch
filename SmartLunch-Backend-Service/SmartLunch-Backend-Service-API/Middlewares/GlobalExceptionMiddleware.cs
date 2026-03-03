@@ -35,6 +35,13 @@ namespace SmartLunch.Backend.Service.API.Middlewares
 
         private async Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
+            // If response has already started, we cannot rewrite body/status
+            if (context.Response.HasStarted)
+            {
+                _logger.LogWarning("Response already started, rethrowing exception. RequestId: {RequestId}", context.TraceIdentifier);
+                throw exception;
+            }
+
             context.Response.ContentType = "application/json";
             var requestId = context.TraceIdentifier;
 
