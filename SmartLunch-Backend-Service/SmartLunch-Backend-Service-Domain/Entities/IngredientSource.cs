@@ -1,0 +1,20 @@
+namespace SmartLunch.Backend.Service.Domain.Entities;
+
+/// <summary>
+/// Ingredient batch/source
+/// </summary>
+public class IngredientSource
+{
+    public Guid Id { get; set; }
+    public Guid IngredientId { get; set; }
+    public Guid? PartnerId { get; set; }
+    public string? BatchNumber { get; set; }
+    public string? OriginDetails { get; set; }
+    public DateTime? ProductionDate { get; set; }
+    public DateTime? ExpirationDate { get; set; }
+    public string? Certification { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public virtual Ingredient Ingredient { get; set; } = null!;
+    public virtual Partner? Partner { get; set; }
+}

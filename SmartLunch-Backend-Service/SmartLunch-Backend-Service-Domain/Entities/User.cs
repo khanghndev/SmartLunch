@@ -26,4 +26,15 @@ public class User
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
     public virtual ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();
     public virtual ICollection<UserToken> UserTokens { get; set; } = new List<UserToken>();
+    public virtual ICollection<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
+    public virtual ICollection<UserUnit> UserUnits { get; set; } = new List<UserUnit>();
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+    public virtual ICollection<Delivery> DeliveriesAssigned { get; set; } = new List<Delivery>();
+    public virtual ICollection<Payment> PaymentsMade { get; set; } = new List<Payment>();
+    public virtual ICollection<WeeklyMenu> WeeklyMenusCreated { get; set; } = new List<WeeklyMenu>();
+    public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
+    public virtual ICollection<Complaint> ComplaintsRaised { get; set; } = new List<Complaint>();
+    public virtual ICollection<Complaint> ComplaintsAssigned { get; set; } = new List<Complaint>();
+    public virtual ICollection<ChatbotLog> ChatbotLogs { get; set; } = new List<ChatbotLog>();
+    public virtual ICollection<MenuSuggestion> MenuSuggestionsCreated { get; set; } = new List<MenuSuggestion>();
 }
