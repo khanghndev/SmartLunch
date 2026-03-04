@@ -86,16 +86,15 @@ namespace SmartLunch.Backend.Service.API.Middlewares
             var response = new BaseApiResponse<object>
             {
                 Success = baseResponse.Success,
-                ResponseTimestamp = baseResponse.ResponseTimestamp,
-                ResponseType = baseResponse.ResponseType,
-                ResponseSource = baseResponse.ResponseSource,
-                ResponseMessage = baseResponse.ResponseMessage,
-                ResponseStatus = baseResponse.ResponseStatus,
-                ResponseData = default!,
-                ResponseError = baseResponse.ResponseError,
-                ResponseErrorDetails = baseResponse.ResponseErrorDetails,
-                RequestId = requestId,
                 Timestamp = baseResponse.Timestamp,
+                Type = baseResponse.Type,
+                Source = baseResponse.Source,
+                Message = baseResponse.Message,
+                Status = baseResponse.Status,
+                Data = default!,
+                Error = baseResponse.Error,
+                ErrorDetails = baseResponse.ErrorDetails,
+                RequestId = requestId,
                 Errors = baseResponse.Errors
             };
 
