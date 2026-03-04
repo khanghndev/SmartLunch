@@ -30,6 +30,28 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<UserToken> UserTokens { get; set; }
         public DbSet<MediaFile> MediaFiles { get; set; }
+        public DbSet<Unit> Units { get; set; }
+        public DbSet<UserUnit> UserUnits { get; set; }
+        public DbSet<Partner> Partners { get; set; }
+        public DbSet<Contract> Contracts { get; set; }
+        public DbSet<PartnerPayment> PartnerPayments { get; set; }
+        public DbSet<Ingredient> Ingredients { get; set; }
+        public DbSet<IngredientSource> IngredientSources { get; set; }
+        public DbSet<Inventory> Inventories { get; set; }
+        public DbSet<Dish> Dishes { get; set; }
+        public DbSet<DishIngredient> DishIngredients { get; set; }
+        public DbSet<WeeklyMenu> WeeklyMenus { get; set; }
+        public DbSet<MenuSchedule> MenuSchedules { get; set; }
+        public DbSet<Order> Orders { get; set; }
+        public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Delivery> Deliveries { get; set; }
+        public DbSet<Payment> Payments { get; set; }
+        public DbSet<Transaction> Transactions { get; set; }
+        public DbSet<Review> Reviews { get; set; }
+        public DbSet<Sentiment> Sentiments { get; set; }
+        public DbSet<Complaint> Complaints { get; set; }
+        public DbSet<ChatbotLog> ChatbotLogs { get; set; }
+        public DbSet<MenuSuggestion> MenuSuggestions { get; set; }
         #endregion
 
         #region Utilities
@@ -286,6 +308,325 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                     .WithMany()
                     .HasForeignKey(e => e.OwnerUserId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Unit
+            modelBuilder.Entity<Unit>(entity =>
+            {
+                entity.ToTable("units");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.HasIndex(e => new { e.IsActive, e.Name });
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Address).HasMaxLength(255);
+                entity.Property(e => e.Phone).HasMaxLength(50);
+                entity.Property(e => e.ContactPerson).HasMaxLength(255);
+                entity.Property(e => e.ContactEmail).HasMaxLength(255);
+            });
+
+            // UserUnit
+            modelBuilder.Entity<UserUnit>(entity =>
+            {
+                entity.ToTable("user_units");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.UserId, e.UnitId }).IsUnique();
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.HasOne(e => e.User).WithMany(u => u.UserUnits).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Unit).WithMany(u => u.UserUnits).HasForeignKey(e => e.UnitId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Partner
+            modelBuilder.Entity<Partner>(entity =>
+            {
+                entity.ToTable("partners");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.TaxId).IsUnique();
+                entity.HasIndex(e => new { e.IsActive, e.LegalName });
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.LegalName).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.TaxId).HasMaxLength(50);
+                entity.Property(e => e.Address).HasMaxLength(255);
+                entity.Property(e => e.ContactPerson).HasMaxLength(255);
+                entity.Property(e => e.Phone).HasMaxLength(50);
+                entity.Property(e => e.Email).HasMaxLength(255);
+                entity.Property(e => e.PerformanceRating).HasPrecision(3, 2);
+                entity.Property(e => e.ComplianceInfo).HasMaxLength(255);
+                entity.Property(e => e.FinancialTerms).HasMaxLength(255);
+            });
+
+            // Contract
+            modelBuilder.Entity<Contract>(entity =>
+            {
+                entity.ToTable("contracts");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.PartnerId);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => new { e.StartDate, e.EndDate });
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Description).HasMaxLength(255);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.TotalValue).HasPrecision(12, 2);
+                entity.Property(e => e.DepositAmount).HasPrecision(12, 2);
+                entity.HasOne(e => e.Partner).WithMany(p => p.Contracts).HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // PartnerPayment
+            modelBuilder.Entity<PartnerPayment>(entity =>
+            {
+                entity.ToTable("partner_payments");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.ContractId);
+                entity.HasIndex(e => e.PartnerId);
+                entity.HasIndex(e => e.PaymentDate);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Amount).HasPrecision(12, 2);
+                entity.Property(e => e.Method).IsRequired().HasMaxLength(30);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.HasOne(e => e.Contract).WithMany(c => c.PartnerPayments).HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Partner).WithMany(p => p.PartnerPayments).HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Ingredient
+            modelBuilder.Entity<Ingredient>(entity =>
+            {
+                entity.ToTable("ingredients");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.HasIndex(e => e.DefaultSupplierId);
+                entity.HasIndex(e => e.IsActive);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Unit).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Description).HasMaxLength(255);
+                entity.Property(e => e.CostPerUnit).HasPrecision(10, 2);
+                entity.HasOne(e => e.DefaultSupplier).WithMany(p => p.IngredientsAsDefaultSupplier).HasForeignKey(e => e.DefaultSupplierId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // IngredientSource
+            modelBuilder.Entity<IngredientSource>(entity =>
+            {
+                entity.ToTable("ingredient_sources");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.IngredientId);
+                entity.HasIndex(e => e.PartnerId);
+                entity.HasIndex(e => e.ExpirationDate);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.BatchNumber).HasMaxLength(50);
+                entity.Property(e => e.OriginDetails).HasMaxLength(255);
+                entity.Property(e => e.Certification).HasMaxLength(255);
+                entity.HasOne(e => e.Ingredient).WithMany(i => i.IngredientSources).HasForeignKey(e => e.IngredientId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Partner).WithMany(p => p.IngredientSources).HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Inventory
+            modelBuilder.Entity<Inventory>(entity =>
+            {
+                entity.ToTable("inventory");
+                entity.HasKey(e => e.IngredientId);
+                entity.Property(e => e.QuantityAvailable).HasPrecision(12, 2);
+                entity.Property(e => e.ReorderLevel).HasPrecision(12, 2);
+                entity.HasOne(e => e.Ingredient).WithOne(i => i.Inventory).HasForeignKey<Inventory>(e => e.IngredientId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Dish
+            modelBuilder.Entity<Dish>(entity =>
+            {
+                entity.ToTable("dishes");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Name).IsUnique();
+                entity.HasIndex(e => new { e.IsActive, e.Category });
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Description).HasMaxLength(255);
+                entity.Property(e => e.Category).HasMaxLength(100);
+                entity.Property(e => e.Price).HasPrecision(10, 2);
+                entity.Property(e => e.DietaryLabel).HasMaxLength(50);
+            });
+
+            // DishIngredient
+            modelBuilder.Entity<DishIngredient>(entity =>
+            {
+                entity.ToTable("dish_ingredients");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.DishId, e.IngredientId }).IsUnique();
+                entity.HasIndex(e => e.DishId);
+                entity.HasIndex(e => e.IngredientId);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Quantity).HasPrecision(10, 2);
+                entity.Property(e => e.Unit).HasMaxLength(20);
+                entity.HasOne(e => e.Dish).WithMany(d => d.DishIngredients).HasForeignKey(e => e.DishId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Ingredient).WithMany(i => i.DishIngredients).HasForeignKey(e => e.IngredientId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // WeeklyMenu
+            modelBuilder.Entity<WeeklyMenu>(entity =>
+            {
+                entity.ToTable("weekly_menus");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.StartDate, e.EndDate }).IsUnique();
+                entity.HasIndex(e => e.CreatedBy);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Description).HasMaxLength(255);
+                entity.HasOne(e => e.CreatedByUser).WithMany(u => u.WeeklyMenusCreated).HasForeignKey(e => e.CreatedBy).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // MenuSchedule
+            modelBuilder.Entity<MenuSchedule>(entity =>
+            {
+                entity.ToTable("menu_schedule");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.MenuId, e.Date, e.MealSlot, e.DishId }).IsUnique();
+                entity.HasIndex(e => e.DishId);
+                entity.HasIndex(e => e.Date);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.MealSlot).IsRequired().HasMaxLength(20);
+                entity.HasOne(e => e.Menu).WithMany(m => m.MenuSchedules).HasForeignKey(e => e.MenuId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Dish).WithMany(d => d.MenuSchedules).HasForeignKey(e => e.DishId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Order
+            modelBuilder.Entity<Order>(entity =>
+            {
+                entity.ToTable("orders");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.UnitId);
+                entity.HasIndex(e => new { e.ScheduledDate, e.Status });
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.TotalAmount).HasPrecision(12, 2);
+                entity.Property(e => e.PaymentStatus).IsRequired().HasMaxLength(20);
+                entity.HasOne(e => e.User).WithMany(u => u.Orders).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(e => e.Unit).WithMany().HasForeignKey(e => e.UnitId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // OrderItem
+            modelBuilder.Entity<OrderItem>(entity =>
+            {
+                entity.ToTable("order_items");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.OrderId);
+                entity.HasIndex(e => e.DishId);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.UnitPrice).HasPrecision(10, 2);
+                entity.Property(e => e.TotalPrice).HasPrecision(12, 2);
+                entity.HasOne(e => e.Order).WithMany(o => o.OrderItems).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Dish).WithMany(d => d.OrderItems).HasForeignKey(e => e.DishId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Delivery
+            modelBuilder.Entity<Delivery>(entity =>
+            {
+                entity.ToTable("deliveries");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.OrderId);
+                entity.HasIndex(e => e.AssignedStaffId);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.DeliveryAddress).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.DeliveryStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Notes).HasMaxLength(255);
+                entity.HasOne(e => e.Order).WithMany(o => o.Deliveries).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.AssignedStaff).WithMany(u => u.DeliveriesAssigned).HasForeignKey(e => e.AssignedStaffId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Payment
+            modelBuilder.Entity<Payment>(entity =>
+            {
+                entity.ToTable("payments");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.OrderId);
+                entity.HasIndex(e => e.PayerId);
+                entity.HasIndex(e => e.PaymentDate);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Amount).HasPrecision(12, 2);
+                entity.Property(e => e.Method).IsRequired().HasMaxLength(30);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.HasOne(e => e.Order).WithMany(o => o.Payments).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Payer).WithMany(u => u.PaymentsMade).HasForeignKey(e => e.PayerId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Transaction
+            modelBuilder.Entity<Transaction>(entity =>
+            {
+                entity.ToTable("transactions");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Date);
+                entity.HasIndex(e => e.Category);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Description).HasMaxLength(255);
+                entity.Property(e => e.Amount).HasPrecision(12, 2);
+                entity.Property(e => e.Category).HasMaxLength(100);
+                entity.Property(e => e.Method).HasMaxLength(50);
+            });
+
+            // Review
+            modelBuilder.Entity<Review>(entity =>
+            {
+                entity.ToTable("reviews");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.DishId);
+                entity.HasIndex(e => e.OrderId);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.HasOne(e => e.User).WithMany(u => u.Reviews).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Dish).WithMany(d => d.Reviews).HasForeignKey(e => e.DishId).OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(e => e.Order).WithMany(o => o.Reviews).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // Sentiment
+            modelBuilder.Entity<Sentiment>(entity =>
+            {
+                entity.ToTable("sentiments");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.ReviewId).IsUnique();
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.SentimentLabel).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Confidence).HasPrecision(4, 2);
+                entity.HasOne(e => e.Review).WithOne(r => r.Sentiment).HasForeignKey<Sentiment>(e => e.ReviewId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Complaint
+            modelBuilder.Entity<Complaint>(entity =>
+            {
+                entity.ToTable("complaints");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.OrderId);
+                entity.HasIndex(e => e.AssignedTo);
+                entity.HasIndex(e => e.Status);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.HasOne(e => e.User).WithMany(u => u.ComplaintsRaised).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Order).WithMany(o => o.Complaints).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(e => e.AssignedToUser).WithMany(u => u.ComplaintsAssigned).HasForeignKey(e => e.AssignedTo).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // ChatbotLog
+            modelBuilder.Entity<ChatbotLog>(entity =>
+            {
+                entity.ToTable("chatbot_logs");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Message).IsRequired();
+                entity.HasOne(e => e.User).WithMany(u => u.ChatbotLogs).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // MenuSuggestion
+            modelBuilder.Entity<MenuSuggestion>(entity =>
+            {
+                entity.ToTable("menu_suggestions");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.WeekStart);
+                entity.HasIndex(e => e.CreatedBy);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.SuggestionText).IsRequired();
+                entity.Property(e => e.AlgorithmVersion).HasMaxLength(50);
+                entity.HasOne(e => e.CreatedByUser).WithMany(u => u.MenuSuggestionsCreated).HasForeignKey(e => e.CreatedBy).OnDelete(DeleteBehavior.SetNull);
             });
         }
         #endregion
