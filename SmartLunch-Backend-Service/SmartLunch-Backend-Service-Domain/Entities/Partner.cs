@@ -1,0 +1,26 @@
+namespace SmartLunch.Backend.Service.Domain.Entities;
+
+/// <summary>
+/// Supplier/partner entity
+/// </summary>
+public class Partner
+{
+    public Guid Id { get; set; }
+    public string LegalName { get; set; } = string.Empty;
+    public string? TaxId { get; set; }
+    public string? Address { get; set; }
+    public string? ContactPerson { get; set; }
+    public string? Phone { get; set; }
+    public string? Email { get; set; }
+    public decimal? PerformanceRating { get; set; }
+    public string? ComplianceInfo { get; set; }
+    public string? FinancialTerms { get; set; }
+    public bool IsActive { get; set; } = true;
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime? UpdatedAt { get; set; }
+
+    public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
+    public virtual ICollection<PartnerPayment> PartnerPayments { get; set; } = new List<PartnerPayment>();
+    public virtual ICollection<Ingredient> IngredientsAsDefaultSupplier { get; set; } = new List<Ingredient>();
+    public virtual ICollection<IngredientSource> IngredientSources { get; set; } = new List<IngredientSource>();
+}
