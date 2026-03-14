@@ -2,7 +2,7 @@
 
 SmartLunch has two main services:
 
-- SmartLunch Backend Service: ASP.NET Core 8.0 API (business logic, DB, auth, SignalR, Kafka).
+- SmartLunch Backend Service: ASP.NET Core 8.0 API (business logic, DB, auth, SignalR, RabbitMQ).
 - SmartLunch AI Service: FastAPI service (chat, recommendation, sentiment analysis).
 
 ---
@@ -27,7 +27,47 @@ Ensure MySQL is running and the `SmartLunch` database exists before starting the
 
 ---
 
- 2. Running the Backend Service (ASP.NET Core)
+ 2. Running with Docker
+
+You can run infrastructure (MySQL, Kafka, Redis) and the AI service with Docker Compose. The backend can be run on the host (see section 3) or built and run in Docker.
+
+ 2.1 Prerequisites
+
+- [Docker](https://docs.docker.com/get-docker/) and [Docker Compose](https://docs.docker.com/compose/install/) installed.
+
+ 2.2 Environment variables
+
+Create a `.env` file in the repository root (same folder as `docker-compose.yml`)
+
+ 2.3 Start infrastructure and AI service
+
+From the repository root:
+
+```powershell
+# Start MySQL, RabbitMQ, Redis, and AI service
+docker compose up -d
+
+# View logs
+docker compose logs -f
+```
+
+| Service    | Port  | URL / Notes                          |
+|------------|-------|--------------------------------------|
+| MySQL      | 3307  | `localhost:3307` (root + env password) |
+| RabbitMQ   | 5672  | AMQP `localhost:5672`                |
+| RabbitMQ UI | 15672 | http://localhost:15672 (guest/guest or env) |
+| Redis      | 6379  | `localhost:6379` (password from env) |
+| AI Service | 8001  | http://localhost:8001 — Docs: http://localhost:8001/docs |
+
+ 2.4 Stop Docker services
+
+```powershell
+docker compose down
+# Optional: remove volumes (deletes DB data)
+# docker compose down -v
+```
+
+ 3. Running the Backend Service (ASP.NET Core)
 
 Path: `SmartLunch-Backend-Service/SmartLunch-Backend-Service-API`
 
@@ -58,7 +98,7 @@ dotnet run
 
 ---
 
- 3. Running the AI Service (FastAPI)
+ 4. Running the AI Service (FastAPI)
 
 Path: `SmartLunch-AI-Service`
 
@@ -88,7 +128,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 
 ---
 
- 4. Running Both Services
+ 5. Running Both Services
 
 1. Start MySQL on `localhost:3307` with database `SmartLunch`.
 2. Terminal 1 – Backend:
@@ -107,7 +147,7 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8001
 
 ---
 
- 5. API Endpoints Reference
+ 6. API Endpoints Reference
 
 Base paths:
 
@@ -116,7 +156,7 @@ Base paths:
 
 ---
 
- 5.1 Backend Service (`http://localhost:5001/api/v1`)
+ 6.1 Backend Service (`http://localhost:5001/api/v1`)
 
  Auth – `api/v1/Auth`
 
@@ -171,7 +211,7 @@ Base paths:
 
 ---
 
- 5.2 AI Service (`http://localhost:8001`)
+ 6.2 AI Service (`http://localhost:8001`)
 
  Health
 
@@ -191,7 +231,7 @@ Request/response schemas are in Swagger: http://localhost:8001/docs.
 
 ---
 
- 6. Quick Reference
+ 7. Quick Reference
 
 | Service | Base URL | Docs |
 |---------|----------|------|

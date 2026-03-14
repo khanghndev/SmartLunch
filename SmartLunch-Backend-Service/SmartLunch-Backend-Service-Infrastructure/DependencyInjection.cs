@@ -28,7 +28,8 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
                         !type.IsSealed && // Exclude static classes (sealed classes without instance constructors)
                         !type.Name.EndsWith("Options") && // Exclude options classes
                         !type.Name.EndsWith("Extensions") && // Exclude extension classes
-                        !type.Name.EndsWith("Context"))) // Exclude DbContext (registered separately)
+                        !type.Name.EndsWith("Context") && // Exclude DbContext (registered separately)
+                        !type.Name.EndsWith("Adapter"))) // Exclude message broker adapter (IEventPublisher from Shared is used)
                 .UsingRegistrationStrategy(RegistrationStrategy.Append)
                 .AsMatchingInterface() // Only register classes that have a matching interface (e.g., IUserRepository -> UserRepository)
                 .WithScopedLifetime());

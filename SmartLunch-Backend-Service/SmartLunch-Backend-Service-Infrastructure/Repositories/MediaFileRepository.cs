@@ -24,6 +24,32 @@ public class MediaFileRepository : IMediaFileRepository
         return await _context.MediaFiles.FirstOrDefaultAsync(x => x.Id == id && x.OwnerUserId == ownerUserId);
     }
 
+    public async Task<(List<MediaFile> MediaFiles, int TotalCount)> GetMediaFilesAsync(int page, int pageSize, string? searchTerm = null)
+    {
+        var query = _context.MediaFiles.AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(x =>
+                x.Bucket.Contains(searchTerm) ||
+                x.ObjectName.Contains(searchTerm) ||
+                (x.OriginalFileName != null && x.OriginalFileName.Contains(searchTerm)) ||
+                x.ContentType.Contains(searchTerm) ||
+                (x.Md5HashBase64 != null && x.Md5HashBase64.Contains(searchTerm)) ||
+                x.MediaType.Contains(searchTerm));
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var mediaFiles = await query
+            .OrderByDescending(x => x.CreatedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (mediaFiles, totalCount);
+    }
+
     public async Task<MediaFile> CreateAsync(MediaFile mediaFile)
     {
         _context.MediaFiles.Add(mediaFile);
@@ -31,4 +57,3 @@ public class MediaFileRepository : IMediaFileRepository
         return mediaFile;
     }
 }
-

@@ -28,6 +28,20 @@ builder.Host.UseSerilog((context, services, configuration) =>
 // Add services to the container
 builder.Services.AddControllers();
 
+var redisConfiguration = builder.Configuration["Redis:Configuration"];
+if (string.IsNullOrWhiteSpace(redisConfiguration))
+{
+    builder.Services.AddDistributedMemoryCache();
+}
+else
+{
+    builder.Services.AddStackExchangeRedisCache(options =>
+    {
+        options.Configuration = redisConfiguration;
+        options.InstanceName = builder.Configuration["Redis:InstanceName"] ?? "smartlunch:";
+    });
+}
+
 // API Versioning Configuration
 builder.Services.AddApiVersioning(options =>
 {
@@ -113,13 +127,32 @@ SmartLunch.Backend.Service.Application.DependencyInjection.DependencyInjection.C
 // Infrastructure Services - Register using Scrutor
 SmartLunch.Backend.Service.Infrastructure.DependencyInjection.DependencyInjection.ConfigureServices(builder.Services);
 
-// Kafka Messaging
-var kafkaBootstrapServers = builder.Configuration["Kafka:BootstrapServers"]
-    ?? throw new InvalidOperationException("Kafka BootstrapServers not configured");
-var kafkaGroupId = builder.Configuration["Kafka:GroupId"]
-    ?? "smartlunch-backend-service";
+// RabbitMQ Messaging
+var rabbitHost = builder.Configuration["RabbitMQ:HostName"] ?? "localhost";
+var rabbitQueue = builder.Configuration["RabbitMQ:QueueName"] ?? "smartlunch.backend";
+var rabbitPort = builder.Configuration.GetValue<int>("RabbitMQ:Port", 5672);
+var rabbitVHost = builder.Configuration["RabbitMQ:VirtualHost"] ?? "/";
+var rabbitUser = builder.Configuration["RabbitMQ:UserName"];
+var rabbitPass = builder.Configuration["RabbitMQ:Password"];
+var rabbitUri = builder.Configuration["RabbitMQ:Uri"];
 
-builder.Services.AddKafkaMessaging(kafkaBootstrapServers, kafkaGroupId);
+if (!string.IsNullOrWhiteSpace(rabbitUri))
+{
+    builder.Services.AddRabbitMQMessaging(connectionUri: rabbitUri, queueName: rabbitQueue);
+}
+else
+{
+    builder.Services.AddRabbitMQMessaging(
+        hostName: rabbitHost,
+        queueName: rabbitQueue,
+        port: rabbitPort,
+        virtualHost: rabbitVHost,
+        userName: rabbitUser,
+        password: rabbitPass);
+}
+
+// RabbitMQ consumer background service (consumes events from AI service, etc.)
+builder.Services.AddHostedService<SmartLunch.Backend.Service.API.Services.RabbitMQConsumerBackgroundService>();
 
 // SignalR (Real-time)
 builder.Services.AddSignalR();
