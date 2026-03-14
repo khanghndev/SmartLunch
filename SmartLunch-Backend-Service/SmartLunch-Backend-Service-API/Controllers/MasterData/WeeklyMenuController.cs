@@ -1,0 +1,83 @@
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SmartLunch.Backend.Service.Application.DTOs;
+using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.WeeklyMenus;
+using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.WeeklyMenus;
+using SmartLunch.Backend.Service.Application.Queries.WeeklyMenus.GetWeeklyMenu;
+using SmartLunch.Backend.Service.Application.Queries.WeeklyMenus.GetWeeklyMenus;
+using System.Net;
+
+namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
+
+/// <summary>
+/// WeeklyMenu management controller for CRUD operations
+/// </summary>
+[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/master-data/[controller]")]
+[Authorize(Policy = "roles:Admin")]
+public class WeeklyMenuController : ControllerBase
+{
+    private readonly ILogger<WeeklyMenuController> _logger;
+    private readonly IMediator _mediator;
+
+    public WeeklyMenuController(ILogger<WeeklyMenuController> logger, IMediator mediator)
+    {
+        _logger = logger;
+        _mediator = mediator;
+    }
+
+    /// <summary>
+    /// Get list of weeklymenus with pagination
+    /// </summary>
+    [HttpGet]
+    [Authorize(Policy = "permission:weeklymenus.read")]
+    public async Task<ActionResult<BaseApiResponse<GetWeeklyMenusResponse>>> GetWeeklyMenus([FromQuery] GetWeeklyMenusRequest request)
+    {
+        try
+        {
+            var query = new GetWeeklyMenusQuery(request.Page, request.PageSize, request.SearchTerm);
+            var response = await _mediator.Send(query);
+            return Ok(BaseApiResponse<GetWeeklyMenusResponse>.SuccessResult(response, "WeeklyMenus retrieved successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetWeeklyMenusResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving weeklymenus");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetWeeklyMenusResponse>.ErrorResult("An error occurred while retrieving weeklymenus", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Get weeklymenu by ID
+    /// </summary>
+    [HttpGet("{id}")]
+    [Authorize(Policy = "permission:weeklymenus.read")]
+    public async Task<ActionResult<BaseApiResponse<GetWeeklyMenuResponse>>> GetWeeklyMenu(Guid id)
+    {
+        try
+        {
+            var query = new GetWeeklyMenuQuery(id);
+            var response = await _mediator.Send(query);
+
+            return Ok(BaseApiResponse<GetWeeklyMenuResponse>.SuccessResult(response, "WeeklyMenu retrieved successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetWeeklyMenuResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving weeklymenu with ID: {WeeklyMenuId}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetWeeklyMenuResponse>.ErrorResult("An error occurred while retrieving weeklymenu", new[] { ex.Message }));
+        }
+    }
+}

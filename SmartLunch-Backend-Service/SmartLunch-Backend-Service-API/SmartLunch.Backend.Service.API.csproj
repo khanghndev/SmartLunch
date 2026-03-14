@@ -7,29 +7,29 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1"/>
-        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.1.0"/>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2"/>
-        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2"/>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0"/>
-        <PackageReference Include="MediatR" Version="12.0.1"/>
-        <PackageReference Include="Serilog.AspNetCore" Version="8.0.3"/>
-        <PackageReference Include="Serilog.Sinks.File" Version="6.0.0"/>
-        <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1"/>
-        <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0"/>
+        <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning" Version="5.1.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Versioning.ApiExplorer" Version="5.1.0" />
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.2" />
+        <PackageReference Include="Microsoft.Extensions.Caching.StackExchangeRedis" Version="10.0.3" />
+        <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+        <PackageReference Include="MediatR" Version="12.0.1" />
+        <PackageReference Include="Serilog.AspNetCore" Version="8.0.3" />
+        <PackageReference Include="Serilog.Sinks.File" Version="6.0.0" />
+        <PackageReference Include="Serilog.Enrichers.Environment" Version="3.0.1" />
+        <PackageReference Include="Serilog.Enrichers.Thread" Version="4.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\SmartLunch-Backend-Service-Application\SmartLunch.Backend.Service.Application.csproj"/>
-        <ProjectReference Include="..\SmartLunch-Backend-Service-Infrastructure\SmartLunch.Backend.Service.Infrastructure.csproj"/>
+        <ProjectReference Include="..\SmartLunch-Backend-Service-Application\SmartLunch.Backend.Service.Application.csproj" />
+        <ProjectReference Include="..\SmartLunch-Backend-Service-Infrastructure\SmartLunch.Backend.Service.Infrastructure.csproj" />
     </ItemGroup>
 
     <!-- Copy Firebase config file to output directory -->
     <ItemGroup>
-        <None Include="$(MSBuildProjectDirectory)\..\..\smartlunch-2b5a7-firebase-adminsdk-fbsvc-93e6045e22.json"
-              Condition="Exists('$(MSBuildProjectDirectory)\..\..\smartlunch-2b5a7-firebase-adminsdk-fbsvc-93e6045e22.json')">
+        <None Include="$(MSBuildProjectDirectory)\..\..\smartlunch-2b5a7-firebase-adminsdk-fbsvc-93e6045e22.json" Condition="Exists('$(MSBuildProjectDirectory)\..\..\smartlunch-2b5a7-firebase-adminsdk-fbsvc-93e6045e22.json')">
             <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
         </None>
     </ItemGroup>

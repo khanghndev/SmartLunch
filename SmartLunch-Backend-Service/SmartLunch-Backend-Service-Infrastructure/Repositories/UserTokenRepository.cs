@@ -51,6 +51,26 @@ public class UserTokenRepository : IUserTokenRepository
             .ToListAsync();
     }
 
+    public async Task<(List<UserToken> UserTokens, int TotalCount)> GetUserTokensAsync(int page, int pageSize, string? searchTerm = null, bool? isActive = null)
+    {
+        var query = _context.UserTokens.AsQueryable();
+
+        if (isActive.HasValue)
+        {
+            query = query.Where(ut => ut.IsActive == isActive.Value);
+        }
+
+        var totalCount = await query.CountAsync();
+
+        var userTokens = await query
+            .OrderByDescending(ut => ut.IssuedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (userTokens, totalCount);
+    }
+
     public async Task<UserToken> CreateAsync(UserToken userToken)
     {
         _context.UserTokens.Add(userToken);

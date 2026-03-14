@@ -9,6 +9,7 @@ public interface IUserTokenRepository
     Task<UserToken?> GetByRefreshTokenAsync(string refreshToken);
     Task<IEnumerable<UserToken>> GetByUserIdAsync(Guid userId);
     Task<IEnumerable<UserToken>> GetActiveByUserIdAsync(Guid userId);
+    Task<(List<UserToken> UserTokens, int TotalCount)> GetUserTokensAsync(int page, int pageSize, string? searchTerm = null, bool? isActive = null);
     Task<UserToken> CreateAsync(UserToken userToken);
     Task<UserToken> UpdateAsync(UserToken userToken);
     Task<bool> DeleteAsync(Guid id);
