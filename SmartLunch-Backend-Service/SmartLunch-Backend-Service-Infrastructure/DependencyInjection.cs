@@ -1,5 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
+using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Infrastructure.Services;
 
 namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
 {
@@ -14,6 +16,9 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
         /// <param name="services">The service collection to register services with</param>
         public static void ConfigureServices(IServiceCollection services)
         {
+            // ICacheService -> RedisCacheService (excluded from Scrutor scan by "Service" suffix)
+            services.AddScoped<ICacheService, RedisCacheService>();
+
             var assembly = typeof(DependencyInjection).Assembly;
 
             // Scan and register all classes that implement interfaces
@@ -29,7 +34,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
                         !type.Name.EndsWith("Options") && // Exclude options classes
                         !type.Name.EndsWith("Extensions") && // Exclude extension classes
                         !type.Name.EndsWith("Context") && // Exclude DbContext (registered separately)
-                        !type.Name.EndsWith("Adapter"))) // Exclude message broker adapter (IEventPublisher from Shared is used)
+                        !type.Name.EndsWith("Adapter")))// Exclude message broker adapter (IEventPublisher from Shared is used)
                 .UsingRegistrationStrategy(RegistrationStrategy.Append)
                 .AsMatchingInterface() // Only register classes that have a matching interface (e.g., IUserRepository -> UserRepository)
                 .WithScopedLifetime());

@@ -14,4 +14,5 @@ public interface IUserRoleRepository
     Task<bool> DeleteAsync(Guid id);
     Task<bool> DeleteByUserAndRoleAsync(Guid userId, Guid roleId);
     Task<bool> ExistsByUserAndRoleAsync(Guid userId, Guid roleId);
+    Task<(List<UserRole> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? userId = null, Guid? roleId = null, bool? isActive = null);
 }

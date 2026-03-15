@@ -95,4 +95,28 @@ public class UserPermissionRepository : IUserPermissionRepository
     {
         return await _context.UserPermissions.AnyAsync(up => up.UserId == userId && up.PermissionId == permissionId);
     }
+
+    public async Task<(List<UserPermission> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? userId = null, Guid? permissionId = null, bool? isActive = null)
+    {
+        var query = _context.UserPermissions
+            .Include(up => up.User)
+            .Include(up => up.Permission)
+            .AsQueryable();
+
+        if (userId.HasValue)
+            query = query.Where(up => up.UserId == userId.Value);
+        if (permissionId.HasValue)
+            query = query.Where(up => up.PermissionId == permissionId.Value);
+        if (isActive.HasValue)
+            query = query.Where(up => up.IsActive == isActive.Value);
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderBy(up => up.AssignedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
 }

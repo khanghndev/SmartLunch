@@ -95,4 +95,28 @@ public class UserRoleRepository : IUserRoleRepository
     {
         return await _context.UserRoles.AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId);
     }
+
+    public async Task<(List<UserRole> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? userId = null, Guid? roleId = null, bool? isActive = null)
+    {
+        var query = _context.UserRoles
+            .Include(ur => ur.User)
+            .Include(ur => ur.Role)
+            .AsQueryable();
+
+        if (userId.HasValue)
+            query = query.Where(ur => ur.UserId == userId.Value);
+        if (roleId.HasValue)
+            query = query.Where(ur => ur.RoleId == roleId.Value);
+        if (isActive.HasValue)
+            query = query.Where(ur => ur.IsActive == isActive.Value);
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderBy(ur => ur.AssignedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
 }
