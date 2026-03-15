@@ -14,4 +14,5 @@ public interface IUserPermissionRepository
     Task<bool> DeleteAsync(Guid id);
     Task<bool> DeleteByUserAndPermissionAsync(Guid userId, Guid permissionId);
     Task<bool> ExistsByUserAndPermissionAsync(Guid userId, Guid permissionId);
+    Task<(List<UserPermission> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? userId = null, Guid? permissionId = null, bool? isActive = null);
 }

@@ -95,4 +95,28 @@ public class RolePermissionRepository : IRolePermissionRepository
     {
         return await _context.RolePermissions.AnyAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
     }
+
+    public async Task<(List<RolePermission> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? roleId = null, Guid? permissionId = null, bool? isActive = null)
+    {
+        var query = _context.RolePermissions
+            .Include(rp => rp.Role)
+            .Include(rp => rp.Permission)
+            .AsQueryable();
+
+        if (roleId.HasValue)
+            query = query.Where(rp => rp.RoleId == roleId.Value);
+        if (permissionId.HasValue)
+            query = query.Where(rp => rp.PermissionId == permissionId.Value);
+        if (isActive.HasValue)
+            query = query.Where(rp => rp.IsActive == isActive.Value);
+
+        var totalCount = await query.CountAsync();
+        var items = await query
+            .OrderBy(rp => rp.AssignedAt)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return (items, totalCount);
+    }
 }

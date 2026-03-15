@@ -14,4 +14,5 @@ public interface IRolePermissionRepository
     Task<bool> DeleteAsync(Guid id);
     Task<bool> DeleteByRoleAndPermissionAsync(Guid roleId, Guid permissionId);
     Task<bool> ExistsByRoleAndPermissionAsync(Guid roleId, Guid permissionId);
+    Task<(List<RolePermission> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? roleId = null, Guid? permissionId = null, bool? isActive = null);
 }
