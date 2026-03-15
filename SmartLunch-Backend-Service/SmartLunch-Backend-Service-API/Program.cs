@@ -72,6 +72,9 @@ builder.Services.AddEndpointsApiExplorer();
 // Configure Swagger with API versioning support
 builder.Services.AddSwaggerGen(options =>
 {
+    // Use full type name for schema IDs to avoid conflicts (e.g. MediaFileDto in MasterData.MediaFiles vs Media)
+    options.CustomSchemaIds(type => type.FullName);
+
     // Include XML comments if available
     var xmlFile = $"{System.Reflection.Assembly.GetExecutingAssembly().GetName().Name}.xml";
     var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
