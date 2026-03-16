@@ -7,7 +7,8 @@ using SmartLunch.Backend.Service.Application.DTOs.Request.Auth;
 using SmartLunch.Backend.Service.Application.DTOs.Response.Auth;
 using FirebaseLoginRequest = SmartLunch.Backend.Service.Application.DTOs.Request.Auth.FirebaseLoginRequest;
 using FirebaseLoginCommand = SmartLunch.Backend.Service.Application.Commands.Auth.FirebaseLoginCommand;
-using System.Net;
+using SmartLunch.Backend.Service.Application.Commands.Auth.LoginAdmin;
+using SmartLunch.Backend.Service.Application.Commands.Auth.LoginUser;
 
 namespace SmartLunch.Backend.Service.API.Controllers
 {
@@ -28,12 +29,30 @@ namespace SmartLunch.Backend.Service.API.Controllers
             _mediator = mediator;
         }
 
-        [HttpPost("login")]
-        public async Task<ActionResult<BaseApiResponse<LoginResponse>>> Login(LoginRequest request)
+        [HttpPost("login-admin")]
+        public async Task<ActionResult<BaseApiResponse<LoginResponse>>> LoginAdmin(LoginAdminRequest request)
         {
             try
             {
-                var response = await _mediator.Send(new LoginCommand(request));
+                var response = await _mediator.Send(new LoginAdminCommand(request));
+                return Ok(BaseApiResponse<LoginResponse>.SuccessResult(response, "Login successful"));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(BaseApiResponse<LoginResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(BaseApiResponse<LoginResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+        }
+
+        [HttpPost("login")]
+        public async Task<ActionResult<BaseApiResponse<LoginResponse>>> LoginUser(LoginUserRequest request)
+        {
+            try
+            {
+                var response = await _mediator.Send(new LoginUserCommand(request));
                 return Ok(BaseApiResponse<LoginResponse>.SuccessResult(response, "Login successful"));
             }
             catch (ArgumentException ex)

@@ -115,8 +115,9 @@ builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-// MediatR
-builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(SmartLunch.Backend.Service.Application.Commands.Auth.LoginCommand).Assembly));
+// MediatR: scan the Application assembly and register all IRequestHandler<> / INotificationHandler<> etc.
+// We only need one type from that assembly to get .Assembly; LoginAdminCommand is arbitrary—any type in Application would work.
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(SmartLunch.Backend.Service.Application.DependencyInjection.DependencyInjection).Assembly));
 
 // Database Configuration
 builder.Services.AddEnhancedDatabase(builder.Configuration);
