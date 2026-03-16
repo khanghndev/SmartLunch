@@ -1,5 +1,5 @@
 using MediatR;
-using SmartLunch.Backend.Service.Application.Commands.Auth;
+using SmartLunch.Backend.Service.Application.Commands.Auth.LoginAdmin;
 using SmartLunch.Backend.Service.Application.DTOs.Response.Auth;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
@@ -7,9 +7,9 @@ using SmartLunch.Backend.Service.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 
-namespace SmartLunch.Backend.Service.Application.Handlers.Auth;
+namespace SmartLunch.Backend.Service.Application.Handlers.Auth.LoginAdmin;
 
-public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
+public class LoginAdminCommandHandler : IRequestHandler<LoginAdminCommand, LoginResponse>
 {
     private readonly IUserRepository _userRepository;
     private readonly IUserTokenRepository _userTokenRepository;
@@ -17,15 +17,15 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
     private readonly IJwtService _jwtService;
     private readonly IConfiguration _configuration;
     private readonly int _expireDays;
-    private readonly ILogger<LoginCommandHandler> _logger;
+    private readonly ILogger<LoginAdminCommandHandler> _logger;
 
-    public LoginCommandHandler(
+    public LoginAdminCommandHandler(
         IUserRepository userRepository,
         IUserTokenRepository userTokenRepository,
         IPasswordHasher passwordHasher,
         IJwtService jwtService,
         IConfiguration configuration,
-        ILogger<LoginCommandHandler> logger)
+        ILogger<LoginAdminCommandHandler> logger)
     {
         _userRepository = userRepository;
         _userTokenRepository = userTokenRepository;
@@ -36,7 +36,7 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         _logger = logger;
     }
 
-    public async Task<LoginResponse> Handle(LoginCommand request, CancellationToken cancellationToken)
+    public async Task<LoginResponse> Handle(LoginAdminCommand request, CancellationToken cancellationToken)
     {
         var req = request.Request;
 
