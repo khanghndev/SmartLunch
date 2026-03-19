@@ -12,6 +12,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
 {
     private readonly IUserRepository _userRepository;
     private readonly IUserTokenRepository _userTokenRepository;
+    private readonly IUserRoleRepository _userRoleRepository;
+    private readonly IUserPermissionRepository _userPermissionRepository;
+    private readonly IRolePermissionRepository _rolePermissionRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtService _jwtService;
     private readonly ILogger<RegisterCommandHandler> _logger;
@@ -19,12 +22,18 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
     public RegisterCommandHandler(
         IUserRepository userRepository,
         IUserTokenRepository userTokenRepository,
+        IUserRoleRepository userRoleRepository,
+        IUserPermissionRepository userPermissionRepository,
+        IRolePermissionRepository rolePermissionRepository,
         IPasswordHasher passwordHasher,
         IJwtService jwtService,
         ILogger<RegisterCommandHandler> logger)
     {
         _userRepository = userRepository;
         _userTokenRepository = userTokenRepository;
+        _userRoleRepository = userRoleRepository;
+        _userPermissionRepository = userPermissionRepository;
+        _rolePermissionRepository = rolePermissionRepository;
         _passwordHasher = passwordHasher;
         _jwtService = jwtService;
         _logger = logger;
@@ -64,8 +73,29 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
             IsEmailVerified = false,
             CreatedAt = DateTime.UtcNow
         };
-
         await _userRepository.CreateAsync(user);
+
+        var userRole = new UserRole
+        {
+            Id = Guid.NewGuid(),
+            UserId = user.Id,
+            RoleId = req.RoleId ?? Guid.Empty,
+            AssignedAt = DateTime.UtcNow,
+            IsActive = true
+        };
+        await _userRoleRepository.CreateAsync(userRole);
+
+        var rolePermissionList = await _rolePermissionRepository.GetByRoleIdAsync(req.RoleId ?? Guid.Empty);
+        foreach (var rolePermission in rolePermissionList)
+        {
+            var userPermission = new UserPermission
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                PermissionId = rolePermission.PermissionId,
+            };
+            await _userPermissionRepository.CreateAsync(userPermission);
+        }
 
         // Generate tokens
         var roles = new List<string> { "User" }; // Default role
