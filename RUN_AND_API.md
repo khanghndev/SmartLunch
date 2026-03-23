@@ -170,9 +170,12 @@ Base paths:
 
  Media – `api/v1/Media` (all require Bearer)
 
+ Storage backend: **Appwrite Storage** (bucket quản trị):
+ `https://cloud.appwrite.io/console/project-syd-69bab7660023ca1dd830/storage/bucket-69bfa6de000fdacda87d`
+
 | Method | Endpoint | Description |
 |--------|----------|-------------|
-| POST | `/api/v1/Media/upload-url` | Create signed upload URL (Firebase Storage) |
+| POST | `/api/v1/Media/upload-url` | Create signed upload URL (Appwrite Storage) |
 | POST | `/api/v1/Media/confirm-upload` | Confirm upload completed |
 | GET | `/api/v1/Media/{id}/download-url` | Get signed download URL (optional `?expiresMinutes`) |
 

@@ -4,6 +4,11 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IDishRepository
 {
+    Task<List<Dish>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default);
+
     Task<Dish?> GetByIdAsync(Guid id);
+    Task<Dish?> GetByIdWithIngredientsAsync(Guid id);
     Task<(List<Dish> Dishes, int TotalCount)> GetDishesAsync(int page, int pageSize, string? searchTerm = null, bool? isActive = null, string? category = null);
+    Task<Dish> CreateAsync(Dish dish);
+    Task<Dish> UpdateAsync(Dish dish);
 }

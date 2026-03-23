@@ -4,7 +4,10 @@ public class ContractDto
 {
     public Guid Id { get; set; }
     public Guid PartnerId { get; set; }
+    public string? PartnerLegalName { get; set; }
+    public string? ContractNumber { get; set; }
     public string? Description { get; set; }
+    public string? SupplySchedule { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public decimal? TotalValue { get; set; }

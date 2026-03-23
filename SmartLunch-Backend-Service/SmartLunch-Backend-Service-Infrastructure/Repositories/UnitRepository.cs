@@ -48,4 +48,18 @@ public class UnitRepository : IUnitRepository
 
         return (units, totalCount);
     }
+
+    public async Task<Dictionary<Guid, string>> GetNamesByIdsAsync(
+        IEnumerable<Guid> unitIds,
+        CancellationToken cancellationToken = default)
+    {
+        var idList = unitIds.Distinct().ToList();
+        if (idList.Count == 0)
+            return new Dictionary<Guid, string>();
+
+        return await _context.Units
+            .AsNoTracking()
+            .Where(u => idList.Contains(u.Id))
+            .ToDictionaryAsync(u => u.Id, u => u.Name, cancellationToken);
+    }
 }

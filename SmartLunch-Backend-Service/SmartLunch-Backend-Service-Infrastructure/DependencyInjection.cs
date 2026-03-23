@@ -1,6 +1,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
+using SmartLunch.Backend.Service.Infrastructure.ExternalServices;
 using SmartLunch.Backend.Service.Infrastructure.Services;
 
 namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
@@ -18,6 +20,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
         {
             // ICacheService -> RedisCacheService (excluded from Scrutor scan by "Service" suffix)
             services.AddScoped<ICacheService, RedisCacheService>();
+            services.AddScoped<IFirebaseStorageService, AppwriteStorageService>();
 
             var assembly = typeof(DependencyInjection).Assembly;
 
@@ -31,6 +34,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
                         !type.IsAbstract &&
                         !type.IsGenericTypeDefinition &&
                         !type.IsSealed && // Exclude static classes (sealed classes without instance constructors)
+                        type.Name != "FirebaseStorageService" && // Use AppwriteStorageService for IFirebaseStorageService
                         !type.Name.EndsWith("Options") && // Exclude options classes
                         !type.Name.EndsWith("Extensions") && // Exclude extension classes
                         !type.Name.EndsWith("Context") && // Exclude DbContext (registered separately)

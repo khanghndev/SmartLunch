@@ -21,21 +21,11 @@ public class GetOrdersQueryHandler : IRequestHandler<GetOrdersQuery, GetOrdersRe
         var (orders, totalCount) = await _orderRepository.GetOrdersAsync(
             request.Page,
             request.PageSize,
-            request.SearchTerm);
+            request.SearchTerm,
+            request.ScheduledOn,
+            request.Status);
 
-        var orderDtos = orders.Select(order => new OrderDto
-        {
-                Id = order.Id,
-                UserId = order.UserId,
-                UnitId = order.UnitId,
-                OrderDate = order.OrderDate,
-                ScheduledDate = order.ScheduledDate,
-                Status = order.Status,
-                TotalAmount = order.TotalAmount,
-                PaymentStatus = order.PaymentStatus,
-                CreatedAt = order.CreatedAt,
-                UpdatedAt = order.UpdatedAt
-        }).ToList();
+        var orderDtos = orders.Select(OrderDtoMapping.ToDto).ToList();
 
         _logger.LogInformation("Retrieved {Count} orders (Page {Page}, PageSize {PageSize})",
             orderDtos.Count, request.Page, request.PageSize);

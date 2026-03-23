@@ -12,4 +12,5 @@ public class UserDto
     public bool IsEmailVerified { get; set; }
     public DateTime? LastLoginAt { get; set; }
     public DateTime CreatedAt { get; set; }
+    public List<string> RoleNames { get; set; } = new();
 }

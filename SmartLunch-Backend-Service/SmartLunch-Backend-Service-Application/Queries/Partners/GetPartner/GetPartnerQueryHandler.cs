@@ -25,6 +25,27 @@ public class GetPartnerQueryHandler : IRequestHandler<GetPartnerQuery, GetPartne
 
     public async Task<GetPartnerResponse> Handle(GetPartnerQuery request, CancellationToken cancellationToken)
     {
+        if (request.IncludeContracts)
+        {
+            var partner = await _partnerRepository.GetByIdWithContractsAsync(request.PartnerId);
+            if (partner == null)
+            {
+                _logger.LogWarning("Partner not found with ID: {PartnerId}", request.PartnerId);
+                return new GetPartnerResponse { Partner = new PartnerDto() };
+            }
+
+            var contracts = partner.Contracts
+                .OrderByDescending(c => c.StartDate)
+                .Select(PartnerDtoMapping.ToContractSummary)
+                .ToList();
+
+            return new GetPartnerResponse
+            {
+                Partner = PartnerDtoMapping.ToDto(partner),
+                Contracts = contracts
+            };
+        }
+
         var cacheKey = MasterDataCacheKeys.Partner(request.PartnerId);
 
         return await _cacheService.GetOrCreateAsync(
@@ -41,22 +62,7 @@ public class GetPartnerQueryHandler : IRequestHandler<GetPartnerQuery, GetPartne
 
                 return new GetPartnerResponse
                 {
-                    Partner = new PartnerDto
-                    {
-                        Id = partner.Id,
-                        LegalName = partner.LegalName,
-                        TaxId = partner.TaxId,
-                        Address = partner.Address,
-                        ContactPerson = partner.ContactPerson,
-                        Phone = partner.Phone,
-                        Email = partner.Email,
-                        PerformanceRating = partner.PerformanceRating,
-                        ComplianceInfo = partner.ComplianceInfo,
-                        FinancialTerms = partner.FinancialTerms,
-                        IsActive = partner.IsActive,
-                        CreatedAt = partner.CreatedAt,
-                        UpdatedAt = partner.UpdatedAt
-                    }
+                    Partner = PartnerDtoMapping.ToDto(partner)
                 };
             },
             CacheDuration,

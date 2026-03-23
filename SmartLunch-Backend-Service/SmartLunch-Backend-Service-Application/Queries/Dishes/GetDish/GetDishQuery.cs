@@ -10,8 +10,12 @@ public class GetDishQuery : IRequest<GetDishResponse>
 {
     public Guid DishId { get; set; }
 
-    public GetDishQuery(Guid dishId)
+    /// <summary>Kèm định mức nguyên liệu (DishIngredient).</summary>
+    public bool IncludeIngredientQuotas { get; set; }
+
+    public GetDishQuery(Guid dishId, bool includeIngredientQuotas = false)
     {
         DishId = dishId;
+        IncludeIngredientQuotas = includeIngredientQuotas;
     }
 }

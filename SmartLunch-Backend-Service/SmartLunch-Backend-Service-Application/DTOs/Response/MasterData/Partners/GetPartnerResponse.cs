@@ -3,4 +3,5 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Partne
 public class GetPartnerResponse
 {
     public PartnerDto Partner { get; set; } = new();
+    public List<PartnerContractSummaryDto> Contracts { get; set; } = new();
 }

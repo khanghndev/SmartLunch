@@ -17,27 +17,78 @@ public class ContractRepository : IContractRepository
     public async Task<Contract?> GetByIdAsync(Guid id)
     {
         return await _context.Contracts
+            .Include(c => c.Partner)
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<(List<Contract> Contracts, int TotalCount)> GetContractsAsync(int page, int pageSize, string? searchTerm = null)
+    public async Task<(List<Contract> Contracts, int TotalCount)> GetContractsAsync(
+        int page,
+        int pageSize,
+        string? searchTerm = null,
+        Guid? partnerId = null)
     {
-        var query = _context.Contracts.AsQueryable();
+        var query = _context.Contracts
+            .Include(c => c.Partner)
+            .AsQueryable();
+
+        if (partnerId.HasValue)
+            query = query.Where(e => e.PartnerId == partnerId.Value);
+
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
+            var term = searchTerm.Trim();
             query = query.Where(e =>
-                (e.Description != null && e.Description.Contains(searchTerm)) ||
-                e.Status.Contains(searchTerm));
+                (e.Description != null && e.Description.Contains(term)) ||
+                (e.ContractNumber != null && e.ContractNumber.Contains(term)) ||
+                (e.SupplySchedule != null && e.SupplySchedule.Contains(term)) ||
+                e.Status.Contains(term));
         }
 
         var totalCount = await query.CountAsync();
 
         var contracts = await query
-            .OrderBy(e => e.StartDate)
+            .OrderByDescending(e => e.StartDate)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
 
         return (contracts, totalCount);
+    }
+
+    public async Task<bool> ExistsContractNumberForPartnerAsync(Guid partnerId, string contractNumber, Guid? excludeContractId = null)
+    {
+        var n = contractNumber.Trim();
+        var q = _context.Contracts.Where(c =>
+            c.PartnerId == partnerId &&
+            c.ContractNumber != null &&
+            c.ContractNumber == n);
+        if (excludeContractId.HasValue)
+            q = q.Where(c => c.Id != excludeContractId.Value);
+        return await q.AnyAsync();
+    }
+
+    public async Task<int> CountPartnerPaymentsAsync(Guid contractId)
+    {
+        return await _context.PartnerPayments.CountAsync(pp => pp.ContractId == contractId);
+    }
+
+    public async Task<Contract> CreateAsync(Contract contract)
+    {
+        _context.Contracts.Add(contract);
+        await _context.SaveChangesAsync();
+        return contract;
+    }
+
+    public async Task<Contract> UpdateAsync(Contract contract)
+    {
+        _context.Contracts.Update(contract);
+        await _context.SaveChangesAsync();
+        return contract;
+    }
+
+    public async Task DeleteAsync(Contract contract)
+    {
+        _context.Contracts.Remove(contract);
+        await _context.SaveChangesAsync();
     }
 }

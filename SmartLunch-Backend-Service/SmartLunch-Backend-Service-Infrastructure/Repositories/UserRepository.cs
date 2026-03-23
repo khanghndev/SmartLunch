@@ -72,7 +72,17 @@ public class UserRepository : IUserRepository
         return await _context.Users.AnyAsync(u => u.Email == email);
     }
 
-    public async Task<(List<User> Users, int TotalCount)> GetUsersAsync(int page, int pageSize, string? searchTerm = null, bool? isActive = null)
+    public async Task<bool> IsEmailTakenByAnotherUserAsync(string email, Guid excludeUserId)
+    {
+        return await _context.Users.AnyAsync(u => u.Email == email && u.Id != excludeUserId);
+    }
+
+    public async Task<(List<User> Users, int TotalCount)> GetUsersAsync(
+        int page,
+        int pageSize,
+        string? searchTerm = null,
+        bool? isActive = null,
+        string? roleName = null)
     {
         var query = _context.Users
             .Include(u => u.UserRoles)
@@ -92,6 +102,13 @@ public class UserRepository : IUserRepository
         if (isActive.HasValue)
         {
             query = query.Where(u => u.IsActive == isActive.Value);
+        }
+
+        if (!string.IsNullOrWhiteSpace(roleName))
+        {
+            var rn = roleName.Trim();
+            query = query.Where(u => u.UserRoles.Any(ur =>
+                ur.Role != null && ur.Role.Name.ToLower() == rn.ToLower()));
         }
 
         // Get total count

@@ -18,7 +18,7 @@ public class GetOrderQueryHandler : IRequestHandler<GetOrderQuery, GetOrderRespo
 
     public async Task<GetOrderResponse> Handle(GetOrderQuery request, CancellationToken cancellationToken)
     {
-        var order = await _orderRepository.GetByIdAsync(request.OrderId);
+        var order = await _orderRepository.GetByIdWithDetailsAsync(request.OrderId);
 
         if (order == null)
         {
@@ -28,19 +28,7 @@ public class GetOrderQueryHandler : IRequestHandler<GetOrderQuery, GetOrderRespo
 
         return new GetOrderResponse
         {
-            Order = new OrderDto
-            {
-                Id = order.Id,
-                UserId = order.UserId,
-                UnitId = order.UnitId,
-                OrderDate = order.OrderDate,
-                ScheduledDate = order.ScheduledDate,
-                Status = order.Status,
-                TotalAmount = order.TotalAmount,
-                PaymentStatus = order.PaymentStatus,
-                CreatedAt = order.CreatedAt,
-                UpdatedAt = order.UpdatedAt
-            }
+            Order = OrderDtoMapping.ToDto(order)
         };
     }
 }

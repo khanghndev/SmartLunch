@@ -4,7 +4,9 @@ public class PartnerDto
 {
     public Guid Id { get; set; }
     public string LegalName { get; set; } = string.Empty;
+    public string? BusinessRegistrationNumber { get; set; }
     public string? TaxId { get; set; }
+    public string? LegalRepresentative { get; set; }
     public string? Address { get; set; }
     public string? ContactPerson { get; set; }
     public string? Phone { get; set; }

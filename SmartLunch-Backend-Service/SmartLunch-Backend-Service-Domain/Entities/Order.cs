@@ -16,8 +16,15 @@ public class Order
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
+    /// <summary>Mã hóa đơn hiển thị (VD: HD-20250324-AB12CD34).</summary>
+    public string? InvoiceCode { get; set; }
+
+    /// <summary>Nhân viên bán tạo hóa đơn (POS).</summary>
+    public Guid? CreatedBySalesUserId { get; set; }
+
     public virtual User? User { get; set; }
     public virtual Unit? Unit { get; set; }
+    public virtual User? CreatedBySalesUser { get; set; }
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     public virtual ICollection<Delivery> Deliveries { get; set; } = new List<Delivery>();
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();

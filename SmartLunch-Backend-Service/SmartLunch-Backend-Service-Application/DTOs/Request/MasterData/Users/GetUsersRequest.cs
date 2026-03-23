@@ -6,4 +6,7 @@ public class GetUsersRequest
     public int PageSize { get; set; } = 10;
     public string? SearchTerm { get; set; }
     public bool? IsActive { get; set; }
+
+    /// <summary>Lọc user có role trùng tên (không phân biệt hoa thường), vd. Staff, Customer.</summary>
+    public string? RoleName { get; set; }
 }
