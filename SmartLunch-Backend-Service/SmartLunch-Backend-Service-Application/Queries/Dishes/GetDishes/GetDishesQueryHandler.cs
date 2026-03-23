@@ -43,18 +43,7 @@ public class GetDishesQueryHandler : IRequestHandler<GetDishesQuery, GetDishesRe
                     request.IsActive,
                     request.Category);
 
-                var dishDtos = dishes.Select(d => new DishDto
-                {
-                    Id = d.Id,
-                    Name = d.Name,
-                    Description = d.Description,
-                    Category = d.Category,
-                    Price = d.Price,
-                    DietaryLabel = d.DietaryLabel,
-                    IsActive = d.IsActive,
-                    CreatedAt = d.CreatedAt,
-                    UpdatedAt = d.UpdatedAt
-                }).ToList();
+                var dishDtos = dishes.Select(DishDtoMapping.ToDto).ToList();
 
                 _logger.LogInformation("Retrieved {Count} dishes (Page {Page}, PageSize {PageSize})",
                     dishDtos.Count, request.Page, request.PageSize);

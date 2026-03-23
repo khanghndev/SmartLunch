@@ -8,13 +8,16 @@ using SmartLunch.Backend.Service.API.Extensions;
 using SmartLunch.Backend.Service.API.Hubs;
 using SmartLunch.Backend.Service.API.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Serilog;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 using SmartLunch.Backend.Service.Infrastructure.ExternalServices;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -234,6 +237,46 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Rate limiting (global + named policy for heavy media uploads)
+var rlSection = builder.Configuration.GetSection("RateLimiting");
+var globalPermitLimit = rlSection.GetValue<int?>("GlobalPermitLimit") ?? 120;
+var globalWindowSeconds = rlSection.GetValue<int?>("GlobalWindowSeconds") ?? 60;
+var globalQueueLimit = rlSection.GetValue<int?>("GlobalQueueLimit") ?? 0;
+var mediaUploadPermitLimit = rlSection.GetValue<int?>("MediaUploadPermitLimit") ?? 20;
+var mediaUploadWindowSeconds = rlSection.GetValue<int?>("MediaUploadWindowSeconds") ?? 60;
+
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+    options.GlobalLimiter = PartitionedRateLimiter.Create<HttpContext, string>(httpContext =>
+    {
+        var userId = httpContext.User.FindFirstValue(ClaimTypes.NameIdentifier);
+        var ip = httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+        var key = string.IsNullOrWhiteSpace(userId) ? $"ip:{ip}" : $"user:{userId}";
+
+        return RateLimitPartition.GetFixedWindowLimiter(
+            partitionKey: key,
+            factory: _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = globalPermitLimit,
+                Window = TimeSpan.FromSeconds(globalWindowSeconds),
+                QueueProcessingOrder = QueueProcessingOrder.OldestFirst,
+                QueueLimit = globalQueueLimit,
+                AutoReplenishment = true
+            });
+    });
+
+    options.AddFixedWindowLimiter("media-upload", limiterOptions =>
+    {
+        limiterOptions.PermitLimit = mediaUploadPermitLimit;
+        limiterOptions.Window = TimeSpan.FromSeconds(mediaUploadWindowSeconds);
+        limiterOptions.QueueProcessingOrder = QueueProcessingOrder.OldestFirst;
+        limiterOptions.QueueLimit = 0;
+        limiterOptions.AutoReplenishment = true;
+    });
+});
+
 var app = builder.Build();
 
 // Auto-migrate database if enabled
@@ -288,6 +331,7 @@ app.UseSerilogRequestLogging(options =>
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 // Redirect root to Swagger in Development (before MapControllers)

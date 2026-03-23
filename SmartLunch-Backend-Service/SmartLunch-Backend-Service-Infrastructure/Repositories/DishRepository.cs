@@ -14,9 +14,28 @@ public class DishRepository : IDishRepository
         _context = context;
     }
 
+    public async Task<List<Dish>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+    {
+        var idList = ids.Distinct().ToList();
+        if (idList.Count == 0)
+            return new List<Dish>();
+
+        return await _context.Dishes
+            .Where(d => idList.Contains(d.Id))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Dish?> GetByIdAsync(Guid id)
     {
         return await _context.Dishes
+            .FirstOrDefaultAsync(d => d.Id == id);
+    }
+
+    public async Task<Dish?> GetByIdWithIngredientsAsync(Guid id)
+    {
+        return await _context.Dishes
+            .Include(d => d.DishIngredients)
+            .ThenInclude(di => di.Ingredient)
             .FirstOrDefaultAsync(d => d.Id == id);
     }
 
@@ -34,14 +53,10 @@ public class DishRepository : IDishRepository
         }
 
         if (isActive.HasValue)
-        {
             query = query.Where(d => d.IsActive == isActive.Value);
-        }
 
         if (!string.IsNullOrWhiteSpace(category))
-        {
             query = query.Where(d => d.Category != null && d.Category == category);
-        }
 
         var totalCount = await query.CountAsync();
 
@@ -52,5 +67,19 @@ public class DishRepository : IDishRepository
             .ToListAsync();
 
         return (dishes, totalCount);
+    }
+
+    public async Task<Dish> CreateAsync(Dish dish)
+    {
+        _context.Dishes.Add(dish);
+        await _context.SaveChangesAsync();
+        return dish;
+    }
+
+    public async Task<Dish> UpdateAsync(Dish dish)
+    {
+        _context.Dishes.Update(dish);
+        await _context.SaveChangesAsync();
+        return dish;
     }
 }

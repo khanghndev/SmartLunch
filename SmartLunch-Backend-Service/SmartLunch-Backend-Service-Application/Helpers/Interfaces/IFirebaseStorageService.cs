@@ -13,6 +13,12 @@ public interface IFirebaseStorageService
 
     Task<FirebaseObjectMetadata?> GetObjectMetadataAsync(string objectName);
 
+    Task UploadObjectAsync(
+        string objectName,
+        Stream content,
+        string contentType,
+        CancellationToken cancellationToken = default);
+
     Task DeleteObjectAsync(string objectName);
 }
 

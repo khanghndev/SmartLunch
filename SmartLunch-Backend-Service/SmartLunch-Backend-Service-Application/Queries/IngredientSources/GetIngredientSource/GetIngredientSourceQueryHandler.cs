@@ -28,18 +28,7 @@ public class GetIngredientSourceQueryHandler : IRequestHandler<GetIngredientSour
 
         return new GetIngredientSourceResponse
         {
-            IngredientSource = new IngredientSourceDto
-            {
-                Id = ingredientSource.Id,
-                IngredientId = ingredientSource.IngredientId,
-                PartnerId = ingredientSource.PartnerId,
-                BatchNumber = ingredientSource.BatchNumber,
-                OriginDetails = ingredientSource.OriginDetails,
-                ProductionDate = ingredientSource.ProductionDate,
-                ExpirationDate = ingredientSource.ExpirationDate,
-                Certification = ingredientSource.Certification,
-                CreatedAt = ingredientSource.CreatedAt
-            }
+            IngredientSource = IngredientSourceDtoMapping.ToDto(ingredientSource)
         };
     }
 }

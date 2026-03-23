@@ -372,14 +372,16 @@ CREATE TABLE user_units (
 CREATE TABLE partners (
     Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
     LegalName VARCHAR(255) NOT NULL COMMENT 'Legal name',
+    BusinessRegistrationNumber VARCHAR(100) NULL COMMENT 'Business registration number (DKKD)',
     TaxId VARCHAR(50) NULL COMMENT 'Tax ID',
+    LegalRepresentative VARCHAR(255) NULL COMMENT 'Legal representative',
     Address VARCHAR(255) NULL COMMENT 'Address',
     ContactPerson VARCHAR(255) NULL COMMENT 'Contact person',
     Phone VARCHAR(50) NULL COMMENT 'Phone',
     Email VARCHAR(255) NULL COMMENT 'Email',
     PerformanceRating DECIMAL(3,2) NULL COMMENT 'Delivery performance rating',
-    ComplianceInfo VARCHAR(255) NULL COMMENT 'Compliance data (ISO/certificates)',
-    FinancialTerms VARCHAR(255) NULL COMMENT 'Payment terms',
+    ComplianceInfo VARCHAR(2000) NULL COMMENT 'Compliance / legal notes',
+    FinancialTerms VARCHAR(1000) NULL COMMENT 'Payment terms',
     IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Active flag',
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
     UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
@@ -399,12 +401,14 @@ CREATE TABLE partners (
 CREATE TABLE contracts (
     Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
     PartnerId CHAR(36) NOT NULL COMMENT 'FK to partners',
-    Description VARCHAR(255) NULL COMMENT 'Contract description',
+    ContractNumber VARCHAR(100) NULL COMMENT 'Contract reference number',
+    Description VARCHAR(1000) NULL COMMENT 'Contract description',
+    SupplySchedule VARCHAR(500) NULL COMMENT 'Meal supply time window / schedule note',
     StartDate DATE NOT NULL COMMENT 'Effective date',
     EndDate DATE NULL COMMENT 'End date',
     TotalValue DECIMAL(12,2) NULL COMMENT 'Total contract value',
     DepositAmount DECIMAL(12,2) NULL COMMENT 'Deposit amount',
-    Status VARCHAR(20) NOT NULL DEFAULT 'active' COMMENT 'active | expired',
+    Status VARCHAR(20) NOT NULL DEFAULT 'active' COMMENT 'active | expired | cancelled',
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
     UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
 
@@ -525,6 +529,161 @@ CREATE TABLE inventory (
   COMMENT = 'Ingredient inventory';
 
 -- =====================================================
+-- Table: internal_stock_issues
+-- Description: Internal ingredient stock issue slips (xuất kho nội bộ)
+-- =====================================================
+CREATE TABLE internal_stock_issues (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    IssueCode VARCHAR(40) NOT NULL COMMENT 'Human-readable slip code (e.g. PXK-20250323-AB12CD34)',
+    IssuedAt DATETIME NOT NULL COMMENT 'Issue datetime (UTC)',
+    Reason VARCHAR(500) NULL COMMENT 'Reason / note',
+    CreatedByUserId CHAR(36) NULL COMMENT 'User who created the slip',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_internal_stock_issues_code (IssueCode),
+    INDEX IX_internal_stock_issues_issued (IssuedAt),
+    INDEX IX_internal_stock_issues_user (CreatedByUserId),
+
+    CONSTRAINT FK_internal_stock_issues_user FOREIGN KEY (CreatedByUserId)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Internal stock issue headers';
+
+-- =====================================================
+-- Table: internal_stock_issue_lines
+-- =====================================================
+CREATE TABLE internal_stock_issue_lines (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    IssueId CHAR(36) NOT NULL COMMENT 'FK to internal_stock_issues',
+    IngredientId CHAR(36) NOT NULL COMMENT 'FK to ingredients',
+    Quantity DECIMAL(12,2) NOT NULL COMMENT 'Quantity issued',
+
+    PRIMARY KEY (Id),
+    INDEX IX_internal_stock_issue_lines_issue (IssueId),
+    INDEX IX_internal_stock_issue_lines_ingredient (IngredientId),
+
+    CONSTRAINT FK_internal_stock_issue_lines_issue FOREIGN KEY (IssueId)
+        REFERENCES internal_stock_issues (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_internal_stock_issue_lines_ingredient FOREIGN KEY (IngredientId)
+        REFERENCES ingredients (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Internal stock issue line items';
+
+-- =====================================================
+-- Table: ingredient_intake_proposals
+-- Description: Phiếu đề xuất nhập nguyên liệu (nhân viên kho)
+-- =====================================================
+CREATE TABLE ingredient_intake_proposals (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    ProposalCode VARCHAR(40) NOT NULL COMMENT 'Mã phiếu (e.g. DXN-20250324-AB12CD34)',
+    Status VARCHAR(20) NOT NULL COMMENT 'submitted | approved | rejected | cancelled | fulfilled',
+    HeaderNote VARCHAR(500) NULL COMMENT 'Ghi chú chung',
+    CreatedByUserId CHAR(36) NOT NULL COMMENT 'Nhân viên lập phiếu',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Thời điểm tạo',
+    ReviewedByUserId CHAR(36) NULL COMMENT 'Người duyệt (sau này)',
+    ReviewedAt DATETIME NULL COMMENT 'Thời điểm duyệt',
+    ReviewNote VARCHAR(500) NULL COMMENT 'Ý kiến duyệt',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_ingredient_intake_proposals_code (ProposalCode),
+    INDEX IX_ingredient_intake_proposals_status (Status),
+    INDEX IX_ingredient_intake_proposals_creator (CreatedByUserId),
+    INDEX IX_ingredient_intake_proposals_created (CreatedAt),
+
+    CONSTRAINT FK_ingredient_intake_proposals_creator FOREIGN KEY (CreatedByUserId)
+        REFERENCES users (Id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT FK_ingredient_intake_proposals_reviewer FOREIGN KEY (ReviewedByUserId)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Ingredient intake proposals';
+
+-- =====================================================
+-- Table: ingredient_intake_proposal_lines
+-- =====================================================
+CREATE TABLE ingredient_intake_proposal_lines (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    ProposalId CHAR(36) NOT NULL COMMENT 'FK to ingredient_intake_proposals',
+    IngredientId CHAR(36) NOT NULL COMMENT 'FK to ingredients',
+    Quantity DECIMAL(12,2) NOT NULL COMMENT 'Số lượng đề xuất nhập',
+    LineNote VARCHAR(255) NULL COMMENT 'Ghi chú dòng',
+
+    PRIMARY KEY (Id),
+    INDEX IX_intake_proposal_lines_proposal (ProposalId),
+    INDEX IX_intake_proposal_lines_ingredient (IngredientId),
+
+    CONSTRAINT FK_intake_proposal_lines_proposal FOREIGN KEY (ProposalId)
+        REFERENCES ingredient_intake_proposals (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_intake_proposal_lines_ingredient FOREIGN KEY (IngredientId)
+        REFERENCES ingredients (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Ingredient intake proposal lines';
+
+-- =====================================================
+-- Table: ingredient_actual_intakes
+-- Description: Phiếu nhập kho thực tế (từ phiếu đề xuất đã duyệt, cập nhật tồn)
+-- =====================================================
+CREATE TABLE ingredient_actual_intakes (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    ReceiptCode VARCHAR(40) NOT NULL COMMENT 'Mã phiếu nhập (e.g. PNK-20250324-AB12CD34)',
+    ProposalId CHAR(36) NOT NULL COMMENT 'Phiếu đề xuất đã duyệt (1-1)',
+    CreatedByUserId CHAR(36) NOT NULL COMMENT 'Nhân viên kho xác nhận nhập',
+    ReceivedAt DATETIME NOT NULL COMMENT 'Thời điểm nhập kho',
+    Note VARCHAR(500) NULL COMMENT 'Ghi chú',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Ghi nhận hệ thống',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_ingredient_actual_intakes_code (ReceiptCode),
+    UNIQUE KEY UK_ingredient_actual_intakes_proposal (ProposalId),
+    INDEX IX_ingredient_actual_intakes_user (CreatedByUserId),
+    INDEX IX_ingredient_actual_intakes_received (ReceivedAt),
+
+    CONSTRAINT FK_ingredient_actual_intakes_proposal FOREIGN KEY (ProposalId)
+        REFERENCES ingredient_intake_proposals (Id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT FK_ingredient_actual_intakes_user FOREIGN KEY (CreatedByUserId)
+        REFERENCES users (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Actual ingredient warehouse receipts';
+
+-- =====================================================
+-- Table: ingredient_actual_intake_lines
+-- =====================================================
+CREATE TABLE ingredient_actual_intake_lines (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    IntakeId CHAR(36) NOT NULL COMMENT 'FK to ingredient_actual_intakes',
+    IngredientId CHAR(36) NOT NULL COMMENT 'FK to ingredients',
+    Quantity DECIMAL(12,2) NOT NULL COMMENT 'Số lượng nhập (theo phiếu đề xuất đã duyệt)',
+
+    PRIMARY KEY (Id),
+    INDEX IX_actual_intake_lines_intake (IntakeId),
+    INDEX IX_actual_intake_lines_ingredient (IngredientId),
+
+    CONSTRAINT FK_actual_intake_lines_intake FOREIGN KEY (IntakeId)
+        REFERENCES ingredient_actual_intakes (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_actual_intake_lines_ingredient FOREIGN KEY (IngredientId)
+        REFERENCES ingredients (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Actual intake lines';
+
+-- =====================================================
 -- Table: dishes
 -- =====================================================
 CREATE TABLE dishes (
@@ -635,16 +794,22 @@ CREATE TABLE orders (
     PaymentStatus VARCHAR(20) NOT NULL DEFAULT 'unpaid' COMMENT 'unpaid|partial|paid',
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
     UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+    InvoiceCode VARCHAR(40) NULL COMMENT 'Mã hóa đơn (POS)',
+    CreatedBySalesUserId CHAR(36) NULL COMMENT 'Nhân viên bán tạo hóa đơn',
 
     PRIMARY KEY (Id),
+    UNIQUE INDEX UQ_orders_invoice_code (InvoiceCode),
     INDEX IX_orders_user (UserId),
     INDEX IX_orders_unit (UnitId),
+    INDEX IX_orders_created_by_sales (CreatedBySalesUserId),
     INDEX IX_orders_scheduled_status (ScheduledDate, Status),
 
     CONSTRAINT FK_orders_user FOREIGN KEY (UserId)
         REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT FK_orders_unit FOREIGN KEY (UnitId)
-        REFERENCES units (Id) ON DELETE SET NULL ON UPDATE CASCADE
+        REFERENCES units (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_orders_created_by_sales_user FOREIGN KEY (CreatedBySalesUserId)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci
@@ -1032,7 +1197,11 @@ INSERT INTO roles (Id, Name, Description, IsSystemRole, CreatedAt) VALUES
 (UUID(), 'Admin', 'Administrator with management permissions', 1, NOW()),
 (UUID(), 'User', 'Regular user with basic permissions', 1, NOW()),
 (UUID(), 'Instructor', 'Course instructor with teaching permissions', 1, NOW()),
-(UUID(), 'Student', 'Student with learning permissions', 1, NOW());
+(UUID(), 'Student', 'Student with learning permissions', 1, NOW()),
+(UUID(), 'Staff', 'Nhân viên kho / nhân viên (đề xuất nhập nguyên liệu)', 1, NOW()),
+(UUID(), 'Sales', 'Nhân viên bán hàng / lập hóa đơn', 1, NOW()),
+(UUID(), 'Company', 'Đại diện công ty / đơn vị đặt hàng (B2B)', 1, NOW()),
+(UUID(), 'Khách hàng', 'Người dùng cuối / khách đặt cơm', 1, NOW());
 
 -- =====================================================
 -- Initial Data: Common Permissions
@@ -1081,6 +1250,19 @@ INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VAL
 (UUID(), 'assessments.update', 'Update assessment information', 'assessments', 'update', NOW()),
 (UUID(), 'assessments.delete', 'Delete assessments', 'assessments', 'delete', NOW()),
 (UUID(), 'assessments.grade', 'Grade assessments', 'assessments', 'grade', NOW());
+
+-- Ingredient intake proposals (đề xuất nhập kho — nhân viên kho)
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'intakeproposals.create', 'Create ingredient intake proposals', 'intakeproposals', 'create', NOW()),
+(UUID(), 'intakeproposals.read', 'Read ingredient intake proposals', 'intakeproposals', 'read', NOW()),
+(UUID(), 'intakeproposals.fulfill', 'Record actual intake and update inventory from approved proposal', 'intakeproposals', 'fulfill', NOW()),
+(UUID(), 'intakeproposals.review', 'Approve or reject submitted intake proposals', 'intakeproposals', 'review', NOW());
+
+-- Orders / đơn ăn & hóa đơn (POS)
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'orders.create', 'Create orders / sales invoices', 'orders', 'create', NOW()),
+(UUID(), 'orders.read', 'Read orders', 'orders', 'read', NOW()),
+(UUID(), 'orders.update', 'Update orders (status, etc.)', 'orders', 'update', NOW());
 
 -- =====================================================
 -- Initial Data: Role-Permission Assignments
@@ -1151,6 +1333,58 @@ CROSS JOIN permissions p
 WHERE r.Name = 'User'
   AND p.Name IN ('users.read', 'courses.read', 'courses.list');
 
+-- Staff & Admin: phiếu đề xuất nhập nguyên liệu
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name IN ('Staff', 'Admin')
+  AND p.Name IN ('intakeproposals.create', 'intakeproposals.read', 'intakeproposals.fulfill');
+
+-- Admin: duyệt phiếu đề xuất nhập
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Admin'
+  AND p.Name = 'intakeproposals.review';
+
+-- Admin: quyền đơn hàng / hóa đơn
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Admin'
+  AND p.Resource = 'orders';
+
+-- Sales: tạo và xem đơn (hóa đơn)
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Sales'
+  AND p.Name IN ('orders.create', 'orders.read');
+
 -- =====================================================
 -- Sample Data: Test Users
 -- =====================================================
@@ -1194,9 +1428,13 @@ INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, Phone
 -- Regular Users
 SET @user1_id = UUID();
 SET @user2_id = UUID();
+SET @warehouse_staff_id = UUID();
+SET @sales_staff_id = UUID();
 INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, CreatedAt) VALUES
 (@user1_id, 'user1', 'user1@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Frank', 'Lam', '+84987654331', 1, 1, NOW(), NOW()),
-(@user2_id, 'user2', 'user2@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Grace', 'Do', '+84987654332', 0, 0, NULL, NOW());
+(@user2_id, 'user2', 'user2@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Grace', 'Do', '+84987654332', 0, 0, NULL, NOW()),
+(@warehouse_staff_id, 'warehouse_staff', 'warehouse@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Kho', 'Nguyễn', '+84987654340', 1, 1, NOW(), NOW()),
+(@sales_staff_id, 'sales_staff', 'sales@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Bán', 'Hàng', '+84987654341', 1, 1, NOW(), NOW());
 
 -- Inactive User (for testing)
 SET @inactive_user_id = UUID();
@@ -1277,6 +1515,18 @@ SELECT UUID(), @user2_id, r.Id, NOW(), @admin1_id, 1
 FROM roles r
 WHERE r.Name = 'User';
 
+-- Warehouse staff: role Staff (nhân viên kho)
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @warehouse_staff_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Staff';
+
+-- Sales staff: role Sales (nhân viên bán / hóa đơn)
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @sales_staff_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Sales';
+
 -- Assign Student role to inactive user (for testing inactive users with roles)
 INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
 SELECT UUID(), @inactive_user_id, r.Id, DATE_SUB(NOW(), INTERVAL 10 DAY), @admin1_id, 1
@@ -1325,6 +1575,9 @@ ANALYZE TABLE
     units, user_units,
     partners, contracts, partner_payments,
     ingredients, ingredient_sources, inventory,
+    internal_stock_issues, internal_stock_issue_lines,
+    ingredient_intake_proposals, ingredient_intake_proposal_lines,
+    ingredient_actual_intakes, ingredient_actual_intake_lines,
     dishes, dish_ingredients,
     weekly_menus, menu_schedule,
     orders, order_items, deliveries, payments,
@@ -1336,10 +1589,25 @@ OPTIMIZE TABLE
     units, user_units,
     partners, contracts, partner_payments,
     ingredients, ingredient_sources, inventory,
+    internal_stock_issues, internal_stock_issue_lines,
+    ingredient_intake_proposals, ingredient_intake_proposal_lines,
+    ingredient_actual_intakes, ingredient_actual_intake_lines,
     dishes, dish_ingredients,
     weekly_menus, menu_schedule,
     orders, order_items, deliveries, payments,
     transactions, reviews, sentiments, complaints, chatbot_logs, menu_suggestions;
+
+-- =====================================================
+-- Migration (existing DBs): add POS invoice columns to `orders`
+-- Chạy một lần nếu bảng orders đã tồn tại thiếu cột (điều chỉnh tên DB nếu cần).
+-- =====================================================
+-- ALTER TABLE orders
+--   ADD COLUMN InvoiceCode VARCHAR(40) NULL COMMENT 'Mã hóa đơn (POS)' AFTER UpdatedAt,
+--   ADD COLUMN CreatedBySalesUserId CHAR(36) NULL COMMENT 'Nhân viên bán tạo hóa đơn' AFTER InvoiceCode;
+-- CREATE UNIQUE INDEX UQ_orders_invoice_code ON orders (InvoiceCode);
+-- CREATE INDEX IX_orders_created_by_sales ON orders (CreatedBySalesUserId);
+-- ALTER TABLE orders ADD CONSTRAINT FK_orders_created_by_sales_user
+--   FOREIGN KEY (CreatedBySalesUserId) REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- =====================================================
 -- End of Schema

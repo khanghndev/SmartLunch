@@ -22,7 +22,8 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, GetUsersRespo
             request.Page,
             request.PageSize,
             request.SearchTerm,
-            request.IsActive);
+            request.IsActive,
+            request.RoleName);
 
         var userDtos = users.Select(u => new UserDto
         {
@@ -35,7 +36,13 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, GetUsersRespo
             IsActive = u.IsActive,
             IsEmailVerified = u.IsEmailVerified,
             LastLoginAt = u.LastLoginAt,
-            CreatedAt = u.CreatedAt
+            CreatedAt = u.CreatedAt,
+            RoleNames = u.UserRoles
+                .Where(ur => ur.Role != null)
+                .Select(ur => ur.Role!.Name)
+                .Distinct()
+                .OrderBy(n => n)
+                .ToList()
         }).ToList();
 
         _logger.LogInformation("Retrieved {Count} users (Page {Page}, PageSize {PageSize})",

@@ -38,6 +38,12 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<IngredientSource> IngredientSources { get; set; }
         public DbSet<Inventory> Inventories { get; set; }
+        public DbSet<InternalStockIssue> InternalStockIssues { get; set; }
+        public DbSet<InternalStockIssueLine> InternalStockIssueLines { get; set; }
+        public DbSet<IngredientIntakeProposal> IngredientIntakeProposals { get; set; }
+        public DbSet<IngredientIntakeProposalLine> IngredientIntakeProposalLines { get; set; }
+        public DbSet<IngredientActualIntake> IngredientActualIntakes { get; set; }
+        public DbSet<IngredientActualIntakeLine> IngredientActualIntakeLines { get; set; }
         public DbSet<Dish> Dishes { get; set; }
         public DbSet<DishIngredient> DishIngredients { get; set; }
         public DbSet<WeeklyMenu> WeeklyMenus { get; set; }
@@ -345,14 +351,16 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => new { e.IsActive, e.LegalName });
                 entity.Property(e => e.Id).ValueGeneratedNever();
                 entity.Property(e => e.LegalName).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.BusinessRegistrationNumber).HasMaxLength(100);
                 entity.Property(e => e.TaxId).HasMaxLength(50);
+                entity.Property(e => e.LegalRepresentative).HasMaxLength(255);
                 entity.Property(e => e.Address).HasMaxLength(255);
                 entity.Property(e => e.ContactPerson).HasMaxLength(255);
                 entity.Property(e => e.Phone).HasMaxLength(50);
                 entity.Property(e => e.Email).HasMaxLength(255);
                 entity.Property(e => e.PerformanceRating).HasPrecision(3, 2);
-                entity.Property(e => e.ComplianceInfo).HasMaxLength(255);
-                entity.Property(e => e.FinancialTerms).HasMaxLength(255);
+                entity.Property(e => e.ComplianceInfo).HasMaxLength(2000);
+                entity.Property(e => e.FinancialTerms).HasMaxLength(1000);
             });
 
             // Contract
@@ -364,7 +372,9 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.Status);
                 entity.HasIndex(e => new { e.StartDate, e.EndDate });
                 entity.Property(e => e.Id).ValueGeneratedNever();
-                entity.Property(e => e.Description).HasMaxLength(255);
+                entity.Property(e => e.ContractNumber).HasMaxLength(100);
+                entity.Property(e => e.Description).HasMaxLength(1000);
+                entity.Property(e => e.SupplySchedule).HasMaxLength(500);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.TotalValue).HasPrecision(12, 2);
                 entity.Property(e => e.DepositAmount).HasPrecision(12, 2);
@@ -427,6 +437,124 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.QuantityAvailable).HasPrecision(12, 2);
                 entity.Property(e => e.ReorderLevel).HasPrecision(12, 2);
                 entity.HasOne(e => e.Ingredient).WithOne(i => i.Inventory).HasForeignKey<Inventory>(e => e.IngredientId).OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // InternalStockIssue
+            modelBuilder.Entity<InternalStockIssue>(entity =>
+            {
+                entity.ToTable("internal_stock_issues");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.IssueCode).IsUnique();
+                entity.HasIndex(e => e.IssuedAt);
+                entity.HasIndex(e => e.CreatedByUserId);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.IssueCode).IsRequired().HasMaxLength(40);
+                entity.Property(e => e.Reason).HasMaxLength(500);
+                entity.HasOne(e => e.CreatedByUser)
+                    .WithMany(u => u.InternalStockIssuesCreated)
+                    .HasForeignKey(e => e.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<InternalStockIssueLine>(entity =>
+            {
+                entity.ToTable("internal_stock_issue_lines");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.IssueId);
+                entity.HasIndex(e => e.IngredientId);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Quantity).HasPrecision(12, 2);
+                entity.HasOne(e => e.Issue)
+                    .WithMany(i => i.Lines)
+                    .HasForeignKey(e => e.IssueId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Ingredient)
+                    .WithMany()
+                    .HasForeignKey(e => e.IngredientId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // IngredientIntakeProposal
+            modelBuilder.Entity<IngredientIntakeProposal>(entity =>
+            {
+                entity.ToTable("ingredient_intake_proposals");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.ProposalCode).IsUnique();
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.CreatedByUserId);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.ProposalCode).IsRequired().HasMaxLength(40);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.HeaderNote).HasMaxLength(500);
+                entity.Property(e => e.ReviewNote).HasMaxLength(500);
+                entity.HasOne(e => e.CreatedByUser)
+                    .WithMany(u => u.IngredientIntakeProposalsCreated)
+                    .HasForeignKey(e => e.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.ReviewedByUser)
+                    .WithMany(u => u.IngredientIntakeProposalsReviewed)
+                    .HasForeignKey(e => e.ReviewedByUserId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<IngredientIntakeProposalLine>(entity =>
+            {
+                entity.ToTable("ingredient_intake_proposal_lines");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.ProposalId);
+                entity.HasIndex(e => e.IngredientId);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Quantity).HasPrecision(12, 2);
+                entity.Property(e => e.LineNote).HasMaxLength(255);
+                entity.HasOne(e => e.Proposal)
+                    .WithMany(p => p.Lines)
+                    .HasForeignKey(e => e.ProposalId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Ingredient)
+                    .WithMany()
+                    .HasForeignKey(e => e.IngredientId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // IngredientActualIntake
+            modelBuilder.Entity<IngredientActualIntake>(entity =>
+            {
+                entity.ToTable("ingredient_actual_intakes");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.ReceiptCode).IsUnique();
+                entity.HasIndex(e => e.ProposalId).IsUnique();
+                entity.HasIndex(e => e.CreatedByUserId);
+                entity.HasIndex(e => e.ReceivedAt);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.ReceiptCode).IsRequired().HasMaxLength(40);
+                entity.Property(e => e.Note).HasMaxLength(500);
+                entity.HasOne(e => e.Proposal)
+                    .WithOne(p => p.ActualIntake)
+                    .HasForeignKey<IngredientActualIntake>(e => e.ProposalId)
+                    .OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.CreatedByUser)
+                    .WithMany(u => u.IngredientActualIntakesCreated)
+                    .HasForeignKey(e => e.CreatedByUserId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<IngredientActualIntakeLine>(entity =>
+            {
+                entity.ToTable("ingredient_actual_intake_lines");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.IntakeId);
+                entity.HasIndex(e => e.IngredientId);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Quantity).HasPrecision(12, 2);
+                entity.HasOne(e => e.Intake)
+                    .WithMany(i => i.Lines)
+                    .HasForeignKey(e => e.IntakeId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Ingredient)
+                    .WithMany()
+                    .HasForeignKey(e => e.IngredientId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // Dish
@@ -492,13 +620,17 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.UnitId);
+                entity.HasIndex(e => e.CreatedBySalesUserId);
+                entity.HasIndex(e => e.InvoiceCode).IsUnique();
                 entity.HasIndex(e => new { e.ScheduledDate, e.Status });
                 entity.Property(e => e.Id).ValueGeneratedNever();
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.TotalAmount).HasPrecision(12, 2);
                 entity.Property(e => e.PaymentStatus).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.InvoiceCode).HasMaxLength(40);
                 entity.HasOne(e => e.User).WithMany(u => u.Orders).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.SetNull);
                 entity.HasOne(e => e.Unit).WithMany().HasForeignKey(e => e.UnitId).OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(e => e.CreatedBySalesUser).WithMany(u => u.SalesOrdersCreated).HasForeignKey(e => e.CreatedBySalesUserId).OnDelete(DeleteBehavior.SetNull);
             });
 
             // OrderItem

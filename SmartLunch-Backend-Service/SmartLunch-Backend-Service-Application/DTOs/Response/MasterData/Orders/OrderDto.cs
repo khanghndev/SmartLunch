@@ -5,6 +5,7 @@ public class OrderDto
     public Guid Id { get; set; }
     public Guid? UserId { get; set; }
     public Guid? UnitId { get; set; }
+    public string? UnitName { get; set; }
     public DateTime OrderDate { get; set; }
     public DateTime ScheduledDate { get; set; }
     public string Status { get; set; } = string.Empty;
@@ -12,4 +13,8 @@ public class OrderDto
     public string PaymentStatus { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public string? InvoiceCode { get; set; }
+    public Guid? CreatedBySalesUserId { get; set; }
+    public string? CreatedBySalesDisplayName { get; set; }
+    public List<OrderItemLineDto> Items { get; set; } = new();
 }

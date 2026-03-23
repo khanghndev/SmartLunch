@@ -21,20 +21,11 @@ public class GetIngredientSourcesQueryHandler : IRequestHandler<GetIngredientSou
         var (ingredientSources, totalCount) = await _ingredientSourceRepository.GetIngredientSourcesAsync(
             request.Page,
             request.PageSize,
-            request.SearchTerm);
+            request.SearchTerm,
+            request.PartnerId,
+            request.IngredientId);
 
-        var ingredientSourceDtos = ingredientSources.Select(ingredientSource => new IngredientSourceDto
-        {
-                Id = ingredientSource.Id,
-                IngredientId = ingredientSource.IngredientId,
-                PartnerId = ingredientSource.PartnerId,
-                BatchNumber = ingredientSource.BatchNumber,
-                OriginDetails = ingredientSource.OriginDetails,
-                ProductionDate = ingredientSource.ProductionDate,
-                ExpirationDate = ingredientSource.ExpirationDate,
-                Certification = ingredientSource.Certification,
-                CreatedAt = ingredientSource.CreatedAt
-        }).ToList();
+        var ingredientSourceDtos = ingredientSources.Select(IngredientSourceDtoMapping.ToDto).ToList();
 
         _logger.LogInformation("Retrieved {Count} ingredientsources (Page {Page}, PageSize {PageSize})",
             ingredientSourceDtos.Count, request.Page, request.PageSize);

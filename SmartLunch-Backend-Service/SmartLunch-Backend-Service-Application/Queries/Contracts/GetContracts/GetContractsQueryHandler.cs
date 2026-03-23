@@ -21,21 +21,10 @@ public class GetContractsQueryHandler : IRequestHandler<GetContractsQuery, GetCo
         var (contracts, totalCount) = await _contractRepository.GetContractsAsync(
             request.Page,
             request.PageSize,
-            request.SearchTerm);
+            request.SearchTerm,
+            request.PartnerId);
 
-        var contractDtos = contracts.Select(contract => new ContractDto
-        {
-                Id = contract.Id,
-                PartnerId = contract.PartnerId,
-                Description = contract.Description,
-                StartDate = contract.StartDate,
-                EndDate = contract.EndDate,
-                TotalValue = contract.TotalValue,
-                DepositAmount = contract.DepositAmount,
-                Status = contract.Status,
-                CreatedAt = contract.CreatedAt,
-                UpdatedAt = contract.UpdatedAt
-        }).ToList();
+        var contractDtos = contracts.Select(ContractDtoMapping.ToDto).ToList();
 
         _logger.LogInformation("Retrieved {Count} contracts (Page {Page}, PageSize {PageSize})",
             contractDtos.Count, request.Page, request.PageSize);

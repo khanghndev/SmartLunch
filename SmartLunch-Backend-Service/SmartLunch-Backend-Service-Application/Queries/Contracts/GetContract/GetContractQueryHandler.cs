@@ -28,19 +28,7 @@ public class GetContractQueryHandler : IRequestHandler<GetContractQuery, GetCont
 
         return new GetContractResponse
         {
-            Contract = new ContractDto
-            {
-                Id = contract.Id,
-                PartnerId = contract.PartnerId,
-                Description = contract.Description,
-                StartDate = contract.StartDate,
-                EndDate = contract.EndDate,
-                TotalValue = contract.TotalValue,
-                DepositAmount = contract.DepositAmount,
-                Status = contract.Status,
-                CreatedAt = contract.CreatedAt,
-                UpdatedAt = contract.UpdatedAt
-            }
+            Contract = ContractDtoMapping.ToDto(contract)
         };
     }
 }

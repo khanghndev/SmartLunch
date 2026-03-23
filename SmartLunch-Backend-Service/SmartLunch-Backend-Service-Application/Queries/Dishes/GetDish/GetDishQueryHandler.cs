@@ -25,6 +25,27 @@ public class GetDishQueryHandler : IRequestHandler<GetDishQuery, GetDishResponse
 
     public async Task<GetDishResponse> Handle(GetDishQuery request, CancellationToken cancellationToken)
     {
+        if (request.IncludeIngredientQuotas)
+        {
+            var dish = await _dishRepository.GetByIdWithIngredientsAsync(request.DishId);
+            if (dish == null)
+            {
+                _logger.LogWarning("Dish not found with ID: {DishId}", request.DishId);
+                return new GetDishResponse { Dish = new DishDto() };
+            }
+
+            var quotas = dish.DishIngredients
+                .OrderBy(di => di.Ingredient?.Name)
+                .Select(DishDtoMapping.ToQuotaDto)
+                .ToList();
+
+            return new GetDishResponse
+            {
+                Dish = DishDtoMapping.ToDto(dish),
+                IngredientQuotas = quotas
+            };
+        }
+
         var cacheKey = MasterDataCacheKeys.Dish(request.DishId);
 
         return await _cacheService.GetOrCreateAsync(
@@ -41,18 +62,7 @@ public class GetDishQueryHandler : IRequestHandler<GetDishQuery, GetDishResponse
 
                 return new GetDishResponse
                 {
-                    Dish = new DishDto
-                    {
-                        Id = dish.Id,
-                        Name = dish.Name,
-                        Description = dish.Description,
-                        Category = dish.Category,
-                        Price = dish.Price,
-                        DietaryLabel = dish.DietaryLabel,
-                        IsActive = dish.IsActive,
-                        CreatedAt = dish.CreatedAt,
-                        UpdatedAt = dish.UpdatedAt
-                    }
+                    Dish = DishDtoMapping.ToDto(dish)
                 };
             },
             CacheDuration,

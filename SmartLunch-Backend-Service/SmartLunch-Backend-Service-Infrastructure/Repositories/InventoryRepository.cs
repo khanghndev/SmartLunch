@@ -34,4 +34,30 @@ public class InventoryRepository : IInventoryRepository
 
         return (inventories, totalCount);
     }
+
+    public async Task<IReadOnlyList<Inventory>> GetLowStockForActiveIngredientsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Inventories
+            .AsNoTracking()
+            .Include(i => i.Ingredient)
+            .Where(i =>
+                i.Ingredient.IsActive
+                && i.ReorderLevel != null
+                && i.QuantityAvailable <= i.ReorderLevel)
+            .OrderBy(i => i.QuantityAvailable)
+            .ThenBy(i => i.Ingredient.Name)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Inventory?> GetByIngredientIdWithIngredientAsync(
+        Guid ingredientId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Inventories
+            .AsNoTracking()
+            .Include(i => i.Ingredient)
+            .ThenInclude(ing => ing.DefaultSupplier)
+            .FirstOrDefaultAsync(i => i.IngredientId == ingredientId, cancellationToken);
+    }
 }

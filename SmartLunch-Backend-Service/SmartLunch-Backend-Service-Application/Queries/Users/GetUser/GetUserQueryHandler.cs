@@ -26,15 +26,26 @@ public class GetUserQueryHandler : IRequestHandler<GetUserQuery, GetUserResponse
             return new GetUserResponse { User = new UserDto() };
         }
 
-        // Map to UserDto (assumes some mapping logic, either manual or via, e.g., AutoMapper)
         var response = new GetUserResponse
         {
             User = new UserDto
             {
                 Id = user.Id,
+                Username = user.Username,
+                Email = user.Email,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                IsActive = user.IsActive,
+                IsEmailVerified = user.IsEmailVerified,
+                LastLoginAt = user.LastLoginAt,
+                CreatedAt = user.CreatedAt,
+                RoleNames = user.UserRoles
+                    .Where(ur => ur.Role != null)
+                    .Select(ur => ur.Role!.Name)
+                    .Distinct()
+                    .OrderBy(n => n)
+                    .ToList()
             }
         };
 

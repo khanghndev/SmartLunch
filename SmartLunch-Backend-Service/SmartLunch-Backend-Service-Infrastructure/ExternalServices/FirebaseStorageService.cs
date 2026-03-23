@@ -110,6 +110,24 @@ public class FirebaseStorageService : IFirebaseStorageService
         }
     }
 
+    public async Task UploadObjectAsync(
+        string objectName,
+        Stream content,
+        string contentType,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(objectName)) throw new ArgumentException("ObjectName is required", nameof(objectName));
+        if (content == null) throw new ArgumentNullException(nameof(content));
+        if (string.IsNullOrWhiteSpace(contentType)) throw new ArgumentException("ContentType is required", nameof(contentType));
+
+        await _storageClient.UploadObjectAsync(
+            bucket: _bucket,
+            objectName: objectName,
+            contentType: contentType,
+            source: content,
+            cancellationToken: cancellationToken);
+    }
+
     public async Task DeleteObjectAsync(string objectName)
     {
         await _storageClient.DeleteObjectAsync(_bucket, objectName);

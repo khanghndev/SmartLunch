@@ -1,4 +1,5 @@
 using MediatR;
+using SmartLunch.Backend.Service.Application.Common.Caching;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.DishIngredients;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.DishIngredients;
 using SmartLunch.Backend.Service.Application.Interfaces;
@@ -8,10 +9,14 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.DishIngredi
 public class UpdateDishIngredientCommandHandler : IRequestHandler<UpdateDishIngredientCommand, GetDishIngredientResponse>
 {
     private readonly IDishIngredientRepository _dishIngredientRepository;
+    private readonly ICacheService _cacheService;
 
-    public UpdateDishIngredientCommandHandler(IDishIngredientRepository dishIngredientRepository)
+    public UpdateDishIngredientCommandHandler(
+        IDishIngredientRepository dishIngredientRepository,
+        ICacheService cacheService)
     {
         _dishIngredientRepository = dishIngredientRepository;
+        _cacheService = cacheService;
     }
 
     public async Task<GetDishIngredientResponse> Handle(UpdateDishIngredientCommand request, CancellationToken cancellationToken)
@@ -24,6 +29,7 @@ public class UpdateDishIngredientCommandHandler : IRequestHandler<UpdateDishIngr
         entity.Quantity = req.Quantity;
         entity.Unit = req.Unit;
         await _dishIngredientRepository.UpdateAsync(entity);
+        await _cacheService.RemoveAsync(MasterDataCacheKeys.Dish(entity.DishId), cancellationToken);
 
         return new GetDishIngredientResponse
         {

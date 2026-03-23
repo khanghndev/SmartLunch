@@ -7,7 +7,11 @@ public class Partner
 {
     public Guid Id { get; set; }
     public string LegalName { get; set; } = string.Empty;
+    /// <summary>Số đăng ký kinh doanh (nếu khác mã số thuế).</summary>
+    public string? BusinessRegistrationNumber { get; set; }
     public string? TaxId { get; set; }
+    /// <summary>Người đại diện theo pháp luật.</summary>
+    public string? LegalRepresentative { get; set; }
     public string? Address { get; set; }
     public string? ContactPerson { get; set; }
     public string? Phone { get; set; }

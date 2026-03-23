@@ -12,5 +12,11 @@ public interface IUserRepository
     Task<bool> DeleteAsync(Guid id);
     Task<bool> ExistsByUsernameAsync(string username);
     Task<bool> ExistsByEmailAsync(string email);
-    Task<(List<User> Users, int TotalCount)> GetUsersAsync(int page, int pageSize, string? searchTerm = null, bool? isActive = null);
+    Task<bool> IsEmailTakenByAnotherUserAsync(string email, Guid excludeUserId);
+    Task<(List<User> Users, int TotalCount)> GetUsersAsync(
+        int page,
+        int pageSize,
+        string? searchTerm = null,
+        bool? isActive = null,
+        string? roleName = null);
 }

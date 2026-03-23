@@ -41,22 +41,7 @@ public class GetPartnersQueryHandler : IRequestHandler<GetPartnersQuery, GetPart
                     request.SearchTerm,
                     request.IsActive);
 
-                var partnerDtos = partners.Select(p => new PartnerDto
-                {
-                    Id = p.Id,
-                    LegalName = p.LegalName,
-                    TaxId = p.TaxId,
-                    Address = p.Address,
-                    ContactPerson = p.ContactPerson,
-                    Phone = p.Phone,
-                    Email = p.Email,
-                    PerformanceRating = p.PerformanceRating,
-                    ComplianceInfo = p.ComplianceInfo,
-                    FinancialTerms = p.FinancialTerms,
-                    IsActive = p.IsActive,
-                    CreatedAt = p.CreatedAt,
-                    UpdatedAt = p.UpdatedAt
-                }).ToList();
+                var partnerDtos = partners.Select(PartnerDtoMapping.ToDto).ToList();
 
                 _logger.LogInformation("Retrieved {Count} partners (Page {Page}, PageSize {PageSize})",
                     partnerDtos.Count, request.Page, request.PageSize);

@@ -8,11 +8,13 @@ public class GetContractsQuery : IRequest<GetContractsResponse>
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 10;
     public string? SearchTerm { get; set; }
+    public Guid? PartnerId { get; set; }
 
-    public GetContractsQuery(int page = 1, int pageSize = 10, string? searchTerm = null)
+    public GetContractsQuery(int page = 1, int pageSize = 10, string? searchTerm = null, Guid? partnerId = null)
     {
         Page = page;
         PageSize = pageSize;
         SearchTerm = searchTerm;
+        PartnerId = partnerId;
     }
 }
