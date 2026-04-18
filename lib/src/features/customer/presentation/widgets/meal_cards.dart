@@ -61,7 +61,7 @@ const suggestedMeals = [
       'Salad dưa leo - cà chua',
       'Sốt mè rang',
     ],
-    gradient: [Color(0xFF0F6B6F), Color(0xFF2AA59B)],
+    gradient: [AppColors.customer, Color(0xFF2AA59B)],
   ),
   MealData(
     name: 'Phở bò truyền thống',
@@ -83,7 +83,7 @@ const suggestedMeals = [
       'Hành lá, rau thơm',
       'Nước dùng hầm xương 12h',
     ],
-    gradient: [Color(0xFF1F3C88), Color(0xFF5C7DC7)],
+    gradient: [AppColors.customerAlt, AppColors.customerAlt],
   ),
   MealData(
     name: 'Salad gà nướng',
@@ -126,7 +126,7 @@ const suggestedMeals = [
       'Rau sống',
       'Nước mắm chua ngọt',
     ],
-    gradient: [Color(0xFFE07A24), Color(0xFFF1AE62)],
+    gradient: [AppColors.customer, AppColors.customerAlt],
   ),
   MealData(
     name: 'Cá hồi áp chảo sốt miso',
@@ -177,11 +177,7 @@ class MiniMealCard extends StatelessWidget {
   final MealData meal;
   final bool compact;
 
-  const MiniMealCard({
-    super.key,
-    required this.meal,
-    this.compact = false,
-  });
+  const MiniMealCard({super.key, required this.meal, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
@@ -189,10 +185,10 @@ class MiniMealCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         borderRadius: BorderRadius.circular(18),
-        onTap: () => Navigator.of(context).pushNamed(
-          AppRoutes.customerMealDetail,
-          arguments: meal,
-        ),
+        onTap:
+            () => Navigator.of(
+              context,
+            ).pushNamed(AppRoutes.customerMealDetail, arguments: meal),
         child: Ink(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -224,12 +220,14 @@ class MiniMealCard extends StatelessWidget {
                             meal.name,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                  color: AppColors.ink,
-                                  letterSpacing: -0.2,
-                                  fontSize: compact ? 15 : null,
-                                ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.ink,
+                              letterSpacing: -0.2,
+                              fontSize: compact ? 15 : null,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -250,10 +248,11 @@ class MiniMealCard extends StatelessWidget {
                         child: Wrap(
                           spacing: 6,
                           runSpacing: 6,
-                          children: meal.tags
-                              .take(compact ? 1 : 2)
-                              .map((t) => _TagChip(t, dense: compact))
-                              .toList(),
+                          children:
+                              meal.tags
+                                  .take(compact ? 1 : 2)
+                                  .map((t) => _TagChip(t, dense: compact))
+                                  .toList(),
                         ),
                       ),
                     Text(
@@ -261,10 +260,10 @@ class MiniMealCard extends StatelessWidget {
                       maxLines: compact ? 1 : 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppColors.ink.withOpacity(0.6),
-                            height: 1.4,
-                            fontSize: compact ? 12.5 : null,
-                          ),
+                        color: AppColors.ink.withOpacity(0.6),
+                        height: 1.4,
+                        fontSize: compact ? 12.5 : null,
+                      ),
                     ),
                     const SizedBox(height: 10),
                     Wrap(
@@ -272,9 +271,15 @@ class MiniMealCard extends StatelessWidget {
                       runSpacing: 6,
                       crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        _Stat(icon: Icons.star_rounded, label: meal.rating.toStringAsFixed(1)),
+                        _Stat(
+                          icon: Icons.star_rounded,
+                          label: meal.rating.toStringAsFixed(1),
+                        ),
                         _Stat(icon: Icons.timer_outlined, label: meal.prepTime),
-                        _Stat(icon: Icons.local_fire_department_rounded, label: '${meal.calories} kcal'),
+                        _Stat(
+                          icon: Icons.local_fire_department_rounded,
+                          label: '${meal.calories} kcal',
+                        ),
                       ],
                     ),
                   ],
@@ -292,10 +297,11 @@ class MiniMealCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
-                      onPressed: () => Navigator.of(context).pushNamed(
-                        AppRoutes.customerMealDetail,
-                        arguments: meal,
-                      ),
+                      onPressed:
+                          () => Navigator.of(context).pushNamed(
+                            AppRoutes.customerMealDetail,
+                            arguments: meal,
+                          ),
                       icon: const Icon(
                         Icons.add_rounded,
                         color: AppColors.customer,
@@ -350,8 +356,7 @@ class _MealThumbnail extends StatelessWidget {
             top: -6,
             right: -6,
             child: Container(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
               decoration: BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(12),

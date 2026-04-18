@@ -90,13 +90,13 @@ class _SummaryRow extends StatelessWidget {
         label: 'Chi tiêu',
         value: '1.240.000đ',
         icon: Icons.payments_rounded,
-        color: const Color(0xFFE07A24),
+        color: AppColors.customer,
       ),
       _SummaryCard(
         label: 'Điểm thưởng',
         value: '2.480',
         icon: Icons.bolt_rounded,
-        color: const Color(0xFF1F3C88),
+        color: AppColors.customerAlt,
       ),
     ];
 
@@ -104,12 +104,15 @@ class _SummaryRow extends StatelessWidget {
       builder: (context, constraints) {
         if (constraints.maxWidth < 380) {
           return Column(
-            children: items
-                .map((i) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8),
-                      child: i,
-                ))
-                .toList(),
+            children:
+                items
+                    .map(
+                      (i) => Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: i,
+                      ),
+                    )
+                    .toList(),
           );
         }
         return Row(
@@ -207,31 +210,36 @@ class _DateChips extends StatelessWidget {
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: chips
-            .map((c) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: ChoiceChip(
-                    label: Text(c.label),
-                    selected: c.selected,
-                    onSelected: (_) {},
-                    selectedColor: AppColors.customer.withOpacity(0.12),
-                    labelStyle: TextStyle(
-                      color: c.selected
-                          ? AppColors.customer
-                          : AppColors.ink.withOpacity(0.75),
-                      fontWeight: FontWeight.w800,
-                    ),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      side: BorderSide(
-                        color: c.selected
-                            ? AppColors.customer.withOpacity(0.4)
-                            : AppColors.ink.withOpacity(0.08),
+        children:
+            chips
+                .map(
+                  (c) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(c.label),
+                      selected: c.selected,
+                      onSelected: (_) {},
+                      selectedColor: AppColors.customer.withOpacity(0.12),
+                      labelStyle: TextStyle(
+                        color:
+                            c.selected
+                                ? AppColors.customer
+                                : AppColors.ink.withOpacity(0.75),
+                        fontWeight: FontWeight.w800,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        side: BorderSide(
+                          color:
+                              c.selected
+                                  ? AppColors.customer.withOpacity(0.4)
+                                  : AppColors.ink.withOpacity(0.08),
+                        ),
                       ),
                     ),
                   ),
-                ))
-            .toList(),
+                )
+                .toList(),
       ),
     );
   }
@@ -270,11 +278,11 @@ class _OrderTile extends StatelessWidget {
   Color _statusColor() {
     switch (order.status) {
       case OrderStatus.delivered:
-        return const Color(0xFF45A17E);
+        return AppColors.customerAlt;
       case OrderStatus.completed:
         return AppColors.customer;
       case OrderStatus.refunded:
-        return const Color(0xFFE07A24);
+        return AppColors.customer;
     }
   }
 
@@ -337,7 +345,9 @@ class _OrderTile extends StatelessWidget {
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 4),
+                            horizontal: 8,
+                            vertical: 4,
+                          ),
                           decoration: BoxDecoration(
                             color: color.withOpacity(0.14),
                             borderRadius: BorderRadius.circular(8),
@@ -411,10 +421,7 @@ class _OrderTile extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 10),
-              TextButton(
-                onPressed: () {},
-                child: const Text('Đặt lại'),
-              ),
+              TextButton(onPressed: () {}, child: const Text('Đặt lại')),
             ],
           ),
         ],

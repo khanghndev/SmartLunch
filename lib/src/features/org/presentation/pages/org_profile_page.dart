@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../app/app_routes.dart';
 import '../../../../core/constants/app_colors.dart';
 
 class OrgProfilePage extends StatelessWidget {
@@ -36,6 +37,7 @@ class OrgProfilePage extends StatelessWidget {
             _PreferenceCard(),
             SizedBox(height: 12),
             _SupportCard(),
+            SizedBox(height: 16),
           ],
         ),
       ),

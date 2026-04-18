@@ -78,7 +78,10 @@ class _AuthShellState extends State<AuthShell> {
           Positioned(
             bottom: -80,
             left: -30,
-            child: _BlurOrb(color: widget.gradient.first.withOpacity(0.1), size: 180),
+            child: _BlurOrb(
+              color: widget.gradient.first.withOpacity(0.1),
+              size: 180,
+            ),
           ),
 
           SafeArea(
@@ -127,10 +130,7 @@ class _AuthShellState extends State<AuthShell> {
                           decoration: BoxDecoration(
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: accentLine,
-                              width: 1,
-                            ),
+                            border: Border.all(color: accentLine, width: 1),
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withOpacity(0.05),
@@ -152,15 +152,14 @@ class _AuthShellState extends State<AuthShell> {
                             children: [
                               Text(
                                 'SmartLunch',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(
-                                      color: const Color(0xFF0F172A),
-                                      fontWeight: FontWeight.w800,
-                                      letterSpacing: -0.2,
-                                      fontSize: 20,
-                                    ),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.titleLarge?.copyWith(
+                                  color: const Color(0xFF0F172A),
+                                  fontWeight: FontWeight.w800,
+                                  letterSpacing: -0.2,
+                                  fontSize: 20,
+                                ),
                               ),
                               if (badge != null) ...[
                                 const SizedBox(height: 3),
@@ -200,28 +199,26 @@ class _AuthShellState extends State<AuthShell> {
                       children: [
                         Text(
                           widget.title,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleLarge
-                              ?.copyWith(
-                                color: const Color(0xFF0F172A),
-                                fontWeight: FontWeight.w800,
-                                height: 1.1,
-                                letterSpacing: -0.1,
-                                fontSize: 22,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleLarge?.copyWith(
+                            color: const Color(0xFF0F172A),
+                            fontWeight: FontWeight.w800,
+                            height: 1.1,
+                            letterSpacing: -0.1,
+                            fontSize: 22,
+                          ),
                         ),
                         const SizedBox(height: 6),
                         Text(
                           widget.subtitle,
-                          style: Theme.of(context)
-                              .textTheme
-                              .bodyLarge
-                              ?.copyWith(
-                                color: const Color(0xFF475569),
-                                height: 1.45,
-                                fontSize: 14,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyLarge?.copyWith(
+                            color: const Color(0xFF475569),
+                            height: 1.45,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),

@@ -66,9 +66,9 @@ class AddressBookPage extends StatelessWidget {
                   Text(
                     'Danh sách địa chỉ',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.ink,
-                        ),
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.ink,
+                    ),
                   ),
                   const SizedBox(height: 8),
                   ...addresses.map(
@@ -131,9 +131,10 @@ class _AddressTile extends StatelessWidget {
         color: AppColors.customer.withOpacity(0.04),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: address.isDefault
-              ? AppColors.customer.withOpacity(0.5)
-              : AppColors.ink.withOpacity(0.05),
+          color:
+              address.isDefault
+                  ? AppColors.customer.withOpacity(0.5)
+                  : AppColors.ink.withOpacity(0.05),
         ),
       ),
       child: Row(
@@ -172,12 +173,15 @@ class _AddressTile extends StatelessWidget {
                     if (address.isDefault)
                       Container(
                         padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(8),
                           border: Border.all(
-                              color: AppColors.customer.withOpacity(0.35)),
+                            color: AppColors.customer.withOpacity(0.35),
+                          ),
                         ),
                         child: const Text(
                           'Mặc định',
@@ -211,8 +215,10 @@ class _AddressTile extends StatelessWidget {
             ),
           ),
           const SizedBox(width: 10),
-          Icon(Icons.chevron_right_rounded,
-              color: AppColors.ink.withOpacity(0.4)),
+          Icon(
+            Icons.chevron_right_rounded,
+            color: AppColors.ink.withOpacity(0.4),
+          ),
         ],
       ),
     );

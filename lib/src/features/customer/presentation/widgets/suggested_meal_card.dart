@@ -14,20 +14,17 @@ class SuggestedMealCard extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () => Navigator.of(context).pushNamed(
-          AppRoutes.customerMealDetail,
-          arguments: meal,
-        ),
+        onTap:
+            () => Navigator.of(
+              context,
+            ).pushNamed(AppRoutes.customerMealDetail, arguments: meal),
         borderRadius: BorderRadius.circular(22),
         child: Container(
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(22),
-            border: Border.all(
-              color: Colors.grey.withOpacity(0.08),
-              width: 1,
-            ),
+            border: Border.all(color: Colors.grey.withOpacity(0.08), width: 1),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(0.05),
@@ -73,14 +70,13 @@ class SuggestedMealCard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             meal.name,
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  fontWeight: FontWeight.w900,
-                                  color: AppColors.ink,
-                                  letterSpacing: -0.2,
-                                ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              color: AppColors.ink,
+                              letterSpacing: -0.2,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -91,9 +87,9 @@ class SuggestedMealCard extends StatelessWidget {
                     Text(
                       meal.description,
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.grey[700],
-                            height: 1.4,
-                          ),
+                        color: Colors.grey[700],
+                        height: 1.4,
+                      ),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
@@ -142,10 +138,10 @@ class SuggestedMealCard extends StatelessWidget {
                   Text(
                     '${_formatPrice(meal.price)}đ',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.customer,
-                          letterSpacing: -0.4,
-                        ),
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.customer,
+                      letterSpacing: -0.4,
+                    ),
                   ),
                   const SizedBox(height: 12),
                   Container(
@@ -197,9 +193,7 @@ class _TagChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.customer.withOpacity(0.1),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: AppColors.customer.withOpacity(0.2),
-        ),
+        border: Border.all(color: AppColors.customer.withOpacity(0.2)),
       ),
       child: Text(
         label,

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
+
 class PremiumDrawer extends StatelessWidget {
   final String userName;
   final String userRole;
@@ -44,159 +46,177 @@ class PremiumDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Drawer(
-      width: MediaQuery.of(context).size.width * 0.85,
+      width: MediaQuery.of(context).size.width * 0.87,
       child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Colors.white,
-              Colors.grey.shade50,
-            ],
-          ),
-        ),
+        color: AppColors.surface,
         child: SafeArea(
           child: Column(
             children: [
-              // Header với gradient
-              Container(
-                padding: const EdgeInsets.all(24),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                    colors: gradient,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: accentColor.withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.25),
-                            borderRadius: BorderRadius.circular(18),
-                            border: Border.all(
-                              color: Colors.white.withOpacity(0.3),
-                              width: 1.5,
-                            ),
-                          ),
-                          child: Image.asset(
-                            'assets/images/linh_vat.png',
-                            height: 48,
-                            fit: BoxFit.contain,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                userName,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleLarge
-                                    ?.copyWith(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w800,
-                                      fontSize: 20,
-                                    ),
-                              ),
-                              const SizedBox(height: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.25),
-                                  borderRadius: BorderRadius.circular(12),
-                                  border: Border.all(
-                                    color: Colors.white.withOpacity(0.3),
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Text(
-                                  roleBadge,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 12,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
+              _DrawerHeader(
+                userName: userName,
+                userRole: userRole,
+                roleBadge: roleBadge,
+                gradient: gradient,
               ),
-
-              // Menu items
               Expanded(
                 child: ListView(
-                  padding: EdgeInsets.zero,
+                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
                   children: [
-                    ...sections.map((section) => _DrawerSectionWidget(
-                          section: section,
-                          selectedIndex: selectedIndex,
-                          onSelectTab: (index) => _selectTab(context, index),
-                          onNavigate: (route) => _navigate(context, route),
-                          accentColor: accentColor,
-                        )),
+                    ...sections.map(
+                      (section) => _DrawerSectionWidget(
+                        section: section,
+                        selectedIndex: selectedIndex,
+                        accentColor: accentColor,
+                        onSelectTab: (index) => _selectTab(context, index),
+                        onNavigate: (route) => _navigate(context, route),
+                      ),
+                    ),
                   ],
                 ),
               ),
-
-              // Logout button
-              Container(
-                margin: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(16),
-                  border: Border.all(
-                    color: Colors.red.withOpacity(0.3),
-                    width: 1.5,
-                  ),
-                ),
-                child: ListTile(
-                  leading: Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.red.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: const Icon(
-                      Icons.logout_rounded,
-                      color: Colors.red,
-                      size: 20,
-                    ),
-                  ),
-                  title: const Text(
-                    'Đăng xuất',
-                    style: TextStyle(
-                      fontWeight: FontWeight.w700,
-                      color: Colors.red,
-                    ),
-                  ),
-                  onTap: () => _signOut(context),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                ),
-              ),
+              _LogoutTile(onTap: () => _signOut(context)),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DrawerHeader extends StatelessWidget {
+  final String userName;
+  final String userRole;
+  final String roleBadge;
+  final List<Color> gradient;
+
+  const _DrawerHeader({
+    required this.userName,
+    required this.userRole,
+    required this.roleBadge,
+    required this.gradient,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(10, 10, 10, 8),
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradient,
+        ),
+        borderRadius: BorderRadius.circular(22),
+        boxShadow: [
+          BoxShadow(
+            color: gradient.first.withOpacity(0.32),
+            blurRadius: 22,
+            offset: const Offset(0, 10),
+            spreadRadius: -6,
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            width: 56,
+            height: 56,
+            decoration: BoxDecoration(
+              color: Colors.white.withOpacity(0.2),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: Colors.white.withOpacity(0.38)),
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(16),
+              child: Image.asset(
+                'assets/images/linh_vat.png',
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) {
+                  return const Icon(
+                    Icons.restaurant_rounded,
+                    color: Colors.white,
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  userName,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  userRole,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: Colors.white.withOpacity(0.95),
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 10,
+                    vertical: 4,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    borderRadius: BorderRadius.circular(999),
+                    border: Border.all(color: Colors.white.withOpacity(0.4)),
+                  ),
+                  child: Text(
+                    roleBadge,
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.25,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _LogoutTile extends StatelessWidget {
+  final VoidCallback onTap;
+
+  const _LogoutTile({required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(14, 0, 14, 16),
+      decoration: BoxDecoration(
+        color: AppColors.danger.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppColors.danger.withOpacity(0.2)),
+      ),
+      child: ListTile(
+        onTap: onTap,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        leading: const Icon(Icons.logout_rounded, color: AppColors.danger),
+        title: Text(
+          'Đăng xuất',
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: AppColors.danger,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
@@ -208,10 +228,7 @@ class DrawerSection {
   final String? title;
   final List<DrawerItem> items;
 
-  const DrawerSection({
-    this.title,
-    required this.items,
-  });
+  const DrawerSection({this.title, required this.items});
 }
 
 class DrawerItem {
@@ -252,27 +269,28 @@ class _DrawerSectionWidget extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        if (section.title != null)
+        if (section.title != null) ...[
           Padding(
-            padding: const EdgeInsets.fromLTRB(20, 20, 20, 12),
+            padding: const EdgeInsets.fromLTRB(8, 14, 8, 8),
             child: Text(
-              section.title?.toUpperCase() ?? '',
+              section.title!.toUpperCase(),
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    color: Colors.grey.shade600,
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 1.2,
-                    fontSize: 11,
-                  ),
+                color: AppColors.inkSoft,
+                fontWeight: FontWeight.w700,
+                letterSpacing: 1,
+              ),
             ),
           ),
-        ...section.items.map((item) => _DrawerItemWidget(
-              item: item,
-              isSelected:
-                  item.tabIndex != null && selectedIndex == item.tabIndex,
-              accentColor: accentColor,
-              onSelectTab: onSelectTab,
-              onNavigate: onNavigate,
-            )),
+        ],
+        ...section.items.map(
+          (item) => _DrawerItemWidget(
+            item: item,
+            isSelected: item.tabIndex != null && item.tabIndex == selectedIndex,
+            accentColor: accentColor,
+            onSelectTab: onSelectTab,
+            onNavigate: onNavigate,
+          ),
+        ),
       ],
     );
   }
@@ -298,67 +316,15 @@ class _DrawerItemWidget extends StatelessWidget {
     final iconColor = item.iconColor ?? accentColor;
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
-        gradient: isSelected
-            ? LinearGradient(
-                colors: [
-                  accentColor.withOpacity(0.15),
-                  accentColor.withOpacity(0.08),
-                ],
-                begin: Alignment.centerLeft,
-                end: Alignment.centerRight,
-              )
-            : null,
+        color: isSelected ? AppColors.tint(accentColor, 0.12) : Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: isSelected
-            ? Border.all(
-                color: accentColor.withOpacity(0.3),
-                width: 1.5,
-              )
-            : null,
+        border: Border.all(
+          color: isSelected ? accentColor.withOpacity(0.32) : AppColors.border,
+        ),
       ),
       child: ListTile(
-        leading: Container(
-          padding: const EdgeInsets.all(10),
-          decoration: BoxDecoration(
-            color: isSelected
-                ? accentColor.withOpacity(0.2)
-                : iconColor.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: Icon(
-            item.icon,
-            color: isSelected ? accentColor : iconColor,
-            size: 22,
-          ),
-        ),
-        title: Text(
-          item.labelVi,
-          style: TextStyle(
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-            color: isSelected ? accentColor : Colors.grey.shade800,
-            fontSize: 15,
-          ),
-        ),
-        trailing: isSelected
-            ? Container(
-                padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  color: accentColor,
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(
-                  Icons.check,
-                  color: Colors.white,
-                  size: 12,
-                ),
-              )
-            : Icon(
-                Icons.chevron_right_rounded,
-                color: Colors.grey.shade400,
-                size: 20,
-              ),
         onTap: () {
           final tabIndex = item.tabIndex;
           final route = item.route;
@@ -368,8 +334,34 @@ class _DrawerItemWidget extends StatelessWidget {
             onNavigate(route);
           }
         },
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        leading: Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color:
+                isSelected
+                    ? accentColor.withOpacity(0.18)
+                    : iconColor.withOpacity(0.12),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            item.icon,
+            color: isSelected ? accentColor : iconColor,
+            size: 20,
+          ),
+        ),
+        title: Text(
+          item.labelVi,
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+            color: isSelected ? accentColor : AppColors.ink,
+            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+          ),
+        ),
+        trailing: Icon(
+          isSelected ? Icons.check_rounded : Icons.chevron_right_rounded,
+          color: isSelected ? accentColor : AppColors.inkSoft.withOpacity(0.8),
+          size: isSelected ? 18 : 20,
         ),
       ),
     );

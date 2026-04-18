@@ -15,7 +15,7 @@ class SmartLunchApp extends StatelessWidget {
     final router = AppRouter(config);
     return MaterialApp(
       title: config.appName,
-      theme: AppTheme.light(),
+      theme: AppTheme.light(config.flavor),
       debugShowCheckedModeBanner: false,
       onGenerateRoute: router.onGenerateRoute,
       initialRoute: AppRoutes.initialFor(config.flavor),

@@ -186,11 +186,11 @@ class _NotificationTile extends StatelessWidget {
       case NotificationType.assignment:
         return AppColors.courier;
       case NotificationType.issue:
-        return const Color(0xFFF4A261);
+        return AppColors.courierAlt;
       case NotificationType.proof:
-        return const Color(0xFF1F3C88);
+        return AppColors.courier;
       case NotificationType.feedback:
-        return const Color(0xFF2BAE66);
+        return AppColors.courier;
     }
   }
 

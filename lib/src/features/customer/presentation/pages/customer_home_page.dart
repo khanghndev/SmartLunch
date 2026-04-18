@@ -6,8 +6,6 @@ import '../../../../core/widgets/premium_bottom_nav.dart';
 import '../../../../core/widgets/premium_drawer.dart';
 import '../tabs/dashboard_tab.dart';
 import '../tabs/menu_tab.dart';
-import '../../order/presentation/pages/order_page.dart';
-import '../../payment/presentation/pages/payment_page.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 
 class CustomerHomePage extends StatefulWidget {
@@ -37,15 +35,11 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     const tabTitles = [
       'Trang chủ',
       'Thực đơn',
-      'Đơn hàng',
-      'Thanh toán',
       'Hồ sơ',
     ];
     final tabs = [
       DashboardTab(bottomInset: bottomInset),
       MenuTab(bottomInset: bottomInset),
-      OrderPage(embedded: true, bottomInset: bottomInset),
-      PaymentPage(embedded: true, bottomInset: bottomInset),
       ProfilePage(embedded: true, bottomInset: bottomInset),
     ];
 
@@ -66,7 +60,8 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
         actions: [
           IconButton(
             icon: const Icon(Icons.notifications_none_rounded),
-            onPressed: () => Navigator.of(context).pushNamed(AppRoutes.notifications),
+            onPressed:
+                () => Navigator.of(context).pushNamed(AppRoutes.notifications),
           ),
           IconButton(
             icon: const Icon(Icons.person_outline),
@@ -78,14 +73,16 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       drawer: PremiumDrawer(
         userName: 'Khách hàng',
         userRole: 'Individual account',
-        roleBadge: 'Khách hàng cá nhân',
+        roleBadge: 'Khách hàng (người ăn)',
         gradient: const [AppColors.customer, AppColors.customerAlt],
         accentColor: AppColors.customer,
         selectedIndex: _selectedIndex,
         onSelectTab: _onSelectTab,
         onNavigate: (route) => Navigator.of(context).pushNamed(route),
-        onLogout: () => Navigator.of(context)
-            .pushNamedAndRemoveUntil(AppRoutes.welcome, (route) => false),
+        onLogout:
+            () => Navigator.of(
+              context,
+            ).pushNamedAndRemoveUntil(AppRoutes.welcome, (route) => false),
         sections: const [
           DrawerSection(
             title: 'Chính',
@@ -103,40 +100,16 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
                 tabIndex: 1,
               ),
               DrawerItem(
-                icon: Icons.shopping_bag_rounded,
-                label: 'Orders',
-                labelVi: 'Đơn hàng',
-                tabIndex: 2,
-              ),
-              DrawerItem(
-                icon: Icons.payments_rounded,
-                label: 'Payments',
-                labelVi: 'Thanh toán',
-                tabIndex: 3,
-              ),
-              DrawerItem(
                 icon: Icons.person_rounded,
                 label: 'Profile',
                 labelVi: 'Hồ sơ',
-                tabIndex: 4,
+                tabIndex: 2,
               ),
             ],
           ),
           DrawerSection(
-            title: 'Đơn hàng & Hỗ trợ',
+            title: 'Hỗ trợ',
             items: [
-              DrawerItem(
-                icon: Icons.history_rounded,
-                label: 'Order history',
-                labelVi: 'Lịch sử đơn hàng',
-                route: AppRoutes.customerHistory,
-              ),
-              DrawerItem(
-                icon: Icons.star_rounded,
-                label: 'Rate meals',
-                labelVi: 'Đánh giá món ăn',
-                route: AppRoutes.customerRating,
-              ),
               DrawerItem(
                 icon: Icons.notifications_rounded,
                 label: 'Notifications',
@@ -153,10 +126,7 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           ),
         ],
       ),
-      body: IndexedStack(
-        index: _selectedIndex,
-        children: tabs,
-      ),
+      body: IndexedStack(index: _selectedIndex, children: tabs),
       bottomNavigationBar: PremiumBottomNav(
         selectedIndex: _selectedIndex,
         onTap: _onSelectTab,
@@ -173,18 +143,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
             selectedIcon: Icons.menu_book_rounded,
             label: 'Menu',
             labelVi: 'Thực đơn',
-          ),
-          NavItem(
-            icon: Icons.shopping_bag_outlined,
-            selectedIcon: Icons.shopping_bag_rounded,
-            label: 'Orders',
-            labelVi: 'Đơn hàng',
-          ),
-          NavItem(
-            icon: Icons.payments_outlined,
-            selectedIcon: Icons.payments_rounded,
-            label: 'Payments',
-            labelVi: 'Thanh toán',
           ),
           NavItem(
             icon: Icons.person_outline,
@@ -212,20 +170,16 @@ class _StatusChips extends StatelessWidget {
       const _StatusChip(
         icon: Icons.redeem_rounded,
         label: 'Điểm thưởng: 120',
-        color: Color(0xFF1F3C88),
+        color: AppColors.customerAlt,
       ),
       const _StatusChip(
         icon: Icons.location_on_outlined,
         label: 'Địa điểm: Văn phòng Q1',
-        color: Color(0xFFF1AE62),
+        color: AppColors.customerAlt,
       ),
     ];
 
-    return Wrap(
-      spacing: 10,
-      runSpacing: 10,
-      children: chips,
-    );
+    return Wrap(spacing: 10, runSpacing: 10, children: chips);
   }
 }
 
@@ -247,10 +201,7 @@ class _StatusChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: color.withOpacity(0.16),
-          width: 1.2,
-        ),
+        border: Border.all(color: color.withOpacity(0.16), width: 1.2),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.03),
@@ -268,11 +219,7 @@ class _StatusChip extends StatelessWidget {
               color: color.withOpacity(0.12),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: Icon(
-              icon,
-              size: 16,
-              color: color,
-            ),
+            child: Icon(icon, size: 16, color: color),
           ),
           const SizedBox(width: 10),
           Text(
@@ -288,7 +235,6 @@ class _StatusChip extends StatelessWidget {
     );
   }
 }
-
 
 class _CustomerTabPage extends StatelessWidget {
   final String title;
@@ -401,18 +347,15 @@ class _CustomerActionCard extends StatelessWidget {
                     children: [
                       Text(
                         action.title,
-                        style:
-                            Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w700,
-                                ),
+                        style: Theme.of(context).textTheme.titleMedium
+                            ?.copyWith(fontWeight: FontWeight.w700),
                       ),
                       const SizedBox(height: 4),
                       Text(
                         action.subtitle,
-                        style:
-                            Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                  color: Colors.black.withOpacity(0.6),
-                                ),
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Colors.black.withOpacity(0.6),
+                        ),
                       ),
                     ],
                   ),
@@ -480,16 +423,16 @@ class _CustomerTabHeader extends StatelessWidget {
                 Text(
                   title,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w700,
+                  ),
                 ),
                 const SizedBox(height: 6),
                 Text(
                   subtitle,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: Colors.white.withOpacity(0.9),
-                      ),
+                    color: Colors.white.withOpacity(0.9),
+                  ),
                 ),
               ],
             ),

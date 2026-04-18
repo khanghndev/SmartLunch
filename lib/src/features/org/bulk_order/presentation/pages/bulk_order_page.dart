@@ -84,17 +84,14 @@ class _HeaderCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.fromLTRB(18, 18, 18, 14),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.org, AppColors.orgAlt],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.ink.withOpacity(0.04)),
         boxShadow: [
           BoxShadow(
-            color: AppColors.org.withOpacity(0.24),
+            color: AppColors.org.withOpacity(0.08),
             blurRadius: 18,
             offset: const Offset(0, 12),
           ),
@@ -104,89 +101,122 @@ class _HeaderCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Container(
-                padding: const EdgeInsets.all(10),
+                padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
-                  borderRadius: BorderRadius.circular(12),
+                  color: AppColors.org.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(14),
                 ),
-                child: const Icon(Icons.event_note, color: Colors.white),
+                child: const Icon(Icons.event_note, color: AppColors.org),
               ),
-              const SizedBox(width: 10),
+              const SizedBox(width: 12),
               Expanded(
-                child: Text(
-                  'Kế hoạch tuần này',
-                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: -0.2,
-                  ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Kế hoạch tuần này',
+                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                        color: AppColors.ink,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.2,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      '186 suất · 3 ca · 5 phòng ban',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppColors.ink.withOpacity(0.65),
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              TextButton(
-                style: TextButton.styleFrom(foregroundColor: Colors.white),
-                onPressed: () {},
-                child: const Text('Tải thực đơn'),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  IconButton(
+                    onPressed: () {},
+                    splashRadius: 22,
+                    padding: EdgeInsets.zero,
+                    icon: const Icon(
+                      Icons.download_rounded,
+                      color: AppColors.org,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                ],
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final isTight = constraints.maxWidth < 360;
-              final children = const [
-                _HeaderStat(
+          const SizedBox(height: 12),
+          Row(
+            children: [
+              Expanded(
+                child: _HeaderStat(
                   label: 'Tổng suất ăn',
                   value: '186',
                   icon: Icons.groups_rounded,
                 ),
-              ];
-              if (isTight) {
-                return Column(
-                  children:
-                      children
-                          .map(
-                            (c) => Padding(
-                              padding: const EdgeInsets.only(bottom: 8),
-                              child: c,
-                            ),
-                          )
-                          .toList(),
-                );
-              }
-              return Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children:
-                    children
-                        .map(
-                          (c) => Expanded(
-                            child: Padding(
-                              padding: const EdgeInsets.only(right: 8),
-                              child: c,
-                            ),
-                          ),
-                        )
-                        .toList(),
-              );
-            },
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _HeaderStat(
+                  label: 'Đơn đang xử lý',
+                  value: '4',
+                  icon: Icons.pending_actions_rounded,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 12),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: AppColors.org,
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () {},
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppColors.org,
+                    side: BorderSide(
+                      color: AppColors.org.withOpacity(0.4),
+                      width: 1,
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  icon: const Icon(Icons.calendar_month_rounded, size: 18),
+                  label: const Text(
+                    'Lên đơn theo ca',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
               ),
-            ),
-            onPressed: () {},
-            icon: const Icon(Icons.add_task_rounded),
-            label: const Text(
-              'Lên đơn theo ca',
-              style: TextStyle(fontWeight: FontWeight.w800),
-            ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: ElevatedButton.icon(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.org,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    elevation: 0,
+                  ),
+                  onPressed: () {},
+                  icon: const Icon(Icons.add_task_rounded, size: 18),
+                  label: const Text(
+                    'Tạo đơn mới',
+                    style: TextStyle(fontWeight: FontWeight.w800),
+                  ),
+                ),
+              ),
+            ],
           ),
         ],
       ),
@@ -210,11 +240,11 @@ class _HeaderStat extends StatelessWidget {
     return ConstrainedBox(
       constraints: const BoxConstraints(minWidth: 110),
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         decoration: BoxDecoration(
-          color: Colors.white.withOpacity(0.18),
+          color: AppColors.org.withOpacity(0.05),
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Colors.white.withOpacity(0.3)),
+          border: Border.all(color: AppColors.org.withOpacity(0.12)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -222,10 +252,10 @@ class _HeaderStat extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.16),
+                color: AppColors.org.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: Colors.white, size: 18),
+              child: Icon(icon, color: AppColors.org, size: 18),
             ),
             const SizedBox(width: 10),
             Flexible(
@@ -237,8 +267,8 @@ class _HeaderStat extends StatelessWidget {
                     value,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
-                      color: Colors.white,
+                    style: TextStyle(
+                      color: AppColors.ink,
                       fontWeight: FontWeight.w900,
                       fontSize: 16,
                     ),
@@ -248,7 +278,7 @@ class _HeaderStat extends StatelessWidget {
                     maxLines: 2,
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.9),
+                      color: AppColors.ink.withOpacity(0.7),
                       fontWeight: FontWeight.w600,
                       height: 1.1,
                     ),
@@ -455,14 +485,14 @@ class _PlanSummary extends StatelessWidget {
         icon: Icons.access_time_rounded,
       ),
       _PlanCard(
-        color: const Color(0xFF1F3C88),
+        color: AppColors.org,
         title: 'Theo phòng ban',
         value: '5 nhóm',
         subtitle: 'Kế toán, CSKH, IT, Vận hành, Sales',
         icon: Icons.account_tree_rounded,
       ),
       _PlanCard(
-        color: const Color(0xFFF4A261),
+        color: AppColors.orgAlt,
         title: 'Ngân sách',
         value: '12.5tr',
         subtitle: 'Trong tuần này',
@@ -471,7 +501,7 @@ class _PlanSummary extends StatelessWidget {
     ];
 
     return SizedBox(
-      height: 140,
+      height: 152,
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         physics: const BouncingScrollPhysics(),
@@ -501,18 +531,18 @@ class _PlanCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: const BoxConstraints(minWidth: 170),
+      constraints: const BoxConstraints(minWidth: 180),
       child: Container(
         padding: const EdgeInsets.all(14),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: color.withOpacity(0.12)),
+          border: Border.all(color: color.withOpacity(0.1)),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.04),
-              blurRadius: 12,
-              offset: const Offset(0, 8),
+              color: Colors.black.withOpacity(0.03),
+              blurRadius: 10,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
@@ -538,7 +568,7 @@ class _PlanCard extends StatelessWidget {
               style: TextStyle(
                 color: color,
                 fontWeight: FontWeight.w900,
-                fontSize: 16,
+                fontSize: 17,
               ),
             ),
             const SizedBox(height: 2),
@@ -637,9 +667,9 @@ class _UpcomingTile extends StatelessWidget {
   Color _statusColor() {
     switch (order.status) {
       case OrderStatus.confirmed:
-        return const Color(0xFF2BAE66);
+        return AppColors.org;
       case OrderStatus.delivering:
-        return const Color(0xFFF4A261);
+        return AppColors.orgAlt;
       case OrderStatus.draft:
       default:
         return AppColors.org;

@@ -133,9 +133,9 @@ class _Card extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
-                ),
+              fontWeight: FontWeight.w900,
+              color: AppColors.ink,
+            ),
           ),
           const SizedBox(height: 10),
           ...children,
@@ -179,8 +179,10 @@ class _PasswordFieldState extends State<_PasswordField> {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.customer, width: 1.4),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
       ),
     );
   }
@@ -203,9 +205,7 @@ class _SettingSwitch extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 6),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(10),
-      ),
+      decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
       child: Row(
         children: [
           Container(
@@ -214,8 +214,11 @@ class _SettingSwitch extends StatelessWidget {
               color: AppColors.customer.withOpacity(0.08),
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.shield_moon_outlined,
-                color: AppColors.customer, size: 20),
+            child: const Icon(
+              Icons.shield_moon_outlined,
+              color: AppColors.customer,
+              size: 20,
+            ),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -287,16 +290,18 @@ class _TipsCard extends StatelessWidget {
                     ),
                   ],
                 ),
-                child: const Icon(Icons.lightbulb_outline,
-                    color: AppColors.customer),
+                child: const Icon(
+                  Icons.lightbulb_outline,
+                  color: AppColors.customer,
+                ),
               ),
               const SizedBox(width: 10),
               Text(
                 'Gợi ý bảo mật',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.customer,
-                    ),
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.customer,
+                ),
               ),
             ],
           ),
@@ -307,11 +312,13 @@ class _TipsCard extends StatelessWidget {
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text('• ',
-                      style: TextStyle(
-                        color: AppColors.customer,
-                        fontWeight: FontWeight.w900,
-                      )),
+                  const Text(
+                    '• ',
+                    style: TextStyle(
+                      color: AppColors.customer,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
                   Expanded(
                     child: Text(
                       tip,

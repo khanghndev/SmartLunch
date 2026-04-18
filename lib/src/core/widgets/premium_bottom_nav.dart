@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
+
 class PremiumBottomNav extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onTap;
@@ -16,15 +18,16 @@ class PremiumBottomNav extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = Colors.grey.withOpacity(0.16);
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
-        border: Border(top: BorderSide(color: borderColor, width: 1)),
+        border: Border(
+          top: BorderSide(color: AppColors.border.withOpacity(0.8)),
+        ),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
+            color: AppColors.shadow.withOpacity(0.45),
+            blurRadius: 20,
             offset: const Offset(0, -2),
           ),
         ],
@@ -32,16 +35,17 @@ class PremiumBottomNav extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+          padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
           child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: List.generate(
               items.length,
-              (index) => _NavItemWidget(
-                item: items[index],
-                isSelected: selectedIndex == index,
-                accentColor: accentColor,
-                onTap: () => onTap(index),
+              (index) => Expanded(
+                child: _NavItemWidget(
+                  item: items[index],
+                  isSelected: selectedIndex == index,
+                  accentColor: accentColor,
+                  onTap: () => onTap(index),
+                ),
               ),
             ),
           ),
@@ -80,45 +84,45 @@ class _NavItemWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final baseColor = Colors.grey.shade600;
-    return Expanded(
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.easeInOut,
-                height: 3,
-                width: isSelected ? 26 : 0,
-                margin: const EdgeInsets.only(bottom: 6),
-                decoration: BoxDecoration(
-                  color: isSelected ? accentColor : Colors.transparent,
-                  borderRadius: BorderRadius.circular(12),
-                ),
+    final inactiveColor = AppColors.inkSoft;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 220),
+        curve: Curves.easeOutCubic,
+        margin: const EdgeInsets.symmetric(horizontal: 4),
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 6),
+        decoration: BoxDecoration(
+          color:
+              isSelected ? accentColor.withOpacity(0.12) : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          border:
+              isSelected
+                  ? Border.all(color: accentColor.withOpacity(0.28))
+                  : null,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              isSelected ? item.selectedIcon : item.icon,
+              color: isSelected ? accentColor : inactiveColor,
+              size: 22,
+            ),
+            const SizedBox(height: 4),
+            Text(
+              item.labelVi,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                fontSize: 11.5,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
+                color: isSelected ? accentColor : inactiveColor,
+                letterSpacing: 0.1,
               ),
-              Icon(
-                isSelected ? item.selectedIcon : item.icon,
-                color: isSelected ? accentColor : baseColor,
-                size: 22,
-              ),
-              const SizedBox(height: 4),
-              Text(
-                item.labelVi,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 11,
-                  fontWeight: isSelected ? FontWeight.w700 : FontWeight.w500,
-                  color: isSelected ? accentColor : baseColor,
-                ),
-              ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );

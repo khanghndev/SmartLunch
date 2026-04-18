@@ -80,13 +80,13 @@ class _SummaryCards extends StatelessWidget {
         label: 'Tỉ lệ đúng giờ',
         value: '97%',
         icon: Icons.access_time_filled_rounded,
-        color: const Color(0xFF1F3C88),
+        color: AppColors.org,
       ),
       _SummaryCard(
         label: 'Đánh giá trung bình',
         value: '4.7',
         icon: Icons.star_rounded,
-        color: const Color(0xFFF4A261),
+        color: AppColors.orgAlt,
       ),
     ];
 
@@ -399,7 +399,7 @@ class _DiffBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = diff >= 0 ? const Color(0xFF2BAE66) : const Color(0xFFE07A24);
+    final color = diff >= 0 ? AppColors.org : Colors.redAccent;
     final sign = diff >= 0 ? '+' : '';
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),

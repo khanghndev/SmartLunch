@@ -20,7 +20,9 @@ import '../features/customer/history/presentation/pages/order_history_page.dart'
 import '../features/customer/menu/presentation/pages/meal_detail_page.dart';
 import '../features/customer/menu/presentation/pages/menu_page.dart';
 import '../features/customer/order/presentation/pages/order_page.dart';
+import '../features/customer/order/presentation/pages/order_detail_page.dart';
 import '../features/customer/payment/presentation/pages/payment_page.dart';
+import '../features/customer/promotion/presentation/pages/promo_codes_page.dart';
 import '../features/customer/presentation/pages/customer_home_page.dart';
 import '../features/customer/presentation/widgets/meal_cards.dart';
 import '../features/customer/rating/presentation/pages/rating_page.dart';
@@ -66,7 +68,13 @@ class AppRouter {
           builder: (_) => RoleLoginPage(config: RoleLoginConfig.org()),
         );
       case AppRoutes.register:
-        return MaterialPageRoute(builder: (_) => const RegisterPage());
+        final registerType =
+            settings.arguments is RegisterType
+                ? settings.arguments as RegisterType
+                : RegisterType.customer;
+        return MaterialPageRoute(
+          builder: (_) => RegisterPage(type: registerType),
+        );
       case AppRoutes.forgotPassword:
         return MaterialPageRoute(builder: (_) => const ForgotPasswordPage());
       case AppRoutes.profile:
@@ -98,12 +106,18 @@ class AppRouter {
         );
       case AppRoutes.customerOrder:
         return MaterialPageRoute(builder: (_) => const OrderPage());
+      case AppRoutes.customerOrderDetail:
+        return MaterialPageRoute(
+          builder: (_) => OrderDetailPage(data: settings.arguments),
+        );
       case AppRoutes.customerPayment:
         return MaterialPageRoute(builder: (_) => const PaymentPage());
       case AppRoutes.customerRating:
         return MaterialPageRoute(builder: (_) => const RatingPage());
       case AppRoutes.customerHistory:
         return MaterialPageRoute(builder: (_) => const OrderHistoryPage());
+      case AppRoutes.customerPromos:
+        return MaterialPageRoute(builder: (_) => const PromoCodesPage());
 
       case AppRoutes.courierHome:
         return MaterialPageRoute(builder: (_) => const CourierHomePage());

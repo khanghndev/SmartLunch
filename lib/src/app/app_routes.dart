@@ -23,6 +23,8 @@ class AppRoutes {
   static const customerRating = '/customer/rating';
   static const customerHistory = '/customer/history';
   static const customerMealDetail = '/customer/meal-detail';
+  static const customerPromos = '/customer/promos';
+  static const customerOrderDetail = '/customer/order-detail';
 
   static const courierHome = '/courier';
   static const courierDeliveryList = '/courier/deliveries';

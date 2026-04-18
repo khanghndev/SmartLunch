@@ -38,10 +38,7 @@ class RatingPage extends StatelessWidget {
         elevation: 0,
         surfaceTintColor: Colors.white,
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.history_rounded),
-          ),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.history_rounded)),
         ],
       ),
       body: SingleChildScrollView(
@@ -196,8 +193,11 @@ class _MealCard extends StatelessWidget {
                   child: Image.asset(
                     meal.image,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) =>
-                        const Icon(Icons.fastfood_rounded, color: AppColors.customer),
+                    errorBuilder:
+                        (_, __, ___) => const Icon(
+                          Icons.fastfood_rounded,
+                          color: AppColors.customer,
+                        ),
                   ),
                 ),
               ),
@@ -252,11 +252,15 @@ class _MealCard extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide:
-                    const BorderSide(color: AppColors.customer, width: 1.4),
+                borderSide: const BorderSide(
+                  color: AppColors.customer,
+                  width: 1.4,
+                ),
               ),
-              contentPadding:
-                  const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
           ),
           const SizedBox(height: 10),
@@ -325,25 +329,25 @@ class _StarRowState extends State<_StarRow> {
   @override
   Widget build(BuildContext context) {
     return Row(
-      children: List.generate(
-        5,
-        (index) {
-          final filled = index < value;
-          return IconButton(
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(),
-            icon: Icon(
-              filled ? Icons.star_rounded : Icons.star_border_rounded,
-              color: filled ? const Color(0xFFE8B73B) : AppColors.ink.withOpacity(0.3),
-              size: 28,
-            ),
-            onPressed: () {
-              setState(() => value = index + 1);
-              widget.onChange(value);
-            },
-          );
-        },
-      ),
+      children: List.generate(5, (index) {
+        final filled = index < value;
+        return IconButton(
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints(),
+          icon: Icon(
+            filled ? Icons.star_rounded : Icons.star_border_rounded,
+            color:
+                filled
+                    ? const Color(0xFFE8B73B)
+                    : AppColors.ink.withOpacity(0.3),
+            size: 28,
+          ),
+          onPressed: () {
+            setState(() => value = index + 1);
+            widget.onChange(value);
+          },
+        );
+      }),
     );
   }
 }

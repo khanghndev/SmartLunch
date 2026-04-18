@@ -24,13 +24,13 @@ class ReportsPage extends StatelessWidget {
         title: 'Biên bản đối soát',
         desc: 'Ký với SmartLunch',
         size: '180 KB · PDF',
-        color: Color(0xFF1F3C88),
+        color: AppColors.org,
       ),
       _ReportCardData(
         title: 'Bảng điểm chất lượng',
         desc: 'Đánh giá & phản hồi nhân viên',
         size: '320 KB · XLSX',
-        color: Color(0xFFF4A261),
+        color: AppColors.orgAlt,
       ),
     ];
 
@@ -332,7 +332,7 @@ class _NoteCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFEEF4FF),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF1F3C88).withOpacity(0.16)),
+        border: Border.all(color: AppColors.org.withOpacity(0.16)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -343,7 +343,7 @@ class _NoteCard extends StatelessWidget {
               color: Colors.white,
               shape: BoxShape.circle,
             ),
-            child: const Icon(Icons.info_outline, color: Color(0xFF1F3C88)),
+            child: const Icon(Icons.info_outline, color: AppColors.org),
           ),
           const SizedBox(width: 10),
           Expanded(
@@ -354,7 +354,7 @@ class _NoteCard extends StatelessWidget {
                   'Ghi chú',
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
                     fontWeight: FontWeight.w900,
-                    color: const Color(0xFF1F3C88),
+                    color: AppColors.org,
                   ),
                 ),
                 const SizedBox(height: 6),

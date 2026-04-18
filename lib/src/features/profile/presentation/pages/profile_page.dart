@@ -7,11 +7,7 @@ class ProfilePage extends StatelessWidget {
   final bool embedded;
   final double bottomInset;
 
-  const ProfilePage({
-    super.key,
-    this.embedded = false,
-    this.bottomInset = 0,
-  });
+  const ProfilePage({super.key, this.embedded = false, this.bottomInset = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -66,21 +62,14 @@ class ProfilePage extends StatelessWidget {
 
     final content = SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(
-          20, embedded ? 6 : 18, 20, 28 + bottomInset),
+      padding: EdgeInsets.fromLTRB(20, embedded ? 6 : 18, 20, 28 + bottomInset),
       child: Column(
         children: [
           const _ProfileHeader(),
           const SizedBox(height: 18),
-          _CardSection(
-            title: 'Tài khoản',
-            children: accountItems,
-          ),
+          _CardSection(title: 'Tài khoản', children: accountItems),
           const SizedBox(height: 16),
-          _CardSection(
-            title: 'Hỗ trợ',
-            children: supportItems,
-          ),
+          _CardSection(title: 'Hỗ trợ', children: supportItems),
         ],
       ),
     );
@@ -163,12 +152,13 @@ class _ProfileHeader extends StatelessWidget {
                           'Nguyễn Văn A',
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style:
-                              Theme.of(context).textTheme.titleLarge?.copyWith(
-                                    color: Colors.white,
-                                    fontWeight: FontWeight.w900,
-                                    letterSpacing: -0.2,
-                                  ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleLarge?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            letterSpacing: -0.2,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -187,7 +177,7 @@ class _ProfileHeader extends StatelessWidget {
                           children: const [
                             _TierChip(
                               icon: Icons.verified_rounded,
-                              label: 'Khách hàng cá nhân',
+                              label: 'Khách hàng (người ăn)',
                             ),
                             _TierChip(
                               icon: Icons.workspace_premium_rounded,
@@ -199,40 +189,15 @@ class _ProfileHeader extends StatelessWidget {
                     ),
                   ),
                   IconButton(
-                    onPressed: () => Navigator.of(context)
-                        .pushNamed(AppRoutes.profilePersonalInfo),
+                    onPressed:
+                        () => Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.profilePersonalInfo),
                     icon: const Icon(Icons.edit, color: Colors.white),
                   ),
                 ],
               ),
               const SizedBox(height: 14),
-              Row(
-                children: const [
-                  Expanded(
-                    child: _HeaderStat(
-                      label: '',
-                      value: '128',
-                      icon: Icons.shopping_bag_outlined,
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: _HeaderStat(
-                      label: '',
-                      value: '2.480',
-                      icon: Icons.bolt_rounded,
-                    ),
-                  ),
-                  SizedBox(width: 10),
-                  Expanded(
-                    child: _HeaderStat(
-                      label: '',
-                      value: '4.9',
-                      icon: Icons.star_rounded,
-                    ),
-                  ),
-                ],
-              ),
             ],
           ),
         );
@@ -367,9 +332,9 @@ class _CardSection extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
-                ),
+              fontWeight: FontWeight.w900,
+              color: AppColors.ink,
+            ),
           ),
           const SizedBox(height: 6),
           ...children.map(
@@ -417,7 +382,7 @@ class _SettingTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color =
-        item.danger ? const Color(0xFFE07A24) : AppColors.ink.withOpacity(0.85);
+        item.danger ? Colors.redAccent : AppColors.ink.withOpacity(0.85);
     return InkWell(
       borderRadius: BorderRadius.circular(12),
       onTap: () {
@@ -436,14 +401,15 @@ class _SettingTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: item.danger
-                    ? const Color(0xFFFEEFE8)
-                    : AppColors.customer.withOpacity(0.08),
+                color:
+                    item.danger
+                        ? Colors.redAccent.withOpacity(0.12)
+                        : AppColors.customer.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: Icon(
                 item.icon,
-                color: item.danger ? const Color(0xFFE07A24) : AppColors.customer,
+                color: item.danger ? Colors.redAccent : AppColors.customer,
                 size: 20,
               ),
             ),
@@ -472,8 +438,10 @@ class _SettingTile extends StatelessWidget {
               ),
             ),
             const SizedBox(width: 10),
-            Icon(Icons.chevron_right_rounded,
-                color: AppColors.ink.withOpacity(0.4)),
+            Icon(
+              Icons.chevron_right_rounded,
+              color: AppColors.ink.withOpacity(0.4),
+            ),
           ],
         ),
       ),
@@ -484,28 +452,32 @@ class _SettingTile extends StatelessWidget {
 Future<void> _showLogoutDialog(BuildContext context) async {
   await showDialog<void>(
     context: context,
-    builder: (ctx) => AlertDialog(
-      title: const Text('Đăng xuất'),
-      content: const Text('Bạn chắc chắn muốn đăng xuất khỏi tài khoản?'),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(ctx).pop(),
-          child: const Text('Hủy'),
-        ),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(
-            backgroundColor: AppColors.customer,
-            foregroundColor: Colors.white,
+    builder:
+        (ctx) => AlertDialog(
+          title: const Text('Đăng xuất'),
+          content: const Text('Bạn chắc chắn muốn đăng xuất khỏi tài khoản?'),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16),
           ),
-          onPressed: () {
-            Navigator.of(ctx).pop();
-            Navigator.of(context).pushNamedAndRemoveUntil(
-                AppRoutes.welcome, (route) => false);
-          },
-          child: const Text('Đăng xuất'),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(ctx).pop(),
+              child: const Text('Hủy'),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.customer,
+                foregroundColor: Colors.white,
+              ),
+              onPressed: () {
+                Navigator.of(ctx).pop();
+                Navigator.of(
+                  context,
+                ).pushNamedAndRemoveUntil(AppRoutes.welcome, (route) => false);
+              },
+              child: const Text('Đăng xuất'),
+            ),
+          ],
         ),
-      ],
-    ),
   );
 }

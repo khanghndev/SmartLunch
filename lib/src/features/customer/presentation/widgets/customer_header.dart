@@ -32,10 +32,7 @@ class CustomerHeader extends StatelessWidget {
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [
-            AppColors.customer,
-            AppColors.customerAlt,
-          ],
+          colors: [AppColors.customer, AppColors.customerAlt],
         ),
         borderRadius: BorderRadius.circular(28),
         boxShadow: [
@@ -51,10 +48,7 @@ class CustomerHeader extends StatelessWidget {
         children: [
           Row(
             children: [
-              _HeaderIconButton(
-                icon: Icons.menu_rounded,
-                onTap: onMenuTap,
-              ),
+              _HeaderIconButton(icon: Icons.menu_rounded, onTap: onMenuTap),
               const SizedBox(width: 10),
               Expanded(
                 child: Row(
@@ -77,11 +71,13 @@ class CustomerHeader extends StatelessWidget {
                       children: [
                         Text(
                           'SmartLunch',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w800,
-                                letterSpacing: 0.5,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleMedium?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 0.5,
+                          ),
                         ),
                         const SizedBox(height: 2),
                         Container(
@@ -98,7 +94,7 @@ class CustomerHeader extends StatelessWidget {
                             ),
                           ),
                           child: const Text(
-                            'Khách hàng cá nhân',
+                            'Khách hàng (người ăn)',
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 11,
@@ -114,8 +110,10 @@ class CustomerHeader extends StatelessWidget {
               const SizedBox(width: 8),
               _HeaderIconButton(
                 icon: Icons.notifications_outlined,
-                onTap: () =>
-                    Navigator.of(context).pushNamed(AppRoutes.notifications),
+                onTap:
+                    () => Navigator.of(
+                      context,
+                    ).pushNamed(AppRoutes.notifications),
               ),
               const SizedBox(width: 8),
               _HeaderIconButton(
@@ -134,26 +132,28 @@ class CustomerHeader extends StatelessWidget {
                     Text(
                       _getGreeting(),
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
-                            fontWeight: FontWeight.w600,
-                          ),
+                        color: Colors.white.withOpacity(0.9),
+                        fontWeight: FontWeight.w600,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       userName,
-                      style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w900,
-                            height: 1.1,
-                            letterSpacing: -0.4,
-                          ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        height: 1.1,
+                        letterSpacing: -0.4,
+                      ),
                     ),
                     const SizedBox(height: 6),
                     Text(
                       'Đặt nhanh bữa trưa và nhận ưu đãi dành riêng cho bạn.',
                       style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                            color: Colors.white.withOpacity(0.9),
-                          ),
+                        color: Colors.white.withOpacity(0.9),
+                      ),
                     ),
                   ],
                 ),
@@ -163,9 +163,7 @@ class CustomerHeader extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.22),
                   borderRadius: BorderRadius.circular(18),
-                  border: Border.all(
-                    color: Colors.white.withOpacity(0.25),
-                  ),
+                  border: Border.all(color: Colors.white.withOpacity(0.25)),
                 ),
                 child: const Icon(
                   Icons.bento_rounded,
@@ -184,14 +182,6 @@ class CustomerHeader extends StatelessWidget {
                 icon: Icons.cloud_outlined,
                 label: 'Thời tiết mát mẻ',
               ),
-              _HeaderChip(
-                icon: Icons.timelapse_rounded,
-                label: 'Còn 25 phút để đặt trưa',
-              ),
-              _HeaderChip(
-                icon: Icons.workspace_premium_rounded,
-                label: 'Tích 1.2x điểm thưởng hôm nay',
-              ),
             ],
           ),
           const SizedBox(height: 14),
@@ -200,9 +190,7 @@ class CustomerHeader extends StatelessWidget {
             decoration: BoxDecoration(
               color: Colors.white.withOpacity(0.14),
               borderRadius: BorderRadius.circular(18),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.18),
-              ),
+              border: Border.all(color: Colors.white.withOpacity(0.18)),
             ),
             child: Row(
               children: [
@@ -213,7 +201,7 @@ class CustomerHeader extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: const Icon(
-                    Icons.shopping_bag_outlined,
+                    Icons.menu_book_outlined,
                     color: Colors.white,
                     size: 18,
                   ),
@@ -224,18 +212,18 @@ class CustomerHeader extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Đặt bữa trưa ngay',
+                        'Xem thực đơn hôm nay',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w800,
-                            ),
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                        ),
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'Đề xuất món theo khẩu vị và văn phòng của bạn',
+                        'Danh sách món thay đổi mỗi ngày',
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: Colors.white.withOpacity(0.9),
-                            ),
+                          color: Colors.white.withOpacity(0.9),
+                        ),
                       ),
                     ],
                   ),
@@ -246,8 +234,10 @@ class CustomerHeader extends StatelessWidget {
                     borderRadius: BorderRadius.circular(12),
                   ),
                   child: IconButton(
-                    onPressed: () =>
-                        Navigator.of(context).pushNamed(AppRoutes.customerOrder),
+                    onPressed:
+                        () => Navigator.of(
+                          context,
+                        ).pushNamed(AppRoutes.customerMenu),
                     icon: const Icon(
                       Icons.arrow_forward_rounded,
                       color: AppColors.customer,
@@ -279,16 +269,9 @@ class _HeaderIconButton extends StatelessWidget {
         decoration: BoxDecoration(
           color: Colors.white.withOpacity(0.2),
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: Colors.white.withOpacity(0.24),
-            width: 1,
-          ),
+          border: Border.all(color: Colors.white.withOpacity(0.24), width: 1),
         ),
-        child: Icon(
-          icon,
-          color: Colors.white,
-          size: 20,
-        ),
+        child: Icon(icon, color: Colors.white, size: 20),
       ),
     );
   }
@@ -298,10 +281,7 @@ class _HeaderChip extends StatelessWidget {
   final IconData icon;
   final String label;
 
-  const _HeaderChip({
-    required this.icon,
-    required this.label,
-  });
+  const _HeaderChip({required this.icon, required this.label});
 
   @override
   Widget build(BuildContext context) {
@@ -310,10 +290,7 @@ class _HeaderChip extends StatelessWidget {
       decoration: BoxDecoration(
         color: Colors.white.withOpacity(0.18),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
+        border: Border.all(color: Colors.white.withOpacity(0.2), width: 1),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -19,7 +19,8 @@ class ChatbotPage extends StatelessWidget {
         time: '10:21',
       ),
       const _Message(
-        text: 'Đơn #SL1024 đang giao, dự kiến đến 11:40. Bạn có cần đổi địa chỉ không?',
+        text:
+            'Đơn #SL1024 đang giao, dự kiến đến 11:40. Bạn có cần đổi địa chỉ không?',
         isMe: false,
         time: '10:21',
       ),
@@ -44,10 +45,7 @@ class ChatbotPage extends StatelessWidget {
         elevation: 0,
         surfaceTintColor: Colors.white,
         actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.history_rounded),
-          ),
+          IconButton(onPressed: () {}, icon: const Icon(Icons.history_rounded)),
           IconButton(
             onPressed: () {},
             icon: const Icon(Icons.more_vert_rounded),
@@ -62,8 +60,8 @@ class ChatbotPage extends StatelessWidget {
               physics: const BouncingScrollPhysics(),
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
               itemCount: messages.length,
-              itemBuilder: (context, index) =>
-                  _MessageBubble(message: messages[index]),
+              itemBuilder:
+                  (context, index) => _MessageBubble(message: messages[index]),
             ),
           ),
           const _InputBar(),
@@ -99,14 +97,15 @@ class _QuickActions extends StatelessWidget {
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         child: Row(
-          children: actions
-              .map(
-                (a) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: _QuickActionChip(data: a),
-                ),
-              )
-              .toList(),
+          children:
+              actions
+                  .map(
+                    (a) => Padding(
+                      padding: const EdgeInsets.only(right: 8),
+                      child: _QuickActionChip(data: a),
+                    ),
+                  )
+                  .toList(),
         ),
       ),
     );
@@ -151,11 +150,7 @@ class _Message {
   final bool isMe;
   final String time;
 
-  const _Message({
-    required this.text,
-    required this.isMe,
-    required this.time,
-  });
+  const _Message({required this.text, required this.isMe, required this.time});
 }
 
 class _MessageBubble extends StatelessWidget {
@@ -169,8 +164,7 @@ class _MessageBubble extends StatelessWidget {
     final textColor =
         message.isMe ? Colors.white : AppColors.ink.withOpacity(0.85);
     return Align(
-      alignment:
-          message.isMe ? Alignment.centerRight : Alignment.centerLeft,
+      alignment: message.isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Container(
         constraints: BoxConstraints(
           maxWidth: MediaQuery.of(context).size.width * 0.82,
@@ -183,9 +177,13 @@ class _MessageBubble extends StatelessWidget {
             topLeft: const Radius.circular(14),
             topRight: const Radius.circular(14),
             bottomLeft:
-                message.isMe ? const Radius.circular(14) : const Radius.circular(4),
+                message.isMe
+                    ? const Radius.circular(14)
+                    : const Radius.circular(4),
             bottomRight:
-                message.isMe ? const Radius.circular(4) : const Radius.circular(14),
+                message.isMe
+                    ? const Radius.circular(4)
+                    : const Radius.circular(14),
           ),
           boxShadow: [
             BoxShadow(
@@ -195,9 +193,10 @@ class _MessageBubble extends StatelessWidget {
             ),
           ],
           border: Border.all(
-            color: message.isMe
-                ? Colors.transparent
-                : AppColors.ink.withOpacity(0.06),
+            color:
+                message.isMe
+                    ? Colors.transparent
+                    : AppColors.ink.withOpacity(0.06),
           ),
         ),
         child: Column(
@@ -261,16 +260,21 @@ class _InputBar extends StatelessWidget {
                   fillColor: const Color(0xFFF8F9FB),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
-                    borderSide:
-                        BorderSide(color: AppColors.ink.withOpacity(0.08)),
+                    borderSide: BorderSide(
+                      color: AppColors.ink.withOpacity(0.08),
+                    ),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(24),
                     borderSide: const BorderSide(
-                        color: AppColors.customer, width: 1.4),
+                      color: AppColors.customer,
+                      width: 1.4,
+                    ),
                   ),
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ),

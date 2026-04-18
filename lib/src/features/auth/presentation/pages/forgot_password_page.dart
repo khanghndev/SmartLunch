@@ -10,7 +10,8 @@ class ForgotPasswordPage extends StatelessWidget {
   Widget build(BuildContext context) {
     return AuthShell(
       title: 'Đặt lại mật khẩu',
-      subtitle: 'Chúng tôi sẽ gửi liên kết đặt lại mật khẩu an toàn đến hộp thư của bạn.',
+      subtitle:
+          'Chúng tôi sẽ gửi liên kết đặt lại mật khẩu an toàn đến hộp thư của bạn.',
       badge: 'Khôi phục tài khoản',
       icon: Icons.lock_reset_rounded,
       accent: AppColors.customer,
@@ -38,22 +39,15 @@ class ForgotPasswordPage extends StatelessWidget {
             ),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: Colors.grey.withOpacity(0.3),
-              ),
+              borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: Colors.grey.withOpacity(0.3),
-              ),
+              borderSide: BorderSide(color: Colors.grey.withOpacity(0.3)),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide(
-                color: AppColors.customer,
-                width: 2,
-              ),
+              borderSide: BorderSide(color: AppColors.customer, width: 2),
             ),
             filled: true,
             fillColor: Colors.grey.withOpacity(0.05),
@@ -84,10 +78,7 @@ class ForgotPasswordPage extends StatelessWidget {
                 borderRadius: BorderRadius.circular(16),
               ),
             ),
-            icon: const Icon(
-              Icons.send_rounded,
-              color: Colors.white,
-            ),
+            icon: const Icon(Icons.send_rounded, color: Colors.white),
             label: const Text(
               'Gửi liên kết đặt lại',
               style: TextStyle(

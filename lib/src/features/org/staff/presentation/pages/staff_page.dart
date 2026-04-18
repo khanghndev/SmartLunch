@@ -91,13 +91,13 @@ class _HeaderSummary extends StatelessWidget {
         label: 'Đang hoạt động',
         value: '120',
         icon: Icons.verified_user_rounded,
-        color: const Color(0xFF2BAE66),
+        color: AppColors.org,
       ),
       _SummaryCard(
         label: 'Mời tham gia',
         value: '8',
         icon: Icons.mark_email_read_rounded,
-        color: const Color(0xFFF4A261),
+        color: AppColors.orgAlt,
       ),
     ];
 
@@ -383,11 +383,11 @@ class _StaffTile extends StatelessWidget {
   Color _statusColor() {
     switch (staff.status) {
       case StaffStatus.active:
-        return const Color(0xFF2BAE66);
+        return AppColors.org;
       case StaffStatus.invited:
-        return const Color(0xFFF4A261);
+        return AppColors.orgAlt;
       case StaffStatus.paused:
-        return const Color(0xFFE07A24);
+        return AppColors.org;
     }
   }
 

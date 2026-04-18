@@ -207,13 +207,13 @@ class _CourierDashboardTab extends StatelessWidget {
       _StatCard(
         label: 'Đã giao',
         value: '7',
-        color: const Color(0xFF2BAE66),
+        color: AppColors.courier,
         icon: Icons.check_circle_rounded,
       ),
       _StatCard(
         label: 'Đang giao',
         value: '3',
-        color: const Color(0xFFF4A261),
+        color: AppColors.courierAlt,
         icon: Icons.delivery_dining_rounded,
       ),
     ];
@@ -224,7 +224,7 @@ class _CourierDashboardTab extends StatelessWidget {
         time: '08:30 · 25/03',
         stops: 4,
         status: 'Đang giao',
-        color: Color(0xFFF4A261),
+        color: AppColors.courierAlt,
       ),
       const _Task(
         title: 'Ca trưa · KTX Zone B',
@@ -276,7 +276,7 @@ class _CourierDashboardTab extends StatelessWidget {
           title: 'Lối tắt',
           subtitle: 'Nhận đơn, xem bản đồ, chụp Minh chứng',
           icon: Icons.flash_on_rounded,
-          color: const Color(0xFF1F3C88),
+          color: AppColors.courier,
           child: Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -387,7 +387,7 @@ class _DeliveriesTab extends StatelessWidget {
           time: '08:30 · 25/03',
           stops: 4,
           status: 'Đang giao',
-          statusColor: const Color(0xFFF4A261),
+          statusColor: AppColors.courierAlt,
           onTap:
               () => Navigator.of(
                 context,
@@ -464,7 +464,7 @@ class _RoutesTab extends StatelessWidget {
           title: 'Hỗ trợ nhanh',
           subtitle: 'Gọi người liên hệ hoặc báo sự cố',
           icon: Icons.support_agent,
-          color: const Color(0xFF1F3C88),
+          color: AppColors.courier,
           child: Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -613,7 +613,7 @@ class _ProfileTab extends StatelessWidget {
           title: 'Hiệu suất gần đây',
           subtitle: 'Theo tuần',
           icon: Icons.insights_rounded,
-          color: const Color(0xFF1F3C88),
+          color: AppColors.courier,
           child: Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -629,7 +629,7 @@ class _ProfileTab extends StatelessWidget {
           title: 'Thanh toán',
           subtitle: 'Thu nhập & đối soát',
           icon: Icons.account_balance_wallet_rounded,
-          color: const Color(0xFFF4A261),
+          color: AppColors.courierAlt,
           actionLabel: 'Xem lịch sử',
           onAction: () {},
           child: Column(
@@ -674,7 +674,7 @@ class _ProfileTab extends StatelessWidget {
           title: 'Thông báo',
           subtitle: 'Giao hàng, sự cố, nhắc nhở',
           icon: Icons.notifications_active_rounded,
-          color: const Color(0xFF1F3C88),
+          color: AppColors.courier,
           actionLabel: 'Thiết lập',
           onAction:
               () => Navigator.of(

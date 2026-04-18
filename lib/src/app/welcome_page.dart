@@ -32,32 +32,24 @@ class _WelcomePageState extends State<WelcomePage> {
         subtitle: 'Nhận đơn, giao bữa ăn và cập nhật trạng thái giao.',
         icon: Icons.local_shipping_rounded,
         accent: AppColors.courier,
-        gradient: [
-          AppColors.courier,
-          AppColors.courierAlt,
-        ],
+        gradient: [AppColors.courier, AppColors.courierAlt],
         route: AppRoutes.loginCourier,
       ),
       _RoleOption(
-        title: 'Khách hàng cá nhân',
-        subtitle: 'Chọn món, đặt bữa ăn và theo dõi đơn hàng.',
+        title: 'Khách hàng (người ăn)',
+        subtitle: 'Xem danh sách thực đơn.',
         icon: Icons.restaurant_menu_rounded,
         accent: AppColors.customer,
-        gradient: [
-          AppColors.customer,
-          AppColors.customerAlt,
-        ],
+        gradient: [AppColors.customer, AppColors.customerAlt],
         route: AppRoutes.loginCustomer,
       ),
       _RoleOption(
-        title: 'Khách hàng doanh nghiệp',
-        subtitle: 'Quản lý bữa ăn cho nhân sự, báo cáo và thanh toán.',
+        title: 'Đơn vị đặt suất ăn',
+        subtitle:
+            '• Tiến hành đặt cơm theo ngày (trước...\n• Tiến hành đặt cọc, thanh toán.\n• Đánh giá suất ăn.',
         icon: Icons.apartment_rounded,
         accent: AppColors.org,
-        gradient: [
-          AppColors.org,
-          AppColors.orgAlt,
-        ],
+        gradient: [AppColors.org, AppColors.orgAlt],
         route: AppRoutes.loginOrg,
       ),
     ];
@@ -71,28 +63,19 @@ class _WelcomePageState extends State<WelcomePage> {
               gradient: LinearGradient(
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
-                colors: [
-                  Color(0xFFF9FAFB),
-                  Color(0xFFEFF1F5),
-                ],
+                colors: [Color(0xFFF9FAFB), Color(0xFFEFF1F5)],
               ),
             ),
           ),
           const Positioned(
             top: -60,
             right: -30,
-            child: _BlurOrb(
-              color: Color(0x221F3C88),
-              size: 200,
-            ),
+            child: _BlurOrb(color: Color(0x2222A75A), size: 200),
           ),
           const Positioned(
             bottom: -80,
             left: -40,
-            child: _BlurOrb(
-              color: Color(0x22E07A24),
-              size: 190,
-            ),
+            child: _BlurOrb(color: Color(0x223BCB7A), size: 190),
           ),
 
           SafeArea(
@@ -107,8 +90,10 @@ class _WelcomePageState extends State<WelcomePage> {
                     child: Align(
                       alignment: Alignment.centerLeft,
                       child: Container(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 9,
+                        ),
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
@@ -126,47 +111,29 @@ class _WelcomePageState extends State<WelcomePage> {
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Container(
-                              width: 34,
-                              height: 34,
-                              decoration: BoxDecoration(
-                                color: AppColors.customer.withOpacity(0.12),
-                                shape: BoxShape.circle,
-                              ),
-                              child: const Icon(
-                                Icons.lunch_dining_rounded,
-                                color: AppColors.customer,
-                                size: 18,
+                            Flexible(
+                              child: SizedBox(
+                                height: 36,
+                                child: Image.asset(
+                                  'assets/images/sv_logo_dashboard.png',
+                                  fit: BoxFit.contain,
+                                ),
                               ),
                             ),
-                            const SizedBox(width: 10),
-                            Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text(
-                                  'SmartLunch',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
-                                      ?.copyWith(
-                                        color: AppColors.ink,
-                                        fontWeight: FontWeight.w700,
-                                        letterSpacing: -0.1,
-                                        fontSize: 17,
-                                      ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Text(
+                                'Chọn vai trò để tiếp tục',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodySmall?.copyWith(
+                                  color: AppColors.ink.withOpacity(0.6),
+                                  height: 1.2,
+                                  fontSize: 12,
                                 ),
-                                Text(
-                                  'Chọn vai trò để tiếp tục',
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.copyWith(
-                                        color: AppColors.ink.withOpacity(0.6),
-                                        height: 1.2,
-                                        fontSize: 12,
-                                      ),
-                                ),
-                              ],
+                              ),
                             ),
                           ],
                         ),
@@ -181,16 +148,15 @@ class _WelcomePageState extends State<WelcomePage> {
                     child: Text(
                       'Bạn thuộc nhóm nào?',
                       textAlign: TextAlign.center,
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineSmall
-                          ?.copyWith(
-                                color: AppColors.ink,
-                                fontWeight: FontWeight.w800,
-                                height: 1.2,
-                                letterSpacing: -0.2,
-                                fontSize: 24,
-                              ),
+                      style: Theme.of(
+                        context,
+                      ).textTheme.headlineSmall?.copyWith(
+                        color: AppColors.ink,
+                        fontWeight: FontWeight.w800,
+                        height: 1.2,
+                        letterSpacing: -0.2,
+                        fontSize: 24,
+                      ),
                     ),
                   ),
 
@@ -203,10 +169,10 @@ class _WelcomePageState extends State<WelcomePage> {
                       'Chọn vai trò phù hợp để SmartLunch mang đến trải nghiệm tốt nhất cho bạn.',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: AppColors.ink.withOpacity(0.7),
-                            height: 1.5,
-                            fontSize: 15,
-                          ),
+                        color: AppColors.ink.withOpacity(0.7),
+                        height: 1.5,
+                        fontSize: 15,
+                      ),
                     ),
                   ),
 
@@ -219,10 +185,10 @@ class _WelcomePageState extends State<WelcomePage> {
                       child: Text(
                         'Vai trò của bạn',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              color: AppColors.ink.withOpacity(0.65),
-                              letterSpacing: 0.4,
-                              fontWeight: FontWeight.w700,
-                            ),
+                          color: AppColors.ink.withOpacity(0.65),
+                          letterSpacing: 0.4,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
                   ),
@@ -233,7 +199,9 @@ class _WelcomePageState extends State<WelcomePage> {
                   ...List.generate(roles.length, (index) {
                     final role = roles[index];
                     return Padding(
-                      padding: EdgeInsets.only(bottom: index == roles.length - 1 ? 0 : 12),
+                      padding: EdgeInsets.only(
+                        bottom: index == roles.length - 1 ? 0 : 12,
+                      ),
                       child: StaggeredReveal(
                         delayMs: 350 + index * 100,
                         child: _RoleCard(role: role),
@@ -249,7 +217,9 @@ class _WelcomePageState extends State<WelcomePage> {
                     child: Container(
                       width: double.infinity,
                       padding: const EdgeInsets.symmetric(
-                          horizontal: 16, vertical: 14),
+                        horizontal: 16,
+                        vertical: 14,
+                      ),
                       decoration: BoxDecoration(
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(14),
@@ -266,8 +236,10 @@ class _WelcomePageState extends State<WelcomePage> {
                         ],
                       ),
                       child: InkWell(
-                        onTap: () =>
-                            Navigator.of(context).pushNamed(AppRoutes.chatbot),
+                        onTap:
+                            () => Navigator.of(
+                              context,
+                            ).pushNamed(AppRoutes.chatbot),
                         borderRadius: BorderRadius.circular(14),
                         child: Row(
                           children: [
@@ -289,13 +261,12 @@ class _WelcomePageState extends State<WelcomePage> {
                                 'Cần hỗ trợ? Trò chuyện với SmartLunch',
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyMedium
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.ink,
-                                    ),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.bodyMedium?.copyWith(
+                                  fontWeight: FontWeight.w600,
+                                  color: AppColors.ink,
+                                ),
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -366,9 +337,10 @@ class _RoleCardState extends State<_RoleCard>
       vsync: this,
       duration: const Duration(milliseconds: 200),
     );
-    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.98).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
-    );
+    _scaleAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.98,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
   }
 
   @override
@@ -435,20 +407,24 @@ class _RoleCardState extends State<_RoleCard>
                       children: [
                         Text(
                           widget.role.title,
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.w700,
-                                color: AppColors.ink,
-                                letterSpacing: -0.15,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w700,
+                            color: AppColors.ink,
+                            letterSpacing: -0.15,
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
                           widget.role.subtitle,
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppColors.ink.withOpacity(0.7),
-                                height: 1.45,
-                                fontSize: 14,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.bodyMedium?.copyWith(
+                            color: AppColors.ink.withOpacity(0.7),
+                            height: 1.45,
+                            fontSize: 14,
+                          ),
                         ),
                       ],
                     ),
@@ -486,10 +462,7 @@ class _BlurOrb extends StatelessWidget {
   final Color color;
   final double size;
 
-  const _BlurOrb({
-    required this.color,
-    this.size = 240,
-  });
+  const _BlurOrb({required this.color, this.size = 240});
 
   @override
   Widget build(BuildContext context) {

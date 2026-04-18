@@ -84,20 +84,34 @@ class _FilterRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filters = [
-      _FilterChipData(label: 'Tất cả', icon: Icons.inbox_rounded, selected: true),
       _FilterChipData(
-          label: 'Đơn hàng', icon: Icons.receipt_long_rounded, selected: false),
-      _FilterChipData(label: 'Ưu đãi', icon: Icons.local_offer_rounded, selected: false),
+        label: 'Tất cả',
+        icon: Icons.inbox_rounded,
+        selected: true,
+      ),
+      _FilterChipData(
+        label: 'Đơn hàng',
+        icon: Icons.receipt_long_rounded,
+        selected: false,
+      ),
+      _FilterChipData(
+        label: 'Ưu đãi',
+        icon: Icons.local_offer_rounded,
+        selected: false,
+      ),
     ];
     return SingleChildScrollView(
       scrollDirection: Axis.horizontal,
       child: Row(
-        children: filters
-            .map((f) => Padding(
-                  padding: const EdgeInsets.only(right: 8),
-                  child: _FilterChip(data: f),
-                ))
-            .toList(),
+        children:
+            filters
+                .map(
+                  (f) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: _FilterChip(data: f),
+                  ),
+                )
+                .toList(),
       ),
     );
   }
@@ -137,14 +151,19 @@ class _FilterChip extends StatelessWidget {
       checkmarkColor: AppColors.customer,
       backgroundColor: Colors.white,
       labelStyle: TextStyle(
-        color: data.selected ? AppColors.customer : AppColors.ink.withOpacity(0.75),
+        color:
+            data.selected
+                ? AppColors.customer
+                : AppColors.ink.withOpacity(0.75),
         fontWeight: FontWeight.w700,
       ),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
           color:
-              data.selected ? AppColors.customer.withOpacity(0.4) : AppColors.ink.withOpacity(0.08),
+              data.selected
+                  ? AppColors.customer.withOpacity(0.4)
+                  : AppColors.ink.withOpacity(0.08),
         ),
       ),
     );
@@ -179,9 +198,9 @@ class _Section extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
-                ),
+              fontWeight: FontWeight.w900,
+              color: AppColors.ink,
+            ),
           ),
           const SizedBox(height: 8),
           ...items.map(
@@ -222,13 +241,13 @@ class _NotificationTile extends StatelessWidget {
   Color _colorForType() {
     switch (notification.type) {
       case NotificationType.success:
-        return const Color(0xFF45A17E);
+        return AppColors.customerAlt;
       case NotificationType.promo:
-        return const Color(0xFFE07A24);
+        return AppColors.customer;
       case NotificationType.info:
         return AppColors.customer;
       case NotificationType.reminder:
-        return const Color(0xFF1F3C88);
+        return AppColors.org;
     }
   }
 
@@ -254,9 +273,10 @@ class _NotificationTile extends StatelessWidget {
         color: notification.unread ? color.withOpacity(0.04) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: notification.unread
-              ? color.withOpacity(0.35)
-              : AppColors.ink.withOpacity(0.05),
+          color:
+              notification.unread
+                  ? color.withOpacity(0.35)
+                  : AppColors.ink.withOpacity(0.05),
         ),
       ),
       child: Row(
@@ -318,8 +338,10 @@ class _NotificationTile extends StatelessWidget {
                   Row(
                     children: [
                       Container(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 4,
+                        ),
                         decoration: BoxDecoration(
                           color: color.withOpacity(0.14),
                           borderRadius: BorderRadius.circular(10),
@@ -338,7 +360,9 @@ class _NotificationTile extends StatelessWidget {
                         onPressed: () {},
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 6),
+                            horizontal: 10,
+                            vertical: 6,
+                          ),
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                         ),

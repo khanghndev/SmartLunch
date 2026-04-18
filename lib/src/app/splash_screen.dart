@@ -16,7 +16,7 @@ class _SplashScreenState extends State<SplashScreen>
   late AnimationController _logoController;
   late AnimationController _backgroundController;
   late AnimationController _fadeController;
-  
+
   late Animation<double> _logoScale;
   late Animation<double> _logoRotation;
   late Animation<double> _backgroundOpacity;
@@ -25,19 +25,19 @@ class _SplashScreenState extends State<SplashScreen>
   @override
   void initState() {
     super.initState();
-    
+
     // Logo animation controller
     _logoController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
-    
+
     // Background animation controller
     _backgroundController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1500),
     );
-    
+
     // Fade animation controller
     _fadeController = AnimationController(
       vsync: this,
@@ -62,19 +62,14 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Background opacity animation
     _backgroundOpacity = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(
-        parent: _backgroundController,
-        curve: Curves.easeInOut,
-      ),
+      CurvedAnimation(parent: _backgroundController, curve: Curves.easeInOut),
     );
 
     // Fade animation
-    _fadeAnimation = Tween<double>(begin: 1.0, end: 0.0).animate(
-      CurvedAnimation(
-        parent: _fadeController,
-        curve: Curves.easeIn,
-      ),
-    );
+    _fadeAnimation = Tween<double>(
+      begin: 1.0,
+      end: 0.0,
+    ).animate(CurvedAnimation(parent: _fadeController, curve: Curves.easeIn));
 
     _startAnimations();
   }
@@ -90,18 +85,18 @@ class _SplashScreenState extends State<SplashScreen>
 
     // Start background animation
     _backgroundController.forward();
-    
+
     // Wait a bit then start logo animation
     await Future.delayed(const Duration(milliseconds: 200));
     _logoController.forward();
-    
+
     // Wait for animations to complete then fade out and navigate
     await Future.delayed(const Duration(milliseconds: 2000));
-    
+
     if (mounted) {
       _fadeController.forward();
       await Future.delayed(const Duration(milliseconds: 500));
-      
+
       if (mounted) {
         Navigator.of(context).pushReplacementNamed(AppRoutes.welcome);
       }
@@ -145,7 +140,9 @@ class _SplashScreenState extends State<SplashScreen>
                 children: [
                   // Animated background circles
                   ...List.generate(3, (index) {
-                    final opacityValue = (_backgroundOpacity.value * (0.15 - index * 0.05)).clamp(0.0, 1.0);
+                    final opacityValue = (_backgroundOpacity.value *
+                            (0.15 - index * 0.05))
+                        .clamp(0.0, 1.0);
                     return Positioned(
                       top: -100 + (index * 150),
                       right: -100 + (index * 80),
@@ -162,13 +159,16 @@ class _SplashScreenState extends State<SplashScreen>
                       ),
                     );
                   }),
-                  
+
                   // Bottom left circle
                   Positioned(
                     bottom: -150,
                     left: -100,
                     child: Opacity(
-                      opacity: (_backgroundOpacity.value * 0.12).clamp(0.0, 1.0),
+                      opacity: (_backgroundOpacity.value * 0.12).clamp(
+                        0.0,
+                        1.0,
+                      ),
                       child: Container(
                         width: 400,
                         height: 400,
@@ -212,47 +212,45 @@ class _SplashScreenState extends State<SplashScreen>
                             ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 32),
-                        
+
                         // App name with fade animation
                         Opacity(
                           opacity: _logoScale.value.clamp(0.0, 1.0),
                           child: Text(
                             'SMARTLUNCH',
-                            style: Theme.of(context)
-                                .textTheme
-                                .displaySmall
-                                ?.copyWith(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w800,
-                                  letterSpacing: 2,
-                                  shadows: [
-                                    Shadow(
-                                      color: Colors.black.withOpacity(0.3),
-                                      offset: const Offset(0, 2),
-                                      blurRadius: 8,
-                                    ),
-                                  ],
+                            style: Theme.of(
+                              context,
+                            ).textTheme.displaySmall?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 2,
+                              shadows: [
+                                Shadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  offset: const Offset(0, 2),
+                                  blurRadius: 8,
                                 ),
+                              ],
+                            ),
                           ),
                         ),
-                        
+
                         const SizedBox(height: 12),
-                        
+
                         // Tagline with fade animation
                         Opacity(
                           opacity: (_logoScale.value * 0.9).clamp(0.0, 1.0),
                           child: Text(
                             'Bữa trưa thông minh cho mọi người',
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleMedium
-                                ?.copyWith(
-                                  color: Colors.white.withOpacity(0.95),
-                                  fontWeight: FontWeight.w500,
-                                  letterSpacing: 0.3,
-                                ),
+                            style: Theme.of(
+                              context,
+                            ).textTheme.titleMedium?.copyWith(
+                              color: Colors.white.withOpacity(0.95),
+                              fontWeight: FontWeight.w500,
+                              letterSpacing: 0.3,
+                            ),
                           ),
                         ),
                       ],

@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
+
 class ImageSlideshow extends StatefulWidget {
   final List<String> images;
   final double height;
@@ -106,19 +108,19 @@ class _SlideItem extends StatelessWidget {
     _SlideContent(
       title: 'Khám phá thực đơn mới',
       subtitle: 'Đặt món ngay hôm nay',
-      gradient: [Color(0xFF0F6B6F), Color(0xFF2A9C9B)],
+      gradient: [AppColors.customer, AppColors.customerAlt],
       icon: Icons.restaurant_menu_rounded,
     ),
     _SlideContent(
       title: 'Ưu đãi đặc biệt',
       subtitle: 'Giảm giá lên đến 30%',
-      gradient: [Color(0xFF2A9C9B), Color(0xFF0F6B6F)],
+      gradient: [AppColors.customerAlt, AppColors.customer],
       icon: Icons.local_offer_rounded,
     ),
     _SlideContent(
       title: 'Giao hàng nhanh',
       subtitle: 'Nhận món trong 30 phút',
-      gradient: [Color(0xFF0F6B6F), Color(0xFF2A9C9B)],
+      gradient: [AppColors.customer, AppColors.customerAlt],
       icon: Icons.delivery_dining_rounded,
     ),
   ];
@@ -126,7 +128,7 @@ class _SlideItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final content = _slides[index % _slides.length];
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
@@ -178,7 +180,7 @@ class _SlideItem extends StatelessWidget {
                   ),
                 ),
               ),
-              
+
               // Content
               Padding(
                 padding: const EdgeInsets.all(24),
@@ -197,39 +199,33 @@ class _SlideItem extends StatelessWidget {
                           width: 1.5,
                         ),
                       ),
-                      child: Icon(
-                        content.icon,
-                        color: Colors.white,
-                        size: 32,
-                      ),
+                      child: Icon(content.icon, color: Colors.white, size: 32),
                     ),
-                    
+
                     // Text content
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           content.title,
-                          style: Theme.of(context)
-                              .textTheme
-                              .headlineSmall
-                              ?.copyWith(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w900,
-                                height: 1.2,
-                                letterSpacing: -0.5,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.headlineSmall?.copyWith(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            height: 1.2,
+                            letterSpacing: -0.5,
+                          ),
                         ),
                         const SizedBox(height: 8),
                         Text(
                           content.subtitle,
-                          style: Theme.of(context)
-                              .textTheme
-                              .titleMedium
-                              ?.copyWith(
-                                color: Colors.white.withOpacity(0.95),
-                                fontWeight: FontWeight.w500,
-                              ),
+                          style: Theme.of(
+                            context,
+                          ).textTheme.titleMedium?.copyWith(
+                            color: Colors.white.withOpacity(0.95),
+                            fontWeight: FontWeight.w500,
+                          ),
                         ),
                         const SizedBox(height: 20),
                         Container(
@@ -253,13 +249,12 @@ class _SlideItem extends StatelessWidget {
                             children: [
                               Text(
                                 'Khám phá ngay',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .titleSmall
-                                    ?.copyWith(
-                                      color: content.gradient[0],
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                style: Theme.of(
+                                  context,
+                                ).textTheme.titleSmall?.copyWith(
+                                  color: content.gradient[0],
+                                  fontWeight: FontWeight.w700,
+                                ),
                               ),
                               const SizedBox(width: 8),
                               Icon(

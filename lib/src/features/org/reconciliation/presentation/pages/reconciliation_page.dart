@@ -249,11 +249,11 @@ class _InvoiceTile extends StatelessWidget {
   Color _statusColor() {
     switch (invoice.status) {
       case InvoiceStatus.pending:
-        return const Color(0xFFE07A24);
+        return AppColors.org;
       case InvoiceStatus.processing:
-        return const Color(0xFFF4A261);
+        return AppColors.orgAlt;
       case InvoiceStatus.paid:
-        return const Color(0xFF2BAE66);
+        return AppColors.org;
     }
   }
 

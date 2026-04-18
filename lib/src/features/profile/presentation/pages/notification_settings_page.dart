@@ -48,7 +48,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 const SizedBox(height: 6),
                 _SwitchTile(
                   icon: Icons.local_offer_rounded,
-                  color: const Color(0xFFE07A24),
+                  color: AppColors.customer,
                   label: 'Ưu đãi & voucher',
                   subtitle: 'Giảm giá, tích điểm, chương trình mới',
                   value: pushPromo,
@@ -63,7 +63,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
               children: [
                 _SwitchTile(
                   icon: Icons.mail_outline,
-                  color: const Color(0xFF1F3C88),
+                  color: AppColors.org,
                   label: 'Email tóm tắt tuần',
                   subtitle: 'Số đơn, chi tiêu, điểm thưởng',
                   value: emailSummary,
@@ -72,7 +72,7 @@ class _NotificationSettingsPageState extends State<NotificationSettingsPage> {
                 const SizedBox(height: 6),
                 _SwitchTile(
                   icon: Icons.sms_outlined,
-                  color: const Color(0xFF45A17E),
+                  color: AppColors.customerAlt,
                   label: 'SMS giao hàng',
                   subtitle: 'Tin nhắn khi shipper sắp tới',
                   value: smsDelivery,
@@ -142,9 +142,9 @@ class _Card extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
-                ),
+              fontWeight: FontWeight.w900,
+              color: AppColors.ink,
+            ),
           ),
           const SizedBox(height: 4),
           Text(
@@ -238,7 +238,7 @@ class _QuietHoursCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: const Color(0xFFECF3FF),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: const Color(0xFF1F3C88).withOpacity(0.16)),
+        border: Border.all(color: AppColors.org.withOpacity(0.16)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,16 +251,15 @@ class _QuietHoursCard extends StatelessWidget {
                   color: Colors.white,
                   shape: BoxShape.circle,
                 ),
-                child:
-                    const Icon(Icons.nightlight_round, color: Color(0xFF1F3C88)),
+                child: const Icon(Icons.nightlight_round, color: AppColors.org),
               ),
               const SizedBox(width: 10),
               Text(
                 'Chế độ yên lặng',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: const Color(0xFF1F3C88),
-                    ),
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.org,
+                ),
               ),
             ],
           ),
@@ -277,9 +276,8 @@ class _QuietHoursCard extends StatelessWidget {
           OutlinedButton(
             onPressed: () {},
             style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF1F3C88),
-              side:
-                  BorderSide(color: const Color(0xFF1F3C88).withOpacity(0.35)),
+              foregroundColor: AppColors.org,
+              side: BorderSide(color: AppColors.org.withOpacity(0.35)),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),

@@ -128,9 +128,10 @@ class RoleDashboardBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final width = MediaQuery.of(context).size.width;
-    final crossAxisCount = width >= 900
-        ? 3
-        : width >= 600
+    final crossAxisCount =
+        width >= 900
+            ? 3
+            : width >= 600
             ? 2
             : 1;
     final childAspectRatio = width >= 600 ? 1.4 : 1.3;
@@ -240,9 +241,9 @@ class _DashboardHeader extends StatelessWidget {
               Text(
                 'SmartLunch',
                 style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  color: Colors.white,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               const Spacer(),
               ...topActions.map(
@@ -269,36 +270,38 @@ class _DashboardHeader extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w700,
-                ),
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+            ),
           ),
           const SizedBox(height: 8),
           Text(
             subtitle,
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                  color: Colors.white.withOpacity(0.9),
-                ),
+              color: Colors.white.withOpacity(0.9),
+            ),
           ),
           if (quickActions.isNotEmpty) const SizedBox(height: 16),
           if (quickActions.isNotEmpty)
             Wrap(
               spacing: 12,
               runSpacing: 8,
-              children: quickActions
-                  .map(
-                    (action) => FilledButton.tonalIcon(
-                      style: FilledButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: accent,
-                      ),
-                      onPressed: () =>
-                          Navigator.of(context).pushNamed(action.route),
-                      icon: Icon(action.icon),
-                      label: Text(action.label),
-                    ),
-                  )
-                  .toList(),
+              children:
+                  quickActions
+                      .map(
+                        (action) => FilledButton.tonalIcon(
+                          style: FilledButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            foregroundColor: accent,
+                          ),
+                          onPressed:
+                              () =>
+                                  Navigator.of(context).pushNamed(action.route),
+                          icon: Icon(action.icon),
+                          label: Text(action.label),
+                        ),
+                      )
+                      .toList(),
             ),
         ],
       ),
@@ -344,24 +347,21 @@ class _FeatureCard extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 feature.title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 6),
               Text(
                 feature.subtitle,
                 style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: Colors.black.withOpacity(0.6),
-                    ),
+                  color: Colors.black.withOpacity(0.6),
+                ),
               ),
               const Spacer(),
               Align(
                 alignment: Alignment.bottomRight,
-                child: Icon(
-                  Icons.arrow_forward,
-                  color: feature.color,
-                ),
+                child: Icon(Icons.arrow_forward, color: feature.color),
               ),
             ],
           ),

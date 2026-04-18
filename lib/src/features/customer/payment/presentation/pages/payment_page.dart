@@ -6,11 +6,7 @@ class PaymentPage extends StatelessWidget {
   final bool embedded;
   final double bottomInset;
 
-  const PaymentPage({
-    super.key,
-    this.embedded = false,
-    this.bottomInset = 0,
-  });
+  const PaymentPage({super.key, this.embedded = false, this.bottomInset = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -37,8 +33,7 @@ class PaymentPage extends StatelessWidget {
 
     final content = SingleChildScrollView(
       physics: const BouncingScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(
-          20, embedded ? 6 : 18, 20, 28 + bottomInset),
+      padding: EdgeInsets.fromLTRB(20, embedded ? 6 : 18, 20, 28 + bottomInset),
       child: Column(
         children: [
           const _BalanceCard(),
@@ -105,8 +100,11 @@ class _BalanceCard extends StatelessWidget {
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.account_balance_wallet_rounded,
-                    color: Colors.white, size: 22),
+                child: const Icon(
+                  Icons.account_balance_wallet_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 10),
               Column(
@@ -115,9 +113,9 @@ class _BalanceCard extends StatelessWidget {
                   Text(
                     'Ví SmartLunch',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                        ),
+                      color: Colors.white,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                   Text(
                     'Số dư khả dụng',
@@ -134,20 +132,17 @@ class _BalanceCard extends StatelessWidget {
           Text(
             '520.000đ',
             style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: -0.2,
-                ),
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+              letterSpacing: -0.2,
+            ),
           ),
           const SizedBox(height: 10),
           Wrap(
             spacing: 8,
             runSpacing: 8,
             children: const [
-              _BalancePill(
-                label: 'Đã khóa: 80.000đ',
-                icon: Icons.lock_outline,
-              ),
+              _BalancePill(label: 'Đã khóa: 80.000đ', icon: Icons.lock_outline),
               _BalancePill(
                 label: 'Ưu đãi: 2 voucher',
                 icon: Icons.card_giftcard_outlined,
@@ -207,29 +202,31 @@ class _PaymentActions extends StatelessWidget {
       const _ActionButton(
         label: 'Rút về ngân hàng',
         icon: Icons.south_west_rounded,
-        color: Color(0xFF1F3C88),
+        color: AppColors.customerAlt,
       ),
       const _ActionButton(
         label: 'Chuyển / tặng',
         icon: Icons.swap_horiz_rounded,
-        color: Color(0xFFE07A24),
+        color: AppColors.customer,
       ),
     ];
 
     return Row(
-      children: actions
-          .asMap()
-          .entries
-          .map(
-            (entry) => Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                    right: entry.key == actions.length - 1 ? 0 : 10),
-                child: _ActionTile(button: entry.value),
-              ),
-            ),
-          )
-          .toList(),
+      children:
+          actions
+              .asMap()
+              .entries
+              .map(
+                (entry) => Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: entry.key == actions.length - 1 ? 0 : 10,
+                    ),
+                    child: _ActionTile(button: entry.value),
+                  ),
+                ),
+              )
+              .toList(),
     );
   }
 }
@@ -317,8 +314,11 @@ class _MethodCard extends StatelessWidget {
                   color: AppColors.customer.withOpacity(0.08),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.credit_card_rounded,
-                    color: AppColors.customer, size: 20),
+                child: const Icon(
+                  Icons.credit_card_rounded,
+                  color: AppColors.customer,
+                  size: 20,
+                ),
               ),
               const SizedBox(width: 10),
               Expanded(
@@ -330,9 +330,9 @@ class _MethodCard extends StatelessWidget {
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                            color: AppColors.ink,
-                          ),
+                        fontWeight: FontWeight.w800,
+                        color: AppColors.ink,
+                      ),
                     ),
                     Text(
                       'Chọn nguồn tiền ưu tiên khi thanh toán',
@@ -397,9 +397,10 @@ class _MethodTile extends StatelessWidget {
         color: selected ? AppColors.customer.withOpacity(0.06) : Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: selected
-              ? AppColors.customer.withOpacity(0.35)
-              : AppColors.ink.withOpacity(0.05),
+          color:
+              selected
+                  ? AppColors.customer.withOpacity(0.35)
+                  : AppColors.ink.withOpacity(0.05),
         ),
       ),
       child: Row(
@@ -419,9 +420,9 @@ class _MethodTile extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.ink,
-                      ),
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.ink,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -439,7 +440,8 @@ class _MethodTile extends StatelessWidget {
           const SizedBox(width: 8),
           Icon(
             selected ? Icons.radio_button_checked : Icons.radio_button_off,
-            color: selected ? AppColors.customer : AppColors.ink.withOpacity(0.5),
+            color:
+                selected ? AppColors.customer : AppColors.ink.withOpacity(0.5),
             size: 22,
           ),
         ],
@@ -474,21 +476,21 @@ class _TransactionsList extends StatelessWidget {
         children: [
           Row(
             children: [
-              const Icon(Icons.receipt_long_rounded,
-                  color: AppColors.customer, size: 20),
+              const Icon(
+                Icons.receipt_long_rounded,
+                color: AppColors.customer,
+                size: 20,
+              ),
               const SizedBox(width: 8),
               Text(
                 'Giao dịch gần đây',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w900,
-                      color: AppColors.ink,
-                    ),
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.ink,
+                ),
               ),
               const Spacer(),
-              TextButton(
-                onPressed: () {},
-                child: const Text('Xem tất cả'),
-              ),
+              TextButton(onPressed: () {}, child: const Text('Xem tất cả')),
             ],
           ),
           const SizedBox(height: 6),
@@ -499,16 +501,16 @@ class _TransactionsList extends StatelessWidget {
                 children: [
                   CircleAvatar(
                     radius: 20,
-                    backgroundColor: tx.positive
-                        ? const Color(0xFFE7F7F4)
-                        : const Color(0xFFFEEFE8),
+                    backgroundColor:
+                        tx.positive
+                            ? AppColors.customer.withOpacity(0.12)
+                            : Colors.redAccent.withOpacity(0.12),
                     child: Icon(
                       tx.positive
                           ? Icons.arrow_downward_rounded
                           : Icons.arrow_upward_rounded,
-                      color: tx.positive
-                          ? AppColors.customer
-                          : const Color(0xFFE07A24),
+                      color:
+                          tx.positive ? AppColors.customer : Colors.redAccent,
                       size: 18,
                     ),
                   ),
@@ -539,9 +541,8 @@ class _TransactionsList extends StatelessWidget {
                   Text(
                     tx.amount,
                     style: TextStyle(
-                      color: tx.positive
-                          ? AppColors.customer
-                          : const Color(0xFFE07A24),
+                      color:
+                          tx.positive ? AppColors.customer : AppColors.customer,
                       fontWeight: FontWeight.w800,
                     ),
                   ),

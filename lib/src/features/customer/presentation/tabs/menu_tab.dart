@@ -8,11 +8,7 @@ class MenuTab extends StatelessWidget {
   final double bottomInset;
   final bool showBack;
 
-  const MenuTab({
-    super.key,
-    required this.bottomInset,
-    this.showBack = false,
-  });
+  const MenuTab({super.key, required this.bottomInset, this.showBack = false});
 
   @override
   Widget build(BuildContext context) {
@@ -75,17 +71,15 @@ class MenuTab extends StatelessWidget {
             SliverPadding(
               padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + bottomInset),
               sliver: SliverList(
-                delegate: SliverChildBuilderDelegate(
-                  (context, index) {
-                    final meal = meals[index];
-                    return Padding(
-                      padding: EdgeInsets.only(
-                          bottom: index == meals.length - 1 ? 0 : 12),
-                      child: MiniMealCard(meal: meal, compact: true),
-                    );
-                  },
-                  childCount: meals.length,
-                ),
+                delegate: SliverChildBuilderDelegate((context, index) {
+                  final meal = meals[index];
+                  return Padding(
+                    padding: EdgeInsets.only(
+                      bottom: index == meals.length - 1 ? 0 : 12,
+                    ),
+                    child: MiniMealCard(meal: meal, compact: true),
+                  );
+                }, childCount: meals.length),
               ),
             ),
           ],
@@ -144,19 +138,19 @@ class _MenuHeader extends StatelessWidget {
                   Text(
                     'Thực đơn hôm nay',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w800,
-                          color: AppColors.ink,
-                          letterSpacing: -0.2,
-                          fontSize: 24,
-                        ),
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.ink,
+                      letterSpacing: -0.2,
+                      fontSize: 24,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
                     'Chọn nhanh, giao trước 11:30, menu healthy và chỉn chu.',
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.ink.withOpacity(0.6),
-                          fontSize: 14,
-                        ),
+                      color: AppColors.ink.withOpacity(0.6),
+                      fontSize: 14,
+                    ),
                   ),
                 ],
               ),
@@ -195,12 +189,12 @@ class _MenuHeader extends StatelessWidget {
             _StatusPill(
               label: 'Eat clean - ít dầu mỡ',
               icon: Icons.eco_rounded,
-              color: Color(0xFF1F3C88),
+              color: AppColors.customerAlt,
             ),
             _StatusPill(
               label: 'Ưu đãi đến 25%',
               icon: Icons.local_offer_rounded,
-              color: Color(0xFFE07A24),
+              color: AppColors.customer,
             ),
           ],
         ),
@@ -298,11 +292,8 @@ class _SearchBarState extends State<_SearchBar> {
           fontWeight: FontWeight.w600,
           fontSize: 13.5,
         ),
-        prefixIcon: Icon(
-          Icons.search,
-          color: AppColors.ink.withOpacity(0.65),
-        ),
-        
+        prefixIcon: Icon(Icons.search, color: AppColors.ink.withOpacity(0.65)),
+
         filled: true,
         fillColor: Colors.white.withOpacity(0.95),
         enabledBorder: OutlineInputBorder(
@@ -316,8 +307,7 @@ class _SearchBarState extends State<_SearchBar> {
             width: 1.5,
           ),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 14, horizontal: 0),
+        contentPadding: const EdgeInsets.symmetric(vertical: 14, horizontal: 0),
       ),
     );
   }
@@ -341,31 +331,35 @@ class _FilterChips extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       physics: const BouncingScrollPhysics(),
       child: Row(
-        children: filters
-            .map(
-              (label) => Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.9),
-                    borderRadius: BorderRadius.circular(14),
-                    border:
-                        Border.all(color: AppColors.ink.withOpacity(0.08)),
-                  ),
-                  child: Text(
-                    label,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.ink,
-                      fontSize: 13,
+        children:
+            filters
+                .map(
+                  (label) => Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 7,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.9),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: AppColors.ink.withOpacity(0.08),
+                        ),
+                      ),
+                      child: Text(
+                        label,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.ink,
+                          fontSize: 13,
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-            )
-            .toList(),
+                )
+                .toList(),
       ),
     );
   }
@@ -384,7 +378,7 @@ class _ComboRail extends StatelessWidget {
       title: 'Combo Nhanh',
       subtitle: 'Mang đi trong 10 phút',
       badge: 'NEW',
-      gradient: [Color(0xFF1F3C88), Color(0xFF5C7DC7)],
+      gradient: [AppColors.customerAlt, AppColors.customerAlt],
       icon: Icons.flash_on_rounded,
     ),
     _ComboData(
@@ -444,8 +438,10 @@ class _ComboCard extends StatelessWidget {
           Row(
             children: [
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 6,
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white.withOpacity(0.16),
                   borderRadius: BorderRadius.circular(12),
@@ -515,16 +511,16 @@ class _MenuSectionTitle extends StatelessWidget {
         Text(
           title,
           style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.w900,
-                color: AppColors.ink,
-              ),
+            fontWeight: FontWeight.w900,
+            color: AppColors.ink,
+          ),
         ),
         const SizedBox(height: 6),
         Text(
           subtitle,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.ink.withOpacity(0.6),
-              ),
+            color: AppColors.ink.withOpacity(0.6),
+          ),
         ),
       ],
     );

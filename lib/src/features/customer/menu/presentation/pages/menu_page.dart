@@ -18,10 +18,7 @@ class MenuPage extends StatelessWidget {
         elevation: 0,
         surfaceTintColor: Colors.white,
       ),
-      body: MenuTab(
-        bottomInset: bottomInset,
-        showBack: false,
-      ),
+      body: MenuTab(bottomInset: bottomInset, showBack: false),
     );
   }
 }

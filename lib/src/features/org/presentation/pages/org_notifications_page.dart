@@ -197,13 +197,13 @@ class _NotificationTile extends StatelessWidget {
   Color _color() {
     switch (notification.type) {
       case NotificationType.finance:
-        return const Color(0xFF2BAE66);
+        return AppColors.org;
       case NotificationType.order:
         return AppColors.org;
       case NotificationType.report:
-        return const Color(0xFF1F3C88);
+        return AppColors.org;
       case NotificationType.feedback:
-        return const Color(0xFFF4A261);
+        return AppColors.orgAlt;
     }
   }
 

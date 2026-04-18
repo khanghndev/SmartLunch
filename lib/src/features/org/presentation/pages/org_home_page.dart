@@ -53,12 +53,33 @@ class _OrgHomePageState extends State<OrgHomePage> {
         foregroundColor: AppColors.ink,
         elevation: 0,
         surfaceTintColor: Colors.white,
+        leading: IconButton(
+          icon: const Icon(Icons.menu_rounded),
+          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
+          tooltip: 'Mở menu',
+        ),
+        actions: [
+          IconButton(
+            tooltip: 'Thông báo',
+            icon: const Icon(Icons.notifications_none_rounded),
+            onPressed:
+                () =>
+                    Navigator.of(context).pushNamed(AppRoutes.orgNotifications),
+          ),
+          IconButton(
+            tooltip: 'Hồ sơ',
+            icon: const Icon(Icons.person_outline),
+            onPressed:
+                () => Navigator.of(context).pushNamed(AppRoutes.orgProfile),
+          ),
+          const SizedBox(width: 4),
+        ],
       ),
       drawerEnableOpenDragGesture: true,
       drawer: PremiumDrawer(
-        userName: 'Khách hàng doanh nghiệp',
+        userName: 'Đơn vị đặt suất ăn',
         userRole: 'Organization account',
-        roleBadge: 'Khách hàng doanh nghiệp',
+        roleBadge: 'Đơn vị đặt suất ăn',
         gradient: const [AppColors.org, AppColors.orgAlt],
         accentColor: AppColors.org,
         selectedIndex: _selectedIndex,
@@ -118,6 +139,12 @@ class _OrgHomePageState extends State<OrgHomePage> {
                 label: 'Bulk orders',
                 labelVi: 'Đơn hàng số lượng lớn',
                 route: AppRoutes.orgBulkOrder,
+              ),
+              DrawerItem(
+                icon: Icons.star_rounded,
+                label: 'Rate meals',
+                labelVi: 'Đánh giá suất ăn',
+                route: AppRoutes.customerRating,
               ),
               DrawerItem(
                 icon: Icons.bar_chart_rounded,
@@ -268,79 +295,6 @@ class _SummaryTile extends StatelessWidget {
   }
 }
 
-class _OrgAccessCard extends StatelessWidget {
-  const _OrgAccessCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return _SectionCard(
-      title: 'Quyền truy cập',
-      subtitle: 'Quản trị, ủy quyền, chỉ xem báo cáo',
-      icon: Icons.shield_outlined,
-      color: AppColors.org,
-      actionLabel: 'Quản lý quyền',
-      onAction: () {},
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Wrap(
-            spacing: 8,
-            runSpacing: 8,
-            children: const [
-              _HeroChip(
-                icon: Icons.admin_panel_settings_rounded,
-                label: 'Quản trị viên',
-              ),
-              _HeroChip(icon: Icons.group, label: '5 người ủy quyền'),
-              _HeroChip(icon: Icons.visibility, label: 'Chỉ xem báo cáo'),
-            ],
-          ),
-          const SizedBox(height: 10),
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.org.withOpacity(0.06),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.org.withOpacity(0.16)),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.person_add_alt_1_rounded,
-                  color: AppColors.org,
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Thêm người được ủy quyền',
-                        style: TextStyle(
-                          color: AppColors.ink.withOpacity(0.85),
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                      Text(
-                        'Cấp quyền đặt suất, xem báo cáo, đối soát',
-                        style: TextStyle(
-                          color: AppColors.ink.withOpacity(0.65),
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                TextButton(onPressed: () {}, child: const Text('Thêm')),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _OrgContactCard extends StatelessWidget {
   const _OrgContactCard();
 
@@ -467,6 +421,101 @@ class _OrgPrefRow extends StatelessWidget {
   }
 }
 
+class _OrgLogoutCard extends StatelessWidget {
+  const _OrgLogoutCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: AppColors.org.withOpacity(0.08),
+                  shape: BoxShape.circle,
+                ),
+                child: const Icon(Icons.logout_rounded, color: AppColors.org),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Text(
+                  'Đăng xuất tài khoản doanh nghiệp',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.ink,
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [AppColors.org, AppColors.orgAlt],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.org.withOpacity(0.22),
+                    blurRadius: 14,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: ElevatedButton.icon(
+                onPressed:
+                    () => Navigator.of(context).pushNamedAndRemoveUntil(
+                      AppRoutes.welcome,
+                      (route) => false,
+                    ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                icon: const Icon(Icons.exit_to_app_rounded),
+                label: const Text(
+                  'Đăng xuất',
+                  style: TextStyle(
+                    fontWeight: FontWeight.w800,
+                    letterSpacing: 0.1,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _OrgDashboardTab extends StatelessWidget {
   final double bottomInset;
 
@@ -484,13 +533,13 @@ class _OrgDashboardTab extends StatelessWidget {
       _StatCard(
         label: 'Đúng giờ',
         value: '97%',
-        color: const Color(0xFF2BAE66),
+        color: AppColors.org,
         icon: Icons.access_time_filled_rounded,
       ),
       _StatCard(
         label: 'Công nợ',
         value: '22.7tr',
-        color: const Color(0xFFE07A24),
+        color: AppColors.org,
         icon: Icons.payments_rounded,
       ),
     ];
@@ -508,7 +557,7 @@ class _OrgDashboardTab extends StatelessWidget {
         time: '18:00 · 27/03',
         pax: 30,
         status: 'Đang giao',
-        color: Color(0xFFF4A261),
+        color: AppColors.orgAlt,
       ),
     ];
 
@@ -562,7 +611,7 @@ class _OrgDashboardTab extends StatelessWidget {
               title: 'Lối tắt',
               subtitle: 'Đặt nhanh hoặc xem báo cáo',
               icon: Icons.flash_on_rounded,
-              color: const Color(0xFF1F3C88),
+              color: AppColors.org,
               child: Wrap(
                 spacing: 10,
                 runSpacing: 10,
@@ -1026,7 +1075,7 @@ class _OrgOrdersTab extends StatelessWidget {
         time: '08:30 · 25/03',
         pax: 45,
         status: 'Đang chuẩn bị',
-        color: const Color(0xFF1F3C88),
+        color: AppColors.org,
       ),
     ];
 
@@ -1072,7 +1121,7 @@ class _OrgOrdersTab extends StatelessWidget {
           title: 'Tác vụ nhanh',
           subtitle: 'Tạo đơn, phân bổ hoặc xem danh sách',
           icon: Icons.flash_on_rounded,
-          color: const Color(0xFF1F3C88),
+          color: AppColors.org,
           child: Wrap(
             spacing: 10,
             runSpacing: 10,
@@ -1174,7 +1223,7 @@ class _OrgReportsTab extends StatelessWidget {
           title: 'Thống kê nhanh',
           subtitle: 'Suất ăn, đúng giờ, phản hồi',
           icon: Icons.bar_chart_rounded,
-          color: const Color(0xFF1F3C88),
+          color: AppColors.org,
           child: Column(
             children: const [
               _SummaryRow(label: 'Suất tuần này', value: '366'),
@@ -1280,7 +1329,7 @@ class _OrgFinanceTab extends StatelessWidget {
           title: 'Hóa đơn gần đây',
           subtitle: 'Theo kỳ đối soát',
           icon: Icons.receipt_long_rounded,
-          color: const Color(0xFF1F3C88),
+          color: AppColors.org,
           child: Column(
             children: const [
               _SummaryRow(label: '#INV-0324-01', value: 'Chờ thanh toán'),
@@ -1341,30 +1390,12 @@ class _OrgProfileTab extends StatelessWidget {
         const SizedBox(height: 12),
         const _OrgProfileSummary(),
         const SizedBox(height: 12),
-        const _OrgAccessCard(),
-        const SizedBox(height: 12),
         const _OrgContactCard(),
         const SizedBox(height: 12),
         const _OrgPreferenceCard(),
         const SizedBox(height: 12),
-        _SectionCard(
-          title: 'Cài đặt thông báo',
-          subtitle: 'Đơn hàng, đối soát, báo cáo',
-          icon: Icons.notifications_active_rounded,
-          color: const Color(0xFF1F3C88),
-          actionLabel: 'Thiết lập',
-          onAction:
-              () => Navigator.of(context).pushNamed(AppRoutes.orgNotifications),
-          child: Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: const [
-              _HeroChip(icon: Icons.event_note, label: 'Đơn hàng'),
-              _HeroChip(icon: Icons.payments, label: 'Đối soát'),
-              _HeroChip(icon: Icons.description, label: 'Báo cáo'),
-            ],
-          ),
-        ),
+        const _OrgLogoutCard(),
+        const SizedBox(height: 12),
       ],
     );
   }

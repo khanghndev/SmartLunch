@@ -44,25 +44,28 @@ class MealDetailPage extends StatelessWidget {
                   child: Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: meal.tags
-                        .map(
-                          (tag) => Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 8),
-                            decoration: BoxDecoration(
-                              color: AppColors.customer.withOpacity(0.08),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              tag,
-                              style: const TextStyle(
-                                color: AppColors.customer,
-                                fontWeight: FontWeight.w800,
+                    children:
+                        meal.tags
+                            .map(
+                              (tag) => Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 12,
+                                  vertical: 8,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: AppColors.customer.withOpacity(0.08),
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: Text(
+                                  tag,
+                                  style: const TextStyle(
+                                    color: AppColors.customer,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ),
-                        )
-                        .toList(),
+                            )
+                            .toList(),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -70,40 +73,43 @@ class MealDetailPage extends StatelessWidget {
                   title: 'Thành phần chính',
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: meal.ingredients
-                        .map(
-                          (item) => Padding(
-                            padding: const EdgeInsets.only(bottom: 8),
-                            child: Row(
-                              children: [
-                                Container(
-                                  width: 22,
-                                  height: 22,
-                                  decoration: BoxDecoration(
-                                    color: AppColors.customer.withOpacity(0.12),
-                                    shape: BoxShape.circle,
-                                  ),
-                                  child: const Icon(
-                                    Icons.check_rounded,
-                                    color: AppColors.customer,
-                                    size: 14,
-                                  ),
-                                ),
-                                const SizedBox(width: 10),
-                                Expanded(
-                                  child: Text(
-                                    item,
-                                    style: TextStyle(
-                                      color: AppColors.ink.withOpacity(0.8),
-                                      fontWeight: FontWeight.w700,
+                    children:
+                        meal.ingredients
+                            .map(
+                              (item) => Padding(
+                                padding: const EdgeInsets.only(bottom: 8),
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      width: 22,
+                                      height: 22,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.customer.withOpacity(
+                                          0.12,
+                                        ),
+                                        shape: BoxShape.circle,
+                                      ),
+                                      child: const Icon(
+                                        Icons.check_rounded,
+                                        color: AppColors.customer,
+                                        size: 14,
+                                      ),
                                     ),
-                                  ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: Text(
+                                        item,
+                                        style: TextStyle(
+                                          color: AppColors.ink.withOpacity(0.8),
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
-                        )
-                        .toList(),
+                              ),
+                            )
+                            .toList(),
                   ),
                 ),
                 const SizedBox(height: 14),
@@ -168,10 +174,10 @@ class _MealHeroState extends State<_MealHero> {
   int _index = 0;
 
   List<String> get _gallery => [
-        widget.meal.image,
-        '${widget.meal.image}_2',
-        '${widget.meal.image}_3',
-      ];
+    widget.meal.image,
+    '${widget.meal.image}_2',
+    '${widget.meal.image}_3',
+  ];
 
   @override
   void dispose() {
@@ -288,12 +294,12 @@ class _MealTitleSection extends StatelessWidget {
         Text(
           meal.name,
           style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.w900,
-                color: AppColors.ink,
-                letterSpacing: -0.15,
-                height: 1.05,
-                fontSize: 22,
-              ),
+            fontWeight: FontWeight.w900,
+            color: AppColors.ink,
+            letterSpacing: -0.15,
+            height: 1.05,
+            fontSize: 22,
+          ),
         ),
         const SizedBox(height: 6),
         Text(
@@ -357,7 +363,7 @@ class _HeroStatPanel extends StatelessWidget {
               icon: Icons.local_fire_department_rounded,
               label: '${meal.calories} kcal',
               caption: 'Năng lượng',
-              color: const Color(0xFFE07A24),
+              color: AppColors.customer,
             ),
           ),
         ],
@@ -401,10 +407,10 @@ class _HeroStat extends StatelessWidget {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: AppColors.ink,
-                      fontSize: 14,
-                    ),
+                  fontWeight: FontWeight.w800,
+                  color: AppColors.ink,
+                  fontSize: 14,
+                ),
               ),
               Text(
                 caption,
@@ -454,9 +460,7 @@ class _PriceHeader extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.customer.withOpacity(0.06),
                 borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: AppColors.customer.withOpacity(0.18),
-                ),
+                border: Border.all(color: AppColors.customer.withOpacity(0.18)),
               ),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -464,11 +468,11 @@ class _PriceHeader extends StatelessWidget {
                   Text(
                     '${_formatPriceFull(meal.price)}đ',
                     style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.w900,
-                          color: AppColors.customer,
-                          letterSpacing: -0.2,
-                          fontSize: 22,
-                        ),
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.customer,
+                      letterSpacing: -0.2,
+                      fontSize: 22,
+                    ),
                   ),
                   const SizedBox(height: 4),
                   Text(
@@ -511,9 +515,9 @@ class _MacroRow extends StatelessWidget {
       children: [
         Expanded(
           child: _MacroCard(
-            label: 'Calories',
-            value: '${meal.calories} kcal',
-            color: const Color(0xFFE07A24),
+            label: 'Calo',
+            value: '${meal.calories}kl',
+            color: AppColors.customer,
           ),
         ),
         const SizedBox(width: 12),
@@ -529,7 +533,7 @@ class _MacroRow extends StatelessWidget {
           child: _MacroCard(
             label: 'Carb',
             value: '${meal.carb}g',
-            color: const Color(0xFF1F3C88),
+            color: AppColors.customerAlt,
           ),
         ),
         const SizedBox(width: 12),
@@ -625,9 +629,9 @@ class _SectionCard extends StatelessWidget {
           Text(
             title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w900,
-                  color: AppColors.ink,
-                ),
+              fontWeight: FontWeight.w900,
+              color: AppColors.ink,
+            ),
           ),
           const SizedBox(height: 10),
           child,
@@ -767,9 +771,9 @@ class _BottomBar extends StatelessWidget {
                 Text(
                   '${_formatPriceFull(meal.price)}đ',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.w900,
-                        color: AppColors.ink,
-                      ),
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.ink,
+                  ),
                 ),
               ],
             ),
@@ -788,10 +792,7 @@ class _BottomBar extends StatelessWidget {
                 onPressed: () {},
                 child: const Text(
                   'Thêm vào giỏ',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w800,
-                    fontSize: 15,
-                  ),
+                  style: TextStyle(fontWeight: FontWeight.w800, fontSize: 15),
                 ),
               ),
             ),
@@ -800,9 +801,7 @@ class _BottomBar extends StatelessWidget {
               decoration: BoxDecoration(
                 color: AppColors.customer.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(11),
-                border: Border.all(
-                  color: AppColors.customer.withOpacity(0.25),
-                ),
+                border: Border.all(color: AppColors.customer.withOpacity(0.25)),
               ),
               child: IconButton(
                 icon: const Icon(
@@ -831,9 +830,7 @@ class _Pill extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.customer.withOpacity(0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(
-          color: AppColors.customer.withOpacity(0.2),
-        ),
+        border: Border.all(color: AppColors.customer.withOpacity(0.2)),
       ),
       child: Text(
         label,

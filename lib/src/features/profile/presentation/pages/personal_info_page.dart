@@ -96,8 +96,10 @@ class PersonalInfoPage extends StatelessWidget {
             ),
             const SizedBox(height: 10),
             TextButton.icon(
-              onPressed: () =>
-                  Navigator.of(context).pushNamed(AppRoutes.profileSecurity),
+              onPressed:
+                  () => Navigator.of(
+                    context,
+                  ).pushNamed(AppRoutes.profileSecurity),
               icon: const Icon(Icons.lock_reset_rounded),
               label: const Text('Đổi mật khẩu'),
             ),
@@ -169,10 +171,13 @@ class _ProfileSummary extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: Colors.white, width: 2),
                   ),
-                  child: const Icon(Icons.camera_alt_rounded,
-                      size: 14, color: Colors.white),
+                  child: const Icon(
+                    Icons.camera_alt_rounded,
+                    size: 14,
+                    color: Colors.white,
+                  ),
                 ),
-              )
+              ),
             ],
           ),
           const SizedBox(width: 14),
@@ -185,10 +190,10 @@ class _ProfileSummary extends StatelessWidget {
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.2,
-                      ),
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    letterSpacing: -0.2,
+                  ),
                 ),
                 const SizedBox(height: 4),
                 Text(
@@ -205,13 +210,13 @@ class _ProfileSummary extends StatelessWidget {
                   spacing: 8,
                   runSpacing: 8,
                   children: [
-                    _Chip(label: 'Khách hàng cá nhân', icon: Icons.verified),
+                    _Chip(label: 'Khách hàng (người ăn)', icon: Icons.verified),
                     _Chip(label: tier, icon: Icons.workspace_premium_rounded),
                   ],
                 ),
               ],
             ),
-          )
+          ),
         ],
       ),
     );
@@ -315,8 +320,10 @@ class _InputField extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           borderSide: const BorderSide(color: AppColors.customer, width: 1.4),
         ),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 14,
+          vertical: 14,
+        ),
       ),
     );
   }

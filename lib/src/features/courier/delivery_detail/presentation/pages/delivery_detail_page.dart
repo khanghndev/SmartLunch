@@ -138,7 +138,7 @@ class _StepWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = step.done ? const Color(0xFF2BAE66) : Colors.white;
+    final color = step.done ? AppColors.courier : Colors.white;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -300,7 +300,7 @@ class _ActionsCard extends StatelessWidget {
           _ActionButton(
             label: 'Mở bản đồ',
             icon: Icons.navigation_rounded,
-            color: const Color(0xFF1F3C88),
+            color: AppColors.courier,
             onTap:
                 () =>
                     Navigator.of(context).pushNamed(AppRoutes.courierRouteMap),
@@ -308,7 +308,7 @@ class _ActionsCard extends StatelessWidget {
           _ActionButton(
             label: 'Chụp Minh chứng',
             icon: Icons.camera_alt_outlined,
-            color: const Color(0xFFF4A261),
+            color: AppColors.courierAlt,
             onTap:
                 () => Navigator.of(context).pushNamed(AppRoutes.courierProof),
           ),

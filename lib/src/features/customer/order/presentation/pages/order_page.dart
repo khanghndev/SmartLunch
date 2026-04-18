@@ -7,11 +7,7 @@ class OrderPage extends StatelessWidget {
   final bool embedded;
   final double bottomInset;
 
-  const OrderPage({
-    super.key,
-    this.embedded = false,
-    this.bottomInset = 0,
-  });
+  const OrderPage({super.key, this.embedded = false, this.bottomInset = 0});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +26,7 @@ class OrderPage extends StatelessWidget {
         price: '120.000đ',
         status: 'Đã xác nhận',
         tag: 'Combo 2 phần',
-        color: const Color(0xFF1F3C88),
+        color: AppColors.customerAlt,
       ),
     ];
 
@@ -41,7 +37,7 @@ class OrderPage extends StatelessWidget {
         price: '55.000đ',
         status: 'Hoàn tất',
         tag: 'Đánh giá',
-        color: const Color(0xFFE07A24),
+        color: AppColors.customer,
       ),
       _OrderData(
         title: 'Cơm gà nướng mật ong',
@@ -49,7 +45,7 @@ class OrderPage extends StatelessWidget {
         price: '45.000đ',
         status: 'Hoàn tất',
         tag: 'Thêm vào giỏ',
-        color: const Color(0xFF2A9C9B),
+        color: AppColors.customerAlt,
       ),
     ];
 
@@ -143,8 +139,11 @@ class _HighlightCard extends StatelessWidget {
                   color: Colors.white.withOpacity(0.2),
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(Icons.bento_rounded,
-                    color: Colors.white, size: 22),
+                child: const Icon(
+                  Icons.bento_rounded,
+                  color: Colors.white,
+                  size: 22,
+                ),
               ),
               const SizedBox(width: 12),
               Expanded(
@@ -154,16 +153,14 @@ class _HighlightCard extends StatelessWidget {
                     Text(
                       'Đặt bữa nhanh hôm nay',
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                          ),
+                        color: Colors.white,
+                        fontWeight: FontWeight.w800,
+                      ),
                     ),
                     const SizedBox(height: 4),
                     Text(
                       'Chốt đơn trước 10:00, giao 11:00 - 11:30',
-                      style: TextStyle(
-                        color: Colors.white.withOpacity(0.9),
-                      ),
+                      style: TextStyle(color: Colors.white.withOpacity(0.9)),
                     ),
                   ],
                 ),
@@ -202,8 +199,10 @@ class _HighlightCard extends StatelessWidget {
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.customerOrder),
+                  onPressed:
+                      () => Navigator.of(
+                        context,
+                      ).pushNamed(AppRoutes.customerOrder),
                   child: const Text(
                     'Đặt bữa nhanh',
                     style: TextStyle(fontWeight: FontWeight.w800),
@@ -215,14 +214,17 @@ class _HighlightCard extends StatelessWidget {
                 style: OutlinedButton.styleFrom(
                   foregroundColor: Colors.white,
                   side: BorderSide(color: Colors.white.withOpacity(0.7)),
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 14,
+                    vertical: 13,
+                  ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                onPressed: () => Navigator.of(context)
-                    .pushNamed(AppRoutes.customerMenu),
+                onPressed:
+                    () =>
+                        Navigator.of(context).pushNamed(AppRoutes.customerMenu),
                 child: const Text('Chọn món'),
               ),
             ],
@@ -242,32 +244,33 @@ class _QuickActions extends StatelessWidget {
       _ActionData(
         label: 'Lịch sử',
         icon: Icons.history_rounded,
-        color: const Color(0xFF1F3C88),
-        onTap: () =>
-            Navigator.of(context).pushNamed(AppRoutes.customerHistory),
+        color: AppColors.customerAlt,
+        onTap: () => Navigator.of(context).pushNamed(AppRoutes.customerHistory),
       ),
       _ActionData(
         label: 'Ưu đãi',
         icon: Icons.local_offer_rounded,
-        color: const Color(0xFFE07A24),
+        color: AppColors.customer,
         onTap: () {},
       ),
     ];
 
     return Row(
-      children: actions
-          .asMap()
-          .entries
-          .map(
-            (entry) => Expanded(
-              child: Padding(
-                padding: EdgeInsets.only(
-                    right: entry.key == actions.length - 1 ? 0 : 10),
-                child: _QuickActionCard(data: entry.value),
-              ),
-            ),
-          )
-          .toList(),
+      children:
+          actions
+              .asMap()
+              .entries
+              .map(
+                (entry) => Expanded(
+                  child: Padding(
+                    padding: EdgeInsets.only(
+                      right: entry.key == actions.length - 1 ? 0 : 10,
+                    ),
+                    child: _QuickActionCard(data: entry.value),
+                  ),
+                ),
+              )
+              .toList(),
     );
   }
 }
@@ -322,104 +325,166 @@ class _OrderTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final padding = dense ? 12.0 : 14.0;
-    return Container(
-      padding: EdgeInsets.all(padding),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: AppColors.ink.withOpacity(0.04),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 12,
-            offset: const Offset(0, 8),
+    return InkWell(
+      borderRadius: BorderRadius.circular(14),
+      onTap:
+          () => Navigator.of(context).pushNamed(
+            AppRoutes.customerOrderDetail,
+            arguments: {
+              'id': '#SL-202409-00${order.title.hashCode.abs() % 90}',
+              'title': order.title,
+              'status': order.status,
+              'statusColor': order.color,
+              'time': order.subtitle,
+              'address': 'Tòa nhà ABC, 123 Lê Lợi, Q.1, TP.HCM',
+              'contact': 'Nguyễn An (0909 123 456)',
+              'note': 'Giao tại quầy lễ tân, gọi trước 5 phút.',
+              'items': [
+                {'name': order.title, 'qty': 1, 'price': 55000},
+                {'name': 'Nước ép cam', 'qty': 1, 'price': 25000},
+              ],
+              'shipping': 12000,
+              'discount': 15000,
+              'subtotal': 80000,
+              'total': 77000,
+              'payment': 'Ví SmartLunch · Đã thanh toán',
+              'timeline':
+                  order.status == 'Đang giao'
+                      ? 3
+                      : order.status == 'Đã xác nhận'
+                      ? 2
+                      : 4,
+            },
           ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: dense ? 44 : 52,
-            height: dense ? 44 : 52,
-            decoration: BoxDecoration(
-              color: order.color.withOpacity(0.12),
-              borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: EdgeInsets.all(padding),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.ink.withOpacity(0.04)),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 12,
+              offset: const Offset(0, 8),
             ),
-            child: Icon(Icons.receipt_long_rounded,
-                color: order.color, size: dense ? 20 : 22),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: dense ? 44 : 52,
+              height: dense ? 44 : 52,
+              decoration: BoxDecoration(
+                color: order.color.withOpacity(0.12),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(
+                Icons.receipt_long_rounded,
+                color: order.color,
+                size: dense ? 20 : 22,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    order.title,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.ink,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    order.subtitle,
+                    style: TextStyle(
+                      color: AppColors.ink.withOpacity(0.6),
+                      fontWeight: FontWeight.w600,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: [
+                      _Pill(
+                        label: order.status,
+                        color: order.color.withOpacity(0.12),
+                        textColor: order.color,
+                        icon: Icons.check_circle_rounded,
+                      ),
+                      _Pill(
+                        label: order.tag,
+                        color: AppColors.ink.withOpacity(0.04),
+                        textColor: AppColors.ink.withOpacity(0.75),
+                        icon: Icons.local_fire_department_rounded,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 10),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
               children: [
                 Text(
-                  order.title,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        color: AppColors.ink,
-                      ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  order.subtitle,
+                  order.price,
                   style: TextStyle(
-                    color: AppColors.ink.withOpacity(0.6),
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
+                    color: AppColors.ink,
+                    fontWeight: FontWeight.w900,
+                    fontSize: dense ? 14 : 15,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _Pill(
-                      label: order.status,
-                      color: order.color.withOpacity(0.12),
-                      textColor: order.color,
-                      icon: Icons.check_circle_rounded,
+                const SizedBox(height: 6),
+                TextButton(
+                  onPressed:
+                      () => Navigator.of(context).pushNamed(
+                        AppRoutes.customerOrderDetail,
+                        arguments: {
+                          'id':
+                              '#SL-202409-00${order.title.hashCode.abs() % 90}',
+                          'title': order.title,
+                          'status': order.status,
+                          'statusColor': order.color,
+                          'time': order.subtitle,
+                          'address': 'Tòa nhà ABC, 123 Lê Lợi, Q.1, TP.HCM',
+                          'contact': 'Nguyễn An (0909 123 456)',
+                          'note': 'Giao tại quầy lễ tân, gọi trước 5 phút.',
+                          'items': [
+                            {'name': order.title, 'qty': 1, 'price': 55000},
+                            {'name': 'Nước ép cam', 'qty': 1, 'price': 25000},
+                          ],
+                          'shipping': 12000,
+                          'discount': 15000,
+                          'subtotal': 80000,
+                          'total': 77000,
+                          'payment': 'Ví SmartLunch · Đã thanh toán',
+                          'timeline':
+                              order.status == 'Đang giao'
+                                  ? 3
+                                  : order.status == 'Đã xác nhận'
+                                  ? 2
+                                  : 4,
+                        },
+                      ),
+                  style: TextButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 8,
                     ),
-                    _Pill(
-                      label: order.tag,
-                      color: AppColors.ink.withOpacity(0.04),
-                      textColor: AppColors.ink.withOpacity(0.75),
-                      icon: Icons.local_fire_department_rounded,
-                    ),
-                  ],
+                    foregroundColor: order.color,
+                  ),
+                  child: const Text('Chi tiết'),
                 ),
               ],
             ),
-          ),
-          const SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                order.price,
-                style: TextStyle(
-                  color: AppColors.ink,
-                  fontWeight: FontWeight.w900,
-                  fontSize: dense ? 14 : 15,
-                ),
-              ),
-              const SizedBox(height: 6),
-              TextButton(
-                onPressed: () {},
-                style: TextButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  foregroundColor: order.color,
-                ),
-                child: const Text('Chi tiết'),
-              ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -479,9 +544,9 @@ class _SectionHeader extends StatelessWidget {
         Text(
           title,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight: FontWeight.w900,
-                color: AppColors.ink,
-              ),
+            fontWeight: FontWeight.w900,
+            color: AppColors.ink,
+          ),
         ),
         const SizedBox(height: 4),
         Text(
