@@ -30,10 +30,16 @@ Base path: `/api/v1`
 - `GET /health`
 - `POST /api/v1/chat`
 - `POST /api/v1/recommend/today`
+- `POST /api/v1/recommend/today/plan` (CP-SAT chọn 1 món mặn + 1 món canh)
+- `POST /api/v1/recommend/today/plan/backend` (AI-Service gọi SmartLunch Backend để lấy `dishes` + `dish_ingredients`, sau đó áp `app/core/rules.json`)
+- `POST /api/v1/recommend/week/plan` (CP-SAT lịch theo tuần)
 - `POST /api/v1/feedback/sentiment`
 
 ## Notes
-
+- Rules config được đặt tại `app/core/rules.json` và được AI-Service đọc lại theo từng request (sửa file là có hiệu lực ngay).
+- Để endpoint `/recommend/today/plan/backend` gọi SmartLunch Backend lấy dữ liệu, cần cấu hình `.env`:
+  - `BACKEND_BASE_URL`
+  - `BACKEND_ADMIN_BEARER_TOKEN`
 - This project ships with **simple baseline logic** (rule-based) to make the APIs usable immediately.
 - Replace implementations inside `app/services/` with your real models later (LLM, recommender, sentiment model).
 
