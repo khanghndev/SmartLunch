@@ -166,23 +166,23 @@ namespace SmartLunch.Backend.Service.API.Controllers
             }
         }
 
-        [HttpGet("profile")]
-        [Authorize]
-        public async Task<ActionResult<BaseApiResponse<UserProfileResponse>>> GetProfile()
-        {
-            try
-            {
-                var response = await _mediator.Send(new GetUserProfileCommand());
-                return Ok(BaseApiResponse<UserProfileResponse>.SuccessResult(response, "Profile retrieved successfully"));
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(BaseApiResponse<UserProfileResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                return Unauthorized(BaseApiResponse<UserProfileResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
-            }
-        }
+        // [HttpGet("profile")]
+        // [Authorize]
+        // public async Task<ActionResult<BaseApiResponse<UserProfileResponse>>> GetProfile()
+        // {
+        //     try
+        //     {
+        //         var response = await _mediator.Send(new GetUserProfileCommand());
+        //         return Ok(BaseApiResponse<UserProfileResponse>.SuccessResult(response, "Profile retrieved successfully"));
+        //     }
+        //     catch (ArgumentException ex)
+        //     {
+        //         return BadRequest(BaseApiResponse<UserProfileResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        //     }
+        //     catch (UnauthorizedAccessException ex)
+        //     {
+        //         return Unauthorized(BaseApiResponse<UserProfileResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        //     }
+        // }
     }
 }
