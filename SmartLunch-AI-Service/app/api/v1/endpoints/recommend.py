@@ -1,7 +1,19 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from app.schemas.recommendation import RecommendTodayRequest, RecommendTodayResponse, Recommendation
+from app.schemas.recommendation import (
+    RecommendTodayRequest, 
+    RecommendTodayResponse, 
+    Recommendation,
+    RecommendMealPlanTodayRequest,
+    RecommendMealPlanTodayResponse,
+    MealPlanPair,
+    RecommendWeekPlanRequest,
+    RecommendWeekPlanResponse,
+    RecommendMealPlanTodayFromBackendRequest,
+    RecommendMealPlanTodayFromBackendResponse
+)
 from app.services.recommendation_service import RecommendationService
+from app.core.rules_loader import RulesLoader
 
 router = APIRouter()
 recommender = RecommendationService()
