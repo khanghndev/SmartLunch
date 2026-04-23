@@ -66,8 +66,6 @@ class RecommendationService:
             rules_profile=rules_profile
         )
 
-<<<<<<< Updated upstream
-=======
     @staticmethod
     def _normalize_set(items: list[str]) -> set[str]:
         return {x.strip().lower() for x in items if x.strip()}
@@ -471,5 +469,3 @@ class RecommendationService:
 
         solutions.sort(key=lambda x: x.plan_score, reverse=True)
         return solutions
-
->>>>>>> Stashed changes
