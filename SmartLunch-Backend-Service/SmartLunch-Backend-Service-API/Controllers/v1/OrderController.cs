@@ -7,6 +7,7 @@ using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Orders;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Orders;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetOrder;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetOrders;
+using SmartLunch.Backend.Service.Application.Queries.Orders.GetMealStatistics;
 using System.Net;
 
 namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
@@ -115,6 +116,33 @@ public class OrderController : ControllerBase
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetOrderResponse>.ErrorResult("An error occurred while updating order status", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Thống kê suất ăn theo ngày / ca / bộ phận (Dành cho Admin và Công ty).
+    /// </summary>
+    [HttpGet("statistics/meal-count")]
+    [Authorize(Policy = "roles:Admin,Company,Công ty,SuperAdmin")]
+    [Authorize(Policy = "permission:orders.read")]
+    public async Task<ActionResult<BaseApiResponse<GetMealStatisticsResponse>>> GetMealStatistics([FromQuery] GetMealStatisticsRequest request)
+    {
+        try
+        {
+            var query = new GetMealStatisticsQuery(request);
+            var response = await _mediator.Send(query);
+            return Ok(BaseApiResponse<GetMealStatisticsResponse>.SuccessResult(response, "Meal statistics retrieved successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetMealStatisticsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving meal statistics");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetMealStatisticsResponse>.ErrorResult("An error occurred while retrieving meal statistics", new[] { ex.Message }));
         }
     }
 }
