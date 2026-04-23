@@ -1,0 +1,29 @@
+-- =====================================================
+-- Code Prefix Configuration + Sequence Counter
+-- Code = Prefix + LPAD(Sequence, 8, '0')  →  VD: USR00000001
+-- =====================================================
+CREATE TABLE code_prefixes (
+    TableName VARCHAR(100) NOT NULL,
+    Prefix VARCHAR(5) NOT NULL,
+    Description VARCHAR(255) NULL,
+    LastSequence INT NOT NULL DEFAULT 0 COMMENT 'Bộ đếm sequence hiện tại',
+    PRIMARY KEY (TableName),
+    UNIQUE KEY UK_code_prefixes_prefix (Prefix)
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'Cấu hình prefix + sequence cho cột Code';
+
+INSERT INTO code_prefixes (TableName, Prefix, Description, LastSequence) VALUES
+('users','USR','Người dùng',0),('roles','ROL','Vai trò',0),('permissions','PER','Quyền hạn',0),
+('user_roles','URO','Gán vai trò',0),('user_permissions','UPE','Gán quyền trực tiếp',0),
+('role_permissions','RPE','Gán quyền vai trò',0),('user_tokens','UTK','Token xác thực',0),
+('media_files','MDF','Tệp media',0),('units','UNT','Đơn vị',0),('user_units','UUN','Thành viên đơn vị',0),
+('partners','PTN','Nhà cung cấp',0),('contracts','CTR','Hợp đồng',0),('partner_payments','PPM','Thanh toán NCC',0),
+('ingredients','IGR','Nguyên liệu',0),('ingredient_sources','IGS','Nguồn gốc lô hàng',0),
+('internal_stock_issues','ISI','Phiếu xuất kho',0),('internal_stock_issue_lines','ISL','Chi tiết xuất',0),
+('ingredient_intake_proposals','IIP','Đề xuất nhập',0),('ingredient_intake_proposal_lines','IPL','Chi tiết đề xuất',0),
+('ingredient_actual_intakes','IAI','Phiếu nhập kho',0),('ingredient_actual_intake_lines','IAL','Chi tiết nhập',0),
+('dishes','DSH','Món ăn',0),('dish_ingredients','DIG','Nguyên liệu món',0),
+('weekly_menus','WMN','Thực đơn tuần',0),('menu_schedule','MSC','Lịch thực đơn',0),
+('orders','ORD','Đơn hàng',0),('order_items','OIT','Chi tiết đơn',0),
+('deliveries','DLV','Giao hàng',0),('payments','PMT','Thanh toán',0),('transactions','TXN','Thu chi',0),
+('reviews','RVW','Đánh giá',0),('sentiments','STM','Cảm xúc',0),('complaints','CPL','Khiếu nại',0),
+('chatbot_logs','CBL','Chatbot',0),('menu_suggestions','MSG','Gợi ý AI',0);

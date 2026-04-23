@@ -1,0 +1,20 @@
+CREATE TABLE media_files (
+    Id INT NOT NULL AUTO_INCREMENT,
+    Code VARCHAR(20) NULL COMMENT 'Mã t? sinh (trigger)',
+    OwnerUserId INT NOT NULL,
+    Bucket VARCHAR(255) NOT NULL,
+    ObjectName VARCHAR(1024) NOT NULL,
+    OriginalFileName VARCHAR(255) NULL,
+    ContentType VARCHAR(100) NOT NULL,
+    SizeBytes BIGINT NOT NULL,
+    Md5HashBase64 VARCHAR(128) NULL,
+    MediaType VARCHAR(20) NOT NULL DEFAULT 'unknown',
+    IsPublic TINYINT(1) NOT NULL DEFAULT 0,
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_media_files_code (Code),
+    UNIQUE KEY UK_media_files_bucket_object (Bucket, ObjectName(191)),
+    INDEX IX_media_files_owner (OwnerUserId),
+    CONSTRAINT FK_media_files_owner FOREIGN KEY (OwnerUserId) REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'Tá»‡p media';

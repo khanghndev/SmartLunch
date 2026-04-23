@@ -27,9 +27,6 @@ class Recommendation(BaseModel):
 class RecommendTodayResponse(BaseModel):
     recommendations: list[Recommendation]
 
-<<<<<<< Updated upstream
-=======
-
 class IncompatibleMainSoupPair(BaseModel):
     """
     Disallow selecting (main_index, soup_index) together.
@@ -124,5 +121,3 @@ class RecommendWeekPlanRequest(BaseModel):
 
 class RecommendWeekPlanResponse(BaseModel):
     plans: list[WeekPlan]
-
->>>>>>> Stashed changes

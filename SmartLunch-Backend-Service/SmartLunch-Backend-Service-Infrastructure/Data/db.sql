@@ -1,0 +1,1614 @@
+-- =====================================
+-- SmartLunch Database Schema - Optimized
+-- MySQL 8.0+ Compatible
+-- ACID Compliant with InnoDB Engine
+-- Performance Optimized with Strategic Indexes
+-- =====================================
+
+-- =====================================
+-- Reset Database
+-- =====================================
+DROP DATABASE IF EXISTS SmartLunch;
+CREATE DATABASE SmartLunch
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+
+USE SmartLunch;
+
+-- =====================================================
+-- Table: users
+-- Description: User accounts for RBAC system
+-- Optimizations: Composite indexes for common queries
+-- =====================================================
+CREATE TABLE users (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    Username VARCHAR(100) NOT NULL COMMENT 'Unique username',
+    Email VARCHAR(255) NOT NULL COMMENT 'Unique email address',
+    PasswordHash VARCHAR(500) NOT NULL COMMENT 'Hashed password (BCrypt/Argon2)',
+    FirstName VARCHAR(100) NULL COMMENT 'User first name',
+    LastName VARCHAR(100) NULL COMMENT 'User last name',
+    PhoneNumber VARCHAR(20) NULL COMMENT 'Phone number',
+    Provider VARCHAR(50) NOT NULL DEFAULT 'system' COMMENT 'Authentication provider (system, google, facebook, firebase, etc.)',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Account active status',
+    IsEmailVerified TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Email verification status',
+    EmailVerifiedAt DATETIME NULL COMMENT 'Email verification timestamp',
+    LastLoginAt DATETIME NULL COMMENT 'Last login timestamp',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+    CreatedBy CHAR(36) NULL COMMENT 'User ID who created this record',
+    UpdatedBy CHAR(36) NULL COMMENT 'User ID who last updated this record',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_users_username (Username),
+    UNIQUE KEY UK_users_email (Email),
+    
+    -- Optimized composite indexes for common query patterns
+    INDEX IX_users_active_created (IsActive, CreatedAt DESC),
+    INDEX IX_users_email_verified_active (IsEmailVerified, IsActive),
+    INDEX IX_users_provider (Provider),
+    INDEX IX_users_created_by (CreatedBy),
+    INDEX IX_users_updated_by (UpdatedBy),
+    
+    CONSTRAINT FK_users_created_by FOREIGN KEY (CreatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_users_updated_by FOREIGN KEY (UpdatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'User accounts table';
+
+-- =====================================================
+-- Table: roles
+-- Description: Roles for RBAC system
+-- =====================================================
+CREATE TABLE roles (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    Name VARCHAR(100) NOT NULL COMMENT 'Unique role name',
+    Description VARCHAR(500) NULL COMMENT 'Role description',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Role active status',
+    IsSystemRole TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'System role flag (cannot be deleted)',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+    CreatedBy CHAR(36) NULL COMMENT 'User ID who created this record',
+    UpdatedBy CHAR(36) NULL COMMENT 'User ID who last updated this record',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_roles_name (Name),
+    
+    -- Optimized composite indexes
+    INDEX IX_roles_active_system (IsActive, IsSystemRole),
+    INDEX IX_roles_created_at (CreatedAt DESC),
+    INDEX IX_roles_created_by (CreatedBy),
+    INDEX IX_roles_updated_by (UpdatedBy),
+    
+    CONSTRAINT FK_roles_created_by FOREIGN KEY (CreatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_roles_updated_by FOREIGN KEY (UpdatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Roles table';
+
+-- =====================================================
+-- Table: permissions
+-- Description: Permissions for RBAC system
+-- Optimizations: Covering index for permission lookups
+-- =====================================================
+CREATE TABLE permissions (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    Name VARCHAR(200) NOT NULL COMMENT 'Unique permission name (e.g., users.create)',
+    Description VARCHAR(500) NULL COMMENT 'Permission description',
+    Resource VARCHAR(100) NOT NULL COMMENT 'Resource name (e.g., users, courses)',
+    Action VARCHAR(50) NOT NULL COMMENT 'Action name (e.g., create, read, update, delete)',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Permission active status',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+    CreatedBy CHAR(36) NULL COMMENT 'User ID who created this record',
+    UpdatedBy CHAR(36) NULL COMMENT 'User ID who last updated this record',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_permissions_name (Name),
+    
+    -- Optimized indexes for permission queries
+    INDEX IX_permissions_resource_action_active (Resource, Action, IsActive),
+    INDEX IX_permissions_active_resource (IsActive, Resource),
+    INDEX IX_permissions_created_at (CreatedAt DESC),
+    INDEX IX_permissions_created_by (CreatedBy),
+    INDEX IX_permissions_updated_by (UpdatedBy),
+    
+    CONSTRAINT FK_permissions_created_by FOREIGN KEY (CreatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_permissions_updated_by FOREIGN KEY (UpdatedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Permissions table';
+
+-- =====================================================
+-- Table: user_roles
+-- Description: Many-to-many relationship between users and roles
+-- Optimizations: Covering index for user role lookups
+-- =====================================================
+CREATE TABLE user_roles (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    UserId CHAR(36) NOT NULL COMMENT 'Foreign key to users table',
+    RoleId CHAR(36) NOT NULL COMMENT 'Foreign key to roles table',
+    AssignedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Assignment timestamp',
+    AssignedBy CHAR(36) NULL COMMENT 'User ID who assigned this role',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Assignment active status',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_user_roles_user_role (UserId, RoleId),
+    
+    -- Optimized indexes for common queries
+    INDEX IX_user_roles_user_active (UserId, IsActive),
+    INDEX IX_user_roles_role_active (RoleId, IsActive),
+    INDEX IX_user_roles_assigned_at (AssignedAt DESC),
+    INDEX IX_user_roles_assigned_by (AssignedBy),
+    
+    CONSTRAINT FK_user_roles_user_id FOREIGN KEY (UserId) 
+        REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_user_roles_role_id FOREIGN KEY (RoleId) 
+        REFERENCES roles (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_user_roles_assigned_by FOREIGN KEY (AssignedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'User-Role junction table';
+
+-- =====================================================
+-- Table: user_permissions
+-- Description: Direct permission assignments to users (bypassing roles)
+-- Optimizations: Covering index for permission checks
+-- =====================================================
+CREATE TABLE user_permissions (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    UserId CHAR(36) NOT NULL COMMENT 'Foreign key to users table',
+    PermissionId CHAR(36) NOT NULL COMMENT 'Foreign key to permissions table',
+    AssignedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Assignment timestamp',
+    AssignedBy CHAR(36) NULL COMMENT 'User ID who assigned this permission',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Assignment active status',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_user_permissions_user_permission (UserId, PermissionId),
+    
+    -- Optimized indexes for permission checks
+    INDEX IX_user_permissions_user_active (UserId, IsActive),
+    INDEX IX_user_permissions_permission_active (PermissionId, IsActive),
+    INDEX IX_user_permissions_assigned_at (AssignedAt DESC),
+    INDEX IX_user_permissions_assigned_by (AssignedBy),
+    
+    CONSTRAINT FK_user_permissions_user_id FOREIGN KEY (UserId) 
+        REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_user_permissions_permission_id FOREIGN KEY (PermissionId) 
+        REFERENCES permissions (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_user_permissions_assigned_by FOREIGN KEY (AssignedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'User-Permission junction table';
+
+-- =====================================================
+-- Table: role_permissions
+-- Description: Permission assignments to roles
+-- Optimizations: Covering index for role permission lookups
+-- =====================================================
+CREATE TABLE role_permissions (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    RoleId CHAR(36) NOT NULL COMMENT 'Foreign key to roles table',
+    PermissionId CHAR(36) NOT NULL COMMENT 'Foreign key to permissions table',
+    AssignedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Assignment timestamp',
+    AssignedBy CHAR(36) NULL COMMENT 'User ID who assigned this permission',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Assignment active status',
+    
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_role_permissions_role_permission (RoleId, PermissionId),
+    
+    -- Optimized indexes for role permission queries
+    INDEX IX_role_permissions_role_active (RoleId, IsActive),
+    INDEX IX_role_permissions_permission_active (PermissionId, IsActive),
+    INDEX IX_role_permissions_assigned_at (AssignedAt DESC),
+    INDEX IX_role_permissions_assigned_by (AssignedBy),
+    
+    CONSTRAINT FK_role_permissions_role_id FOREIGN KEY (RoleId) 
+        REFERENCES roles (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_role_permissions_permission_id FOREIGN KEY (PermissionId) 
+        REFERENCES permissions (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_role_permissions_assigned_by FOREIGN KEY (AssignedBy) 
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Role-Permission junction table';
+
+-- =====================================================
+-- Table: user_tokens
+-- Description: Stores access and refresh tokens for user authentication
+-- Optimizations: Indexes for fast lookup and token revocation
+-- =====================================================
+CREATE TABLE user_tokens (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    UserId CHAR(36) NOT NULL COMMENT 'Foreign key to users table',
+    AccessToken VARCHAR(2000) NOT NULL COMMENT 'JWT access token',
+    RefreshToken VARCHAR(2000) NOT NULL COMMENT 'Refresh token for renewing access',
+    IssuedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Token issue time',
+    ExpiresAt DATETIME NOT NULL COMMENT 'Token expiry time',
+    RevokedAt DATETIME NULL COMMENT 'Timestamp when the token was revoked',
+    ReplacedByToken VARCHAR(2000) NULL COMMENT 'If refresh token was rotated, reference to the new token',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Whether token is valid (not expired/revoked)',
+
+    PRIMARY KEY (Id),
+    INDEX IX_user_tokens_user_id (UserId),
+    INDEX IX_user_tokens_access_token (AccessToken(191)),
+    INDEX IX_user_tokens_refresh_token (RefreshToken(191)),
+    INDEX IX_user_tokens_is_active (IsActive),
+    INDEX IX_user_tokens_expires_at (ExpiresAt),
+
+    CONSTRAINT FK_user_tokens_user_id FOREIGN KEY (UserId) 
+        REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB 
+  DEFAULT CHARSET = utf8mb4 
+  COLLATE = utf8mb4_unicode_ci 
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Stores issued access and refresh tokens for secure authentication';
+
+-- =====================================================
+-- Table: media_files
+-- Description: Stores media metadata; bytes are stored in Firebase Storage (GCS)
+-- Optimizations: Owner/time indexes; unique key for (bucket, object)
+-- =====================================================
+CREATE TABLE media_files (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    OwnerUserId CHAR(36) NOT NULL COMMENT 'Owner user id (FK to users)',
+    Bucket VARCHAR(255) NOT NULL COMMENT 'Firebase Storage bucket',
+    ObjectName VARCHAR(1024) NOT NULL COMMENT 'Object path in bucket',
+    OriginalFileName VARCHAR(255) NULL COMMENT 'Original file name from client',
+    ContentType VARCHAR(100) NOT NULL COMMENT 'MIME type',
+    SizeBytes BIGINT NOT NULL COMMENT 'Object size in bytes',
+    Md5HashBase64 VARCHAR(128) NULL COMMENT 'MD5 hash (base64) from GCS metadata',
+    MediaType VARCHAR(20) NOT NULL DEFAULT 'unknown' COMMENT 'image | video',
+    IsPublic TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Public visibility flag',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+
+    PRIMARY KEY (Id),
+
+    -- Note: index prefix used for ObjectName for MySQL compatibility
+    UNIQUE KEY UK_media_files_bucket_object (Bucket, ObjectName(191)),
+    INDEX IX_media_files_owner (OwnerUserId),
+    INDEX IX_media_files_owner_created (OwnerUserId, CreatedAt DESC),
+    INDEX IX_media_files_type_created (MediaType, CreatedAt DESC),
+
+    CONSTRAINT FK_media_files_owner_user FOREIGN KEY (OwnerUserId)
+        REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Media metadata (actual bytes stored in Firebase Storage)';
+
+-- =====================================================
+-- Business Domain Tables: Industrial Meal Management
+-- Notes:
+-- - Reuse existing `users` table (Id CHAR(36)) defined above.
+-- - Keep naming/style consistent with the schema above (PascalCase columns, GUID ids).
+-- =====================================================
+
+-- =====================================================
+-- Table: units
+-- Description: Customer units (schools/companies) placing meal orders
+-- =====================================================
+CREATE TABLE units (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    Name VARCHAR(255) NOT NULL COMMENT 'Unit name',
+    Address VARCHAR(255) NULL COMMENT 'Contact address',
+    Phone VARCHAR(50) NULL COMMENT 'Contact phone',
+    ContactPerson VARCHAR(255) NULL COMMENT 'Main contact person',
+    ContactEmail VARCHAR(255) NULL COMMENT 'Main contact email',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Active flag',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+    CreatedBy CHAR(36) NULL COMMENT 'User ID who created this record',
+    UpdatedBy CHAR(36) NULL COMMENT 'User ID who last updated this record',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_units_name (Name),
+    INDEX IX_units_active_name (IsActive, Name),
+    INDEX IX_units_created_by (CreatedBy),
+    INDEX IX_units_updated_by (UpdatedBy),
+
+    CONSTRAINT FK_units_created_by FOREIGN KEY (CreatedBy)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_units_updated_by FOREIGN KEY (UpdatedBy)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Customer units (schools/companies)';
+
+-- =====================================================
+-- Table: user_units
+-- Description: Link users to units (membership)
+-- =====================================================
+CREATE TABLE user_units (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    UserId CHAR(36) NOT NULL COMMENT 'FK to users',
+    UnitId CHAR(36) NOT NULL COMMENT 'FK to units',
+    JoinedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Join timestamp',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Membership active flag',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_user_units_user_unit (UserId, UnitId),
+    INDEX IX_user_units_user_active (UserId, IsActive),
+    INDEX IX_user_units_unit_active (UnitId, IsActive),
+    INDEX IX_user_units_joined_at (JoinedAt DESC),
+
+    CONSTRAINT FK_user_units_user FOREIGN KEY (UserId)
+        REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_user_units_unit FOREIGN KEY (UnitId)
+        REFERENCES units (Id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'User-Unit memberships';
+
+-- =====================================================
+-- Table: partners
+-- Description: Suppliers / partners
+-- =====================================================
+CREATE TABLE partners (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    LegalName VARCHAR(255) NOT NULL COMMENT 'Legal name',
+    BusinessRegistrationNumber VARCHAR(100) NULL COMMENT 'Business registration number (DKKD)',
+    TaxId VARCHAR(50) NULL COMMENT 'Tax ID',
+    LegalRepresentative VARCHAR(255) NULL COMMENT 'Legal representative',
+    Address VARCHAR(255) NULL COMMENT 'Address',
+    ContactPerson VARCHAR(255) NULL COMMENT 'Contact person',
+    Phone VARCHAR(50) NULL COMMENT 'Phone',
+    Email VARCHAR(255) NULL COMMENT 'Email',
+    PerformanceRating DECIMAL(3,2) NULL COMMENT 'Delivery performance rating',
+    ComplianceInfo VARCHAR(2000) NULL COMMENT 'Compliance / legal notes',
+    FinancialTerms VARCHAR(1000) NULL COMMENT 'Payment terms',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Active flag',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_partners_tax_id (TaxId),
+    INDEX IX_partners_active_name (IsActive, LegalName)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Suppliers/partners';
+
+-- =====================================================
+-- Table: contracts
+-- =====================================================
+CREATE TABLE contracts (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    PartnerId CHAR(36) NOT NULL COMMENT 'FK to partners',
+    ContractNumber VARCHAR(100) NULL COMMENT 'Contract reference number',
+    Description VARCHAR(1000) NULL COMMENT 'Contract description',
+    SupplySchedule VARCHAR(500) NULL COMMENT 'Meal supply time window / schedule note',
+    StartDate DATE NOT NULL COMMENT 'Effective date',
+    EndDate DATE NULL COMMENT 'End date',
+    TotalValue DECIMAL(12,2) NULL COMMENT 'Total contract value',
+    DepositAmount DECIMAL(12,2) NULL COMMENT 'Deposit amount',
+    Status VARCHAR(20) NOT NULL DEFAULT 'active' COMMENT 'active | expired | cancelled',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+
+    PRIMARY KEY (Id),
+    INDEX IX_contracts_partner (PartnerId),
+    INDEX IX_contracts_status (Status),
+    INDEX IX_contracts_start_end (StartDate, EndDate),
+
+    CONSTRAINT FK_contracts_partner FOREIGN KEY (PartnerId)
+        REFERENCES partners (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Supplier contracts';
+
+-- =====================================================
+-- Table: partner_payments
+-- =====================================================
+CREATE TABLE partner_payments (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    ContractId CHAR(36) NOT NULL COMMENT 'FK to contracts',
+    PartnerId CHAR(36) NOT NULL COMMENT 'FK to partners',
+    PaymentDate DATE NOT NULL COMMENT 'Payment date',
+    Amount DECIMAL(12,2) NOT NULL COMMENT 'Amount paid',
+    Method VARCHAR(30) NOT NULL DEFAULT 'bank_transfer' COMMENT 'bank_transfer | cash | card',
+    Status VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT 'pending | completed | failed',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+
+    PRIMARY KEY (Id),
+    INDEX IX_partner_payments_contract (ContractId),
+    INDEX IX_partner_payments_partner (PartnerId),
+    INDEX IX_partner_payments_date (PaymentDate),
+
+    CONSTRAINT FK_partner_payments_contract FOREIGN KEY (ContractId)
+        REFERENCES contracts (Id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT FK_partner_payments_partner FOREIGN KEY (PartnerId)
+        REFERENCES partners (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Payments to suppliers';
+
+-- =====================================================
+-- Table: ingredients
+-- =====================================================
+CREATE TABLE ingredients (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    Name VARCHAR(255) NOT NULL COMMENT 'Ingredient name',
+    Unit VARCHAR(20) NOT NULL COMMENT 'Unit (kg, l, ...)',
+    Description VARCHAR(255) NULL COMMENT 'Description/notes',
+    DefaultSupplierId CHAR(36) NULL COMMENT 'Default supplier (FK to partners)',
+    CostPerUnit DECIMAL(10,2) NULL COMMENT 'Cost per unit',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Active flag',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_ingredients_name (Name),
+    INDEX IX_ingredients_supplier (DefaultSupplierId),
+    INDEX IX_ingredients_active (IsActive),
+
+    CONSTRAINT FK_ingredients_default_supplier FOREIGN KEY (DefaultSupplierId)
+        REFERENCES partners (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Ingredient catalog';
+
+-- =====================================================
+-- Table: ingredient_sources
+-- =====================================================
+CREATE TABLE ingredient_sources (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    IngredientId CHAR(36) NOT NULL COMMENT 'FK to ingredients',
+    PartnerId CHAR(36) NULL COMMENT 'Supplier for this batch (FK to partners)',
+    BatchNumber VARCHAR(50) NULL COMMENT 'Batch number',
+    OriginDetails VARCHAR(255) NULL COMMENT 'Origin details',
+    ProductionDate DATE NULL COMMENT 'Production date',
+    ExpirationDate DATE NULL COMMENT 'Expiration date',
+    Certification VARCHAR(255) NULL COMMENT 'Safety certification',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+
+    PRIMARY KEY (Id),
+    INDEX IX_ingredient_sources_ingredient (IngredientId),
+    INDEX IX_ingredient_sources_partner (PartnerId),
+    INDEX IX_ingredient_sources_expiration (ExpirationDate),
+
+    CONSTRAINT FK_ingredient_sources_ingredient FOREIGN KEY (IngredientId)
+        REFERENCES ingredients (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_ingredient_sources_partner FOREIGN KEY (PartnerId)
+        REFERENCES partners (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Ingredient batches/sources';
+
+-- =====================================================
+-- Table: inventory
+-- Description: Current ingredient stock levels
+-- =====================================================
+CREATE TABLE inventory (
+    IngredientId CHAR(36) NOT NULL COMMENT 'FK to ingredients (also PK)',
+    QuantityAvailable DECIMAL(12,2) NOT NULL DEFAULT 0.00 COMMENT 'Available quantity',
+    ReorderLevel DECIMAL(12,2) NULL COMMENT 'Reorder threshold',
+    LastUpdated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT 'Last updated',
+
+    PRIMARY KEY (IngredientId),
+    CONSTRAINT FK_inventory_ingredient FOREIGN KEY (IngredientId)
+        REFERENCES ingredients (Id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Ingredient inventory';
+
+-- =====================================================
+-- Table: internal_stock_issues
+-- Description: Internal ingredient stock issue slips (xuất kho nội bộ)
+-- =====================================================
+CREATE TABLE internal_stock_issues (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    IssueCode VARCHAR(40) NOT NULL COMMENT 'Human-readable slip code (e.g. PXK-20250323-AB12CD34)',
+    IssuedAt DATETIME NOT NULL COMMENT 'Issue datetime (UTC)',
+    Reason VARCHAR(500) NULL COMMENT 'Reason / note',
+    CreatedByUserId CHAR(36) NULL COMMENT 'User who created the slip',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_internal_stock_issues_code (IssueCode),
+    INDEX IX_internal_stock_issues_issued (IssuedAt),
+    INDEX IX_internal_stock_issues_user (CreatedByUserId),
+
+    CONSTRAINT FK_internal_stock_issues_user FOREIGN KEY (CreatedByUserId)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Internal stock issue headers';
+
+-- =====================================================
+-- Table: internal_stock_issue_lines
+-- =====================================================
+CREATE TABLE internal_stock_issue_lines (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    IssueId CHAR(36) NOT NULL COMMENT 'FK to internal_stock_issues',
+    IngredientId CHAR(36) NOT NULL COMMENT 'FK to ingredients',
+    Quantity DECIMAL(12,2) NOT NULL COMMENT 'Quantity issued',
+
+    PRIMARY KEY (Id),
+    INDEX IX_internal_stock_issue_lines_issue (IssueId),
+    INDEX IX_internal_stock_issue_lines_ingredient (IngredientId),
+
+    CONSTRAINT FK_internal_stock_issue_lines_issue FOREIGN KEY (IssueId)
+        REFERENCES internal_stock_issues (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_internal_stock_issue_lines_ingredient FOREIGN KEY (IngredientId)
+        REFERENCES ingredients (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Internal stock issue line items';
+
+-- =====================================================
+-- Table: ingredient_intake_proposals
+-- Description: Phiếu đề xuất nhập nguyên liệu (nhân viên kho)
+-- =====================================================
+CREATE TABLE ingredient_intake_proposals (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    ProposalCode VARCHAR(40) NOT NULL COMMENT 'Mã phiếu (e.g. DXN-20250324-AB12CD34)',
+    Status VARCHAR(20) NOT NULL COMMENT 'submitted | approved | rejected | cancelled | fulfilled',
+    HeaderNote VARCHAR(500) NULL COMMENT 'Ghi chú chung',
+    CreatedByUserId CHAR(36) NOT NULL COMMENT 'Nhân viên lập phiếu',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Thời điểm tạo',
+    ReviewedByUserId CHAR(36) NULL COMMENT 'Người duyệt (sau này)',
+    ReviewedAt DATETIME NULL COMMENT 'Thời điểm duyệt',
+    ReviewNote VARCHAR(500) NULL COMMENT 'Ý kiến duyệt',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_ingredient_intake_proposals_code (ProposalCode),
+    INDEX IX_ingredient_intake_proposals_status (Status),
+    INDEX IX_ingredient_intake_proposals_creator (CreatedByUserId),
+    INDEX IX_ingredient_intake_proposals_created (CreatedAt),
+
+    CONSTRAINT FK_ingredient_intake_proposals_creator FOREIGN KEY (CreatedByUserId)
+        REFERENCES users (Id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT FK_ingredient_intake_proposals_reviewer FOREIGN KEY (ReviewedByUserId)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Ingredient intake proposals';
+
+-- =====================================================
+-- Table: ingredient_intake_proposal_lines
+-- =====================================================
+CREATE TABLE ingredient_intake_proposal_lines (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    ProposalId CHAR(36) NOT NULL COMMENT 'FK to ingredient_intake_proposals',
+    IngredientId CHAR(36) NOT NULL COMMENT 'FK to ingredients',
+    Quantity DECIMAL(12,2) NOT NULL COMMENT 'Số lượng đề xuất nhập',
+    LineNote VARCHAR(255) NULL COMMENT 'Ghi chú dòng',
+
+    PRIMARY KEY (Id),
+    INDEX IX_intake_proposal_lines_proposal (ProposalId),
+    INDEX IX_intake_proposal_lines_ingredient (IngredientId),
+
+    CONSTRAINT FK_intake_proposal_lines_proposal FOREIGN KEY (ProposalId)
+        REFERENCES ingredient_intake_proposals (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_intake_proposal_lines_ingredient FOREIGN KEY (IngredientId)
+        REFERENCES ingredients (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Ingredient intake proposal lines';
+
+-- =====================================================
+-- Table: ingredient_actual_intakes
+-- Description: Phiếu nhập kho thực tế (từ phiếu đề xuất đã duyệt, cập nhật tồn)
+-- =====================================================
+CREATE TABLE ingredient_actual_intakes (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    ReceiptCode VARCHAR(40) NOT NULL COMMENT 'Mã phiếu nhập (e.g. PNK-20250324-AB12CD34)',
+    ProposalId CHAR(36) NOT NULL COMMENT 'Phiếu đề xuất đã duyệt (1-1)',
+    CreatedByUserId CHAR(36) NOT NULL COMMENT 'Nhân viên kho xác nhận nhập',
+    ReceivedAt DATETIME NOT NULL COMMENT 'Thời điểm nhập kho',
+    Note VARCHAR(500) NULL COMMENT 'Ghi chú',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Ghi nhận hệ thống',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_ingredient_actual_intakes_code (ReceiptCode),
+    UNIQUE KEY UK_ingredient_actual_intakes_proposal (ProposalId),
+    INDEX IX_ingredient_actual_intakes_user (CreatedByUserId),
+    INDEX IX_ingredient_actual_intakes_received (ReceivedAt),
+
+    CONSTRAINT FK_ingredient_actual_intakes_proposal FOREIGN KEY (ProposalId)
+        REFERENCES ingredient_intake_proposals (Id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT FK_ingredient_actual_intakes_user FOREIGN KEY (CreatedByUserId)
+        REFERENCES users (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Actual ingredient warehouse receipts';
+
+-- =====================================================
+-- Table: ingredient_actual_intake_lines
+-- =====================================================
+CREATE TABLE ingredient_actual_intake_lines (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    IntakeId CHAR(36) NOT NULL COMMENT 'FK to ingredient_actual_intakes',
+    IngredientId CHAR(36) NOT NULL COMMENT 'FK to ingredients',
+    Quantity DECIMAL(12,2) NOT NULL COMMENT 'Số lượng nhập (theo phiếu đề xuất đã duyệt)',
+
+    PRIMARY KEY (Id),
+    INDEX IX_actual_intake_lines_intake (IntakeId),
+    INDEX IX_actual_intake_lines_ingredient (IngredientId),
+
+    CONSTRAINT FK_actual_intake_lines_intake FOREIGN KEY (IntakeId)
+        REFERENCES ingredient_actual_intakes (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_actual_intake_lines_ingredient FOREIGN KEY (IngredientId)
+        REFERENCES ingredients (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Actual intake lines';
+
+-- =====================================================
+-- Table: dishes
+-- =====================================================
+CREATE TABLE dishes (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    Name VARCHAR(255) NOT NULL COMMENT 'Dish name',
+    Description VARCHAR(255) NULL COMMENT 'Dish description',
+    Category VARCHAR(100) NULL COMMENT 'Category',
+    Price DECIMAL(10,2) NOT NULL COMMENT 'Price per serving',
+    DietaryLabel VARCHAR(50) NULL COMMENT 'Dietary label (vegan, gluten-free, ...)',
+    IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Active flag',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_dishes_name (Name),
+    INDEX IX_dishes_active_category (IsActive, Category)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Dishes (menu items)';
+
+-- =====================================================
+-- Table: dish_ingredients
+-- =====================================================
+CREATE TABLE dish_ingredients (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    DishId CHAR(36) NOT NULL COMMENT 'FK to dishes',
+    IngredientId CHAR(36) NOT NULL COMMENT 'FK to ingredients',
+    Quantity DECIMAL(10,2) NOT NULL COMMENT 'Quantity per serving',
+    Unit VARCHAR(20) NULL COMMENT 'Unit override (optional)',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_dish_ingredients_dish_ingredient (DishId, IngredientId),
+    INDEX IX_dish_ingredients_dish (DishId),
+    INDEX IX_dish_ingredients_ingredient (IngredientId),
+
+    CONSTRAINT FK_dish_ingredients_dish FOREIGN KEY (DishId)
+        REFERENCES dishes (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_dish_ingredients_ingredient FOREIGN KEY (IngredientId)
+        REFERENCES ingredients (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Dish-Ingredient bill of materials';
+
+-- =====================================================
+-- Table: weekly_menus
+-- =====================================================
+CREATE TABLE weekly_menus (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    StartDate DATE NOT NULL COMMENT 'Week start date',
+    EndDate DATE NOT NULL COMMENT 'Week end date',
+    Description VARCHAR(255) NULL COMMENT 'Description',
+    CreatedBy CHAR(36) NOT NULL COMMENT 'FK to users',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_weekly_menus_start_end (StartDate, EndDate),
+    INDEX IX_weekly_menus_created_by (CreatedBy),
+
+    CONSTRAINT FK_weekly_menus_user FOREIGN KEY (CreatedBy)
+        REFERENCES users (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Weekly menus';
+
+-- =====================================================
+-- Table: menu_schedule
+-- =====================================================
+CREATE TABLE menu_schedule (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    MenuId CHAR(36) NOT NULL COMMENT 'FK to weekly_menus',
+    Date DATE NOT NULL COMMENT 'Scheduled date',
+    MealSlot VARCHAR(20) NOT NULL DEFAULT 'lunch' COMMENT 'Meal slot (lunch, dinner, ...)',
+    DishId CHAR(36) NOT NULL COMMENT 'FK to dishes',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_menu_schedule_menu_date_slot_dish (MenuId, Date, MealSlot, DishId),
+    INDEX IX_menu_schedule_dish (DishId),
+    INDEX IX_menu_schedule_date (Date),
+
+    CONSTRAINT FK_menu_schedule_menu FOREIGN KEY (MenuId)
+        REFERENCES weekly_menus (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_menu_schedule_dish FOREIGN KEY (DishId)
+        REFERENCES dishes (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Menu schedule by day';
+
+-- =====================================================
+-- Table: orders
+-- =====================================================
+CREATE TABLE orders (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    UserId CHAR(36) NULL COMMENT 'Ordering user (optional)',
+    UnitId CHAR(36) NULL COMMENT 'Ordering unit (optional)',
+    OrderDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Order placed at',
+    ScheduledDate DATE NOT NULL COMMENT 'Delivery/meal date',
+    Status VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT 'pending|confirmed|preparing|delivered|cancelled',
+    TotalAmount DECIMAL(12,2) NOT NULL COMMENT 'Total amount',
+    PaymentStatus VARCHAR(20) NOT NULL DEFAULT 'unpaid' COMMENT 'unpaid|partial|paid',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP COMMENT 'Record update timestamp',
+    InvoiceCode VARCHAR(40) NULL COMMENT 'Mã hóa đơn (POS)',
+    CreatedBySalesUserId CHAR(36) NULL COMMENT 'Nhân viên bán tạo hóa đơn',
+
+    PRIMARY KEY (Id),
+    UNIQUE INDEX UQ_orders_invoice_code (InvoiceCode),
+    INDEX IX_orders_user (UserId),
+    INDEX IX_orders_unit (UnitId),
+    INDEX IX_orders_created_by_sales (CreatedBySalesUserId),
+    INDEX IX_orders_scheduled_status (ScheduledDate, Status),
+
+    CONSTRAINT FK_orders_user FOREIGN KEY (UserId)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_orders_unit FOREIGN KEY (UnitId)
+        REFERENCES units (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_orders_created_by_sales_user FOREIGN KEY (CreatedBySalesUserId)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Meal orders';
+
+-- =====================================================
+-- Table: order_items
+-- =====================================================
+CREATE TABLE order_items (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    OrderId CHAR(36) NOT NULL COMMENT 'FK to orders',
+    DishId CHAR(36) NOT NULL COMMENT 'FK to dishes',
+    Quantity INT NOT NULL DEFAULT 1 COMMENT 'Number of servings',
+    UnitPrice DECIMAL(10,2) NOT NULL COMMENT 'Unit price',
+    TotalPrice DECIMAL(12,2) NOT NULL COMMENT 'Quantity x UnitPrice',
+
+    PRIMARY KEY (Id),
+    INDEX IX_order_items_order (OrderId),
+    INDEX IX_order_items_dish (DishId),
+
+    CONSTRAINT FK_order_items_order FOREIGN KEY (OrderId)
+        REFERENCES orders (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_order_items_dish FOREIGN KEY (DishId)
+        REFERENCES dishes (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Order line items';
+
+-- =====================================================
+-- Table: deliveries
+-- =====================================================
+CREATE TABLE deliveries (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    OrderId CHAR(36) NOT NULL COMMENT 'FK to orders',
+    AssignedStaffId CHAR(36) NULL COMMENT 'Delivering staff (FK to users)',
+    DeliveryAddress VARCHAR(255) NOT NULL COMMENT 'Delivery address',
+    DeliveryStatus VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT 'pending|in_transit|completed|failed',
+    DeliveredAt DATETIME NULL COMMENT 'Delivered at',
+    Notes VARCHAR(255) NULL COMMENT 'Notes',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+
+    PRIMARY KEY (Id),
+    INDEX IX_deliveries_order (OrderId),
+    INDEX IX_deliveries_staff (AssignedStaffId),
+
+    CONSTRAINT FK_deliveries_order FOREIGN KEY (OrderId)
+        REFERENCES orders (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_deliveries_staff FOREIGN KEY (AssignedStaffId)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Deliveries';
+
+-- =====================================================
+-- Table: payments
+-- =====================================================
+CREATE TABLE payments (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    OrderId CHAR(36) NOT NULL COMMENT 'FK to orders',
+    PayerId CHAR(36) NULL COMMENT 'FK to users',
+    PaymentDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Payment date',
+    Amount DECIMAL(12,2) NOT NULL COMMENT 'Amount',
+    Method VARCHAR(30) NOT NULL DEFAULT 'cash' COMMENT 'cash|card|bank_transfer|e_wallet',
+    Status VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT 'pending|paid|refunded',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+
+    PRIMARY KEY (Id),
+    INDEX IX_payments_order (OrderId),
+    INDEX IX_payments_payer (PayerId),
+    INDEX IX_payments_date (PaymentDate),
+
+    CONSTRAINT FK_payments_order FOREIGN KEY (OrderId)
+        REFERENCES orders (Id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT FK_payments_payer FOREIGN KEY (PayerId)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Order payments';
+
+-- =====================================================
+-- Table: transactions
+-- Notes: ReferenceId is a loose reference (order/payment/contract/etc.) managed by the app.
+-- =====================================================
+CREATE TABLE transactions (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Transaction date',
+    Description VARCHAR(255) NULL COMMENT 'Description',
+    Amount DECIMAL(12,2) NOT NULL COMMENT 'Amount (+income, -expense)',
+    Category VARCHAR(100) NULL COMMENT 'Category',
+    Method VARCHAR(50) NULL COMMENT 'Method',
+    ReferenceId CHAR(36) NULL COMMENT 'Loose reference id (app-managed)',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+
+    PRIMARY KEY (Id),
+    INDEX IX_transactions_date (Date DESC),
+    INDEX IX_transactions_category (Category)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Income/expense transactions';
+
+-- =====================================================
+-- Table: reviews
+-- =====================================================
+CREATE TABLE reviews (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    UserId CHAR(36) NOT NULL COMMENT 'FK to users',
+    DishId CHAR(36) NULL COMMENT 'FK to dishes (optional)',
+    OrderId CHAR(36) NULL COMMENT 'FK to orders (optional)',
+    Rating INT NOT NULL COMMENT '1-5',
+    Comment TEXT NULL COMMENT 'Review text',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+
+    PRIMARY KEY (Id),
+    INDEX IX_reviews_user (UserId),
+    INDEX IX_reviews_dish (DishId),
+    INDEX IX_reviews_order (OrderId),
+    INDEX IX_reviews_created_at (CreatedAt DESC),
+
+    CONSTRAINT FK_reviews_user FOREIGN KEY (UserId)
+        REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_reviews_dish FOREIGN KEY (DishId)
+        REFERENCES dishes (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_reviews_order FOREIGN KEY (OrderId)
+        REFERENCES orders (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'User reviews';
+
+-- =====================================================
+-- Table: sentiments
+-- =====================================================
+CREATE TABLE sentiments (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    ReviewId CHAR(36) NOT NULL COMMENT 'FK to reviews',
+    SentimentLabel VARCHAR(20) NOT NULL COMMENT 'positive|negative|neutral',
+    Confidence DECIMAL(4,2) NULL COMMENT 'Confidence (0-1 or 0-100 depending on app)',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Record creation timestamp',
+
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_sentiments_review (ReviewId),
+    CONSTRAINT FK_sentiments_review FOREIGN KEY (ReviewId)
+        REFERENCES reviews (Id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Sentiment analysis results';
+
+-- =====================================================
+-- Table: complaints
+-- =====================================================
+CREATE TABLE complaints (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    UserId CHAR(36) NOT NULL COMMENT 'FK to users',
+    OrderId CHAR(36) NULL COMMENT 'FK to orders (optional)',
+    Title VARCHAR(255) NOT NULL COMMENT 'Title',
+    Description TEXT NOT NULL COMMENT 'Complaint details',
+    Status VARCHAR(20) NOT NULL DEFAULT 'new' COMMENT 'new|in_progress|resolved|rejected',
+    AssignedTo CHAR(36) NULL COMMENT 'Assignee user id (FK to users)',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created at',
+    ResolvedAt DATETIME NULL COMMENT 'Resolved at',
+
+    PRIMARY KEY (Id),
+    INDEX IX_complaints_user (UserId),
+    INDEX IX_complaints_order (OrderId),
+    INDEX IX_complaints_assignee (AssignedTo),
+    INDEX IX_complaints_status (Status),
+
+    CONSTRAINT FK_complaints_user FOREIGN KEY (UserId)
+        REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_complaints_order FOREIGN KEY (OrderId)
+        REFERENCES orders (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_complaints_assignee FOREIGN KEY (AssignedTo)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Customer complaints';
+
+-- =====================================================
+-- Table: chatbot_logs
+-- =====================================================
+CREATE TABLE chatbot_logs (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    UserId CHAR(36) NULL COMMENT 'FK to users (optional)',
+    Message TEXT NOT NULL COMMENT 'User message',
+    Response TEXT NULL COMMENT 'Bot response',
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Created at',
+
+    PRIMARY KEY (Id),
+    INDEX IX_chatbot_logs_user (UserId),
+    INDEX IX_chatbot_logs_created_at (CreatedAt DESC),
+
+    CONSTRAINT FK_chatbot_logs_user FOREIGN KEY (UserId)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'Chatbot conversation logs';
+
+-- =====================================================
+-- Table: menu_suggestions
+-- =====================================================
+CREATE TABLE menu_suggestions (
+    Id CHAR(36) NOT NULL COMMENT 'GUID Primary Key',
+    WeekStart DATE NOT NULL COMMENT 'Week start date',
+    GeneratedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT 'Generated at',
+    SuggestionText TEXT NOT NULL COMMENT 'Suggestion content',
+    AlgorithmVersion VARCHAR(50) NULL COMMENT 'Algorithm version',
+    CreatedBy CHAR(36) NULL COMMENT 'User who approved/created (FK to users)',
+
+    PRIMARY KEY (Id),
+    INDEX IX_menu_suggestions_week (WeekStart),
+    INDEX IX_menu_suggestions_created_by (CreatedBy),
+
+    CONSTRAINT FK_menu_suggestions_user FOREIGN KEY (CreatedBy)
+        REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci
+  ROW_FORMAT = DYNAMIC
+  COMMENT = 'AI menu suggestions';
+
+-- =====================================================
+-- Performance Views for Common Queries
+-- =====================================================
+
+-- View: Active users with their roles (optimized for read operations)
+CREATE OR REPLACE VIEW vw_active_users_with_roles AS
+SELECT 
+    u.Id,
+    u.Username,
+    u.Email,
+    u.FirstName,
+    u.LastName,
+    u.IsActive,
+    u.IsEmailVerified,
+    u.LastLoginAt,
+    u.CreatedAt,
+    GROUP_CONCAT(DISTINCT r.Name ORDER BY r.Name SEPARATOR ', ') AS Roles,
+    GROUP_CONCAT(DISTINCT r.Id ORDER BY r.Id SEPARATOR ', ') AS RoleIds
+FROM users u
+LEFT JOIN user_roles ur ON u.Id = ur.UserId AND ur.IsActive = 1
+LEFT JOIN roles r ON ur.RoleId = r.Id AND r.IsActive = 1
+WHERE u.IsActive = 1
+GROUP BY u.Id, u.Username, u.Email, u.FirstName, u.LastName, u.IsActive, u.IsEmailVerified, u.LastLoginAt, u.CreatedAt;
+
+-- View: User permissions (from roles + direct assignments) - optimized for permission checks
+CREATE OR REPLACE VIEW vw_user_permissions AS
+SELECT DISTINCT
+    u.Id AS UserId,
+    u.Username,
+    p.Id AS PermissionId,
+    p.Name AS PermissionName,
+    p.Resource,
+    p.Action,
+    CASE 
+        WHEN up.Id IS NOT NULL THEN 'direct'
+        WHEN rp.Id IS NOT NULL THEN 'role'
+        ELSE 'none'
+    END AS PermissionSource,
+    COALESCE(ur.RoleId, '') AS RoleId,
+    COALESCE(r.Name, '') AS RoleName
+FROM users u
+LEFT JOIN user_permissions up ON u.Id = up.UserId AND up.IsActive = 1
+LEFT JOIN permissions p1 ON up.PermissionId = p1.Id AND p1.IsActive = 1
+LEFT JOIN user_roles ur ON u.Id = ur.UserId AND ur.IsActive = 1
+LEFT JOIN roles r ON ur.RoleId = r.Id AND r.IsActive = 1
+LEFT JOIN role_permissions rp ON r.Id = rp.RoleId AND rp.IsActive = 1
+LEFT JOIN permissions p ON (p1.Id = p.Id OR rp.PermissionId = p.Id) AND p.IsActive = 1
+WHERE u.IsActive = 1 AND p.Id IS NOT NULL;
+
+-- View: Role permissions summary
+CREATE OR REPLACE VIEW vw_role_permissions_summary AS
+SELECT 
+    r.Id AS RoleId,
+    r.Name AS RoleName,
+    r.IsActive AS RoleIsActive,
+    COUNT(DISTINCT rp.PermissionId) AS PermissionCount,
+    GROUP_CONCAT(DISTINCT p.Name ORDER BY p.Name SEPARATOR ', ') AS Permissions
+FROM roles r
+LEFT JOIN role_permissions rp ON r.Id = rp.RoleId AND rp.IsActive = 1
+LEFT JOIN permissions p ON rp.PermissionId = p.Id AND p.IsActive = 1
+GROUP BY r.Id, r.Name, r.IsActive;
+
+-- =====================================================
+-- Stored Procedures for Common Operations
+-- =====================================================
+
+DELIMITER //
+
+-- Procedure: Check if user has specific permission
+CREATE PROCEDURE sp_check_user_permission(
+    IN p_user_id CHAR(36),
+    IN p_permission_name VARCHAR(200),
+    OUT p_has_permission TINYINT(1)
+)
+BEGIN
+    DECLARE v_count INT DEFAULT 0;
+    
+    SELECT COUNT(*) INTO v_count
+    FROM vw_user_permissions vup
+    WHERE vup.UserId = p_user_id
+      AND vup.PermissionName = p_permission_name
+      AND vup.UserId IS NOT NULL;
+    
+    SET p_has_permission = IF(v_count > 0, 1, 0);
+END //
+
+-- Procedure: Get all permissions for a user
+CREATE PROCEDURE sp_get_user_permissions(IN p_user_id CHAR(36))
+BEGIN
+    SELECT 
+        PermissionId,
+        PermissionName,
+        Resource,
+        Action,
+        PermissionSource,
+        RoleId,
+        RoleName
+    FROM vw_user_permissions
+    WHERE UserId = p_user_id
+    ORDER BY Resource, Action;
+END //
+
+-- Procedure: Get all roles for a user
+CREATE PROCEDURE sp_get_user_roles(IN p_user_id CHAR(36))
+BEGIN
+    SELECT 
+        r.Id,
+        r.Name,
+        r.Description,
+        r.IsActive,
+        ur.AssignedAt,
+        ur.AssignedBy
+    FROM user_roles ur
+    INNER JOIN roles r ON ur.RoleId = r.Id
+    WHERE ur.UserId = p_user_id 
+      AND ur.IsActive = 1 
+      AND r.IsActive = 1
+    ORDER BY ur.AssignedAt DESC;
+END //
+
+-- Procedure: Get users by role
+CREATE PROCEDURE sp_get_users_by_role(IN p_role_name VARCHAR(100))
+BEGIN
+    SELECT 
+        u.Id,
+        u.Username,
+        u.Email,
+        u.FirstName,
+        u.LastName,
+        u.IsActive,
+        ur.AssignedAt
+    FROM users u
+    INNER JOIN user_roles ur ON u.Id = ur.UserId
+    INNER JOIN roles r ON ur.RoleId = r.Id
+    WHERE r.Name = p_role_name
+      AND u.IsActive = 1
+      AND ur.IsActive = 1
+      AND r.IsActive = 1
+    ORDER BY ur.AssignedAt DESC;
+END //
+
+DELIMITER ;
+
+-- =====================================================
+-- Initial Data: System Roles
+-- =====================================================
+INSERT INTO roles (Id, Name, Description, IsSystemRole, CreatedAt) VALUES
+(UUID(), 'SuperAdmin', 'Super Administrator with all permissions', 1, NOW()),
+(UUID(), 'Admin', 'Administrator with management permissions', 1, NOW()),
+(UUID(), 'User', 'Regular user with basic permissions', 1, NOW()),
+(UUID(), 'Instructor', 'Course instructor with teaching permissions', 1, NOW()),
+(UUID(), 'Student', 'Student with learning permissions', 1, NOW()),
+(UUID(), 'Staff', 'Nhân viên kho / nhân viên (đề xuất nhập nguyên liệu)', 1, NOW()),
+(UUID(), 'Sales', 'Nhân viên bán hàng / lập hóa đơn', 1, NOW()),
+(UUID(), 'Company', 'Đại diện công ty / đơn vị đặt hàng (B2B)', 1, NOW()),
+(UUID(), 'Khách hàng', 'Người dùng cuối / khách đặt cơm', 1, NOW());
+
+-- =====================================================
+-- Initial Data: Common Permissions
+-- =====================================================
+
+-- Users resource permissions
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'users.create', 'Create new users', 'users', 'create', NOW()),
+(UUID(), 'users.read', 'Read user information', 'users', 'read', NOW()),
+(UUID(), 'users.update', 'Update user information', 'users', 'update', NOW()),
+(UUID(), 'users.delete', 'Delete users', 'users', 'delete', NOW()),
+(UUID(), 'users.list', 'List all users', 'users', 'list', NOW());
+
+-- Roles resource permissions
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'roles.create', 'Create new roles', 'roles', 'create', NOW()),
+(UUID(), 'roles.read', 'Read role information', 'roles', 'read', NOW()),
+(UUID(), 'roles.update', 'Update role information', 'roles', 'update', NOW()),
+(UUID(), 'roles.delete', 'Delete roles', 'roles', 'delete', NOW()),
+(UUID(), 'roles.list', 'List all roles', 'roles', 'list', NOW()),
+(UUID(), 'roles.assign', 'Assign roles to users', 'roles', 'assign', NOW());
+
+-- Permissions resource permissions
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'permissions.create', 'Create new permissions', 'permissions', 'create', NOW()),
+(UUID(), 'permissions.read', 'Read permission information', 'permissions', 'read', NOW()),
+(UUID(), 'permissions.update', 'Update permission information', 'permissions', 'update', NOW()),
+(UUID(), 'permissions.delete', 'Delete permissions', 'permissions', 'delete', NOW()),
+(UUID(), 'permissions.list', 'List all permissions', 'permissions', 'list', NOW()),
+(UUID(), 'permissions.assign', 'Assign permissions to users/roles', 'permissions', 'assign', NOW());
+
+-- Courses resource permissions
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'courses.create', 'Create new courses', 'courses', 'create', NOW()),
+(UUID(), 'courses.read', 'Read course information', 'courses', 'read', NOW()),
+(UUID(), 'courses.update', 'Update course information', 'courses', 'update', NOW()),
+(UUID(), 'courses.delete', 'Delete courses', 'courses', 'delete', NOW()),
+(UUID(), 'courses.list', 'List all courses', 'courses', 'list', NOW()),
+(UUID(), 'courses.publish', 'Publish courses', 'courses', 'publish', NOW()),
+(UUID(), 'courses.enroll', 'Enroll in courses', 'courses', 'enroll', NOW());
+
+-- Assessments resource permissions
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'assessments.create', 'Create new assessments', 'assessments', 'create', NOW()),
+(UUID(), 'assessments.read', 'Read assessment information', 'assessments', 'read', NOW()),
+(UUID(), 'assessments.update', 'Update assessment information', 'assessments', 'update', NOW()),
+(UUID(), 'assessments.delete', 'Delete assessments', 'assessments', 'delete', NOW()),
+(UUID(), 'assessments.grade', 'Grade assessments', 'assessments', 'grade', NOW());
+
+-- Ingredient intake proposals (đề xuất nhập kho — nhân viên kho)
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'intakeproposals.create', 'Create ingredient intake proposals', 'intakeproposals', 'create', NOW()),
+(UUID(), 'intakeproposals.read', 'Read ingredient intake proposals', 'intakeproposals', 'read', NOW()),
+(UUID(), 'intakeproposals.fulfill', 'Record actual intake and update inventory from approved proposal', 'intakeproposals', 'fulfill', NOW()),
+(UUID(), 'intakeproposals.review', 'Approve or reject submitted intake proposals', 'intakeproposals', 'review', NOW());
+
+-- Orders / đơn ăn & hóa đơn (POS)
+INSERT INTO permissions (Id, Name, Description, Resource, Action, CreatedAt) VALUES
+(UUID(), 'orders.create', 'Create orders / sales invoices', 'orders', 'create', NOW()),
+(UUID(), 'orders.read', 'Read orders', 'orders', 'read', NOW()),
+(UUID(), 'orders.update', 'Update orders (status, etc.)', 'orders', 'update', NOW());
+
+-- =====================================================
+-- Initial Data: Role-Permission Assignments
+-- =====================================================
+
+-- SuperAdmin gets all permissions
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT 
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'SuperAdmin';
+
+-- Admin gets management permissions (users, roles, permissions, courses)
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT 
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Admin'
+  AND (p.Resource IN ('users', 'roles', 'permissions', 'courses') 
+       OR p.Name LIKE 'courses.%');
+
+-- Instructor gets course management permissions
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT 
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Instructor'
+  AND (p.Resource = 'courses' OR p.Resource = 'assessments');
+
+-- Student gets basic read permissions
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT 
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Student'
+  AND (p.Action = 'read' OR p.Name = 'courses.enroll');
+
+-- User gets minimal permissions
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT 
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'User'
+  AND p.Name IN ('users.read', 'courses.read', 'courses.list');
+
+-- Staff & Admin: phiếu đề xuất nhập nguyên liệu
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name IN ('Staff', 'Admin')
+  AND p.Name IN ('intakeproposals.create', 'intakeproposals.read', 'intakeproposals.fulfill');
+
+-- Admin: duyệt phiếu đề xuất nhập
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Admin'
+  AND p.Name = 'intakeproposals.review';
+
+-- Admin: quyền đơn hàng / hóa đơn
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Admin'
+  AND p.Resource = 'orders';
+
+-- Sales: tạo và xem đơn (hóa đơn)
+INSERT INTO role_permissions (Id, RoleId, PermissionId, AssignedAt, IsActive)
+SELECT
+    UUID(),
+    r.Id,
+    p.Id,
+    NOW(),
+    1
+FROM roles r
+CROSS JOIN permissions p
+WHERE r.Name = 'Sales'
+  AND p.Name IN ('orders.create', 'orders.read');
+
+-- =====================================================
+-- Sample Data: Test Users
+-- =====================================================
+
+-- Note: Password for all test users is "123"
+
+-- SuperAdmin User
+SET @superadmin_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, CreatedAt) VALUES
+(@superadmin_id, 'superadmin', 'superadmin@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Super', 'Administrator', '+84123456789', 1, 1, NOW(), NOW());
+
+-- Admin Users
+SET @admin1_id = UUID();
+SET @admin2_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, CreatedAt) VALUES
+(@admin1_id, 'admin1', 'admin1@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'John', 'Admin', '+84987654321', 1, 1, NOW(), NOW()),
+(@admin2_id, 'admin2', 'admin2@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Jane', 'Manager', '+84987654322', 1, 1, NOW(), NOW());
+
+-- Instructor Users
+SET @instructor1_id = UUID();
+SET @instructor2_id = UUID();
+SET @instructor3_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, CreatedAt) VALUES
+(@instructor1_id, 'instructor1', 'instructor1@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Michael', 'Chen', '+84987654323', 1, 1, NOW(), NOW()),
+(@instructor2_id, 'instructor2', 'instructor2@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Sarah', 'Nguyen', '+84987654324', 1, 1, NOW(), NOW()),
+(@instructor3_id, 'instructor3', 'instructor3@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'David', 'Tran', '+84987654325', 1, 0, NULL, NOW());
+
+-- Student Users
+SET @student1_id = UUID();
+SET @student2_id = UUID();
+SET @student3_id = UUID();
+SET @student4_id = UUID();
+SET @student5_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, LastLoginAt, CreatedAt) VALUES
+(@student1_id, 'student1', 'student1@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Alice', 'Pham', '+84987654326', 1, 1, NOW(), DATE_SUB(NOW(), INTERVAL 2 DAY), NOW()),
+(@student2_id, 'student2', 'student2@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Bob', 'Le', '+84987654327', 1, 1, NOW(), DATE_SUB(NOW(), INTERVAL 1 DAY), NOW()),
+(@student3_id, 'student3', 'student3@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Charlie', 'Vo', '+84987654328', 1, 1, NOW(), DATE_SUB(NOW(), INTERVAL 5 HOUR), NOW()),
+(@student4_id, 'student4', 'student4@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Diana', 'Hoang', '+84987654329', 1, 0, NULL, NULL, NOW()),
+(@student5_id, 'student5', 'student5@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Edward', 'Bui', '+84987654330', 1, 1, NOW(), DATE_SUB(NOW(), INTERVAL 30 MINUTE), NOW());
+
+-- Regular Users
+SET @user1_id = UUID();
+SET @user2_id = UUID();
+SET @warehouse_staff_id = UUID();
+SET @sales_staff_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, CreatedAt) VALUES
+(@user1_id, 'user1', 'user1@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Frank', 'Lam', '+84987654331', 1, 1, NOW(), NOW()),
+(@user2_id, 'user2', 'user2@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Grace', 'Do', '+84987654332', 0, 0, NULL, NOW()),
+(@warehouse_staff_id, 'warehouse_staff', 'warehouse@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Kho', 'Nguyễn', '+84987654340', 1, 1, NOW(), NOW()),
+(@sales_staff_id, 'sales_staff', 'sales@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Bán', 'Hàng', '+84987654341', 1, 1, NOW(), NOW());
+
+-- Inactive User (for testing)
+SET @inactive_user_id = UUID();
+INSERT INTO users (Id, Username, Email, PasswordHash, FirstName, LastName, PhoneNumber, IsActive, IsEmailVerified, EmailVerifiedAt, CreatedAt) VALUES
+(@inactive_user_id, 'inactive_user', 'inactive@smartlunch.com', '$2y$10$YjWZK8lORcwNgwbErRJwr.wuBnmk5KU16xxlyNyfKkkHrlZkFlE7u', 'Inactive', 'User', '+84987654333', 0, 1, NOW(), DATE_SUB(NOW(), INTERVAL 10 DAY));
+
+-- =====================================================
+-- Sample Data: User-Role Assignments
+-- =====================================================
+
+-- Assign SuperAdmin role to superadmin user
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @superadmin_id, r.Id, NOW(), @superadmin_id, 1
+FROM roles r
+WHERE r.Name = 'SuperAdmin';
+
+-- Assign Admin role to admin users
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @admin1_id, r.Id, NOW(), @superadmin_id, 1
+FROM roles r
+WHERE r.Name = 'Admin';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @admin2_id, r.Id, NOW(), @superadmin_id, 1
+FROM roles r
+WHERE r.Name = 'Admin';
+
+-- Assign Instructor role to instructor users
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @instructor1_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Instructor';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @instructor2_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Instructor';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @instructor3_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Instructor';
+
+-- Assign Student role to student users
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student1_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student2_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student3_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student4_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student5_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+-- Assign User role to regular users
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @user1_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'User';
+
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @user2_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'User';
+
+-- Warehouse staff: role Staff (nhân viên kho)
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @warehouse_staff_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Staff';
+
+-- Sales staff: role Sales (nhân viên bán / hóa đơn)
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @sales_staff_id, r.Id, NOW(), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Sales';
+
+-- Assign Student role to inactive user (for testing inactive users with roles)
+INSERT INTO user_roles (Id, UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @inactive_user_id, r.Id, DATE_SUB(NOW(), INTERVAL 10 DAY), @admin1_id, 1
+FROM roles r
+WHERE r.Name = 'Student';
+
+-- =====================================================
+-- Sample Data: Direct User Permissions (Optional)
+-- =====================================================
+
+-- Give instructor1 additional direct permission to grade assessments
+INSERT INTO user_permissions (Id, UserId, PermissionId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @instructor1_id, p.Id, NOW(), @admin1_id, 1
+FROM permissions p
+WHERE p.Name = 'assessments.grade';
+
+-- Give student1 direct permission to read courses (in addition to role permissions)
+INSERT INTO user_permissions (Id, UserId, PermissionId, AssignedAt, AssignedBy, IsActive)
+SELECT UUID(), @student1_id, p.Id, NOW(), @admin1_id, 1
+FROM permissions p
+WHERE p.Name = 'courses.read';
+
+-- =====================================================
+-- Sample Data: User Tokens (for testing authentication)
+-- =====================================================
+
+-- Active token for student1 (recently logged in)
+INSERT INTO user_tokens (Id, UserId, AccessToken, RefreshToken, IssuedAt, ExpiresAt, IsActive) VALUES
+(UUID(), @student1_id, 'sample_access_token_student1', 'sample_refresh_token_student1', DATE_SUB(NOW(), INTERVAL 1 HOUR), DATE_ADD(NOW(), INTERVAL 23 HOUR), 1);
+
+-- Expired token for student2 (for testing token refresh)
+INSERT INTO user_tokens (Id, UserId, AccessToken, RefreshToken, IssuedAt, ExpiresAt, RevokedAt, IsActive) VALUES
+(UUID(), @student2_id, 'expired_access_token_student2', 'expired_refresh_token_student2', DATE_SUB(NOW(), INTERVAL 2 DAY), DATE_SUB(NOW(), INTERVAL 1 DAY), NULL, 0);
+
+-- Revoked token for instructor1 (for testing token revocation)
+INSERT INTO user_tokens (Id, UserId, AccessToken, RefreshToken, IssuedAt, ExpiresAt, RevokedAt, IsActive) VALUES
+(UUID(), @instructor1_id, 'revoked_access_token_instructor1', 'revoked_refresh_token_instructor1', DATE_SUB(NOW(), INTERVAL 3 DAY), DATE_ADD(NOW(), INTERVAL 1 DAY), DATE_SUB(NOW(), INTERVAL 2 DAY), 0);
+
+-- =====================================================
+-- Performance Analysis Queries (for monitoring)
+-- =====================================================
+
+-- Query to check index usage (run after some operations)
+ANALYZE TABLE
+    users, roles, permissions, user_roles, user_permissions, role_permissions, user_tokens, media_files,
+    units, user_units,
+    partners, contracts, partner_payments,
+    ingredients, ingredient_sources, inventory,
+    internal_stock_issues, internal_stock_issue_lines,
+    ingredient_intake_proposals, ingredient_intake_proposal_lines,
+    ingredient_actual_intakes, ingredient_actual_intake_lines,
+    dishes, dish_ingredients,
+    weekly_menus, menu_schedule,
+    orders, order_items, deliveries, payments,
+    transactions, reviews, sentiments, complaints, chatbot_logs, menu_suggestions;
+
+-- Query to optimize tables
+OPTIMIZE TABLE
+    users, roles, permissions, user_roles, user_permissions, role_permissions, user_tokens, media_files,
+    units, user_units,
+    partners, contracts, partner_payments,
+    ingredients, ingredient_sources, inventory,
+    internal_stock_issues, internal_stock_issue_lines,
+    ingredient_intake_proposals, ingredient_intake_proposal_lines,
+    ingredient_actual_intakes, ingredient_actual_intake_lines,
+    dishes, dish_ingredients,
+    weekly_menus, menu_schedule,
+    orders, order_items, deliveries, payments,
+    transactions, reviews, sentiments, complaints, chatbot_logs, menu_suggestions;
+
+-- =====================================================
+-- Migration (existing DBs): add POS invoice columns to `orders`
+-- Chạy một lần nếu bảng orders đã tồn tại thiếu cột (điều chỉnh tên DB nếu cần).
+-- =====================================================
+-- ALTER TABLE orders
+--   ADD COLUMN InvoiceCode VARCHAR(40) NULL COMMENT 'Mã hóa đơn (POS)' AFTER UpdatedAt,
+--   ADD COLUMN CreatedBySalesUserId CHAR(36) NULL COMMENT 'Nhân viên bán tạo hóa đơn' AFTER InvoiceCode;
+-- CREATE UNIQUE INDEX UQ_orders_invoice_code ON orders (InvoiceCode);
+-- CREATE INDEX IX_orders_created_by_sales ON orders (CreatedBySalesUserId);
+-- ALTER TABLE orders ADD CONSTRAINT FK_orders_created_by_sales_user
+--   FOREIGN KEY (CreatedBySalesUserId) REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- =====================================================
+-- End of Schema
+-- =====================================================
