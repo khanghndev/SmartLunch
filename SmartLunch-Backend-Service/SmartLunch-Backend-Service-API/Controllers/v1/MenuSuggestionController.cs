@@ -2,11 +2,13 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartLunch.Backend.Service.Application.DTOs;
+using SmartLunch.Backend.Service.Application.Commands.MenuSuggestions.CreateMenuSuggestion;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.MenuSuggestions;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.MenuSuggestions;
 using SmartLunch.Backend.Service.Application.Queries.MenuSuggestions.GetMenuSuggestion;
 using SmartLunch.Backend.Service.Application.Queries.MenuSuggestions.GetMenuSuggestions;
 using System.Net;
+using System.Security.Claims;
 
 namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 
@@ -79,5 +81,43 @@ public class MenuSuggestionController : ControllerBase
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetMenuSuggestionResponse>.ErrorResult("An error occurred while retrieving menusuggestion", new[] { ex.Message }));
         }
+    }
+
+    /// <summary>
+    /// Create menu suggestion (AI-Service calls this to store recommendation).
+    /// </summary>
+    [HttpPost]
+    public async Task<ActionResult<BaseApiResponse<CreateMenuSuggestionResponse>>> CreateMenuSuggestion(
+        [FromBody] CreateMenuSuggestionRequest request)
+    {
+        try
+        {
+            var createdByUserId = RequireUserId();
+            var response = await _mediator.Send(new CreateMenuSuggestionCommand(request, createdByUserId));
+            return Ok(BaseApiResponse<CreateMenuSuggestionResponse>.SuccessResult(response, "MenuSuggestion created successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<CreateMenuSuggestionResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(BaseApiResponse<CreateMenuSuggestionResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating menu suggestion");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<CreateMenuSuggestionResponse>.ErrorResult("An error occurred while creating menu suggestion", new[] { ex.Message }));
+        }
+    }
+
+    private Guid RequireUserId()
+    {
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(raw) || !Guid.TryParse(raw, out var userId))
+            throw new UnauthorizedAccessException("Invalid user context.");
+        return userId;
     }
 }
