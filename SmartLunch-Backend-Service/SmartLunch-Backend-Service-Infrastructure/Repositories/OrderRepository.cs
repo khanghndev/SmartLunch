@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Infrastructure.Data;
+using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Orders;
 
 namespace SmartLunch.Backend.Service.Infrastructure.Repositories;
 
@@ -74,6 +75,53 @@ public class OrderRepository : IOrderRepository
             .ToListAsync();
 
         return (orders, totalCount);
+    }
+
+    public async Task<List<MealStatisticItemDto>> GetMealStatisticsAsync(
+        DateTime? startDate,
+        DateTime? endDate,
+        Guid? unitId)
+    {
+        var query = _context.Orders
+            .Include(o => o.Unit)
+            .Include(o => o.OrderItems)
+            .Where(o => o.Status != "cancelled")
+            .AsQueryable();
+
+        if (startDate.HasValue)
+            query = query.Where(o => o.ScheduledDate >= startDate.Value);
+        
+        if (endDate.HasValue)
+            query = query.Where(o => o.ScheduledDate <= endDate.Value);
+
+        if (unitId.HasValue)
+            query = query.Where(o => o.UnitId == unitId.Value);
+
+        var orders = await query.ToListAsync();
+
+        var result = orders
+            .SelectMany(o => o.OrderItems.Select(i => new { Order = o, Item = i }))
+            .GroupBy(x => new 
+            { 
+                Date = DateOnly.FromDateTime(x.Order.ScheduledDate),
+                MealSlot = x.Order.ScheduledDate.TimeOfDay.Hours < 15 ? "Lunch" : "Dinner",
+                UnitId = x.Order.UnitId,
+                UnitName = x.Order.Unit?.Name ?? "Unknown"
+            })
+            .Select(g => new MealStatisticItemDto
+            {
+                Date = g.Key.Date,
+                MealSlot = g.Key.MealSlot,
+                UnitId = g.Key.UnitId,
+                UnitName = g.Key.UnitName,
+                TotalMeals = g.Sum(x => x.Item.Quantity),
+                TotalAmount = g.Sum(x => x.Item.TotalPrice)
+            })
+            .OrderByDescending(x => x.Date)
+            .ThenBy(x => x.UnitName)
+            .ToList();
+
+        return result;
     }
 
     public Task<bool> InvoiceCodeExistsAsync(string invoiceCode, CancellationToken cancellationToken = default)

@@ -1,0 +1,17 @@
+CREATE TABLE ingredients (
+    Id INT NOT NULL AUTO_INCREMENT,
+    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Name VARCHAR(255) NOT NULL COMMENT 'Tên nguyên liệu',
+    Unit VARCHAR(20) NOT NULL COMMENT 'Đơn vị (kg, lít, ...)',
+    Description VARCHAR(255) NULL COMMENT 'Mô tả',
+    DefaultSupplierId INT NULL,
+    CostPerUnit DECIMAL(10,2) NULL,
+    IsActive TINYINT(1) NOT NULL DEFAULT 1,
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (Id),
+    UNIQUE KEY UK_ingredients_code (Code),
+    UNIQUE KEY UK_ingredients_name (Name),
+    INDEX IX_ingredients_supplier (DefaultSupplierId),
+    CONSTRAINT FK_ingredients_supplier FOREIGN KEY (DefaultSupplierId) REFERENCES partners (Id) ON DELETE SET NULL ON UPDATE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'Danh mục nguyên liệu';

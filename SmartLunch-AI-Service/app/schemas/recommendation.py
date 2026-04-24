@@ -14,6 +14,7 @@ class RecommendTodayRequest(BaseModel):
     menu: list[MenuItem] | None = None
     dietary_preferences: list[str] = Field(default_factory=list, examples=[["vegetarian"]])
     allergies: list[str] = Field(default_factory=list, examples=[["peanut"]])
+    rules_key: str = Field(default="default", examples=["default"])
     top_k: int = Field(default=3, ge=1, le=10)
 
 
@@ -25,7 +26,6 @@ class Recommendation(BaseModel):
 
 class RecommendTodayResponse(BaseModel):
     recommendations: list[Recommendation]
-
 
 class IncompatibleMainSoupPair(BaseModel):
     """
@@ -48,6 +48,7 @@ class RecommendMealPlanTodayRequest(BaseModel):
     dietary_preferences: list[str] = Field(default_factory=list, examples=[["vegetarian"]])
     allergies: list[str] = Field(default_factory=list, examples=[["peanut"]])
     incompatible_pairs: list[IncompatibleMainSoupPair] = Field(default_factory=list)
+    rules_key: str = Field(default="default", examples=["default"])
     top_k: int = Field(default=3, ge=1, le=10)
 
 
@@ -114,9 +115,9 @@ class RecommendWeekPlanRequest(BaseModel):
     )
     all_different_main: bool = Field(default=True)
     all_different_soup: bool = Field(default=True)
+    rules_key: str = Field(default="default", examples=["default"])
     top_k: int = Field(default=1, ge=1, le=5)
 
 
 class RecommendWeekPlanResponse(BaseModel):
     plans: list[WeekPlan]
-

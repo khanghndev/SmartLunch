@@ -3,6 +3,7 @@ using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Orders;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
+using SmartLunch.Backend.Service.Application.Helpers;
 
 namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.CreateSalesInvoice;
 
@@ -63,6 +64,9 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
         var scheduledUtc = scheduledDate.ToDateTime(TimeOnly.MinValue);
         if (scheduledUtc.Kind == DateTimeKind.Unspecified)
             scheduledUtc = DateTime.SpecifyKind(scheduledUtc, DateTimeKind.Utc);
+
+        // --- CUT-OFF TIME VALIDATION ---
+        CutOffTimeValidator.Validate(unit.UnitType, scheduledUtc, DateTime.UtcNow);
 
         var merged = req.Lines
             .GroupBy(l => l.DishId)

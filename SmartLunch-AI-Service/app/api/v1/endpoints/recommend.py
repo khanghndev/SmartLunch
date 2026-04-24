@@ -1,21 +1,18 @@
 from fastapi import APIRouter, HTTPException
 
 from app.schemas.recommendation import (
-    DayPlan,
-    MealPlanPair,
-    RecommendMealPlanTodayFromBackendRequest,
-    RecommendMealPlanTodayFromBackendResponse,
+    RecommendTodayRequest, 
+    RecommendTodayResponse, 
+    Recommendation,
     RecommendMealPlanTodayRequest,
     RecommendMealPlanTodayResponse,
-    RecommendTodayRequest,
-    RecommendTodayResponse,
+    MealPlanPair,
     RecommendWeekPlanRequest,
     RecommendWeekPlanResponse,
-    Recommendation,
-    WeekPlan,
+    RecommendMealPlanTodayFromBackendRequest,
+    RecommendMealPlanTodayFromBackendResponse
 )
 from app.services.recommendation_service import RecommendationService
-from app.services.smartlunch_backend_client import SmartLunchBackendClient
 from app.core.rules_loader import RulesLoader
 
 router = APIRouter()
@@ -28,11 +25,13 @@ def recommend_today(req: RecommendTodayRequest):
     if req.menu is not None:
         menu_items = [(m.name, m.tags) for m in req.menu]
 
+    rules_profile = RulesLoader().load_profile(req.rules_key)
     scored = recommender.recommend_today(
         menu_items=menu_items,
         dietary_preferences=req.dietary_preferences,
         allergies=req.allergies,
         top_k=req.top_k,
+        rules_profile=rules_profile,
     )
 
     return RecommendTodayResponse(
@@ -42,9 +41,9 @@ def recommend_today(req: RecommendTodayRequest):
         ]
     )
 
-
 @router.post("/recommend/today/plan", response_model=RecommendMealPlanTodayResponse)
 def recommend_today_plan(req: RecommendMealPlanTodayRequest):
+    rules_profile = RulesLoader().load_profile(req.rules_key)
     plans = recommender.recommend_meal_plan_today_ortools(
         main_menu=[(m.name, m.tags) for m in req.main_menu],
         soup_menu=[(m.name, m.tags) for m in req.soup_menu],
@@ -52,6 +51,7 @@ def recommend_today_plan(req: RecommendMealPlanTodayRequest):
         allergies=req.allergies,
         incompatible_pairs=[(p.main_index, p.soup_index) for p in req.incompatible_pairs],
         top_k=req.top_k,
+        rules_profile=rules_profile,
     )
 
     return RecommendMealPlanTodayResponse(
@@ -68,6 +68,7 @@ def recommend_today_plan(req: RecommendMealPlanTodayRequest):
 
 @router.post("/recommend/week/plan", response_model=RecommendWeekPlanResponse)
 def recommend_week_plan(req: RecommendWeekPlanRequest):
+    rules_profile = RulesLoader().load_profile(req.rules_key)
     plans = recommender.recommend_week_plan_ortools(
         main_menu=[(m.name, m.tags) for m in req.main_menu],
         soup_menu=[(m.name, m.tags) for m in req.soup_menu],
@@ -78,6 +79,7 @@ def recommend_week_plan(req: RecommendWeekPlanRequest):
         all_different_main=req.all_different_main,
         all_different_soup=req.all_different_soup,
         top_k=req.top_k,
+        rules_profile=rules_profile,
     )
 
 
@@ -87,8 +89,7 @@ def recommend_week_plan(req: RecommendWeekPlanRequest):
 )
 async def recommend_today_plan_from_backend(req: RecommendMealPlanTodayFromBackendRequest):
     try:
-        rules = RulesLoader().load_profile(req.rules_key)
-        rules_profile = {"scoring": rules.scoring, "allergy_filter": rules.allergy_filter}
+        rules_profile = RulesLoader().load_profile(req.rules_key)
 
         backend = SmartLunchBackendClient()
 
@@ -135,8 +136,8 @@ async def recommend_today_plan_from_backend(req: RecommendMealPlanTodayFromBacke
 
         # Compute incompatible pairs based on rules file.
         incompatible_pairs: list[tuple[int, int]] = []
-        mode = (rules.incompatible_pairs or {}).get("mode")
-        raw_keywords = (rules.incompatible_pairs or {}).get("keywords") or []
+        mode = (rules_profile.incompatible_pairs or {}).get("mode")
+        raw_keywords = (rules_profile.incompatible_pairs or {}).get("keywords") or []
         keywords = [str(k).strip().lower() for k in raw_keywords if str(k).strip()]
 
         if mode == "ingredient_keyword_overlap" and keywords:
@@ -235,4 +236,3 @@ async def recommend_today_plan_from_backend(req: RecommendMealPlanTodayFromBacke
         raise HTTPException(status_code=500, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Backend integration failed: {e}")
-

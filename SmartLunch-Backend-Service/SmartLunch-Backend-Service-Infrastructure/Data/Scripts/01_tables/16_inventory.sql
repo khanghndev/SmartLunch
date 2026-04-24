@@ -1,0 +1,8 @@
+CREATE TABLE inventory (
+    IngredientId INT NOT NULL,
+    QuantityAvailable DECIMAL(12,2) NOT NULL DEFAULT 0.00,
+    ReorderLevel DECIMAL(12,2) NULL,
+    LastUpdated DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    PRIMARY KEY (IngredientId),
+    CONSTRAINT FK_inventory_ingredient FOREIGN KEY (IngredientId) REFERENCES ingredients (Id) ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'Tồn kho nguyên liệu';
