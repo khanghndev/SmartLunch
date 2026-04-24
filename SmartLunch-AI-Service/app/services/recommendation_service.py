@@ -11,6 +11,26 @@ class ScoredItem:
     reasons: list[str]
 
 
+@dataclass(frozen=True)
+class MealPlanPair:
+    main: ScoredItem
+    soup: ScoredItem
+    plan_score: float
+
+
+@dataclass(frozen=True)
+class DayPlanPair:
+    day: str
+    main: ScoredItem
+    soup: ScoredItem
+
+
+@dataclass(frozen=True)
+class WeekPlan:
+    day_plans: list[DayPlanPair]
+    plan_score: float
+
+
 class RecommendationService:
     """
     Baseline, tag-based recommender.
@@ -26,6 +46,16 @@ class RecommendationService:
         ("Salmon rice bowl", ["healthy", "omega3", "high_protein"]),
         ("Fruit yogurt parfait", ["light", "dessert", "healthy"]),
     ]
+
+    _DEFAULT_RULES_PROFILE: dict = {
+        "scoring": {
+            "base_score": 0.35,
+            "tag_weights": {"healthy": 0.15, "high_protein": 0.12, "high_fiber": 0.08},
+            "preference_match_bonus": 0.2,
+            "preference_miss_penalty": 0.05,
+        },
+        "allergy_filter": {"enabled": True, "substring_match": True},
+    }
 
     def recommend(
         self,
