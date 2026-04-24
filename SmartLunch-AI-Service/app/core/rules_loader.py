@@ -17,7 +17,17 @@ def _default_profile() -> RulesProfile:
     return RulesProfile(
         scoring={
             "base_score": 0.35,
-            "tag_weights": {"healthy": 0.15, "high_protein": 0.12, "high_fiber": 0.08},
+            "tag_weights": {
+                "healthy": 0.15,
+                "high_protein": 0.12,
+                "high_fiber": 0.08,
+                "low_carb": 0.10,
+                "vegetarian": 0.08,
+                "vegan": 0.10,
+                "spicy": 0.05,
+                "comfort": 0.05,
+                "budget": 0.10
+            },
             "preference_match_bonus": 0.2,
             "preference_miss_penalty": 0.05,
         },

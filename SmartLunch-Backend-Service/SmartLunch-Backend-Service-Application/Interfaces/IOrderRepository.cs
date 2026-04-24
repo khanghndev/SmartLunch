@@ -1,5 +1,6 @@
+using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
-
+using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Orders;
 namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IOrderRepository
@@ -12,6 +13,11 @@ public interface IOrderRepository
         string? searchTerm = null,
         DateOnly? scheduledOn = null,
         string? status = null);
+
+    Task<List<MealStatisticItemDto>> GetMealStatisticsAsync(
+        DateTime? startDate,
+        DateTime? endDate,
+        Guid? unitId);
 
     Task<bool> InvoiceCodeExistsAsync(string invoiceCode, CancellationToken cancellationToken = default);
 

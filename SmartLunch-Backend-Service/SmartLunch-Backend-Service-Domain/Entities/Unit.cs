@@ -11,6 +11,16 @@ public class Unit
     public string? Phone { get; set; }
     public string? ContactPerson { get; set; }
     public string? ContactEmail { get; set; }
+    
+    /// <summary>Văn phòng (Office) / Xí nghiệp (Factory) / Trường học (School)</summary>
+    public string UnitType { get; set; } = "Office";
+    
+    /// <summary>Bật tính năng khóa & lên đơn tự động dựa vào hợp đồng (Subscription).</summary>
+    public bool IsSubscriptionActive { get; set; } = false;
+    
+    /// <summary>Số suất mặc định đặt mỗi ngày khi cơ chế định kỳ chạy tự động.</summary>
+    public int DefaultDailyMeals { get; set; } = 0;
+
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }

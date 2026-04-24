@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from app.core.rules_loader import RulesProfile, _default_profile
 
 @dataclass(frozen=True)
 class ScoredItem:
@@ -62,44 +63,18 @@ class RecommendationService:
         dietary_preferences: list[str],
         allergies: list[str],
         top_k: int,
+        rules_profile: RulesProfile | None = None,
     ) -> list[ScoredItem]:
-        prefs = {p.strip().lower() for p in dietary_preferences if p.strip()}
-        alls = {a.strip().lower() for a in allergies if a.strip()}
+        prefs = self._normalize_set(dietary_preferences)
+        alls = self._normalize_set(allergies)
 
         results: list[ScoredItem] = []
         for name, tags in menu:
-            tagset = {t.strip().lower() for t in tags}
-            reasons: list[str] = []
-
-            # Allergy filtering (very simple heuristic: if allergy word appears in tags or name).
-            if any(a in name.lower() or a in tagset for a in alls):
-                continue
-
-            score = 0.35  # base
-            if "healthy" in tagset:
-                score += 0.15
-                reasons.append("Healthy option")
-            if "high_protein" in tagset:
-                score += 0.12
-                reasons.append("High protein")
-            if "high_fiber" in tagset:
-                score += 0.08
-                reasons.append("High fiber")
-
-            # Preferences boost
-            if prefs:
-                matched = sorted(prefs.intersection(tagset))
-                if matched:
-                    score += 0.2
-                    reasons.append(f"Matches preferences: {', '.join(matched)}")
-                else:
-                    # Light penalty if user has preferences but item doesn't match any
-                    score -= 0.05
-
-            score = max(0.0, min(1.0, score))
-            if not reasons:
-                reasons.append("Popular choice")
-            results.append(ScoredItem(name=name, score=score, reasons=reasons))
+            score, reasons, allowed = self._score_item_by_tags(
+                name, tags, prefs, alls, rules_profile=rules_profile
+            )
+            if allowed:
+                results.append(ScoredItem(name=name, score=score, reasons=reasons))
 
         results.sort(key=lambda x: x.score, reverse=True)
         return results[:top_k]
@@ -110,9 +85,16 @@ class RecommendationService:
         dietary_preferences: list[str],
         allergies: list[str],
         top_k: int,
+        rules_profile: RulesProfile | None = None,
     ) -> list[ScoredItem]:
         menu = menu_items or self.DEFAULT_MENU
-        return self.recommend(menu=menu, dietary_preferences=dietary_preferences, allergies=allergies, top_k=top_k)
+        return self.recommend(
+            menu=menu, 
+            dietary_preferences=dietary_preferences, 
+            allergies=allergies, 
+            top_k=top_k, 
+            rules_profile=rules_profile
+        )
 
     @staticmethod
     def _normalize_set(items: list[str]) -> set[str]:
@@ -134,7 +116,7 @@ class RecommendationService:
         tags: list[str],
         dietary_preferences: set[str],
         allergies: set[str],
-        rules_profile: dict | None = None,
+        rules_profile: RulesProfile | None = None,
     ) -> tuple[float, list[str], bool]:
         """
         Returns (score, reasons, allowed).
@@ -142,13 +124,9 @@ class RecommendationService:
         - score is clamped into [0, 1] for stable optimization.
         """
 
-        rules_profile = rules_profile or {}
-        scoring_cfg = RecommendationService._DEFAULT_RULES_PROFILE["scoring"] | rules_profile.get(
-            "scoring", {}
-        )
-        allergy_cfg = RecommendationService._DEFAULT_RULES_PROFILE["allergy_filter"] | rules_profile.get(
-            "allergy_filter", {}
-        )
+        profile = rules_profile or _default_profile()
+        scoring_cfg = profile.scoring
+        allergy_cfg = profile.allergy_filter
 
         tagset = {t.strip().lower() for t in tags}
         if allergy_cfg.get("enabled", True) and RecommendationService._matches_allergies(
@@ -190,7 +168,7 @@ class RecommendationService:
         incompatible_pairs: list[tuple[int, int]],
         top_k: int = 1,
         time_limit_seconds: float = 2.0,
-        rules_profile: dict | None = None,
+        rules_profile: RulesProfile | None = None,
     ) -> list[MealPlanPair]:
         """
         Choose the best (mặn, canh) pair using Google OR-Tools CP-SAT.
@@ -337,7 +315,7 @@ class RecommendationService:
         all_different_soup: bool = True,
         top_k: int = 1,
         time_limit_seconds: float = 3.0,
-        rules_profile: dict | None = None,
+        rules_profile: RulesProfile | None = None,
     ) -> list[WeekPlan]:
         """
         Choose a weekly schedule using CP-SAT:
@@ -521,4 +499,3 @@ class RecommendationService:
 
         solutions.sort(key=lambda x: x.plan_score, reverse=True)
         return solutions
-
