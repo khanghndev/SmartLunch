@@ -2,12 +2,12 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.UserPe
 
 public class UserPermissionDto
 {
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public Guid PermissionId { get; set; }
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public int PermissionId { get; set; }
     public string? UserName { get; set; }
     public string? PermissionName { get; set; }
     public DateTime AssignedAt { get; set; }
-    public Guid? AssignedBy { get; set; }
+    public int? AssignedBy { get; set; }
     public bool IsActive { get; set; }
 }

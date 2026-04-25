@@ -2,6 +2,6 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Permiss
 
 public class RevokePermissionFromRoleRequest
 {
-    public Guid RoleId { get; set; }
-    public Guid PermissionId { get; set; }
+    public int RoleId { get; set; }
+    public int PermissionId { get; set; }
 }

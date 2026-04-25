@@ -2,7 +2,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Permis
 
 public class RevokePermissionFromRoleResponse
 {
-    public Guid RoleId { get; set; }
-    public Guid PermissionId { get; set; }
+    public int RoleId { get; set; }
+    public int PermissionId { get; set; }
     public string Message { get; set; } = "Permission revoked from role successfully";
 }

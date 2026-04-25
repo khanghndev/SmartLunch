@@ -34,7 +34,7 @@ public class CreateRolePermissionCommandHandler : IRequestHandler<CreateRolePerm
 
         var entity = new RolePermission
         {
-            Id = Guid.NewGuid(),
+
             RoleId = req.RoleId,
             PermissionId = req.PermissionId,
             AssignedAt = DateTime.UtcNow,

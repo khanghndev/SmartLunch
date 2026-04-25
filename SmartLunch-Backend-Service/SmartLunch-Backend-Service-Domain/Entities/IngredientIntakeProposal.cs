@@ -5,14 +5,15 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class IngredientIntakeProposal
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
     public string ProposalCode { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string? HeaderNote { get; set; }
-    public Guid CreatedByUserId { get; set; }
+    public int CreatedByUserId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-    public Guid? ReviewedByUserId { get; set; }
+    public int? ReviewedByUserId { get; set; }
     public DateTime? ReviewedAt { get; set; }
     public string? ReviewNote { get; set; }
 

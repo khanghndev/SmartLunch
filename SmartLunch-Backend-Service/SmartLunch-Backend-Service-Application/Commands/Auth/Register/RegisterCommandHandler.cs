@@ -64,7 +64,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         // Create user - use email as username if username is not provided
         var user = new User
         {
-            Id = Guid.NewGuid(),
+
             Username = req.Email, // Use email as username
             Email = req.Email,
             PasswordHash = _passwordHasher.HashPassword(req.Password),
@@ -77,20 +77,20 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
 
         var userRole = new UserRole
         {
-            Id = Guid.NewGuid(),
+
             UserId = user.Id,
-            RoleId = req.RoleId ?? Guid.Empty,
+            RoleId = req.RoleId ?? 0,
             AssignedAt = DateTime.UtcNow,
             IsActive = true
         };
         await _userRoleRepository.CreateAsync(userRole);
 
-        var rolePermissionList = await _rolePermissionRepository.GetByRoleIdAsync(req.RoleId ?? Guid.Empty);
+        var rolePermissionList = await _rolePermissionRepository.GetByRoleIdAsync(req.RoleId ?? 0);
         foreach (var rolePermission in rolePermissionList)
         {
             var userPermission = new UserPermission
             {
-                Id = Guid.NewGuid(),
+
                 UserId = user.Id,
                 PermissionId = rolePermission.PermissionId,
             };
@@ -107,7 +107,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         // Store token in database
         var userToken = new UserToken
         {
-            Id = Guid.NewGuid(),
+
             UserId = user.Id,
             AccessToken = accessToken,
             RefreshToken = refreshToken,

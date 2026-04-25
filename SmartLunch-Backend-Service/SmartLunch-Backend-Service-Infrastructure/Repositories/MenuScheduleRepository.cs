@@ -14,7 +14,7 @@ public class MenuScheduleRepository : IMenuScheduleRepository
         _context = context;
     }
 
-    public async Task<MenuSchedule?> GetByIdAsync(Guid id)
+    public async Task<MenuSchedule?> GetByIdAsync(int id)
     {
         return await _context.MenuSchedules
             .FirstOrDefaultAsync(e => e.Id == id);

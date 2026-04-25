@@ -2,11 +2,11 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Ingred
 
 public class IngredientDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public Guid? DefaultSupplierId { get; set; }
+    public int? DefaultSupplierId { get; set; }
     public decimal? CostPerUnit { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }

@@ -14,7 +14,7 @@ public class MenuSuggestionRepository : IMenuSuggestionRepository
         _context = context;
     }
 
-    public async Task<MenuSuggestion?> GetByIdAsync(Guid id)
+    public async Task<MenuSuggestion?> GetByIdAsync(int id)
     {
         return await _context.MenuSuggestions
             .FirstOrDefaultAsync(e => e.Id == id);

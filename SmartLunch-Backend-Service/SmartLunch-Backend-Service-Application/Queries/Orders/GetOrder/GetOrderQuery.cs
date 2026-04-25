@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Orders.GetOrder;
 
 public class GetOrderQuery : IRequest<GetOrderResponse>
 {
-    public Guid OrderId { get; set; }
+    public int OrderId { get; set; }
 
-    public GetOrderQuery(Guid orderId)
+    public GetOrderQuery(int orderId)
     {
         OrderId = orderId;
     }

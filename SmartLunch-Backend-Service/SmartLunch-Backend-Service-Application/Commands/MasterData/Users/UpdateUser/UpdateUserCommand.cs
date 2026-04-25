@@ -4,4 +4,4 @@ using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Users;
 
 namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Users.UpdateUser;
 
-public record UpdateUserCommand(Guid UserId, UpdateUserRequest Request, Guid ActorUserId) : IRequest<GetUserResponse>;
+public record UpdateUserCommand(int UserId, UpdateUserRequest Request, int ActorUserId) : IRequest<GetUserResponse>;

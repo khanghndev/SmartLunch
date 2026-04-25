@@ -16,7 +16,7 @@ public class RemoveCartLineCommandHandler : IRequestHandler<RemoveCartLineComman
 
     public async Task<GetShoppingCartResponse> Handle(RemoveCartLineCommand command, CancellationToken cancellationToken)
     {
-        if (command.LineId == Guid.Empty)
+        if (command.LineId <= 0)
             throw new ArgumentException("LineId is required.");
 
         var cart = await _cartCache.GetAsync(command.UserId, cancellationToken);

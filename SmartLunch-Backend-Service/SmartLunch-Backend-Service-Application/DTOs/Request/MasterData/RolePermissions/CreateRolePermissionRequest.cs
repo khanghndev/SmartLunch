@@ -2,7 +2,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.RolePer
 
 public class CreateRolePermissionRequest
 {
-    public Guid RoleId { get; set; }
-    public Guid PermissionId { get; set; }
-    public Guid? AssignedBy { get; set; }
+    public int RoleId { get; set; }
+    public int PermissionId { get; set; }
+    public int? AssignedBy { get; set; }
 }

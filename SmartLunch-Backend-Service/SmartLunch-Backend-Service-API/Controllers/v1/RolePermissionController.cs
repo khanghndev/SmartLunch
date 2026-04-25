@@ -52,7 +52,7 @@ public class RolePermissionController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:permissions.read")]
-    public async Task<ActionResult<BaseApiResponse<GetRolePermissionResponse>>> GetRolePermission(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetRolePermissionResponse>>> GetRolePermission(int id)
     {
         try
         {
@@ -96,7 +96,7 @@ public class RolePermissionController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Policy = "permission:permissions.update")]
-    public async Task<ActionResult<BaseApiResponse<GetRolePermissionResponse>>> Update(Guid id, [FromBody] UpdateRolePermissionRequest request)
+    public async Task<ActionResult<BaseApiResponse<GetRolePermissionResponse>>> Update(int id, [FromBody] UpdateRolePermissionRequest request)
     {
         if (id != request.Id)
             return BadRequest(BaseApiResponse<GetRolePermissionResponse>.ErrorResult("Id mismatch", new[] { "Id in URL and body must match" }));
@@ -120,7 +120,7 @@ public class RolePermissionController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Policy = "permission:permissions.update")]
-    public async Task<ActionResult<BaseApiResponse<bool>>> Delete(Guid id)
+    public async Task<ActionResult<BaseApiResponse<bool>>> Delete(int id)
     {
         try
         {

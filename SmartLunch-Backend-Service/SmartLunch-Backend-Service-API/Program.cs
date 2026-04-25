@@ -89,7 +89,7 @@ builder.Services.AddSwaggerGen(options =>
     // Add JWT Bearer authentication to Swagger
     options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
     {
-        Description = "JWT Authorization header using the Bearer scheme. Enter 'Bearer' [space] and then your token in the text input below.",
+        Description = "Enter 'Bearer' [space] and then your token in the text input below.",
         Name = "Authorization",
         In = Microsoft.OpenApi.Models.ParameterLocation.Header,
         Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey,
@@ -118,8 +118,7 @@ builder.Services.ConfigureOptions<ConfigureSwaggerOptions>();
 // AutoMapper
 builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-// MediatR: scan the Application assembly and register all IRequestHandler<> / INotificationHandler<> etc.
-// We only need one type from that assembly to get .Assembly; LoginAdminCommand is arbitrary—any type in Application would work.
+// MediatR
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(SmartLunch.Backend.Service.Application.DependencyInjection.DependencyInjection).Assembly));
 
 // Database Configuration
@@ -190,9 +189,6 @@ builder.Services.AddAuthentication(options =>
         ClockSkew = TimeSpan.Zero
     };
 
-    // Important for SignalR over WebSockets:
-    // browsers can't always send Authorization header in the WebSocket handshake,
-    // so SignalR sends the token via query string `access_token`.
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
@@ -314,6 +310,8 @@ if (app.Environment.IsDevelopment())
 
         options.RoutePrefix = "swagger"; // Swagger UI will be available at /swagger
         options.DisplayRequestDuration(); // Show request duration in Swagger UI
+
+        options.ConfigObject.AdditionalItems["persistAuthorization"] = true;
     });
 }
 

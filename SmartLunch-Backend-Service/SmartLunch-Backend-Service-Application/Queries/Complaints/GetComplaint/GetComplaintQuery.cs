@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Complaints.GetComplaint
 
 public class GetComplaintQuery : IRequest<GetComplaintResponse>
 {
-    public Guid ComplaintId { get; set; }
+    public int ComplaintId { get; set; }
 
-    public GetComplaintQuery(Guid complaintId)
+    public GetComplaintQuery(int complaintId)
     {
         ComplaintId = complaintId;
     }

@@ -78,7 +78,7 @@ public class GrantPermissionToUserCommandHandler : IRequestHandler<GrantPermissi
         // Create new user permission assignment
         var userPermission = new UserPermission
         {
-            Id = Guid.NewGuid(),
+
             UserId = req.UserId,
             PermissionId = req.PermissionId,
             AssignedAt = DateTime.UtcNow,

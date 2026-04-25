@@ -4,6 +4,6 @@ public class GetDishIngredientsRequest
 {
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 10;
-    public Guid? DishId { get; set; }
-    public Guid? IngredientId { get; set; }
+    public int? DishId { get; set; }
+    public int? IngredientId { get; set; }
 }

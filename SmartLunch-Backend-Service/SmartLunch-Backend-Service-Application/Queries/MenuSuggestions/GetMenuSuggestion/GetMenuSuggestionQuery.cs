@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.MenuSuggestions.GetMenu
 
 public class GetMenuSuggestionQuery : IRequest<GetMenuSuggestionResponse>
 {
-    public Guid MenuSuggestionId { get; set; }
+    public int MenuSuggestionId { get; set; }
 
-    public GetMenuSuggestionQuery(Guid menuSuggestionId)
+    public GetMenuSuggestionQuery(int menuSuggestionId)
     {
         MenuSuggestionId = menuSuggestionId;
     }

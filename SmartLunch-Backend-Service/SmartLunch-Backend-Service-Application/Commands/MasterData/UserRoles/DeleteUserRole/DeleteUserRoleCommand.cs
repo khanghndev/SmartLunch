@@ -4,9 +4,9 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.UserRoles.D
 
 public class DeleteUserRoleCommand : IRequest<bool>
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    public DeleteUserRoleCommand(Guid id)
+    public DeleteUserRoleCommand(int id)
     {
         Id = id;
     }

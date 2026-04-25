@@ -4,7 +4,7 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IInternalStockIssueRepository
 {
-    Task<InternalStockIssue?> GetByIdWithLinesAsync(Guid id, CancellationToken cancellationToken = default);
+    Task<InternalStockIssue?> GetByIdWithLinesAsync(int id, CancellationToken cancellationToken = default);
 
     Task<(IReadOnlyList<InternalStockIssue> Items, int TotalCount)> GetPagedAsync(
         int page,
@@ -18,6 +18,6 @@ public interface IInternalStockIssueRepository
     /// </summary>
     Task<InternalStockIssue> CreateAndDeductStockAsync(
         InternalStockIssue issue,
-        IReadOnlyList<(Guid IngredientId, decimal Quantity)> lines,
+        IReadOnlyList<(int IngredientId, decimal Quantity)> lines,
         CancellationToken cancellationToken = default);
 }

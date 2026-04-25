@@ -62,7 +62,7 @@ public class ContractController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:contracts.read")]
-    public async Task<ActionResult<BaseApiResponse<GetContractResponse>>> GetContract(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetContractResponse>>> GetContract(int id)
     {
         try
         {
@@ -120,9 +120,9 @@ public class ContractController : ControllerBase
     /// <summary>
     /// Cập nhật hợp đồng.
     /// </summary>
-    [HttpPut("{id:guid}")]
+    [HttpPut("{id:int}")]
     [Authorize(Policy = "permission:contracts.update")]
-    public async Task<ActionResult<BaseApiResponse<GetContractResponse>>> UpdateContract(Guid id, [FromBody] UpdateContractRequest request)
+    public async Task<ActionResult<BaseApiResponse<GetContractResponse>>> UpdateContract(int id, [FromBody] UpdateContractRequest request)
     {
         try
         {
@@ -153,9 +153,9 @@ public class ContractController : ControllerBase
     /// <summary>
     /// Xóa hợp đồng nếu chưa có thanh toán đối tác; nếu đã có thì chuyển trạng thái cancelled.
     /// </summary>
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{id:int}")]
     [Authorize(Policy = "permission:contracts.update")]
-    public async Task<ActionResult<BaseApiResponse<DeleteContractResponse>>> DeleteContract(Guid id)
+    public async Task<ActionResult<BaseApiResponse<DeleteContractResponse>>> DeleteContract(int id)
     {
         try
         {

@@ -35,7 +35,7 @@ public class CreateUserRoleCommandHandler : IRequestHandler<CreateUserRoleComman
 
         var entity = new UserRole
         {
-            Id = Guid.NewGuid(),
+
             UserId = req.UserId,
             RoleId = req.RoleId,
             AssignedAt = DateTime.UtcNow,

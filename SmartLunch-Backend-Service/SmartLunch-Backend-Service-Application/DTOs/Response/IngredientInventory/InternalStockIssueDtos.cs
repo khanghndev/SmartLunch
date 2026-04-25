@@ -2,8 +2,8 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.IngredientInvento
 
 public class InternalStockIssueLineDto
 {
-    public Guid Id { get; set; }
-    public Guid IngredientId { get; set; }
+    public int Id { get; set; }
+    public int IngredientId { get; set; }
     public string IngredientName { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty;
     public decimal Quantity { get; set; }
@@ -11,11 +11,11 @@ public class InternalStockIssueLineDto
 
 public class InternalStockIssueSummaryDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string IssueCode { get; set; } = string.Empty;
     public DateTime IssuedAt { get; set; }
     public string? Reason { get; set; }
-    public Guid? CreatedByUserId { get; set; }
+    public int? CreatedByUserId { get; set; }
     public string? CreatedByDisplayName { get; set; }
     public DateTime CreatedAt { get; set; }
     public int LineCount { get; set; }
@@ -23,11 +23,11 @@ public class InternalStockIssueSummaryDto
 
 public class InternalStockIssueDetailDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string IssueCode { get; set; } = string.Empty;
     public DateTime IssuedAt { get; set; }
     public string? Reason { get; set; }
-    public Guid? CreatedByUserId { get; set; }
+    public int? CreatedByUserId { get; set; }
     public string? CreatedByDisplayName { get; set; }
     public DateTime CreatedAt { get; set; }
     public IReadOnlyList<InternalStockIssueLineDto> Lines { get; set; } = Array.Empty<InternalStockIssueLineDto>();

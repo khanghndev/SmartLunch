@@ -16,7 +16,7 @@ public class IngredientIntakeProposalRepository : IIngredientIntakeProposalRepos
     }
 
     public async Task<IngredientIntakeProposal?> GetByIdWithDetailsAsync(
-        Guid id,
+        int id,
         CancellationToken cancellationToken = default)
     {
         return await _context.IngredientIntakeProposals
@@ -32,7 +32,7 @@ public class IngredientIntakeProposalRepository : IIngredientIntakeProposalRepos
     public async Task<(IReadOnlyList<IngredientIntakeProposal> Items, int TotalCount)> GetPagedAsync(
         int page,
         int pageSize,
-        Guid? createdByUserIdFilter,
+        int? createdByUserIdFilter,
         CancellationToken cancellationToken = default)
     {
         var query = _context.IngredientIntakeProposals.AsNoTracking().AsQueryable();
@@ -63,8 +63,8 @@ public class IngredientIntakeProposalRepository : IIngredientIntakeProposalRepos
     }
 
     public async Task<IngredientIntakeProposal> ReviewProposalAsync(
-        Guid proposalId,
-        Guid reviewerUserId,
+        int proposalId,
+        int reviewerUserId,
         bool approve,
         string? reviewNote,
         CancellationToken cancellationToken = default)
@@ -95,7 +95,7 @@ public class IngredientIntakeProposalRepository : IIngredientIntakeProposalRepos
     public async Task<(IReadOnlyList<IngredientIntakeProposal> Items, int TotalCount)> GetReviewHistoryPagedAsync(
         int page,
         int pageSize,
-        Guid? createdByUserIdFilter,
+        int? createdByUserIdFilter,
         CancellationToken cancellationToken = default)
     {
         var query = _context.IngredientIntakeProposals

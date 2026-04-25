@@ -12,5 +12,5 @@ public class CreateUserRequest
     public bool IsActive { get; set; } = true;
 
     /// <summary>Gán một role ban đầu (tùy chọn); phân quyền chi tiết qua UserRole / UserPermission.</summary>
-    public Guid? InitialRoleId { get; set; }
+    public int? InitialRoleId { get; set; }
 }

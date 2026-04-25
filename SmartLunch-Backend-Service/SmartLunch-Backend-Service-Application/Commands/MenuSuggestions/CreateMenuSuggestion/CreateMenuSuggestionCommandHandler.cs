@@ -48,7 +48,6 @@ public class CreateMenuSuggestionCommandHandler : IRequestHandler<CreateMenuSugg
 
         var entity = new MenuSuggestion
         {
-            Id = Guid.NewGuid(),
             WeekStart = weekStartUtc,
             GeneratedAt = DateTime.UtcNow,
             SuggestionText = trimmed,
@@ -65,7 +64,6 @@ public class CreateMenuSuggestionCommandHandler : IRequestHandler<CreateMenuSugg
         {
             MenuSuggestion = new MenuSuggestionDto
             {
-                Id = entity.Id,
                 WeekStart = entity.WeekStart,
                 GeneratedAt = entity.GeneratedAt,
                 SuggestionText = entity.SuggestionText,

@@ -5,11 +5,12 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class MenuSchedule
 {
-    public Guid Id { get; set; }
-    public Guid MenuId { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int MenuId { get; set; }
     public DateTime Date { get; set; }
     public string MealSlot { get; set; } = "lunch"; // lunch, dinner, etc.
-    public Guid DishId { get; set; }
+    public int DishId { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public virtual WeeklyMenu Menu { get; set; } = null!;

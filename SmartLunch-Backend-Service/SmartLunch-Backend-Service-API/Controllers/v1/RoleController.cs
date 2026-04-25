@@ -62,7 +62,7 @@ public class RoleController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:roles.read")]
-    public async Task<ActionResult<BaseApiResponse<GetRoleResponse>>> GetRole(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetRoleResponse>>> GetRole(int id)
     {
         try
         {

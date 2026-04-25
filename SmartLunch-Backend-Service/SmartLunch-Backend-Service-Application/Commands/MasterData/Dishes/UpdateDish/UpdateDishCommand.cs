@@ -6,10 +6,10 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Dishes.Upda
 
 public class UpdateDishCommand : IRequest<GetDishResponse>
 {
-    public Guid DishId { get; }
+    public int DishId { get; }
     public UpdateDishRequest Request { get; }
 
-    public UpdateDishCommand(Guid dishId, UpdateDishRequest request)
+    public UpdateDishCommand(int dishId, UpdateDishRequest request)
     {
         DishId = dishId;
         Request = request;

@@ -25,7 +25,7 @@ public class GetShoppingCartQueryHandler : IRequestHandler<GetShoppingCartQuery,
         return new GetShoppingCartResponse { Cart = cart };
     }
 
-    private static ShoppingCartDto CreateEmpty(Guid userId)
+    private static ShoppingCartDto CreateEmpty(int userId)
     {
         return new ShoppingCartDto
         {

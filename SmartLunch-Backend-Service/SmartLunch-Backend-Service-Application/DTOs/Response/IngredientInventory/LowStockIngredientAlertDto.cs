@@ -2,7 +2,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.IngredientInvento
 
 public class LowStockIngredientAlertDto
 {
-    public Guid IngredientId { get; set; }
+    public int IngredientId { get; set; }
     public string IngredientName { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty;
     public decimal QuantityAvailable { get; set; }

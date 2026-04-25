@@ -59,7 +59,7 @@ public class UserTokenController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:usertokens.read")]
-    public async Task<ActionResult<BaseApiResponse<GetUserTokenResponse>>> GetUserToken(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetUserTokenResponse>>> GetUserToken(int id)
     {
         try
         {

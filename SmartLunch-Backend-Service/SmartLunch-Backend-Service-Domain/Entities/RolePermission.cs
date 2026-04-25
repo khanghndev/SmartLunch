@@ -5,11 +5,12 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class RolePermission
 {
-    public Guid Id { get; set; }
-    public Guid RoleId { get; set; }
-    public Guid PermissionId { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int RoleId { get; set; }
+    public int PermissionId { get; set; }
     public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
-    public Guid? AssignedBy { get; set; }
+    public int? AssignedBy { get; set; }
     public bool IsActive { get; set; } = true;
     
     // Navigation properties

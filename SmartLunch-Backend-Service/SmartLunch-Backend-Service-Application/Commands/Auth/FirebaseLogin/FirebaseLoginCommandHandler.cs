@@ -62,7 +62,7 @@ public class FirebaseLoginCommandHandler : IRequestHandler<FirebaseLoginCommand,
             // Create new user from Firebase info
             user = new User
             {
-                Id = Guid.NewGuid(),
+
                 Username = firebaseUserInfo.Email, // Use email as username
                 Email = firebaseUserInfo.Email,
                 PasswordHash = string.Empty, // No password for social login
@@ -130,7 +130,7 @@ public class FirebaseLoginCommandHandler : IRequestHandler<FirebaseLoginCommand,
         // Store new token in database
         var userToken = new UserToken
         {
-            Id = Guid.NewGuid(),
+
             UserId = user.Id,
             AccessToken = accessToken,
             RefreshToken = refreshToken,

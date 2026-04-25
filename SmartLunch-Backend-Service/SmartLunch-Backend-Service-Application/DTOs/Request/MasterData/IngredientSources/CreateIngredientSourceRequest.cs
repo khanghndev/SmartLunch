@@ -2,8 +2,8 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Ingredi
 
 public class CreateIngredientSourceRequest
 {
-    public Guid IngredientId { get; set; }
-    public Guid? PartnerId { get; set; }
+    public int IngredientId { get; set; }
+    public int? PartnerId { get; set; }
     public string? BatchNumber { get; set; }
     public string? OriginDetails { get; set; }
     public DateTime? ProductionDate { get; set; }

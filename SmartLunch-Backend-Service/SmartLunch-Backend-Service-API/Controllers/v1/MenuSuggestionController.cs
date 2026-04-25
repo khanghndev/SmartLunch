@@ -61,7 +61,7 @@ public class MenuSuggestionController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:menusuggestions.read")]
-    public async Task<ActionResult<BaseApiResponse<GetMenuSuggestionResponse>>> GetMenuSuggestion(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetMenuSuggestionResponse>>> GetMenuSuggestion(int id)
     {
         try
         {
@@ -113,10 +113,10 @@ public class MenuSuggestionController : ControllerBase
         }
     }
 
-    private Guid RequireUserId()
+    private int RequireUserId()
     {
         var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(raw) || !Guid.TryParse(raw, out var userId))
+        if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
             throw new UnauthorizedAccessException("Invalid user context.");
         return userId;
     }

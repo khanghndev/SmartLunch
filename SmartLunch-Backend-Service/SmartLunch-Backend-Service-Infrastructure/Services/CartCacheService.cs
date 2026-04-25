@@ -37,9 +37,9 @@ public class CartCacheService : ICartCacheService
         ? "cart"
         : _configuration["CartCache:KeyPrefix"]!.Trim();
 
-    private static string BuildKey(string prefix, Guid userId) => $"{prefix}:user:{userId:D}";
+    private static string BuildKey(string prefix, int userId) => $"{prefix}:user:{userId}";
 
-    public Task<ShoppingCartDto?> GetAsync(Guid userId, CancellationToken cancellationToken = default)
+    public Task<ShoppingCartDto?> GetAsync(int userId, CancellationToken cancellationToken = default)
     {
         var key = BuildKey(KeyPrefix, userId);
         return _cache.GetAsync<ShoppingCartDto>(key, cancellationToken);
@@ -54,7 +54,7 @@ public class CartCacheService : ICartCacheService
         _logger.LogDebug("Cart saved to cache for user {UserId}, lines={Count}", cart.UserId, cart.Items.Count);
     }
 
-    public Task RemoveAsync(Guid userId, CancellationToken cancellationToken = default)
+    public Task RemoveAsync(int userId, CancellationToken cancellationToken = default)
     {
         var key = BuildKey(KeyPrefix, userId);
         return _cache.RemoveAsync(key, cancellationToken);

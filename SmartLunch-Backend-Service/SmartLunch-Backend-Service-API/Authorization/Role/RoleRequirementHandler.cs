@@ -32,7 +32,7 @@ public class RoleRequirementHandler : AuthorizationHandler<RoleRequirement>
         }
 
         // Parse UserId
-        if (!Guid.TryParse(userIdClaim, out var userId))
+        if (!int.TryParse(userIdClaim, out var userId))
         {
             _logger.LogWarning("Invalid user ID format: {UserId}", userIdClaim);
             return;

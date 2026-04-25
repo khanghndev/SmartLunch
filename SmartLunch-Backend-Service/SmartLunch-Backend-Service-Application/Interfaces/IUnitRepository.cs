@@ -4,7 +4,7 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IUnitRepository
 {
-    Task<Unit?> GetByIdAsync(Guid id);
+    Task<Unit?> GetByIdAsync(int id);
     Task<(List<Unit> Units, int TotalCount)> GetUnitsAsync(int page, int pageSize, string? searchTerm = null, bool? isActive = null);
-    Task<Dictionary<Guid, string>> GetNamesByIdsAsync(IEnumerable<Guid> unitIds, CancellationToken cancellationToken = default);
+    Task<Dictionary<int, string>> GetNamesByIdsAsync(IEnumerable<int> unitIds, CancellationToken cancellationToken = default);
 }

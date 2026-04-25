@@ -61,11 +61,11 @@ public class IngredientInventoryController : ControllerBase
     /// <summary>
     /// Chi tiết tồn kho một nguyên liệu (tồn hiện tại, ngưỡng, lô gần đây).
     /// </summary>
-    [HttpGet("detail/{ingredientId:guid}")]
+    [HttpGet("detail/{ingredientId:int}")]
     [Authorize(Policy = "permission:inventories.read")]
     [Authorize(Policy = "permission:ingredients.read")]
     public async Task<ActionResult<BaseApiResponse<GetIngredientInventoryDetailResponse>>> GetDetail(
-        Guid ingredientId,
+        int ingredientId,
         [FromQuery] int recentBatches = 20)
     {
         try
@@ -123,9 +123,9 @@ public class IngredientInventoryController : ControllerBase
     /// <summary>
     /// Chi tiết một phiếu xuất kho nội bộ.
     /// </summary>
-    [HttpGet("internal-issues/{id:guid}")]
+    [HttpGet("internal-issues/{id:int}")]
     [Authorize(Policy = "permission:inventories.read")]
-    public async Task<ActionResult<BaseApiResponse<InternalStockIssueDetailDto>>> GetInternalIssue(Guid id)
+    public async Task<ActionResult<BaseApiResponse<InternalStockIssueDetailDto>>> GetInternalIssue(int id)
     {
         try
         {
@@ -161,9 +161,9 @@ public class IngredientInventoryController : ControllerBase
     {
         try
         {
-            Guid? createdBy = null;
+            int? createdBy = null;
             var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (!string.IsNullOrWhiteSpace(raw) && Guid.TryParse(raw, out var uid))
+            if (!string.IsNullOrWhiteSpace(raw) && int.TryParse(raw, out var uid))
                 createdBy = uid;
 
             var response = await _mediator.Send(new CreateInternalStockIssueCommand(request, createdBy));

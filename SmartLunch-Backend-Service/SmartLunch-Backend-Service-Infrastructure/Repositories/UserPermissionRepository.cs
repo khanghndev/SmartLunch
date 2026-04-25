@@ -14,7 +14,7 @@ public class UserPermissionRepository : IUserPermissionRepository
         _context = context;
     }
 
-    public async Task<UserPermission?> GetByIdAsync(Guid id)
+    public async Task<UserPermission?> GetByIdAsync(int id)
     {
         return await _context.UserPermissions
             .Include(up => up.User)
@@ -22,7 +22,7 @@ public class UserPermissionRepository : IUserPermissionRepository
             .FirstOrDefaultAsync(up => up.Id == id);
     }
 
-    public async Task<UserPermission?> GetByUserAndPermissionAsync(Guid userId, Guid permissionId)
+    public async Task<UserPermission?> GetByUserAndPermissionAsync(int userId, int permissionId)
     {
         return await _context.UserPermissions
             .Include(up => up.User)
@@ -30,7 +30,7 @@ public class UserPermissionRepository : IUserPermissionRepository
             .FirstOrDefaultAsync(up => up.UserId == userId && up.PermissionId == permissionId);
     }
 
-    public async Task<IEnumerable<UserPermission>> GetByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<UserPermission>> GetByUserIdAsync(int userId)
     {
         return await _context.UserPermissions
             .Include(up => up.User)
@@ -39,7 +39,7 @@ public class UserPermissionRepository : IUserPermissionRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<UserPermission>> GetActiveByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<UserPermission>> GetActiveByUserIdAsync(int userId)
     {
         return await _context.UserPermissions
             .Include(up => up.User)
@@ -48,7 +48,7 @@ public class UserPermissionRepository : IUserPermissionRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<UserPermission>> GetByPermissionIdAsync(Guid permissionId)
+    public async Task<IEnumerable<UserPermission>> GetByPermissionIdAsync(int permissionId)
     {
         return await _context.UserPermissions
             .Include(up => up.User)
@@ -71,7 +71,7 @@ public class UserPermissionRepository : IUserPermissionRepository
         return userPermission;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var userPermission = await _context.UserPermissions.FindAsync(id);
         if (userPermission == null) return false;
@@ -81,7 +81,7 @@ public class UserPermissionRepository : IUserPermissionRepository
         return true;
     }
 
-    public async Task<bool> DeleteByUserAndPermissionAsync(Guid userId, Guid permissionId)
+    public async Task<bool> DeleteByUserAndPermissionAsync(int userId, int permissionId)
     {
         var userPermission = await GetByUserAndPermissionAsync(userId, permissionId);
         if (userPermission == null) return false;
@@ -91,12 +91,12 @@ public class UserPermissionRepository : IUserPermissionRepository
         return true;
     }
 
-    public async Task<bool> ExistsByUserAndPermissionAsync(Guid userId, Guid permissionId)
+    public async Task<bool> ExistsByUserAndPermissionAsync(int userId, int permissionId)
     {
         return await _context.UserPermissions.AnyAsync(up => up.UserId == userId && up.PermissionId == permissionId);
     }
 
-    public async Task<(List<UserPermission> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? userId = null, Guid? permissionId = null, bool? isActive = null)
+    public async Task<(List<UserPermission> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, int? userId = null, int? permissionId = null, bool? isActive = null)
     {
         var query = _context.UserPermissions
             .Include(up => up.User)

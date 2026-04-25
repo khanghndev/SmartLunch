@@ -14,7 +14,7 @@ public class InventoryRepository : IInventoryRepository
         _context = context;
     }
 
-    public async Task<Inventory?> GetByIdAsync(Guid id)
+    public async Task<Inventory?> GetByIdAsync(int id)
     {
         return await _context.Inventories
             .FirstOrDefaultAsync(e => e.IngredientId == id);
@@ -51,7 +51,7 @@ public class InventoryRepository : IInventoryRepository
     }
 
     public async Task<Inventory?> GetByIngredientIdWithIngredientAsync(
-        Guid ingredientId,
+        int ingredientId,
         CancellationToken cancellationToken = default)
     {
         return await _context.Inventories

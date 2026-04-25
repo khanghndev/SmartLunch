@@ -8,8 +8,8 @@ public interface IIngredientActualIntakeRepository
     /// Phiếu đề xuất phải approved, chưa có phiếu nhập thực tế; cộng tồn kho; đổi trạng thái phiếu thành fulfilled.
     /// </summary>
     Task<IngredientActualIntake> CreateFromApprovedProposalAsync(
-        Guid proposalId,
-        Guid actorUserId,
+        int proposalId,
+        int actorUserId,
         bool actorIsElevated,
         DateTime receivedAtUtc,
         string? note,

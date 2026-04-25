@@ -2,7 +2,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Permis
 
 public class GrantPermissionToRoleResponse
 {
-    public Guid RoleId { get; set; }
-    public Guid PermissionId { get; set; }
+    public int RoleId { get; set; }
+    public int PermissionId { get; set; }
     public string Message { get; set; } = "Permission granted to role successfully";
 }

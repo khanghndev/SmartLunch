@@ -14,7 +14,7 @@ public class UserUnitRepository : IUserUnitRepository
         _context = context;
     }
 
-    public async Task<UserUnit?> GetByIdAsync(Guid id)
+    public async Task<UserUnit?> GetByIdAsync(int id)
     {
         return await _context.UserUnits
             .Include(uu => uu.User)
@@ -22,7 +22,7 @@ public class UserUnitRepository : IUserUnitRepository
             .FirstOrDefaultAsync(uu => uu.Id == id);
     }
 
-    public async Task<UserUnit?> GetByUserAndUnitAsync(Guid userId, Guid unitId)
+    public async Task<UserUnit?> GetByUserAndUnitAsync(int userId, int unitId)
     {
         return await _context.UserUnits
             .Include(uu => uu.User)
@@ -30,7 +30,7 @@ public class UserUnitRepository : IUserUnitRepository
             .FirstOrDefaultAsync(uu => uu.UserId == userId && uu.UnitId == unitId);
     }
 
-    public async Task<IEnumerable<UserUnit>> GetByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<UserUnit>> GetByUserIdAsync(int userId)
     {
         return await _context.UserUnits
             .Include(uu => uu.User)
@@ -39,7 +39,7 @@ public class UserUnitRepository : IUserUnitRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<UserUnit>> GetActiveByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<UserUnit>> GetActiveByUserIdAsync(int userId)
     {
         return await _context.UserUnits
             .Include(uu => uu.User)
@@ -48,7 +48,7 @@ public class UserUnitRepository : IUserUnitRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<UserUnit>> GetByUnitIdAsync(Guid unitId)
+    public async Task<IEnumerable<UserUnit>> GetByUnitIdAsync(int unitId)
     {
         return await _context.UserUnits
             .Include(uu => uu.User)
@@ -57,7 +57,7 @@ public class UserUnitRepository : IUserUnitRepository
             .ToListAsync();
     }
 
-    public async Task<(List<UserUnit> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? userId = null, Guid? unitId = null, bool? isActive = null)
+    public async Task<(List<UserUnit> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, int? userId = null, int? unitId = null, bool? isActive = null)
     {
         var query = _context.UserUnits
             .Include(uu => uu.User)
@@ -95,7 +95,7 @@ public class UserUnitRepository : IUserUnitRepository
         return userUnit;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var userUnit = await _context.UserUnits.FindAsync(id);
         if (userUnit == null) return false;
@@ -105,7 +105,7 @@ public class UserUnitRepository : IUserUnitRepository
         return true;
     }
 
-    public async Task<bool> DeleteByUserAndUnitAsync(Guid userId, Guid unitId)
+    public async Task<bool> DeleteByUserAndUnitAsync(int userId, int unitId)
     {
         var userUnit = await GetByUserAndUnitAsync(userId, unitId);
         if (userUnit == null) return false;
@@ -115,7 +115,7 @@ public class UserUnitRepository : IUserUnitRepository
         return true;
     }
 
-    public async Task<bool> ExistsByUserAndUnitAsync(Guid userId, Guid unitId)
+    public async Task<bool> ExistsByUserAndUnitAsync(int userId, int unitId)
     {
         return await _context.UserUnits.AnyAsync(uu => uu.UserId == userId && uu.UnitId == unitId);
     }

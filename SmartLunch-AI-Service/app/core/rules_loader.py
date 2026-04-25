@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import json
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Any
 
 
@@ -11,6 +11,7 @@ class RulesProfile:
     scoring: dict[str, Any]
     allergy_filter: dict[str, Any]
     incompatible_pairs: dict[str, Any]
+    constraints: dict[str, Any] = field(default_factory=dict)
 
 
 def _default_profile() -> RulesProfile:
@@ -33,6 +34,7 @@ def _default_profile() -> RulesProfile:
         },
         allergy_filter={"enabled": True, "substring_match": True},
         incompatible_pairs={"mode": "ingredient_keyword_overlap", "keywords": []},
+        constraints={},
     )
 
 
@@ -60,10 +62,10 @@ class RulesLoader:
                 scoring=profile.get("scoring", {}),
                 allergy_filter=profile.get("allergy_filter", {}),
                 incompatible_pairs=profile.get("incompatible_pairs", {}),
+                constraints=profile.get("constraints", {}),
             )
         except FileNotFoundError:
             return _default_profile()
         except Exception:
             # Never break recommendation flow because of rules parsing.
             return _default_profile()
-

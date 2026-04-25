@@ -4,6 +4,6 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IDeliveryRepository
 {
-    Task<Delivery?> GetByIdAsync(Guid id);
+    Task<Delivery?> GetByIdAsync(int id);
     Task<(List<Delivery> Deliveries, int TotalCount)> GetDeliveriesAsync(int page, int pageSize, string? searchTerm = null);
 }

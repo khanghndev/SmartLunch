@@ -14,7 +14,7 @@ public class InternalStockIssueRepository : IInternalStockIssueRepository
         _context = context;
     }
 
-    public async Task<InternalStockIssue?> GetByIdWithLinesAsync(Guid id, CancellationToken cancellationToken = default)
+    public async Task<InternalStockIssue?> GetByIdWithLinesAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.InternalStockIssues
             .AsNoTracking()
@@ -54,7 +54,7 @@ public class InternalStockIssueRepository : IInternalStockIssueRepository
 
     public async Task<InternalStockIssue> CreateAndDeductStockAsync(
         InternalStockIssue issue,
-        IReadOnlyList<(Guid IngredientId, decimal Quantity)> lines,
+        IReadOnlyList<(int IngredientId, decimal Quantity)> lines,
         CancellationToken cancellationToken = default)
     {
         if (lines.Count == 0)
@@ -80,7 +80,7 @@ public class InternalStockIssueRepository : IInternalStockIssueRepository
             issue.Lines = lines
                 .Select(l => new InternalStockIssueLine
                 {
-                    Id = Guid.NewGuid(),
+
                     IssueId = issue.Id,
                     IngredientId = l.IngredientId,
                     Quantity = l.Quantity

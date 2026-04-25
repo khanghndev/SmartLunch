@@ -14,7 +14,7 @@ public class UserRoleRepository : IUserRoleRepository
         _context = context;
     }
 
-    public async Task<UserRole?> GetByIdAsync(Guid id)
+    public async Task<UserRole?> GetByIdAsync(int id)
     {
         return await _context.UserRoles
             .Include(ur => ur.User)
@@ -22,7 +22,7 @@ public class UserRoleRepository : IUserRoleRepository
             .FirstOrDefaultAsync(ur => ur.Id == id);
     }
 
-    public async Task<UserRole?> GetByUserAndRoleAsync(Guid userId, Guid roleId)
+    public async Task<UserRole?> GetByUserAndRoleAsync(int userId, int roleId)
     {
         return await _context.UserRoles
             .Include(ur => ur.User)
@@ -30,7 +30,7 @@ public class UserRoleRepository : IUserRoleRepository
             .FirstOrDefaultAsync(ur => ur.UserId == userId && ur.RoleId == roleId);
     }
 
-    public async Task<IEnumerable<UserRole>> GetByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<UserRole>> GetByUserIdAsync(int userId)
     {
         return await _context.UserRoles
             .Include(ur => ur.User)
@@ -39,7 +39,7 @@ public class UserRoleRepository : IUserRoleRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<UserRole>> GetActiveByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<UserRole>> GetActiveByUserIdAsync(int userId)
     {
         return await _context.UserRoles
             .Include(ur => ur.User)
@@ -48,7 +48,7 @@ public class UserRoleRepository : IUserRoleRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<UserRole>> GetByRoleIdAsync(Guid roleId)
+    public async Task<IEnumerable<UserRole>> GetByRoleIdAsync(int roleId)
     {
         return await _context.UserRoles
             .Include(ur => ur.User)
@@ -71,7 +71,7 @@ public class UserRoleRepository : IUserRoleRepository
         return userRole;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var userRole = await _context.UserRoles.FindAsync(id);
         if (userRole == null) return false;
@@ -81,7 +81,7 @@ public class UserRoleRepository : IUserRoleRepository
         return true;
     }
 
-    public async Task<bool> DeleteByUserAndRoleAsync(Guid userId, Guid roleId)
+    public async Task<bool> DeleteByUserAndRoleAsync(int userId, int roleId)
     {
         var userRole = await GetByUserAndRoleAsync(userId, roleId);
         if (userRole == null) return false;
@@ -91,12 +91,12 @@ public class UserRoleRepository : IUserRoleRepository
         return true;
     }
 
-    public async Task<bool> ExistsByUserAndRoleAsync(Guid userId, Guid roleId)
+    public async Task<bool> ExistsByUserAndRoleAsync(int userId, int roleId)
     {
         return await _context.UserRoles.AnyAsync(ur => ur.UserId == userId && ur.RoleId == roleId);
     }
 
-    public async Task<(List<UserRole> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? userId = null, Guid? roleId = null, bool? isActive = null)
+    public async Task<(List<UserRole> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, int? userId = null, int? roleId = null, bool? isActive = null)
     {
         var query = _context.UserRoles
             .Include(ur => ur.User)

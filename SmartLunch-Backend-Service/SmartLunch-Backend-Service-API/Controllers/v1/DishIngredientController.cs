@@ -52,7 +52,7 @@ public class DishIngredientController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:dishes.read")]
-    public async Task<ActionResult<BaseApiResponse<GetDishIngredientResponse>>> GetDishIngredient(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetDishIngredientResponse>>> GetDishIngredient(int id)
     {
         try
         {
@@ -96,7 +96,7 @@ public class DishIngredientController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Policy = "permission:dishes.update")]
-    public async Task<ActionResult<BaseApiResponse<GetDishIngredientResponse>>> Update(Guid id, [FromBody] UpdateDishIngredientRequest request)
+    public async Task<ActionResult<BaseApiResponse<GetDishIngredientResponse>>> Update(int id, [FromBody] UpdateDishIngredientRequest request)
     {
         if (id != request.Id)
             return BadRequest(BaseApiResponse<GetDishIngredientResponse>.ErrorResult("Id mismatch", new[] { "Id in URL and body must match" }));
@@ -120,7 +120,7 @@ public class DishIngredientController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Policy = "permission:dishes.update")]
-    public async Task<ActionResult<BaseApiResponse<bool>>> Delete(Guid id)
+    public async Task<ActionResult<BaseApiResponse<bool>>> Delete(int id)
     {
         try
         {

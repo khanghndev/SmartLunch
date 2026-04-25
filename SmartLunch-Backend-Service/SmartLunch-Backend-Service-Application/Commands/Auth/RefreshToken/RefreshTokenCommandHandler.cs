@@ -85,7 +85,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         // Store new refresh token
         var newUserToken = new UserToken
         {
-            Id = Guid.NewGuid(),
+
             UserId = user.Id,
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,

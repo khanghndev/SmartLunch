@@ -80,7 +80,7 @@ public class ConfirmMediaUploadCommandHandler : IRequestHandler<ConfirmMediaUplo
 
         var entity = new MediaFile
         {
-            Id = Guid.NewGuid(),
+
             OwnerUserId = command.UserId,
             Bucket = metadata.Bucket,
             ObjectName = metadata.ObjectName,

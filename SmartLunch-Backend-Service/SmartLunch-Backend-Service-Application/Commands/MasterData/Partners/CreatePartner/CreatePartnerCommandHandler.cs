@@ -26,7 +26,7 @@ public class CreatePartnerCommandHandler : IRequestHandler<CreatePartnerCommand,
 
         var entity = new Partner
         {
-            Id = Guid.NewGuid(),
+
             LegalName = req.LegalName.Trim(),
             BusinessRegistrationNumber = string.IsNullOrWhiteSpace(req.BusinessRegistrationNumber)
                 ? null

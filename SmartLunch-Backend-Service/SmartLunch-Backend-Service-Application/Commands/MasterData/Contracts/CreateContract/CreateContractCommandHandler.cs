@@ -40,7 +40,7 @@ public class CreateContractCommandHandler : IRequestHandler<CreateContractComman
 
         var entity = new Contract
         {
-            Id = Guid.NewGuid(),
+
             PartnerId = req.PartnerId,
             ContractNumber = string.IsNullOrWhiteSpace(req.ContractNumber) ? null : req.ContractNumber.Trim(),
             Description = string.IsNullOrWhiteSpace(req.Description) ? null : req.Description.Trim(),

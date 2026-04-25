@@ -14,7 +14,7 @@ public class IngredientSourceRepository : IIngredientSourceRepository
         _context = context;
     }
 
-    public async Task<IngredientSource?> GetByIdAsync(Guid id)
+    public async Task<IngredientSource?> GetByIdAsync(int id)
     {
         return await _context.IngredientSources
             .Include(e => e.Ingredient)
@@ -26,8 +26,8 @@ public class IngredientSourceRepository : IIngredientSourceRepository
         int page,
         int pageSize,
         string? searchTerm = null,
-        Guid? partnerId = null,
-        Guid? ingredientId = null)
+        int? partnerId = null,
+        int? ingredientId = null)
     {
         var query = _context.IngredientSources
             .Include(e => e.Ingredient)
@@ -82,7 +82,7 @@ public class IngredientSourceRepository : IIngredientSourceRepository
     }
 
     public async Task<IReadOnlyList<IngredientSource>> GetRecentByIngredientIdAsync(
-        Guid ingredientId,
+        int ingredientId,
         int take,
         CancellationToken cancellationToken = default)
     {

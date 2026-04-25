@@ -14,7 +14,7 @@ public class ContractRepository : IContractRepository
         _context = context;
     }
 
-    public async Task<Contract?> GetByIdAsync(Guid id)
+    public async Task<Contract?> GetByIdAsync(int id)
     {
         return await _context.Contracts
             .Include(c => c.Partner)
@@ -25,7 +25,7 @@ public class ContractRepository : IContractRepository
         int page,
         int pageSize,
         string? searchTerm = null,
-        Guid? partnerId = null)
+        int? partnerId = null)
     {
         var query = _context.Contracts
             .Include(c => c.Partner)
@@ -55,7 +55,7 @@ public class ContractRepository : IContractRepository
         return (contracts, totalCount);
     }
 
-    public async Task<bool> ExistsContractNumberForPartnerAsync(Guid partnerId, string contractNumber, Guid? excludeContractId = null)
+    public async Task<bool> ExistsContractNumberForPartnerAsync(int partnerId, string contractNumber, int? excludeContractId = null)
     {
         var n = contractNumber.Trim();
         var q = _context.Contracts.Where(c =>
@@ -67,7 +67,7 @@ public class ContractRepository : IContractRepository
         return await q.AnyAsync();
     }
 
-    public async Task<int> CountPartnerPaymentsAsync(Guid contractId)
+    public async Task<int> CountPartnerPaymentsAsync(int contractId)
     {
         return await _context.PartnerPayments.CountAsync(pp => pp.ContractId == contractId);
     }

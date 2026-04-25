@@ -8,9 +8,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Roles.GetRole;
 /// </summary>
 public class GetRoleQuery : IRequest<GetRoleResponse>
 {
-    public Guid RoleId { get; set; }
+    public int RoleId { get; set; }
 
-    public GetRoleQuery(Guid roleId)
+    public GetRoleQuery(int roleId)
     {
         RoleId = roleId;
     }

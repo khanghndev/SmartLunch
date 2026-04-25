@@ -2,5 +2,5 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Permiss
 
 public class GetPermissionRequest
 {
-    public Guid PermissionId { get; set; }
+    public int PermissionId { get; set; }
 }

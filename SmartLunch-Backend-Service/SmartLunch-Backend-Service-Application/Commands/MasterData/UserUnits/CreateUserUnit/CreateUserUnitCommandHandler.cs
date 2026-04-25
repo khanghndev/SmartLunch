@@ -34,7 +34,7 @@ public class CreateUserUnitCommandHandler : IRequestHandler<CreateUserUnitComman
 
         var entity = new UserUnit
         {
-            Id = Guid.NewGuid(),
+
             UserId = req.UserId,
             UnitId = req.UnitId,
             JoinedAt = DateTime.UtcNow,

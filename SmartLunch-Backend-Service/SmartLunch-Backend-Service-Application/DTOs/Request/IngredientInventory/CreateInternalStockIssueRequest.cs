@@ -9,6 +9,6 @@ public class CreateInternalStockIssueRequest
 
 public class CreateInternalStockIssueLineRequest
 {
-    public Guid IngredientId { get; set; }
+    public int IngredientId { get; set; }
     public decimal Quantity { get; set; }
 }

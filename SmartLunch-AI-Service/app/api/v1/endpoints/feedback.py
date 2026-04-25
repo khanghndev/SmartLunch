@@ -11,4 +11,3 @@ sentiment_service = SentimentService()
 def feedback_sentiment(req: SentimentRequest):
     result = sentiment_service.analyze(req.text, rating=req.rating)
     return SentimentResponse(**result)
-

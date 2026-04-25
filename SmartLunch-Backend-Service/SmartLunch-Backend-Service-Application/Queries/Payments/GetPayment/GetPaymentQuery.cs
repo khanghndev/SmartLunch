@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Payments.GetPayment;
 
 public class GetPaymentQuery : IRequest<GetPaymentResponse>
 {
-    public Guid PaymentId { get; set; }
+    public int PaymentId { get; set; }
 
-    public GetPaymentQuery(Guid paymentId)
+    public GetPaymentQuery(int paymentId)
     {
         PaymentId = paymentId;
     }

@@ -59,7 +59,7 @@ public class PartnerPaymentController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:partnerpayments.read")]
-    public async Task<ActionResult<BaseApiResponse<GetPartnerPaymentResponse>>> GetPartnerPayment(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetPartnerPaymentResponse>>> GetPartnerPayment(int id)
     {
         try
         {

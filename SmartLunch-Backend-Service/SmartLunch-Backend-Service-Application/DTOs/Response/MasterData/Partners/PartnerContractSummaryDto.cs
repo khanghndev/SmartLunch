@@ -3,7 +3,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Partne
 /// <summary>Hợp đồng gắn đối tác (thời gian cung cấp theo khung Start/End + SupplySchedule).</summary>
 public class PartnerContractSummaryDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string? ContractNumber { get; set; }
     public string? Description { get; set; }
     public string? SupplySchedule { get; set; }

@@ -4,11 +4,11 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IPartnerRepository
 {
-    Task<Partner?> GetByIdAsync(Guid id);
-    Task<Partner?> GetByIdWithContractsAsync(Guid id);
+    Task<Partner?> GetByIdAsync(int id);
+    Task<Partner?> GetByIdWithContractsAsync(int id);
     Task<(List<Partner> Partners, int TotalCount)> GetPartnersAsync(int page, int pageSize, string? searchTerm = null, bool? isActive = null);
-    Task<bool> ExistsByTaxIdAsync(string taxId, Guid? excludePartnerId = null);
+    Task<bool> ExistsByTaxIdAsync(string taxId, int? excludePartnerId = null);
     Task<Partner> CreateAsync(Partner partner);
     Task<Partner> UpdateAsync(Partner partner);
-    Task<Dictionary<Guid, string>> GetLegalNamesByIdsAsync(IEnumerable<Guid> partnerIds, CancellationToken cancellationToken = default);
+    Task<Dictionary<int, string>> GetLegalNamesByIdsAsync(IEnumerable<int> partnerIds, CancellationToken cancellationToken = default);
 }

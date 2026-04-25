@@ -17,7 +17,7 @@ public class UpdateCartLineCommandHandler : IRequestHandler<UpdateCartLineComman
 
     public async Task<GetShoppingCartResponse> Handle(UpdateCartLineCommand command, CancellationToken cancellationToken)
     {
-        if (command.LineId == Guid.Empty)
+        if (command.LineId <= 0)
             throw new ArgumentException("LineId is required.");
         if (command.Request.Quantity < MinimumOrderQuantity)
             throw new ArgumentException($"Quantity must be at least {MinimumOrderQuantity}.");
