@@ -1,7 +1,7 @@
 CREATE TABLE units (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'Mã t? sinh (trigger)',
-    Name VARCHAR(255) NOT NULL COMMENT 'TÃªn Ä‘Æ¡n vá»‹',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
+    Name VARCHAR(255) NOT NULL COMMENT 'Tên đơn vị',
     Address VARCHAR(255) NULL,
     Phone VARCHAR(50) NULL,
     ContactPerson VARCHAR(255) NULL,
