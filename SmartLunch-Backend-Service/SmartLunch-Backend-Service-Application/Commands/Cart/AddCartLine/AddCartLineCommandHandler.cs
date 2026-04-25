@@ -21,7 +21,7 @@ public class AddCartLineCommandHandler : IRequestHandler<AddCartLineCommand, Get
     public async Task<GetShoppingCartResponse> Handle(AddCartLineCommand command, CancellationToken cancellationToken)
     {
         var req = command.Request;
-        if (req.DishId == Guid.Empty)
+        if (req.DishId <= 0)
             throw new ArgumentException("DishId is required.");
         if (req.Quantity < MinimumOrderQuantity)
             throw new ArgumentException($"Quantity must be at least {MinimumOrderQuantity}.");
@@ -34,7 +34,7 @@ public class AddCartLineCommandHandler : IRequestHandler<AddCartLineCommand, Get
 
         var cart = await LoadOrCreateAsync(command.UserId, cancellationToken);
 
-        if (req.UnitId.HasValue && req.UnitId.Value != Guid.Empty)
+        if (req.UnitId.HasValue && req.UnitId.Value > 0)
         {
             if (cart.UnitId.HasValue && cart.UnitId.Value != req.UnitId.Value)
                 throw new InvalidOperationException("Cart is bound to a different unit. Clear the cart first.");
@@ -52,7 +52,7 @@ public class AddCartLineCommandHandler : IRequestHandler<AddCartLineCommand, Get
         {
             cart.Items.Add(new ShoppingCartLineDto
             {
-                Id = Guid.NewGuid(),
+                Id = cart.Items.Any() ? cart.Items.Max(i => i.Id) + 1 : 1,
                 DishId = dish.Id,
                 DishName = dish.Name,
                 UnitPrice = dish.Price,
@@ -67,7 +67,7 @@ public class AddCartLineCommandHandler : IRequestHandler<AddCartLineCommand, Get
         return new GetShoppingCartResponse { Cart = cart };
     }
 
-    private async Task<ShoppingCartDto> LoadOrCreateAsync(Guid userId, CancellationToken cancellationToken)
+    private async Task<ShoppingCartDto> LoadOrCreateAsync(int userId, CancellationToken cancellationToken)
     {
         var cart = await _cartCache.GetAsync(userId, cancellationToken);
         if (cart == null || cart.UserId != userId)

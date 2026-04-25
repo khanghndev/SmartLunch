@@ -90,8 +90,8 @@ public class CartController : ControllerBase
         }
     }
 
-    [HttpPut("items/{lineId:guid}")]
-    public async Task<ActionResult<BaseApiResponse<GetShoppingCartResponse>>> UpdateItem(Guid lineId, [FromBody] UpdateCartLineRequest request)
+    [HttpPut("items/{lineId:int}")]
+    public async Task<ActionResult<BaseApiResponse<GetShoppingCartResponse>>> UpdateItem(int lineId, [FromBody] UpdateCartLineRequest request)
     {
         try
         {
@@ -120,8 +120,8 @@ public class CartController : ControllerBase
         }
     }
 
-    [HttpDelete("items/{lineId:guid}")]
-    public async Task<ActionResult<BaseApiResponse<GetShoppingCartResponse>>> RemoveItem(Guid lineId)
+    [HttpDelete("items/{lineId:int}")]
+    public async Task<ActionResult<BaseApiResponse<GetShoppingCartResponse>>> RemoveItem(int lineId)
     {
         try
         {
@@ -206,10 +206,10 @@ public class CartController : ControllerBase
         }
     }
 
-    private Guid RequireUserId()
+    private int RequireUserId()
     {
         var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(raw) || !Guid.TryParse(raw, out var userId))
+        if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
             throw new UnauthorizedAccessException("Invalid user context.");
         return userId;
     }

@@ -4,4 +4,4 @@ using SmartLunch.Backend.Service.Application.DTOs.Response.Cart;
 
 namespace SmartLunch.Backend.Service.Application.Commands.Cart.AddCartLine;
 
-public record AddCartLineCommand(Guid UserId, AddCartLineRequest Request) : IRequest<GetShoppingCartResponse>;
+public record AddCartLineCommand(int UserId, AddCartLineRequest Request) : IRequest<GetShoppingCartResponse>;
