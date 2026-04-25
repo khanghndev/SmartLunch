@@ -1,7 +1,7 @@
 CREATE TABLE units (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
-    Name VARCHAR(255) NOT NULL COMMENT 'Tên đơn vị',
+    Code VARCHAR(20) NULL COMMENT 'Mã t? sinh (trigger)',
+    Name VARCHAR(255) NOT NULL COMMENT 'TÃªn Ä‘Æ¡n vá»‹',
     Address VARCHAR(255) NULL,
     Phone VARCHAR(50) NULL,
     ContactPerson VARCHAR(255) NULL,
@@ -20,5 +20,5 @@ CREATE TABLE units (
     INDEX IX_units_active (IsActive),
     CONSTRAINT FK_units_created_by FOREIGN KEY (CreatedBy) REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT FK_units_updated_by FOREIGN KEY (UpdatedBy) REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
-) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'Đơn vị đặt hàng';
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'ÄÆ¡n vá»‹ Ä‘áº·t hÃ ng';
 
