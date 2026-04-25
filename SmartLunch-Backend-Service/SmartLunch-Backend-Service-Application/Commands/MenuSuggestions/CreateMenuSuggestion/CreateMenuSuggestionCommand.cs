@@ -7,9 +7,9 @@ namespace SmartLunch.Backend.Service.Application.Commands.MenuSuggestions.Create
 public class CreateMenuSuggestionCommand : IRequest<CreateMenuSuggestionResponse>
 {
     public CreateMenuSuggestionRequest Request { get; }
-    public Guid? CreatedByUserId { get; }
+    public int? CreatedByUserId { get; }
 
-    public CreateMenuSuggestionCommand(CreateMenuSuggestionRequest request, Guid? createdByUserId)
+    public CreateMenuSuggestionCommand(CreateMenuSuggestionRequest request, int? createdByUserId)
     {
         Request = request;
         CreatedByUserId = createdByUserId;
