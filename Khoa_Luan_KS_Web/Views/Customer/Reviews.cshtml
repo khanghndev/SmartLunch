@@ -1,179 +1,170 @@
 @{
-    ViewData["Title"] = "Đánh giá";
+    ViewData["Title"] = "Đánh giá - HuitMeal";
     Layout = "_LayoutCustomer";
+
+    var reviews = new[] {
+        new { Name = "Nguyễn Văn An", Role = "Giám đốc Hành chính NS", Company = "Samsung Vina", Stars = 5, Initials = "A",
+              Quote = "Suất ăn luôn đảm bảo độ tươi mới và nóng hổi. Quy trình kiểm duyệt an toàn vệ sinh thực phẩm đạt chuẩn ISO giúp chúng tôi hoàn toàn yên tâm khi giao phó 2.000 bữa ăn mỗi ca cho toàn thể cán bộ chuyên gia." },
+        new { Name = "Trần Thị Bích", Role = "Trưởng phòng Nhân sự", Company = "Tập đoàn Canon", Stars = 5, Initials = "B",
+              Quote = "Thực đơn đa dạng thay đổi suốt cả tháng, nhân viên phục vụ chuyên nghiệp và niềm nở. Từ khi sử dụng dịch vụ HuitMeal, tỷ lệ nhân viên từ chối ăn tại nhà máy giảm xuống 0%." },
+        new { Name = "Lê Hoàng", Role = "Giám đốc Điều hành", Company = "Thiết bị KCN Sóng Thần", Stars = 5, Initials = "H",
+              Quote = "Đánh giá rất cao khả năng cung ứng lượng lớn thực phẩm một lúc mà vẫn đảm bảo tính đồng đều về định lượng và hương vị. Lắng nghe phản hồi nhanh chóng, sửa đổi ngay lập tức. Thật sự xuất sắc!" },
+        new { Name = "Phan Mai Lan", Role = "Hiệu trưởng", Company = "Trường Liên Cấp Alpha", Stars = 5, Initials = "L",
+              Quote = "Học sinh rất thích các bữa trưa vì đồ ăn mang đậm tính truyền thống nhưng có biến tấu hiện đại. Phụ huynh cũng khen hết lời vì mô hình kiểm tra thực phẩm bằng công nghệ quét mã QR." },
+        new { Name = "Đặng Minh Tuấn", Role = "Quản lý Vận hành", Company = "Khu CN Việt Nam - Singapore", Stars = 5, Initials = "T",
+              Quote = "Sau 3 năm hợp tác, chúng tôi không có lý do gì để thay đổi nhà cung cấp. HuitMeal luôn đáp ứng đúng thời hạn, chất lượng ổn định và đội ngũ hỗ trợ rất chuyên nghiệp." },
+        new { Name = "Võ Thị Thu", Role = "Trưởng ban Đời sống", Company = "Tổng công ty Dệt May Gia Định", Stars = 5, Initials = "T",
+              Quote = "Chúng tôi ấn tượng với sự linh hoạt trong việc điều chỉnh thực đơn theo yêu cầu đặc thù của công nhân. HuitMeal thực sự hiểu nhu cầu của người lao động trong môi trường công nghiệp." },
+    };
 }
 
-<div class="bg-gray-50 font-sans">
-    
-    <!-- Hero Section -->
-    <div class="relative bg-[#1f2a37] text-white py-24 overflow-hidden">
-        <div class="absolute inset-0 opacity-20">
-            <svg class="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
-                <path d="M0,0 L100,0 L100,100 L0,100 Z" fill="url(#grid-pattern)" />
-            </svg>
-            <defs>
-                <pattern id="grid-pattern" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <path d="M 10 0 L 0 0 0 10" fill="none" stroke="white" stroke-width="0.5"/>
-                </pattern>
-            </defs>
-        </div>
-        <div class="relative z-10 max-w-7xl mx-auto px-6 text-center">
-            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-6">
-                Hơn <span class="text-orange-500">500+ Doanh nghiệp</span> đã tin chọn<br/>
-                Hệ sinh thái suất ăn HuitMeal
-            </h1>
-            <p class="text-lg md:text-xl text-gray-300 max-w-2xl mx-auto">
-                Bữa ăn chất lượng không chỉ nạp năng lượng mà còn là phúc lợi giữ chân nhân tài. Lắng nghe những chia sẻ chân thực nhất từ các đối tác.
-            </p>
-        </div>
-    </div>
+<div class="w-full bg-white overflow-hidden">
 
-    <!-- Quick Stats -->
-    <div class="max-w-7xl mx-auto px-6 -mt-10 relative z-20">
-        <div class="bg-white rounded-2xl shadow-xl flex flex-wrap justify-between items-center p-8 border border-gray-100">
-            <div class="w-full md:w-1/3 text-center mb-6 md:mb-0 border-r-0 md:border-r border-gray-200">
-                <div class="text-4xl font-black text-green-600 mb-2">98%</div>
-                <div class="text-gray-600 font-medium">Đối tác đánh giá Hài lòng</div>
-            </div>
-            <div class="w-full md:w-1/3 text-center mb-6 md:mb-0 border-r-0 md:border-r border-gray-200">
-                <div class="text-4xl font-black text-orange-500 mb-2">5,000+</div>
-                <div class="text-gray-600 font-medium">Bữa ăn được phục vụ mỗi ngày</div>
-            </div>
-            <div class="w-full md:w-1/3 text-center">
-                <div class="text-4xl font-black text-blue-600 mb-2">0</div>
-                <div class="text-gray-600 font-medium">Sự cố ngộ độc thực phẩm (10 năm)</div>
+    <!-- ===== HERO ===== -->
+    <section class="relative py-32 overflow-hidden bg-gray-900">
+        <!-- Warm radial glow -->
+        <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[500px] bg-orange-500/10 blur-[100px] rounded-full pointer-events-none"></div>
+        <!-- Subtle grid texture -->
+        <div class="absolute inset-0 opacity-[0.04]"
+             style="background-image: radial-gradient(circle, #ffffff 1px, transparent 1px); background-size: 32px 32px;"></div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-6 text-center"
+             x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 80)">
+            <div x-show="loaded"
+                 x-transition:enter="transition duration-700 ease-out"
+                 x-transition:enter-start="opacity-0 translate-y-6"
+                 x-transition:enter-end="opacity-100 translate-y-0">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/15 border border-orange-400/25 text-orange-400 text-[10px] font-bold uppercase tracking-[0.25em] mb-6">
+                    <i data-lucide="message-square" class="w-3 h-3"></i>
+                    Tiếng nói từ đối tác
+                </span>
+                <h1 class="text-4xl md:text-7xl font-black text-white leading-tight tracking-tight mb-6">
+                    Hơn <span class="text-orange-400">500+ doanh nghiệp</span> <br class="hidden md:block" />
+                    đã tin chọn HuitMeal
+                </h1>
+                <p class="text-gray-400 text-lg font-medium max-w-2xl mx-auto leading-relaxed">
+                    Bữa ăn chất lượng là phúc lợi giúp giữ chân nhân tài. Lắng nghe những chia sẻ chân thực từ các đối tác chiến lược.
+                </p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- Testimonials Grid -->
-    <div class="max-w-7xl mx-auto px-6 py-20">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Câu Chuyện Thành Công</h2>
-            <div class="w-24 h-1 bg-orange-500 mx-auto rounded-full"></div>
+    <!-- ===== TRUST STATS ===== -->
+    <section class="bg-white border-b border-gray-100">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-3 divide-y md:divide-y-0 md:divide-x divide-gray-100">
+                <div class="py-10 px-8 text-center">
+                    <p class="text-5xl font-black text-orange-600 mb-2">98%</p>
+                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-widest">Đối tác hài lòng</p>
+                </div>
+                <div class="py-10 px-8 text-center">
+                    <p class="text-5xl font-black text-gray-900 mb-2">5,000+</p>
+                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-widest">Suất ăn mỗi ngày</p>
+                </div>
+                <div class="py-10 px-8 text-center">
+                    <p class="text-5xl font-black text-green-600 mb-2">0</p>
+                    <p class="text-sm font-semibold text-gray-500 uppercase tracking-widest">Sự cố vệ sinh (10 năm)</p>
+                </div>
+            </div>
         </div>
+    </section>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            
-            <!-- Card 1 -->
-            <div class="bg-white p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 hover:-translate-y-2 transition-all duration-300 relative group">
-                <i data-lucide="quote" class="absolute top-6 right-6 w-10 h-10 text-orange-100 group-hover:text-orange-200 transition"></i>
-                <div class="flex gap-1 mb-6">
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                </div>
-                <p class="text-gray-700 leading-relaxed mb-8 relative z-10 italic">
-                    "Suất ăn của HUITMEAL luôn đảm bảo độ tươi mới và nóng hổi. Đặc biệt, quy trình kiểm duyệt an toàn vệ sinh thực phẩm 100% đạt chuẩn ISO giúp chúng tôi hoàn toàn yên tâm khi giao phó 2.000 bữa ăn mỗi ca cho toàn thể cán bộ chuyên gia."
-                </p>
-                <div class="flex items-center gap-4 mt-auto">
-                    <img src="https://ui-avatars.com/api/?name=Nguyen+Van+A&background=e0f2fe&color=0369a1&bold=true" alt="Avatar" class="w-12 h-12 rounded-full ring-2 ring-gray-100">
-                    <div>
-                        <h4 class="font-bold text-gray-900">Ông Nguyễn Văn An</h4>
-                        <p class="text-sm text-gray-500">Giám đốc Hành chính NS - <span class="font-semibold">Công ty TNHH Samsung Vina</span></p>
-                    </div>
-                </div>
+    <!-- ===== TESTIMONIALS GRID ===== -->
+    <section class="py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-3">Câu chuyện thành công</p>
+                <h2 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+                    Họ nói gì về <span class="text-orange-600">HuitMeal?</span>
+                </h2>
             </div>
 
-            <!-- Card 2 -->
-            <div class="bg-white p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 hover:-translate-y-2 transition-all duration-300 relative group">
-                <i data-lucide="quote" class="absolute top-6 right-6 w-10 h-10 text-orange-100 group-hover:text-orange-200 transition"></i>
-                <div class="flex gap-1 mb-6">
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                </div>
-                <p class="text-gray-700 leading-relaxed mb-8 relative z-10 italic">
-                    "Thực đơn thay đổi đa dạng suốt cả tháng, các bạn nhân viên chia đồ ăn của HuitMeal cực kỳ chuyên nghiệp và niềm nở. Từ khi chuyển sang sử dụng dịch vụ của HuitMeal, tỷ lệ nhân viên từ chối ăn tại nhà máy giảm xuống còn 0%."
-                </p>
-                <div class="flex items-center gap-4 mt-auto">
-                    <img src="https://ui-avatars.com/api/?name=Tran+Bich&background=fce7f3&color=be185d&bold=true" alt="Avatar" class="w-12 h-12 rounded-full ring-2 ring-gray-100">
-                    <div>
-                        <h4 class="font-bold text-gray-900">Bà Trần Thị Bích</h4>
-                        <p class="text-sm text-gray-500">Trưởng phòng Nhân sự - <span class="font-semibold">Tập đoàn Canon</span></p>
-                    </div>
-                </div>
-            </div>
+            <div class="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+                @foreach (var rv in reviews)
+                {
+                    <div class="group break-inside-avoid bg-white rounded-[24px] p-8 border border-gray-100 hover:border-orange-200 hover:shadow-xl transition-all duration-400">
+                        <!-- Stars -->
+                        <div class="flex gap-1 mb-5">
+                            @for (int s = 0; s < rv.Stars; s++)
+                            {
+                                <i data-lucide="star" class="w-4 h-4 fill-amber-400 text-amber-400"></i>
+                            }
+                        </div>
 
-            <!-- Card 3 -->
-            <div class="bg-white p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 hover:-translate-y-2 transition-all duration-300 relative group">
-                <i data-lucide="quote" class="absolute top-6 right-6 w-10 h-10 text-orange-100 group-hover:text-orange-200 transition"></i>
-                <div class="flex gap-1 mb-6">
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 text-yellow-400"></i> <!-- 4.5 sao demo -->
-                </div>
-                <p class="text-gray-700 leading-relaxed mb-8 relative z-10 italic">
-                    "Chúng tôi đánh giá rất cao khả năng cung ứng lượng lớn thực phẩm một lúc của bếp ăn trung tâm HuitMeal mà vẫn đảm bảo tính đồng đều về cả định lượng và hương vị. Lắng nghe phản hồi nhanh chóng và sửa đổi ngay lập tức! Thật sự xuất sắc."
-                </p>
-                <div class="flex items-center gap-4 mt-auto">
-                    <img src="https://ui-avatars.com/api/?name=Le+Hoang&background=dcfce7&color=15803d&bold=true" alt="Avatar" class="w-12 h-12 rounded-full ring-2 ring-gray-100">
-                    <div>
-                        <h4 class="font-bold text-gray-900">Ông Lê Hoàng</h4>
-                        <p class="text-sm text-gray-500">Giám đốc Điều hành - <span class="font-semibold">Cty Thiết bị KCN Sóng Thần</span></p>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Card 4 -->
-            <div class="bg-white p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 hover:-translate-y-2 transition-all duration-300 relative group">
-                <i data-lucide="quote" class="absolute top-6 right-6 w-10 h-10 text-orange-100 group-hover:text-orange-200 transition"></i>
-                <div class="flex gap-1 mb-6">
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                    <i data-lucide="star" class="w-5 h-5 fill-yellow-400 text-yellow-400"></i>
-                </div>
-                <p class="text-gray-700 leading-relaxed mb-8 relative z-10 italic">
-                    "Học sinh cực kỳ thích các bữa trưa do HuitMeal chuẩn bị vì đồ ăn mang đậm tính truyền thống nhưng cũng có biến tấu hiện đại. Phụ huynh cũng khen ngợi hết lời vì mô hình kiểm tra thực phẩm khép kín bằng công nghệ quét mã QR."
-                </p>
-                <div class="flex items-center gap-4 mt-auto">
-                    <img src="https://ui-avatars.com/api/?name=Phan+Lan&background=fef3c7&color=b45309&bold=true" alt="Avatar" class="w-12 h-12 rounded-full ring-2 ring-gray-100">
-                    <div>
-                        <h4 class="font-bold text-gray-900">Cô Phan Mai Lan</h4>
-                        <p class="text-sm text-gray-500">Hiệu trưởng - <span class="font-semibold">Hệ thống Trường Liên Cấp Alpha</span></p>
-                    </div>
-                </div>
-            </div>
+                        <!-- Quote -->
+                        <p class="text-gray-700 leading-relaxed text-[15px] mb-8 font-medium">
+                            "@rv.Quote"
+                        </p>
 
-            <!-- Card 5 -->
-            <div class="bg-white p-8 rounded-2xl shadow-[0_4px_20px_rgba(0,0,0,0.05)] border border-gray-100 hover:-translate-y-2 transition-all duration-300 relative group md:col-span-2 lg:col-span-2 flex flex-col justify-center">
-                <h3 class="text-xl font-bold mb-4 text-gray-900">Cùng đồng hành với +50 Tập đoàn đa quốc gia</h3>
-                <p class="text-gray-600 mb-6">Ngoài các đối tác kể trên, HuitMeal còn vinh dự là nhà cung ứng thực phẩm chiến lược lâu năm của hàng loạt khu chế xuất tập đoàn công nghệ lớn tại Bắc Ninh, Thái Nguyên, Bình Dương và TP. Hồ Chí Minh. Chất lượng - An Toàn - Trách nhiệm luôn là tôn chỉ của chúng tôi.</p>
-                <div class="flex justify-start">
-                    <a href="/Customer/Partners" class="inline-flex items-center gap-2 text-orange-500 font-bold hover:text-orange-600 transition group-hover:gap-3">
-                        Xem tất cả hồ sơ Đối tác
-                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        <!-- Author -->
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 rounded-full bg-orange-100 flex items-center justify-center text-orange-700 font-black text-sm flex-shrink-0">
+                                @rv.Initials
+                            </div>
+                            <div>
+                                <p class="font-bold text-gray-900 text-sm">@rv.Name</p>
+                                <p class="text-xs text-gray-500">@rv.Role — <span class="font-semibold text-gray-600">@rv.Company</span></p>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+                <!-- Partner CTA card -->
+                <div class="break-inside-avoid bg-orange-500 rounded-[24px] p-8 text-white">
+                    <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-6">
+                        <i data-lucide="building-2" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-black mb-3 leading-tight">Đồng hành cùng 50+ Tập đoàn đa quốc gia</h3>
+                    <p class="text-orange-100 text-sm leading-relaxed mb-6 font-medium">HuitMeal là nhà cung ứng chiến lược lâu năm tại các KCX tại Bắc Ninh, Bình Dương và TP. HCM.</p>
+                    <a href="/Customer/Partners" class="inline-flex items-center gap-2 bg-white text-orange-600 font-bold px-5 py-2.5 rounded-full text-sm hover:bg-orange-50 transition-all hover:gap-3">
+                        Xem hồ sơ đối tác
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     </a>
                 </div>
             </div>
-
         </div>
-    </div>
+    </section>
 
-    <!-- Call to action block -->
-    <div class="bg-orange-500 text-white py-16">
+    <!-- ===== FEATURED QUOTE ===== -->
+    <section class="py-20 bg-white">
         <div class="max-w-4xl mx-auto px-6 text-center">
-            <h2 class="text-3xl font-bold mb-6">Nâng tầm phúc lợi công ty bạn ngay hôm nay!</h2>
-            <p class="text-lg opacity-90 mb-8">
-                Tặng miễn phí bản dùng thử thực đơn thiết kế cá nhân hoá dành riêng cho đặc thù lao động của doanh nghiệp bạn trong tuần đầu tiên.
+            <div class="text-orange-400 mb-6 flex justify-center">
+                <i data-lucide="quote" class="w-12 h-12 opacity-30"></i>
+            </div>
+            <blockquote class="text-2xl md:text-4xl font-black text-gray-900 leading-snug tracking-tight mb-8">
+                "Chất lượng — An toàn — Trách nhiệm là tôn chỉ không thể thỏa hiệp của HuitMeal trong từng bữa ăn."
+            </blockquote>
+            <p class="text-gray-500 font-semibold text-sm uppercase tracking-widest">Ban Lãnh đạo HuitMeal</p>
+        </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="py-20 bg-gray-50 border-t border-gray-100">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h2 class="text-3xl md:text-5xl font-black text-gray-900 mb-5 tracking-tight">
+                Sẵn sàng trải nghiệm <span class="text-orange-600">HuitMeal?</span>
+            </h2>
+            <p class="text-gray-500 text-lg font-medium mb-10 max-w-xl mx-auto leading-relaxed">
+                Tặng miễn phí thực đơn cá nhân hóa trong tuần đầu tiên dành riêng cho doanh nghiệp của bạn.
             </p>
-            <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                <a href="/Customer/Contact" class="bg-white text-orange-600 font-bold px-8 py-3 rounded-lg shadow-lg hover:bg-gray-50 transition border-2 border-transparent">
-                    Nhận Báo Giá Tư Vấn
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="/Customer/Contact"
+                   class="px-10 py-4 bg-orange-500 text-white rounded-full font-bold text-sm hover:bg-orange-400 hover:-translate-y-0.5 transition-all shadow-lg shadow-orange-200">
+                    Nhận báo giá tư vấn
                 </a>
-                <a href="#navbar" class="bg-orange-600 border border-orange-400 text-white font-bold px-8 py-3 rounded-lg hover:bg-orange-700 transition">
+                <a href="/Auth/Login"
+                   class="px-10 py-4 bg-white border border-gray-200 text-gray-700 rounded-full font-bold text-sm hover:border-orange-300 hover:text-orange-600 transition-all">
                     Đăng ký làm khách hàng
                 </a>
             </div>
         </div>
-    </div>
-
+    </section>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
+}

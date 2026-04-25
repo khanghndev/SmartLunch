@@ -3,202 +3,359 @@
     Layout = "_LayoutCustomer";
 }
 
-<style>
-    .glass-card {
-        background: rgba(255, 255, 255, 0.8);
-        backdrop-filter: blur(12px);
-        border: 1px solid rgba(255, 255, 255, 0.3);
-    }
-    
-    .text-gradient-gold {
-        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
-
-    .step-line::after {
-        content: '';
-        position: absolute;
-        top: 24px;
-        left: 50%;
-        width: 100%;
-        height: 2px;
-        background: repeating-linear-gradient(to right, #e5e7eb 0, #e5e7eb 8px, transparent 8px, transparent 16px);
-        z-index: 0;
-    }
-
-    .scrollbar-hide::-webkit-scrollbar { display: none; }
-</style>
-
 <div class="w-full bg-white overflow-hidden">
-    
+
     <!-- ===== CINEMATIC HERO ===== -->
-    <section class="relative h-[600px] md:h-[750px] flex items-center justify-center">
-        <img src="/assets/images/studenttop.jpg" class="absolute inset-0 w-full h-full object-cover brightness-[0.7] scale-105" />
-        <div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-black/60"></div>
-        
-        <div class="relative z-10 max-w-4xl mx-auto text-center px-6" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)">
-            <div x-show="loaded" x-transition:enter="transition ease-out duration-1000 transform" x-transition:enter-start="opacity-0 translate-y-10" x-transition:enter-end="opacity-100 translate-y-0">
-                <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-orange-500/20 backdrop-blur-md border border-orange-500/30 text-orange-400 text-[10px] font-bold uppercase tracking-[0.2em] mb-6">
-                    <i data-lucide="graduation-cap" class="w-3.5 h-3.5"></i>
+    <section class="relative min-h-[700px] flex items-center overflow-hidden">
+        <img src="/assets/images/studenttop.jpg" class="absolute inset-0 w-full h-full object-cover brightness-[0.65]" />
+        <div class="absolute inset-0 bg-gradient-to-r from-gray-900/85 via-gray-900/50 to-transparent"></div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-6 py-32 w-full"
+             x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 80)">
+            <div class="max-w-2xl"
+                 x-show="loaded"
+                 x-transition:enter="transition duration-700 ease-out"
+                 x-transition:enter-start="opacity-0 translate-y-8"
+                 x-transition:enter-end="opacity-100 translate-y-0">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-300 text-[10px] font-bold uppercase tracking-[0.25em] mb-6">
+                    <i data-lucide="graduation-cap" class="w-3 h-3"></i>
                     Chương trình dinh dưỡng học đường
                 </span>
-                <h1 class="text-4xl md:text-7xl font-black text-white mb-8 tracking-tighter leading-[1.1]">
-                    Năng lượng khởi đầu <br /> 
-                    <span class="text-orange-500">Mọi ước mơ</span>
+                <h1 class="text-5xl md:text-7xl font-black text-white leading-[1.05] tracking-tight mb-6">
+                    Năng lượng <br />
+                    <span class="text-orange-400">khởi đầu</span> <br />
+                    mọi ước mơ
                 </h1>
-                <p class="text-lg md:text-xl text-gray-200 max-w-2xl mx-auto font-medium leading-relaxed mb-10 opacity-80">
-                    HuitMeal mang đến chuẩn mực mới về suất ăn trường học: An toàn tuyệt đối, Dinh dưỡng khoa học và Hương vị truyền cảm hứng.
+                <p class="text-gray-300 text-lg leading-relaxed mb-10 font-medium max-w-lg">
+                    Chuẩn mực mới về suất ăn trường học: An toàn tuyệt đối, dinh dưỡng khoa học và hương vị truyền cảm hứng cho thế hệ tương lai.
                 </p>
-                <div class="flex flex-col md:flex-row items-center justify-center gap-4">
-                    <button class="px-10 py-4 bg-orange-600 text-white rounded-full font-bold shadow-xl shadow-orange-900/20 hover:bg-orange-500 hover:-translate-y-1 transition-all">Khám phá thực đơn</button>
-                    <button class="px-10 py-4 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-full font-bold hover:bg-white/20 transition-all flex items-center gap-2">
-                        <i data-lucide="play-circle" class="w-5 h-5"></i> Xem thực tế
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Floating Scroll Indicator -->
-        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 animate-bounce opacity-50">
-            <i data-lucide="mouse" class="text-white w-6 h-6"></i>
-        </div>
-    </section>
-
-    <!-- ===== CORE PILLARS (The 3 S's) ===== -->
-    <section class="py-24 bg-gray-50 relative">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- Safety -->
-                <div class="group bg-white p-10 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-2xl hover:border-orange-200 transition-all duration-500">
-                    <div class="w-16 h-16 rounded-2xl bg-red-50 flex items-center justify-center text-red-600 mb-8 group-hover:scale-110 group-hover:rotate-3 transition-transform">
-                        <i data-lucide="shield-check" class="w-8 h-8"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">An Toàn Tuyệt Đối</h3>
-                    <p class="text-gray-500 leading-relaxed">Kiểm soát nghiêm ngặt từ nguồn nguyên liệu đến quy trình chế biến đạt chuẩn ISO 22000:2018.</p>
-                </div>
-                <!-- Science -->
-                <div class="group bg-white p-10 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-2xl hover:border-orange-200 transition-all duration-500">
-                    <div class="w-16 h-16 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 mb-8 group-hover:scale-110 group-hover:rotate-3 transition-transform">
-                        <i data-lucide="brain" class="w-8 h-8"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Dinh Dưỡng Khoa Học</h3>
-                    <p class="text-gray-500 leading-relaxed">Thực đơn được tư vấn bởi các chuyên gia dinh dưỡng hàng đầu, tối ưu cho từng độ tuổi phát triển.</p>
-                </div>
-                <!-- Satisfaction -->
-                <div class="group bg-white p-10 rounded-[32px] border border-gray-100 shadow-sm hover:shadow-2xl hover:border-orange-200 transition-all duration-500">
-                    <div class="w-16 h-16 rounded-2xl bg-orange-50 flex items-center justify-center text-orange-600 mb-8 group-hover:scale-110 group-hover:rotate-3 transition-transform">
-                        <i data-lucide="smile" class="w-8 h-8"></i>
-                    </div>
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Hương Vị Trọn Vẹn</h3>
-                    <p class="text-gray-500 leading-relaxed">Công thức chế biến độc quyền giữ trọn hương vị tự nhiên, giúp học sinh ăn ngon và hết suất.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== FARM TO SCHOOL (Visual Journey) ===== -->
-    <section class="py-24">
-        <div class="max-w-7xl mx-auto px-6 text-center">
-            <h2 class="text-sm font-bold text-orange-600 uppercase tracking-widest mb-4">Quy trình chất lượng</h2>
-            <h3 class="text-4xl md:text-5xl font-black text-gray-900 mb-16 tracking-tight">Hành trình từ <span class="text-green-600">Nông trại</span> đến <span class="text-orange-500">Học đường</span></h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 relative">
-                <!-- Step 1 -->
-                <div class="relative z-10 hidden md:block step-line"></div>
-                <div class="relative z-10">
-                    <div class="w-14 h-14 rounded-full bg-white border-4 border-gray-100 flex items-center justify-center text-gray-900 font-bold mx-auto mb-6 shadow-sm">1</div>
-                    <i data-lucide="leaf" class="w-10 h-10 text-green-600 mx-auto mb-4"></i>
-                    <h4 class="font-bold text-gray-900 mb-2">Tuyển chọn kỹ lưỡng</h4>
-                    <p class="text-xs text-gray-500">Nguồn thực phẩm sạch, có nguồn gốc xuất xứ rõ ràng.</p>
-                </div>
-                <!-- Step 2 -->
-                <div class="relative z-10">
-                    <div class="w-14 h-14 rounded-full bg-white border-4 border-gray-100 flex items-center justify-center text-gray-900 font-bold mx-auto mb-6 shadow-sm">2</div>
-                    <i data-lucide="test-tube-2" class="w-10 h-10 text-blue-600 mx-auto mb-4"></i>
-                    <h4 class="font-bold text-gray-900 mb-2">Kiểm định khắt khe</h4>
-                    <p class="text-xs text-gray-500">Kiểm tra vi sinh và dư lượng hóa chất 24/7.</p>
-                </div>
-                <!-- Step 3 -->
-                <div class="relative z-10">
-                    <div class="w-14 h-14 rounded-full bg-white border-4 border-gray-100 flex items-center justify-center text-gray-900 font-bold mx-auto mb-6 shadow-sm">3</div>
-                    <i data-lucide="chef-hat" class="w-10 h-10 text-orange-500 mx-auto mb-4"></i>
-                    <h4 class="font-bold text-gray-900 mb-2">Chế biến tiêu chuẩn</h4>
-                    <p class="text-xs text-gray-500">Bếp ăn 1 chiều, thiết bị hiện đại chuẩn quốc tế.</p>
-                </div>
-                <!-- Step 4 -->
-                <div class="relative z-10">
-                    <div class="w-14 h-14 rounded-full bg-white border-4 border-gray-100 flex items-center justify-center text-gray-900 font-bold mx-auto mb-6 shadow-sm">4</div>
-                    <i data-lucide="truck" class="w-10 h-10 text-red-600 mx-auto mb-4"></i>
-                    <h4 class="font-bold text-gray-900 mb-2">Giao hàng nóng hổi</h4>
-                    <p class="text-xs text-gray-500">Thùng cách nhiệt chuyên dụng, đảm bảo nhiệt độ.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== AGE-BASED MENUS (Tiered) ===== -->
-    <section class="py-24 bg-gray-900 text-white">
-        <div class="max-w-7xl mx-auto px-6">
-            <div class="flex flex-col md:flex-row justify-between items-end mb-16 gap-6">
-                <div>
-                    <h2 class="text-sm font-bold text-orange-500 uppercase tracking-widest mb-4">Cấp bậc đào tạo</h2>
-                    <h3 class="text-4xl md:text-5xl font-black tracking-tight leading-tight">Thực đơn chuyên biệt <br /> cho từng độ tuổi</h3>
-                </div>
-                <p class="text-gray-400 max-w-sm mb-2 font-medium">Chúng tôi thiết kế chế độ ăn uống phù hợp với nhu cầu sinh lý và tâm lý của học sinh trong từng giai đoạn.</p>
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                @foreach (var level in new[] { 
-                    new { id = "mamnon", name = "Mầm Non", age = "3 - 5 Tuổi", icon = "sprout", color = "green" },
-                    new { id = "tieuhoc", name = "Tiểu Học", age = "6 - 11 Tuổi", icon = "book", color = "blue" },
-                    new { id = "thcs", name = "THCS", age = "12 - 15 Tuổi", icon = "compass", color = "purple" },
-                    new { id = "thpt", name = "THPT", age = "16 - 18 Tuổi", icon = "star", color = "orange" }
-                })
-                {
-                    <a href="/Customer/SchoolMenu?level=@level.id" class="group relative overflow-hidden rounded-[32px] bg-white/5 border border-white/10 p-8 hover:bg-white/10 hover:border-white/30 transition-all duration-500">
-                        <div class="mb-12">
-                            <div class="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-white mb-6">
-                                <i data-lucide="@level.icon" class="w-6 h-6"></i>
-                            </div>
-                            <h4 class="text-2xl font-bold mb-2">@level.name</h4>
-                            <span class="text-xs text-orange-400 font-bold uppercase tracking-widest">@level.age</span>
-                        </div>
-                        <div class="flex items-center justify-between">
-                            <span class="text-sm font-medium text-gray-400">Xem thực đơn</span>
-                            <div class="w-8 h-8 rounded-full border border-white/20 flex items-center justify-center group-hover:bg-white group-hover:text-black transition-all">
-                                <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                            </div>
-                        </div>
-                        <!-- Background Glow -->
-                        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-orange-500/10 blur-[80px] rounded-full group-hover:bg-orange-500/20 transition-all"></div>
+                <div class="flex flex-wrap gap-4">
+                    <a href="#menu-levels"
+                       class="px-8 py-4 bg-orange-500 text-white rounded-full font-bold shadow-lg shadow-orange-500/30 hover:bg-orange-400 hover:-translate-y-0.5 transition-all text-sm">
+                        Khám phá thực đơn
                     </a>
+                    <a href="/Customer/Contact"
+                       class="px-8 py-4 bg-white/10 text-white border border-white/20 rounded-full font-bold hover:bg-white/20 transition-all text-sm backdrop-blur-sm">
+                        Đăng ký tư vấn
+                    </a>
+                </div>
+            </div>
+
+            <!-- Floating stats badge -->
+            <div class="absolute bottom-12 right-8 hidden lg:grid grid-cols-2 gap-4">
+                <div class="bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl px-6 py-4 text-center">
+                    <p class="text-2xl font-black text-white">500+</p>
+                    <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">Trường hợp tác</p>
+                </div>
+                <div class="bg-white/10 backdrop-blur-lg border border-white/10 rounded-2xl px-6 py-4 text-center">
+                    <p class="text-2xl font-black text-orange-400">0</p>
+                    <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">Sự cố ngộ độc</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CORE PILLARS ===== -->
+    <section class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-3">Cam kết chất lượng</p>
+                <h2 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+                    Ba tiêu chí <span class="text-orange-600">không thỏa hiệp</span>
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="group p-10 rounded-[32px] bg-red-50 border border-red-100 hover:shadow-xl transition-all duration-500">
+                    <div class="w-14 h-14 rounded-2xl bg-red-500 flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform">
+                        <i data-lucide="shield-check" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">An Toàn Tuyệt Đối</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">Kiểm soát nghiêm ngặt từ nguồn nguyên liệu đến quy trình chế biến, đạt chuẩn ISO 22000:2018 và HACCP.</p>
+                </div>
+                <div class="group p-10 rounded-[32px] bg-blue-50 border border-blue-100 hover:shadow-xl transition-all duration-500">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-500 flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform">
+                        <i data-lucide="brain" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Dinh Dưỡng Khoa Học</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">Thực đơn được thiết kế bởi chuyên gia dinh dưỡng, tối ưu dưỡng chất cho từng độ tuổi từ mầm non đến THPT.</p>
+                </div>
+                <div class="group p-10 rounded-[32px] bg-orange-50 border border-orange-100 hover:shadow-xl transition-all duration-500">
+                    <div class="w-14 h-14 rounded-2xl bg-orange-500 flex items-center justify-center text-white mb-8 group-hover:scale-110 transition-transform">
+                        <i data-lucide="smile" class="w-7 h-7"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-gray-900 mb-3">Hương Vị Trọn Vẹn</h3>
+                    <p class="text-gray-600 leading-relaxed text-sm">Công thức chế biến độc quyền giữ nguyên hương vị tự nhiên, giúp học sinh ăn ngon và hết phần, không lãng phí.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== FARM TO SCHOOL JOURNEY ===== -->
+    <section class="py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-3">Quy trình chất lượng</p>
+                <h2 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+                    Từ <span class="text-green-600">nông trại</span> đến <span class="text-orange-600">học đường</span>
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                @foreach (var (step, idx) in new[] {
+                    new { Icon = "leaf", Label = "Tuyển chọn kỹ", Desc = "Thực phẩm sạch, nguồn gốc rõ ràng, VietGAP.", Color = "green" },
+                    new { Icon = "test-tube-2", Label = "Kiểm định chặt", Desc = "Kiểm tra vi sinh và dư lượng hóa chất 24/7.", Color = "blue" },
+                    new { Icon = "chef-hat", Label = "Chế biến chuẩn", Desc = "Bếp 1 chiều, thiết bị hiện đại, chuẩn quốc tế.", Color = "orange" },
+                    new { Icon = "truck", Label = "Giao nóng hổi", Desc = "Thùng cách nhiệt chuyên dụng, đảm bảo nhiệt độ.", Color = "red" }
+                }.Select((s, i) => (s, i)))
+                {
+                    <div class="flex flex-col items-center text-center group">
+                        <div class="w-16 h-16 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center mb-6 group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500 group-hover:shadow-lg transition-all text-gray-600">
+                            <i data-lucide="@step.Icon" class="w-7 h-7"></i>
+                        </div>
+                        <span class="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">Bước @(idx + 1)</span>
+                        <h4 class="font-bold text-gray-900 mb-2 text-sm">@step.Label</h4>
+                        <p class="text-xs text-gray-500 leading-relaxed max-w-[160px]">@step.Desc</p>
+                    </div>
                 }
             </div>
         </div>
     </section>
 
-    <!-- ===== REALITY HUB (TikTok Video) ===== -->
-    <section class="py-24">
+    <!-- ===== AGE-BASED MENUS ===== -->
+    <section id="menu-levels" class="py-24 bg-white">
         <div class="max-w-7xl mx-auto px-6">
-            <div class="flex justify-between items-center mb-16">
-                <h2 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Thực tế từ <span class="text-orange-500">Hiện trường</span></h2>
-                <a href="#" class="text-sm font-bold text-orange-600 flex items-center gap-2 group">
-                    Xem tất cả 
-                    <i data-lucide="chevron-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
-                </a>
+            <div class="flex flex-col md:flex-row justify-between items-end gap-8 mb-16">
+                <div>
+                    <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-3">Cấp bậc đào tạo</p>
+                    <h2 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight">
+                        Thực đơn chuyên biệt <br />
+                        <span class="text-orange-600">theo từng độ tuổi</span>
+                    </h2>
+                </div>
+                <p class="text-gray-500 max-w-sm font-medium text-sm leading-relaxed">
+                    Mỗi giai đoạn phát triển có nhu cầu dinh dưỡng khác nhau. HuitMeal thiết kế riêng cho từng cấp học.
+                </p>
             </div>
-            
-            <div class="flex gap-6 overflow-x-auto pb-10 scrollbar-hide snap-x">
-                @foreach (var id in new[] { "7615937219827682578", "7613727447028206866", "7613389499795623175" })
-                {
-                    <div class="snap-start flex-shrink-0 w-[300px] md:w-[380px] rounded-[32px] overflow-hidden bg-black shadow-2xl relative group">
-                        <iframe src="https://www.tiktok.com/embed/v2/@id" class="w-full h-[550px]" allowfullscreen></iframe>
-                        <div class="absolute top-4 left-4 pointer-events-none">
-                            <span class="bg-red-600 text-white text-[10px] font-bold px-3 py-1 rounded-full animate-pulse flex items-center gap-2">
-                                <span class="w-1.5 h-1.5 bg-white rounded-full"></span> LIVE ACTION
-                            </span>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                <!-- Mầm Non -->
+                <a href="/Customer/SchoolMenu?level=mamnon"
+                   class="group relative overflow-hidden rounded-[28px] bg-white border border-gray-100 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col">
+                    <div class="relative h-52 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=500&q=80"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-3 left-4">
+                            <span class="text-[10px] font-black text-white/80 uppercase tracking-widest">3 – 5 Tuổi</span>
+                            <h4 class="text-xl font-black text-white leading-tight">Mầm Non</h4>
                         </div>
+                        <div class="absolute top-3 right-3 w-9 h-9 rounded-full bg-green-500 flex items-center justify-center">
+                            <i data-lucide="sprout" class="w-4 h-4 text-white"></i>
+                        </div>
+                    </div>
+                    <div class="p-5 flex flex-col flex-1">
+                        <p class="text-xs text-gray-500 leading-relaxed mb-4">Thực đơn nhẹ nhàng, dễ tiêu hóa, giàu dưỡng chất thiết yếu cho giai đoạn vàng phát triển não bộ và xương.</p>
+                        <ul class="space-y-1.5 mb-5">
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span> Canxi & Vitamin D cho xương
+                            </li>
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span> DHA hỗ trợ phát triển trí não
+                            </li>
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-green-500 flex-shrink-0"></span> Kẽm tăng cường miễn dịch
+                            </li>
+                        </ul>
+                        <div class="mt-auto flex items-center gap-2 text-orange-600 font-bold text-sm group-hover:gap-3 transition-all">
+                            Xem thực đơn <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Tiểu Học -->
+                <a href="/Customer/SchoolMenu?level=tieuhoc"
+                   class="group relative overflow-hidden rounded-[28px] bg-white border border-gray-100 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col">
+                    <div class="relative h-52 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158?w=500&q=80"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-3 left-4">
+                            <span class="text-[10px] font-black text-white/80 uppercase tracking-widest">6 – 11 Tuổi</span>
+                            <h4 class="text-xl font-black text-white leading-tight">Tiểu Học</h4>
+                        </div>
+                        <div class="absolute top-3 right-3 w-9 h-9 rounded-full bg-blue-500 flex items-center justify-center">
+                            <i data-lucide="book-open" class="w-4 h-4 text-white"></i>
+                        </div>
+                    </div>
+                    <div class="p-5 flex flex-col flex-1">
+                        <p class="text-xs text-gray-500 leading-relaxed mb-4">Cân bằng năng lượng cho hoạt động thể chất và học tập, kích thích vị giác với thực đơn đa dạng theo ngày.</p>
+                        <ul class="space-y-1.5 mb-5">
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span> Omega-3 hỗ trợ trí nhớ
+                            </li>
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span> Tinh bột phức cung cấp năng lượng bền
+                            </li>
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-blue-500 flex-shrink-0"></span> Vitamin B tăng cường tập trung
+                            </li>
+                        </ul>
+                        <div class="mt-auto flex items-center gap-2 text-orange-600 font-bold text-sm group-hover:gap-3 transition-all">
+                            Xem thực đơn <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- THCS -->
+                <a href="/Customer/SchoolMenu?level=thcs"
+                   class="group relative overflow-hidden rounded-[28px] bg-white border border-gray-100 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col">
+                    <div class="relative h-52 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?w=500&q=80"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-3 left-4">
+                            <span class="text-[10px] font-black text-white/80 uppercase tracking-widest">12 – 15 Tuổi</span>
+                            <h4 class="text-xl font-black text-white leading-tight">THCS</h4>
+                        </div>
+                        <div class="absolute top-3 right-3 w-9 h-9 rounded-full bg-purple-500 flex items-center justify-center">
+                            <i data-lucide="compass" class="w-4 h-4 text-white"></i>
+                        </div>
+                    </div>
+                    <div class="p-5 flex flex-col flex-1">
+                        <p class="text-xs text-gray-500 leading-relaxed mb-4">Hỗ trợ giai đoạn dậy thì với khẩu phần protein cao, bổ sung sắt và canxi để phát triển chiều cao tối đa.</p>
+                        <ul class="space-y-1.5 mb-5">
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0"></span> Protein cao hỗ trợ cơ bắp
+                            </li>
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0"></span> Sắt phòng ngừa thiếu máu
+                            </li>
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-purple-500 flex-shrink-0"></span> Canxi tăng chiều cao vượt trội
+                            </li>
+                        </ul>
+                        <div class="mt-auto flex items-center gap-2 text-orange-600 font-bold text-sm group-hover:gap-3 transition-all">
+                            Xem thực đơn <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- THPT -->
+                <a href="/Customer/SchoolMenu?level=thpt"
+                   class="group relative overflow-hidden rounded-[28px] bg-white border border-gray-100 hover:shadow-2xl hover:-translate-y-1.5 transition-all duration-500 flex flex-col">
+                    <div class="relative h-52 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&q=80"
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-600" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+                        <div class="absolute bottom-3 left-4">
+                            <span class="text-[10px] font-black text-white/80 uppercase tracking-widest">16 – 18 Tuổi</span>
+                            <h4 class="text-xl font-black text-white leading-tight">THPT</h4>
+                        </div>
+                        <div class="absolute top-3 right-3 w-9 h-9 rounded-full bg-orange-500 flex items-center justify-center">
+                            <i data-lucide="zap" class="w-4 h-4 text-white"></i>
+                        </div>
+                    </div>
+                    <div class="p-5 flex flex-col flex-1">
+                        <p class="text-xs text-gray-500 leading-relaxed mb-4">Năng lượng bền vững và dưỡng chất hỗ trợ trí não, giúp học sinh duy trì tập trung cao trong mùa ôn thi.</p>
+                        <ul class="space-y-1.5 mb-5">
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0"></span> Magie giảm stress, căng thẳng
+                            </li>
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0"></span> Choline tăng cường trí nhớ
+                            </li>
+                            <li class="flex items-center gap-2 text-[11px] text-gray-600 font-medium">
+                                <span class="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0"></span> GI thấp — no lâu, tập trung cao
+                            </li>
+                        </ul>
+                        <div class="mt-auto flex items-center gap-2 text-orange-600 font-bold text-sm group-hover:gap-3 transition-all">
+                            Xem thực đơn <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        </div>
+                    </div>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SAMPLE MENU SHOWCASE ===== -->
+    <section class="py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-3">Thực đơn mẫu</p>
+                <h2 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+                    Bữa ăn <span class="text-orange-600">hôm nay</span> của học sinh
+                </h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Meal 1 -->
+                <div class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 transition-all">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?w=500&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <span class="absolute top-3 left-3 bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Tiểu học</span>
+                    </div>
+                    <div class="p-5">
+                        <h4 class="font-bold text-gray-900 mb-1.5">Cơm cá hú kho gừng</h4>
+                        <p class="text-xs text-gray-500 mb-3">Cá hú tươi, cơm trắng dẻo, rau cải xào tỏi, canh bí đỏ hầm xương.</p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full font-semibold">Omega-3</span>
+                            <span class="text-[10px] bg-orange-50 text-orange-700 border border-orange-100 px-2 py-0.5 rounded-full font-semibold">Canxi</span>
+                            <span class="text-[10px] bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full font-semibold">Vitamin</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meal 2 -->
+                <div class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 transition-all">
+                    <div class="relative h-48 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <span class="absolute top-3 left-3 bg-purple-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">THCS</span>
+                    </div>
+                    <div class="p-5">
+                        <h4 class="font-bold text-gray-900 mb-1.5">Cơm gà luộc sốt gừng</h4>
+                        <p class="text-xs text-gray-500 mb-3">Gà ta luộc, nước sốt gừng thơm, cơm gạo ST25, rau xào, canh rau.</p>
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] bg-red-50 text-red-700 border border-red-100 px-2 py-0.5 rounded-full font-semibold">Protein</span>
+                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full font-semibold">VietGAP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Meal 3 + CTA -->
+                <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-[24px] p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-6">
+                            <i data-lucide="calendar" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <h4 class="text-xl font-black text-white mb-3 leading-tight">Thực đơn xoay vòng 30 ngày</h4>
+                        <p class="text-orange-100 text-sm leading-relaxed">Hơn 120 món được thiết kế không lặp lại, đa dạng vùng miền, đảm bảo trẻ ăn ngon mỗi ngày.</p>
+                    </div>
+                    <a href="/Customer/Menu" class="mt-8 inline-flex items-center gap-2 bg-white text-orange-600 font-bold px-5 py-3 rounded-full text-sm hover:bg-orange-50 transition-all hover:gap-3">
+                        Xem thực đơn đầy đủ
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== TRUST STATS ===== -->
+    <section class="py-20 bg-gray-900">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/10">
+                @foreach (var stat in new[] {
+                    new { Num = "500+", Label = "Trường học đối tác" },
+                    new { Num = "150k+", Label = "Học sinh phục vụ/ngày" },
+                    new { Num = "0", Label = "Sự cố ngộ độc (10 năm)" },
+                    new { Num = "98%", Label = "Phụ huynh hài lòng" }
+                })
+                {
+                    <div class="py-10 px-8 text-center">
+                        <p class="text-4xl font-black text-orange-400 mb-2">@stat.Num</p>
+                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-widest">@stat.Label</p>
                     </div>
                 }
             </div>
@@ -206,18 +363,31 @@
     </section>
 
     <!-- ===== FINAL CTA ===== -->
-    <section class="py-24 bg-gray-50 relative overflow-hidden">
-        <div class="absolute top-0 right-0 w-1/3 h-full bg-orange-100/50 -skew-x-12 translate-x-1/2"></div>
-        <div class="max-w-7xl mx-auto px-6 relative z-10 flex flex-col md:flex-row items-center justify-between gap-12">
-            <div class="max-w-xl">
-                <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-6 tracking-tight">Sẵn sàng đồng hành cùng <br /> <span class="text-orange-600">Trường học của bạn</span></h2>
-                <p class="text-lg text-gray-500 font-medium leading-relaxed">Liên hệ với đội ngũ chuyên gia của HuitMeal để nhận tư vấn lộ trình dinh dưỡng tối ưu nhất cho học sinh.</p>
-            </div>
-            <div class="flex gap-4">
-                <a href="/Customer/Contact" class="px-10 py-5 bg-gray-900 text-white rounded-full font-bold shadow-2xl hover:bg-orange-600 transition-all flex items-center gap-3">
-                    Đăng ký tư vấn miễn phí
-                    <i data-lucide="arrow-right" class="w-5 h-5"></i>
-                </a>
+    <section class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="bg-gray-50 rounded-[40px] p-12 md:p-20 flex flex-col md:flex-row items-center justify-between gap-12 border border-gray-100">
+                <div class="max-w-xl">
+                    <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-4">Hợp tác với HuitMeal</p>
+                    <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-6 tracking-tight leading-tight">
+                        Sẵn sàng đồng hành <br />
+                        <span class="text-orange-600">cùng trường học</span> của bạn?
+                    </h2>
+                    <p class="text-gray-500 text-lg font-medium leading-relaxed">
+                        Đội ngũ chuyên gia HuitMeal sẵn sàng tư vấn lộ trình dinh dưỡng tối ưu, phù hợp với đặc thù từng trường.
+                    </p>
+                </div>
+                <div class="flex flex-col gap-4 flex-shrink-0">
+                    <a href="/Customer/Contact"
+                       class="px-10 py-5 bg-orange-500 text-white rounded-full font-bold shadow-xl shadow-orange-200 hover:bg-orange-400 hover:-translate-y-0.5 transition-all flex items-center gap-3 text-sm">
+                        Đăng ký tư vấn miễn phí
+                        <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                    </a>
+                    <a href="tel:0966741866"
+                       class="px-10 py-5 bg-white border border-gray-200 text-gray-700 rounded-full font-bold hover:border-orange-300 hover:text-orange-600 transition-all flex items-center gap-3 text-sm">
+                        <i data-lucide="phone" class="w-4 h-4 text-orange-500"></i>
+                        Hotline: 0966 741 866
+                    </a>
+                </div>
             </div>
         </div>
     </section>

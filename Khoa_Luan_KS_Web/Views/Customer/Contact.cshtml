@@ -3,142 +3,369 @@
     Layout = "_LayoutCustomer";
 }
 
-<div class="w-full bg-white text-[#1f2a37]">
-    <!-- ================= BANNER ================= -->
-    <section class="relative w-full h-[400px] md:h-[500px] overflow-hidden">
-        <img src="/assets/images/bannerlienhe.jpg" alt="Liên hệ" class="absolute inset-0 w-full h-full object-cover" />
-        <div class="absolute inset-0 bg-black/40"></div>
-        <div class="absolute inset-0 flex items-center px-6 md:px-20 lg:px-32 z-10">
-            <div class="max-w-2xl text-white">
-                <div class="bg-[#f39200] px-4 py-2 font-bold text-xl inline-block mb-4">LIÊN HỆ</div>
-                <h1 class="text-3xl md:text-5xl font-extrabold mb-6 uppercase">Kết nối với HUITMEAL</h1>
-                <p class="text-white/90 text-lg">Chúng tôi luôn sẵn sàng lắng nghe và giải đáp mọi thắc mắc.</p>
+<div class="w-full bg-white text-[#1f2a37] overflow-x-hidden">
+    <!-- ================= HERO SECTION ================= -->
+    <section class="relative h-[65vh] flex items-center overflow-hidden">
+        <!-- Background Overlay -->
+        <div class="absolute inset-0 z-0">
+            <img src="/assets/images/bannerlienhe.jpg" alt="Contact Banner" class="w-full h-full object-cover scale-105 transition-transform duration-[10s] hover:scale-110">
+            <div class="absolute inset-0 bg-gradient-to-r from-[#0F172A]/90 via-[#0F172A]/60 to-transparent"></div>
+        </div>
+
+        <div class="container mx-auto px-6 relative z-10">
+            <div class="max-w-3xl" data-animate="fade-right">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 bg-orange-500/20 backdrop-blur-md border border-orange-500/30 text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] rounded-full mb-8">
+                    <span class="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse"></span>
+                    Get in touch
+                </span>
+                <h1 class="text-5xl md:text-7xl font-black text-white mb-8 leading-tight">
+                    Kết nối để <br/>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-orange-500 to-orange-600">Phát triển</span> bền vững
+                </h1>
+                <p class="text-lg md:text-xl text-gray-300 leading-relaxed max-w-xl font-medium opacity-90">
+                    HuitMeal luôn sẵn sàng lắng nghe mọi nhu cầu và đóng góp của quý khách hàng. Hãy để chúng tôi đồng hành cùng sự thành công của bạn.
+                </p>
+                
+                <div class="mt-10 flex flex-wrap gap-4">
+                    <a href="#contact-form" class="px-8 py-4 bg-orange-500 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-orange-400 hover:-translate-y-1 transition-all shadow-lg shadow-orange-500/25">
+                        Gửi yêu cầu ngay
+                    </a>
+                    <a href="tel:0334297551" class="px-8 py-4 bg-white/10 backdrop-blur-md border border-white/20 text-white rounded-2xl font-black uppercase tracking-widest hover:bg-white/20 transition-all">
+                        Hotline: 0334 297 551
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scroll Indicator -->
+        <div class="absolute bottom-10 left-1/2 -translate-x-1/2 z-10 hidden md:block">
+            <div class="w-6 h-10 border-2 border-white/30 rounded-full flex justify-center p-1">
+                <div class="w-1 h-2 bg-orange-500 rounded-full animate-bounce"></div>
             </div>
         </div>
     </section>
 
-    <section class="max-w-7xl mx-auto px-6 py-16">
-        <!-- ===== 1. THÔNG TIN CÔNG TY ===== -->
-        <div class="flex flex-col md:flex-row justify-between items-start mb-12 gap-8">
-            <div>
-                <h2 class="text-2xl md:text-3xl font-bold uppercase mb-4">
-                    Công ty cổ phần dịch vụ <span class="relative inline-block">
-                        Quốc tế Hà Thành
-                        <span class="absolute bottom-1 left-0 w-full h-2 bg-[#ffc107] -z-10"></span>
-                    </span>
-                </h2>
-                <div class="space-y-1 text-gray-700">
-                    <p><span class="font-bold">Hotline 24/7:</span> 0966 741 866</p>
-                    <p><span class="font-bold">Email:</span> contact@HuitMeal.com</p>
+    <!-- ================= INFO CARDS SECTION ================= -->
+    <section class="relative z-20 -mt-24 pb-24 px-6">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- Card 1: Phone -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 hover:-translate-y-3 transition-all duration-500 group" data-animate="fade-up" data-delay="1">
+                <div class="w-16 h-16 bg-orange-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-orange-500 transition-all duration-500 group-hover:rotate-6">
+                    <i data-lucide="phone-call" class="w-7 h-7 text-orange-500 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Đường dây nóng</h3>
+                <p class="text-2xl font-black text-gray-900 mb-2">0334 297 551</p>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    <p class="text-xs text-gray-500 font-bold">Hỗ trợ 24/7 toàn quốc</p>
                 </div>
             </div>
-            <div class="text-gray-700">
-                <p><span class="font-bold">Thời gian làm việc:</span> Thứ 2 – Thứ 6: 8h00 – 17h00</p>
-                <p class="md:ml-[132px]">Thứ 7: 8h00 – 17h00</p>
+            
+            <!-- Card 2: Email -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 hover:-translate-y-3 transition-all duration-500 group" data-animate="fade-up" data-delay="2">
+                <div class="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-blue-600 transition-all duration-500 group-hover:-rotate-6">
+                    <i data-lucide="mail" class="w-7 h-7 text-blue-600 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Email liên hệ</h3>
+                <p class="text-xl font-black text-gray-900 mb-2 truncate">contact@HuitMeal.com</p>
+                <p class="text-xs text-gray-500 font-bold">Phản hồi nhanh trong 2h</p>
+            </div>
+
+            <!-- Card 3: Office -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 hover:-translate-y-3 transition-all duration-500 group" data-animate="fade-up" data-delay="3">
+                <div class="w-16 h-16 bg-red-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-red-600 transition-all duration-500 group-hover:rotate-6">
+                    <i data-lucide="map-pin" class="w-7 h-7 text-red-600 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Trụ sở chính</h3>
+                <p class="text-lg font-black text-gray-900 mb-2">140 Lê Trọng Tấn, HCM</p>
+                <p class="text-xs text-gray-500 font-bold">ĐH Công Thương TP.HCM</p>
+            </div>
+
+            <!-- Card 4: Working Hours -->
+            <div class="bg-white p-8 rounded-[2.5rem] shadow-2xl shadow-gray-200/50 border border-gray-100 hover:-translate-y-3 transition-all duration-500 group" data-animate="fade-up" data-delay="4">
+                <div class="w-16 h-16 bg-purple-50 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-purple-600 transition-all duration-500 group-hover:-rotate-6">
+                    <i data-lucide="clock" class="w-7 h-7 text-purple-600 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Giờ làm việc</h3>
+                <p class="text-2xl font-black text-gray-900 mb-2">08:00 - 17:00</p>
+                <p class="text-xs text-gray-500 font-bold">Thứ 2 - Thứ 7 hàng tuần</p>
             </div>
         </div>
+    </section>
 
-        <!-- ===== 2. HỆ THỐNG CHI NHÁNH & MAP ===== -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-20">
-            <!-- Branch 1 -->
-            <div class="relative group overflow-hidden rounded-lg shadow-md">
-                <div class="h-72 w-full bg-gray-200">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.1957256191!2d105.7468305759684!3d20.98478958928374!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3134532be4070a7b%3A0x6335f6e80b8d3f1!2sThe%20Pride!5e0!3m2!1svi!2s!4v1710000000000!5m2!1svi!2s" class="w-full h-full transition duration-500 group-hover:scale-105"></iframe>
-                </div>
-                <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white px-4 py-3 backdrop-blur-sm text-xs">
-                    <h4 class="text-[#ffc107] font-semibold mb-2 text-sm">CHI NHÁNH 1:</h4>
-                    <div class="flex items-start gap-2 mb-1">
-                        <i data-lucide="map-pin" class="mt-[2px] text-[#ffc107]" style="width:14px;height:14px"></i>
-                        <p class="leading-snug line-clamp-2">Tầng 2, Toà CT4 tổ hợp TMDV The Pride, KĐT mới An Hưng, P. La Khê, Q. Hà Đông, Hà Nội</p>
-                    </div>
-                    <div class="flex items-center gap-2 text-[#ffc107] font-semibold">
-                        <i data-lucide="phone" style="width:14px;height:14px"></i>
-                        <span>024 9996 7799 - 0966 74 18 66</span>
-                    </div>
-                </div>
-            </div>
-             <!-- Branch 2 -->
-             <div class="relative group overflow-hidden rounded-lg shadow-md">
-                <div class="h-72 w-full bg-gray-200">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.5201202860473!2d106.704253175704!3d10.848039157868!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3175287968536f93%3A0x2863901b0665476a!2zS2h1IMSQw7QgVGjhu4sgVuG6oW4gUGjDumM!5e0!3m2!1svi!2s!4v1710000000000!5m2!1svi!2s" class="w-full h-full transition duration-500 group-hover:scale-105"></iframe>
-                </div>
-                <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white px-4 py-3 backdrop-blur-sm text-xs">
-                    <h4 class="text-[#ffc107] font-semibold mb-2 text-sm">CHI NHÁNH 2:</h4>
-                    <div class="flex items-start gap-2 mb-1">
-                        <i data-lucide="map-pin" class="mt-[2px] text-[#ffc107]" style="width:14px;height:14px"></i>
-                        <p class="leading-snug line-clamp-2">Số 24, đường 39, Khu đô thị Vạn Phúc, phường Hiệp Bình Phước, TP. Thủ Đức</p>
-                    </div>
-                    <div class="flex items-center gap-2 text-[#ffc107] font-semibold">
-                         <i data-lucide="phone" style="width:14px;height:14px"></i>
-                        <span>028 9996 7799 - 0923 787 787</span>
-                    </div>
-                </div>
-            </div>
-             <!-- Branch 3 -->
-             <div class="relative group overflow-hidden rounded-lg shadow-md">
-                <div class="h-72 w-full bg-gray-200">
-                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3835.733333333333!2d108.3666666666666!3d15.88333333333333!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31420e6e6e6e6e6e%3A0x6e6e6e6e6e6e6e6e!2zQ-G6qW0gQW4sIEjhu5lpIEFuLCBRdeG6o25nIE5hbQ!5e0!3m2!1svi!2s!4v1710000000000!5m2!1svi!2s" class="w-full h-full transition duration-500 group-hover:scale-105"></iframe>
-                </div>
-                <div class="absolute bottom-0 left-0 right-0 bg-black/60 text-white px-4 py-3 backdrop-blur-sm text-xs">
-                    <h4 class="text-[#ffc107] font-semibold mb-2 text-sm">CHI NHÁNH 3:</h4>
-                    <div class="flex items-start gap-2 mb-1">
-                        <i data-lucide="map-pin" class="mt-[2px] text-[#ffc107]" style="width:14px;height:14px"></i>
-                        <p class="leading-snug line-clamp-2">Khu TĐC Làng Chài (phân khu 3), Cẩm An, Hội An, Quảng Nam</p>
-                    </div>
-                    <div class="flex items-center gap-2 text-[#ffc107] font-semibold">
-                         <i data-lucide="phone" style="width:14px;height:14px"></i>
-                        <span>Liên hệ Hotline để được hỗ trợ</span>
-                    </div>
-                </div>
-            </div>
-        </div>
+    <!-- ================= MAIN CONTENT: FORM & BRANCHES ================= -->
+    <section id="contact-form" class="py-24 bg-gray-50/50 relative overflow-hidden">
+        <!-- Abstract background elements -->
+        <div class="absolute top-0 right-0 w-96 h-96 bg-orange-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl"></div>
+        <div class="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/5 rounded-full translate-y-1/2 -translate-x-1/2 blur-3xl"></div>
 
-        <!-- ===== 3. SECTION FORM LIÊN HỆ ===== -->
-        <div class="relative w-full rounded-3xl overflow-hidden bg-[#f9f9f9] min-h-[600px] flex items-center shadow-sm">
-            <div class="absolute inset-0 z-0">
-                <img src="/assets/images/guiyeucaulienhe.jpg" alt="Chefs" class="w-full h-full object-cover object-right" />
-            </div>
-
-            <div class="relative z-10 w-full md:w-1/2 px-8 py-12 md:pl-20 bg-white/10 md:bg-transparent backdrop-blur-sm md:backdrop-blur-none" x-data="{ expanded: false }">
-                <div class="mb-8">
-                    <h2 class="text-4xl font-extrabold text-black leading-tight">
-                        <span class="relative inline-block">Liên hệ<span class="absolute bottom-2 left-0 w-full h-3 bg-[#ffc107] -z-10"></span></span><br /> với chúng tôi
-                    </h2>
-                </div>
-
-                <form class="space-y-5 max-w-md">
-                    <div class="flex flex-col">
-                        <label class="text-sm font-bold text-black mb-1">Họ và tên <span class="text-red-500">*</span></label>
-                        <input type="text" class="w-full bg-transparent border-b border-gray-400 focus:border-orange-500 outline-none py-2 transition-colors" />
-                    </div>
-                     <div class="flex flex-col">
-                        <label class="text-sm font-bold text-black mb-1">Email <span class="text-red-500">*</span></label>
-                        <input type="email" class="w-full bg-transparent border-b border-gray-400 focus:border-orange-500 outline-none py-2 transition-colors" />
-                    </div>
-                     <div class="flex flex-col">
-                        <label class="text-sm font-bold text-black mb-1">Số điện thoại <span class="text-red-500">*</span></label>
-                        <input type="tel" class="w-full bg-transparent border-b border-gray-400 focus:border-orange-500 outline-none py-2 transition-colors" />
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row gap-20">
+                <!-- Contact Form -->
+                <div class="lg:w-1/2" data-animate="fade-right">
+                    <div class="mb-12">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-1 bg-orange-500 rounded-full"></div>
+                            <span class="text-sm font-black text-orange-500 uppercase tracking-widest">Connect with us</span>
+                        </div>
+                        <h2 class="text-4xl md:text-5xl font-black text-gray-900 mb-6 leading-tight">Gửi yêu cầu <br/> cho chuyên gia</h2>
+                        <p class="text-gray-500 font-medium leading-relaxed">Hãy để lại thông tin, đội ngũ chuyên gia của HuitMeal sẽ liên hệ tư vấn giải pháp tối ưu nhất cho doanh nghiệp của bạn.</p>
                     </div>
 
-                    <div class="pt-2">
-                        <p class="text-sm font-bold text-black mb-3">Tôi quan tâm đến:</p>
-                        <div class="grid grid-cols-1 gap-2">
-                            <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" class="w-4 h-4 accent-orange-500" /><span class="text-sm text-gray-700 group-hover:text-black">Suất ăn công nghiệp</span></label>
-                            <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" class="w-4 h-4 accent-orange-500" /><span class="text-sm text-gray-700 group-hover:text-black">Vệ sinh công nghiệp</span></label>
-                            <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" class="w-4 h-4 accent-orange-500" /><span class="text-sm text-gray-700 group-hover:text-black">Cung ứng thực phẩm sạch</span></label>
-                            <label class="flex items-center gap-3 cursor-pointer group"><input type="checkbox" class="w-4 h-4 accent-orange-500" /><span class="text-sm text-gray-700 group-hover:text-black">Setup hệ thống bếp</span></label>
+                    <form class="space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Họ và tên *</label>
+                                <div class="relative group">
+                                    <i data-lucide="user" class="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-orange-500 transition-colors"></i>
+                                    <input type="text" placeholder="Nguyễn Văn A" required class="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-[2rem] focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none transition-all duration-300 font-bold text-gray-700 shadow-sm">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Số điện thoại *</label>
+                                <div class="relative group">
+                                    <i data-lucide="phone" class="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-orange-500 transition-colors"></i>
+                                    <input type="tel" placeholder="0334..." required class="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-[2rem] focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none transition-all duration-300 font-bold text-gray-700 shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Địa chỉ Email *</label>
+                            <div class="relative group">
+                                <i data-lucide="mail" class="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-orange-500 transition-colors"></i>
+                                <input type="email" placeholder="example@huitmeal.com" required class="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-[2rem] focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none transition-all duration-300 font-bold text-gray-700 shadow-sm">
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Dịch vụ quan tâm</label>
+                            <div class="relative group">
+                                <i data-lucide="layers" class="absolute left-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 group-focus-within:text-orange-500 transition-colors z-10"></i>
+                                <select class="w-full pl-14 pr-6 py-4 bg-white border border-gray-100 rounded-[2rem] focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none transition-all duration-300 font-bold text-gray-700 shadow-sm appearance-none cursor-pointer relative z-0">
+                                    <option>Suất ăn công nghiệp</option>
+                                    <option>Suất ăn trường học</option>
+                                    <option>Vệ sinh công nghiệp</option>
+                                    <option>Cung ứng thực phẩm</option>
+                                    <option>Tư vấn thiết kế bếp</option>
+                                </select>
+                                <i data-lucide="chevron-down" class="absolute right-6 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-300 pointer-events-none"></i>
+                            </div>
+                        </div>
+
+                        <div class="space-y-2">
+                            <label class="text-[10px] font-black uppercase tracking-widest text-gray-400 ml-4">Nội dung yêu cầu</label>
+                            <textarea rows="4" placeholder="Bạn cần chúng tôi hỗ trợ vấn đề gì?" class="w-full px-8 py-6 bg-white border border-gray-100 rounded-[2rem] focus:ring-4 focus:ring-orange-500/10 focus:border-orange-500 outline-none transition-all duration-300 font-bold text-gray-700 shadow-sm resize-none"></textarea>
+                        </div>
+
+                        <button type="submit" class="w-full py-5 bg-[#0F172A] text-white rounded-[2rem] font-black uppercase tracking-[0.2em] hover:bg-orange-500 hover:-translate-y-1 transition-all duration-300 shadow-xl shadow-[#0F172A]/10 group flex items-center justify-center gap-4">
+                            Gửi thông tin ngay
+                            <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-2 transition-transform"></i>
+                        </button>
+                    </form>
+                </div>
+
+                <!-- Branch & Image -->
+                <div class="lg:w-1/2 flex flex-col gap-8" data-animate="fade-left">
+                    <div class="relative rounded-[3rem] overflow-hidden aspect-[4/3] group shadow-2xl">
+                        <img src="/assets/images/guiyeucaulienhe.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                        <div class="absolute bottom-8 left-8 right-8 text-white">
+                            <h3 class="text-3xl font-black mb-2">Đội ngũ chuyên nghiệp</h3>
+                            <p class="text-sm text-gray-300 opacity-90">Hơn 500 nhân sự luôn sẵn sàng phục vụ 24/7 với chất lượng tốt nhất.</p>
                         </div>
                     </div>
 
-                    <div class="flex flex-col pt-2">
-                        <label class="text-sm font-bold text-black mb-1">Nội dung tin nhắn</label>
-                        <textarea rows="1" class="w-full bg-transparent border-b border-gray-400 focus:border-orange-500 outline-none py-2 resize-none"></textarea>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-white p-8 rounded-[2.5rem] border border-gray-100 shadow-xl shadow-gray-200/50 group hover:bg-orange-500 transition-all duration-500">
+                            <h4 class="text-lg font-black text-gray-900 mb-2 group-hover:text-white transition-colors">Khu vực Miền Nam</h4>
+                            <p class="text-xs text-gray-500 group-hover:text-orange-50 transition-colors leading-relaxed">
+                                Phục vụ tại TP.HCM, Bình Dương, Đồng Nai, Long An và các tỉnh lân cận.
+                            </p>
+                        </div>
+                        <div class="bg-[#0F172A] p-8 rounded-[2.5rem] shadow-xl shadow-gray-900/20 group hover:bg-orange-500 transition-all duration-500">
+                            <h4 class="text-lg font-black text-white mb-2">Khu vực Miền Trung</h4>
+                            <p class="text-xs text-gray-400 group-hover:text-orange-50 transition-colors leading-relaxed">
+                                Phục vụ tại Đà Nẵng, Quảng Nam, Quảng Ngãi và các tỉnh miền Trung.
+                            </p>
+                        </div>
                     </div>
 
-                    <div class="pt-4">
-                        <button type="submit" class="bg-[#f39200] hover:bg-orange-600 text-white font-bold px-10 py-3 rounded-full shadow-lg transition-transform active:scale-95 uppercase text-sm">Gửi yêu cầu</button>
+                    <!-- Live Contact -->
+                    <div class="bg-orange-50 p-8 rounded-[2.5rem] border border-orange-100 flex items-center justify-between gap-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 bg-white rounded-2xl flex items-center justify-center shadow-md">
+                                <i data-lucide="message-square" class="w-6 h-6 text-orange-500"></i>
+                            </div>
+                            <div>
+                                <p class="text-xs font-black text-orange-500 uppercase tracking-widest mb-1">Chat trực tuyến</p>
+                                <p class="text-sm font-bold text-gray-900">Zalo/Viber hỗ trợ nhanh</p>
+                            </div>
+                        </div>
+                        <a href="#" class="px-6 py-3 bg-white text-orange-500 rounded-xl font-black text-[10px] uppercase tracking-widest shadow-sm hover:bg-orange-500 hover:text-white transition-all">
+                            Chat ngay
+                        </a>
                     </div>
-                </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= MAPS SECTION ================= -->
+    <section class="py-24">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16" data-animate="fade-up">
+                <div>
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="w-10 h-1 bg-orange-500 rounded-full"></div>
+                        <span class="text-sm font-black text-orange-500 uppercase tracking-widest">Our Locations</span>
+                    </div>
+                    <h2 class="text-4xl font-black text-gray-900">Vị trí của chúng tôi</h2>
+                </div>
+                <div class="flex gap-4">
+                    <button class="p-4 bg-gray-100 rounded-full hover:bg-orange-500 hover:text-white transition-all"><i data-lucide="chevron-left" class="w-5 h-5"></i></button>
+                    <button class="p-4 bg-gray-100 rounded-full hover:bg-orange-500 hover:text-white transition-all"><i data-lucide="chevron-right" class="w-5 h-5"></i></button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" data-animate="fade-up">
+                <!-- Map 1 -->
+                <div class="group relative rounded-[3rem] overflow-hidden bg-white shadow-2xl h-[450px]">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3725.1957256191!2d105.7468305759684!3d20.98478958928374!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3134532be4070a7b%3A0x6335f6e80b8d3f1!2sThe%20Pride!5e0!3m2!1svi!2s!4v1710000000000!5m2!1svi!2s" class="w-full h-full grayscale hover:grayscale-0 transition-all duration-1000 border-none"></iframe>
+                    <div class="absolute bottom-6 left-6 right-6 p-6 bg-white/95 backdrop-blur-md rounded-3xl border border-gray-100 shadow-xl group-hover:-translate-y-2 transition-transform duration-500">
+                        <span class="text-[9px] font-black text-orange-500 uppercase tracking-widest block mb-2">Chi nhánh TP.HCM</span>
+                        <h4 class="font-black text-gray-900 mb-2">HuitMeal Trụ sở chính</h4>
+                        <p class="text-[11px] text-gray-500 font-medium flex items-start gap-2">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 shrink-0 text-orange-500 mt-0.5"></i>
+                            140 Lê Trọng Tấn, Tây Thạnh, HCM
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Map 2 -->
+                <div class="group relative rounded-[3rem] overflow-hidden bg-white shadow-2xl h-[450px]">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3918.5201202860473!2d106.704253175704!3d10.848039157868!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3175287968536f93%3A0x2863901b0665476a!2zS2h1IMSQw7QgVGjhu4sgVuG6oW4gUGjDumM!5e0!3m2!1svi!2s!4v1710000000000!5m2!1svi!2s" class="w-full h-full grayscale hover:grayscale-0 transition-all duration-1000 border-none"></iframe>
+                    <div class="absolute bottom-6 left-6 right-6 p-6 bg-white/95 backdrop-blur-md rounded-3xl border border-gray-100 shadow-xl group-hover:-translate-y-2 transition-transform duration-500">
+                        <span class="text-[9px] font-black text-orange-500 uppercase tracking-widest block mb-2">Chi nhánh Miền Đông</span>
+                        <h4 class="font-black text-gray-900 mb-2">HuitMeal Vạn Phúc</h4>
+                        <p class="text-[11px] text-gray-500 font-medium flex items-start gap-2">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 shrink-0 text-orange-500 mt-0.5"></i>
+                            Khu đô thị Vạn Phúc, TP. Thủ Đức
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Map 3 -->
+                <div class="group relative rounded-[3rem] overflow-hidden bg-white shadow-2xl h-[450px]">
+                    <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3835.733333333333!2d108.3666666666666!3d15.88333333333333!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31420e6e6e6e6e6e%3A0x6e6e6e6e6e6e6e6e!2zQ-G6qW0gQW4sIEjhu5lpIEFuLCBRdeG6o25nIE5hbQ!5e0!3m2!1svi!2s!4v1710000000000!5m2!1svi!2s" class="w-full h-full grayscale hover:grayscale-0 transition-all duration-1000 border-none"></iframe>
+                    <div class="absolute bottom-6 left-6 right-6 p-6 bg-white/95 backdrop-blur-md rounded-3xl border border-gray-100 shadow-xl group-hover:-translate-y-2 transition-transform duration-500">
+                        <span class="text-[9px] font-black text-orange-500 uppercase tracking-widest block mb-2">Chi nhánh Miền Trung</span>
+                        <h4 class="font-black text-gray-900 mb-2">HuitMeal Hội An</h4>
+                        <p class="text-[11px] text-gray-500 font-medium flex items-start gap-2">
+                            <i data-lucide="map-pin" class="w-3.5 h-3.5 shrink-0 text-orange-500 mt-0.5"></i>
+                            Cẩm An, TP. Hội An, Quảng Nam
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= FAQ SECTION ================= -->
+    <section class="py-24 bg-[#0F172A] text-white relative overflow-hidden">
+        <!-- Abstract Glow -->
+        <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-orange-500/10 rounded-full blur-[120px] -translate-y-1/2 translate-x-1/3"></div>
+        <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-blue-500/10 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3"></div>
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row gap-20">
+                <div class="lg:w-1/3" data-animate="fade-right">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-10 h-1 bg-orange-500 rounded-full"></div>
+                        <span class="text-sm font-black text-orange-500 uppercase tracking-widest">Knowledge Base</span>
+                    </div>
+                    <h2 class="text-5xl font-black mb-8 leading-tight">Những câu hỏi <br/> <span class="text-orange-500">Thường gặp</span></h2>
+                    <p class="text-gray-400 text-lg mb-12 leading-relaxed font-medium">Giải đáp nhanh những thắc mắc phổ biến nhất để bạn an tâm khi lựa chọn dịch vụ của chúng tôi.</p>
+                    
+                    <div class="space-y-6">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shadow-xl">
+                                <i data-lucide="check-circle" class="w-5 h-5 text-orange-500"></i>
+                            </div>
+                            <span class="text-sm font-bold text-white/90">Giải pháp toàn diện</span>
+                        </div>
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center border border-white/10 shadow-xl">
+                                <i data-lucide="check-circle" class="w-5 h-5 text-orange-500"></i>
+                            </div>
+                            <span class="text-sm font-bold text-white/90">Hỗ trợ nhanh chóng</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:w-2/3 space-y-4" data-animate="fade-left">
+                    <!-- FAQ Item 1 -->
+                    <div x-data="{ open: false }" class="bg-white/5 backdrop-blur-sm rounded-[2rem] border border-white/10 overflow-hidden transition-all duration-500" :class="open ? 'bg-white/10 border-orange-500/50 ring-1 ring-orange-500/50' : ''">
+                        <button @@click="open = !open" class="w-full p-8 flex items-center justify-between text-left group">
+                            <span class="text-xl font-bold transition-colors" :class="open ? 'text-orange-500' : 'text-white'">HuitMeal có phục vụ tận nơi cho doanh nghiệp nhỏ không?</span>
+                            <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center transition-all duration-500 group-hover:bg-orange-500" :class="open ? 'rotate-180 bg-orange-500 shadow-lg shadow-orange-500/30' : ''">
+                                <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                            </div>
+                        </button>
+                        <div x-show="open" x-collapse>
+                            <div class="px-8 pb-8 text-gray-400 leading-relaxed text-lg font-medium">
+                                Có, chúng tôi cung cấp các gói dịch vụ linh hoạt cho mọi quy mô doanh nghiệp. Với các đơn vị quy mô nhỏ, chúng tôi cung cấp giải pháp giao suất ăn tận nơi từ bếp trung tâm của HuitMeal, đảm bảo đúng giờ và giữ nguyên hương vị.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 2 -->
+                    <div x-data="{ open: false }" class="bg-white/5 backdrop-blur-sm rounded-[2rem] border border-white/10 overflow-hidden transition-all duration-500" :class="open ? 'bg-white/10 border-orange-500/50 ring-1 ring-orange-500/50' : ''">
+                        <button @@click="open = !open" class="w-full p-8 flex items-center justify-between text-left group">
+                            <span class="text-xl font-bold transition-colors" :class="open ? 'text-orange-500' : 'text-white'">Làm sao để đảm bảo vệ sinh an toàn thực phẩm?</span>
+                            <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center transition-all duration-500 group-hover:bg-orange-500" :class="open ? 'rotate-180 bg-orange-500 shadow-lg shadow-orange-500/30' : ''">
+                                <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                            </div>
+                        </button>
+                        <div x-show="open" x-collapse>
+                            <div class="px-8 pb-8 text-gray-400 leading-relaxed text-lg font-medium">
+                                HuitMeal áp dụng quy trình kiểm soát 1 chiều theo tiêu chuẩn ISO 22000:2018 và HACCP. Mọi nguyên liệu đều có nguồn gốc rõ ràng, được kiểm định định kỳ và lưu mẫu 24h theo đúng quy định của Bộ Y tế.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- FAQ Item 3 -->
+                    <div x-data="{ open: false }" class="bg-white/5 backdrop-blur-sm rounded-[2rem] border border-white/10 overflow-hidden transition-all duration-500" :class="open ? 'bg-white/10 border-orange-500/50 ring-1 ring-orange-500/50' : ''">
+                        <button @@click="open = !open" class="w-full p-8 flex items-center justify-between text-left group">
+                            <span class="text-xl font-bold transition-colors" :class="open ? 'text-orange-500' : 'text-white'">Quy trình thanh toán và ký kết hợp đồng như thế nào?</span>
+                            <div class="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center transition-all duration-500 group-hover:bg-orange-500" :class="open ? 'rotate-180 bg-orange-500 shadow-lg shadow-orange-500/30' : ''">
+                                <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                            </div>
+                        </button>
+                        <div x-show="open" x-collapse>
+                            <div class="px-8 pb-8 text-gray-400 leading-relaxed text-lg font-medium">
+                                Chúng tôi hỗ trợ ký kết hợp đồng điện tử nhanh chóng và bảo mật. Hình thức thanh toán linh hoạt theo tháng hoặc theo kỳ thanh toán thỏa thuận, giúp doanh nghiệp dễ dàng quản lý chi phí.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= NEWSLETTER SECTION ================= -->
+    <section class="py-20">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-[3rem] p-12 md:p-20 text-center text-white shadow-2xl shadow-orange-500/20 relative overflow-hidden group" data-animate="zoom-in">
+                <i data-lucide="send" class="absolute -top-10 -right-10 w-64 h-64 opacity-10 -rotate-12 group-hover:rotate-0 transition-transform duration-1000"></i>
+                <h2 class="text-4xl md:text-5xl font-black mb-6 relative z-10">Nhận báo giá và tư vấn miễn phí</h2>
+                <p class="text-lg text-orange-50 mb-10 opacity-90 relative z-10 max-w-2xl mx-auto font-medium">Chúng tôi sẽ phản hồi lại bạn trong vòng 30 phút để thảo luận về giải pháp suất ăn tối ưu nhất.</p>
+                <div class="flex flex-col md:flex-row gap-4 justify-center relative z-10 max-w-lg mx-auto">
+                    <input type="text" placeholder="Số điện thoại của bạn" class="flex-1 px-8 py-5 bg-white text-gray-900 rounded-2xl focus:ring-4 focus:ring-black/10 outline-none font-bold placeholder:text-gray-400">
+                    <button class="px-10 py-5 bg-[#0F172A] text-white rounded-2xl font-black uppercase tracking-widest hover:bg-white hover:text-[#0F172A] transition-all shadow-xl">
+                        Tư vấn ngay
+                    </button>
+                </div>
             </div>
         </div>
     </section>

@@ -1,166 +1,314 @@
 @{
-    ViewData["Title"] = "Thực đơn Trường học";
+    ViewData["Title"] = "Thực đơn Trường học - HuitMeal";
     Layout = "_LayoutCustomer";
-    string level = ViewData["Level"] as string ?? "mamnon";
-    
-    string title = "Suất ăn Trường Học";
-    string desc = "Đảm bảo dinh dưỡng học đường chuẩn hóa.";
-    string imgHero = "https://images.unsplash.com/photo-1576867757603-05b134ebc379?q=80&w=1920";
-    
-    if (level == "mamnon") {
-        title = "Thực đơn Khối Mầm non (3-5 tuổi)";
-        desc = "Thức ăn được cắt nhỏ, hầm nhừ, hạn chế gia vị cay nóng, sử dụng màu sắc tự nhiên giúp các bé hứng thú hơn trong bữa ăn. Tuyệt đối không dùng xương vụn.";
-        imgHero = "https://images.unsplash.com/photo-1516627145497-ae6968895b74?q=80&w=1920";
-    } else if (level == "tieuhoc") {
-        title = "Thực đơn Khối Tiểu học (6-11 tuổi)";
-        desc = "Tập trung cung cấp đầy đủ nhóm chất cơ bản, đa dạng thực đơn để tránh cảm giác nhàm chán, khuyến khích các bé ăn nhiều rau củ quả hơn.";
-        imgHero = "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=1920";
+    string level = ViewData["Level"] as string ?? Context.Request.Query["level"].ToString();
+    if (string.IsNullOrEmpty(level)) level = "mamnon";
+
+    var levels = new[] {
+        new { Id="mamnon",  Label="Mầm Non",  Age="3–5 tuổi" },
+        new { Id="tieuhoc", Label="Tiểu Học", Age="6–11 tuổi" },
+        new { Id="thcs",    Label="THCS",     Age="12–15 tuổi" },
+        new { Id="thpt",    Label="THPT",     Age="16–18 tuổi" },
+    };
+
+    string pageTitle = "Mầm Non (3–5 tuổi)";
+    string pageDesc  = "Thức ăn cắt nhỏ, hầm mềm, màu sắc tự nhiên — kích thích trẻ ăn ngon, tuyệt đối không dùng xương vụn.";
+    string heroImg   = "https://images.unsplash.com/photo-1516627145497-ae6968895b74?q=80&w=1920";
+    string accentColor = "green";
+
+    if (level == "tieuhoc") {
+        pageTitle = "Tiểu Học (6–11 tuổi)";
+        pageDesc  = "Đa dạng nhóm chất, khuyến khích ăn rau củ quả, cân bằng năng lượng cho vận động và học tập cả ngày.";
+        heroImg   = "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=1920";
+        accentColor = "blue";
     } else if (level == "thcs") {
-        title = "Thực đơn Khối THCS (12-15 tuổi)";
-        desc = "Giai đoạn bản lề của tuổi dậy thì. Thực đơn được tăng cường Protein và Canxi giúp phát triển chiều cao vượt trội và duy trì năng lượng học tập.";
-        imgHero = "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1920";
+        pageTitle = "THCS (12–15 tuổi)";
+        pageDesc  = "Tăng cường Protein & Canxi cho giai đoạn dậy thì, duy trì năng lượng học tập và phát triển chiều cao.";
+        heroImg   = "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1920";
+        accentColor = "purple";
     } else if (level == "thpt") {
-        title = "Thực đơn Khối THPT (16-18 tuổi)";
-        desc = "Khẩu phần ăn lớn, đầy đặn, đa dạng ẩm thực (có thêm thức ăn nhẹ Á - Âu). Giúp các em duy trì trí óc minh mẫn trong mùa thi cử áp lực.";
-        imgHero = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1920";
+        pageTitle = "THPT (16–18 tuổi)";
+        pageDesc  = "Khẩu phần lớn, đa dạng ẩm thực Á–Âu, giúp học sinh minh mẫn trong mùa thi cử áp lực.";
+        heroImg   = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1920";
+        accentColor = "orange";
     }
+
+    // ===== MOCK MENU DATA (5 days × 3 meals) =====
+    var menu = new Dictionary<string, (string Name, string Tag, string TagColor, string Kcal, string Img, string[] Items)[]> {
+        ["t2"] = new[] {
+            ("Bữa chính buổi trưa", "BỮA CHÍNH", "green", "650 kcal",
+             "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&q=80",
+             new[]{"Cơm gạo ST25 dẻo thơm","Thịt heo kho trứng cút","Đậu hũ chiên sả ớt","Canh bí đỏ hầm xương","Dưa leo muối chua"}),
+            ("Bữa phụ buổi xế", "BỮA PHỤ", "blue", "220 kcal",
+             "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=500&q=80",
+             new[]{"Bánh bông lan trứng muối","Sữa chua lên men Probi","Trái cây: Thanh long đỏ"}),
+            ("Tráng miệng & bổ sung", "TRÁNG MIỆNG", "orange", "120 kcal",
+             "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=500&q=80",
+             new[]{"Chè đậu xanh nước cốt dừa","Sữa tươi Vinamilk 180ml"}),
+        },
+        ["t3"] = new[] {
+            ("Cơm gà dinh dưỡng", "BỮA CHÍNH", "green", "680 kcal",
+             "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500&q=80",
+             new[]{"Cơm trắng gạo Jasmine","Đùi gà nướng mật ong","Rau muống xào tỏi","Canh cà chua trứng","Dưa cải trắng muối"}),
+            ("Bánh & sữa chiều", "BỮA PHỤ", "blue", "200 kcal",
+             "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=500&q=80",
+             new[]{"Bánh mì ngọt nhân kem","Nước cam ép tươi 200ml","Chuối chín vừa"}),
+            ("Chè & hoa quả", "TRÁNG MIỆNG", "orange", "130 kcal",
+             "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=500&q=80",
+             new[]{"Thạch trái cây nhiều màu","Sữa đậu nành ấm 200ml"}),
+        },
+        ["t4"] = new[] {
+            ("Bữa trưa cá biển", "BỮA CHÍNH", "green", "620 kcal",
+             "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=500&q=80",
+             new[]{"Cơm trắng dẻo","Cá hú kho gừng","Bắp cải xào nấm","Canh rau dền tôm","Dưa hành muối"}),
+            ("Xôi & chè", "BỮA PHỤ", "blue", "250 kcal",
+             "https://images.unsplash.com/photo-1586444248902-2f64eddc13df?w=500&q=80",
+             new[]{"Xôi đậu xanh vừng đen","Chè hạt sen long nhãn","Trái cây: Nho không hạt"}),
+            ("Tráng miệng nhẹ", "TRÁNG MIỆNG", "orange", "100 kcal",
+             "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=500&q=80",
+             new[]{"Pudding trứng hấp","Nước lọc khoáng"}),
+        },
+        ["t5"] = new[] {
+            ("Mì Ý dinh dưỡng", "BỮA CHÍNH", "green", "700 kcal",
+             "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&q=80",
+             new[]{"Mì Ý xào bò bằm","Salad rau trộn dầu olive","Súp kem bắp ngọt","Bánh mì nướng bơ tỏi","Trái cây tráng miệng"}),
+            ("Sữa & bánh quy", "BỮA PHỤ", "blue", "180 kcal",
+             "https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=500&q=80",
+             new[]{"Bánh quy yến mạch mật ong","Sữa tươi có đường 200ml","Táo đỏ nhập khẩu"}),
+            ("Chè và hoa quả", "TRÁNG MIỆNG", "orange", "140 kcal",
+             "https://images.unsplash.com/photo-1563805042-7684c019e1cb?w=500&q=80",
+             new[]{"Chè bưởi mật ong","Dưa hấu mát lạnh"}),
+        },
+        ["t6"] = new[] {
+            ("Cơm chiên dương châu", "BỮA CHÍNH", "green", "730 kcal",
+             "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=500&q=80",
+             new[]{"Cơm chiên dương châu xúc xích","Tôm rang muối ớt","Canh khổ qua hầm giò","Đậu que xào tỏi","Dưa leo ngâm giấm"}),
+            ("Bánh ngọt cuối tuần", "BỮA PHỤ", "blue", "230 kcal",
+             "https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=500&q=80",
+             new[]{"Bánh crepe nhân kem tươi","Nước ép táo 200ml","Việt quất tươi"}),
+            ("Kem & trái cây", "TRÁNG MIỆNG", "orange", "160 kcal",
+             "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=500&q=80",
+             new[]{"Kem que sữa dâu","Dưa hấu & xoài cắt sẵn"}),
+        },
+    };
+
+    var tagColorMap = new Dictionary<string, string> {
+        ["green"]  = "bg-green-100 text-green-700 border-green-200",
+        ["blue"]   = "bg-blue-100 text-blue-700 border-blue-200",
+        ["orange"] = "bg-orange-100 text-orange-700 border-orange-200",
+    };
 }
 
-<div class="bg-gray-50 font-sans min-h-screen pb-20">
-    <!-- ===== HERO SECTION ===== -->
-    <section class="relative h-[300px] md:h-[400px] flex items-center justify-center overflow-hidden">
-        <img src="@imgHero" class="absolute inset-0 w-full h-full object-cover">
-        <div class="absolute inset-0 bg-black/60"></div>
-        <div class="relative z-10 text-center px-4">
-            <span class="inline-block px-4 py-1.5 bg-yellow-400 text-black font-bold rounded-full mb-4 text-sm tracking-widest uppercase">
-                DINH DƯỠNG HỌC ĐƯỜNG CHUYÊN SÂU
+<div class="w-full bg-white overflow-hidden">
+
+    <!-- HERO -->
+    <section class="relative h-[380px] md:h-[480px] flex items-end overflow-hidden">
+        <img src="@heroImg" class="absolute inset-0 w-full h-full object-cover brightness-[0.55]" />
+        <div class="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-gray-900/40 to-transparent"></div>
+        <div class="relative z-10 max-w-7xl mx-auto px-6 pb-14 w-full"
+             x-data="{v:false}" x-init="setTimeout(()=>v=true,80)"
+             x-show="v" x-transition:enter="transition duration-700" x-transition:enter-start="opacity-0 translate-y-6" x-transition:enter-end="opacity-100 translate-y-0">
+            <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-300 text-[10px] font-bold uppercase tracking-widest mb-4">
+                <i data-lucide="graduation-cap" class="w-3 h-3"></i> Thực đơn học đường HuitMeal
             </span>
-            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">@title</h1>
-            <p class="text-gray-200 mt-2 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">@desc</p>
+            <h1 class="text-4xl md:text-6xl font-black text-white tracking-tight leading-tight mb-3">@pageTitle</h1>
+            <p class="text-gray-300 max-w-2xl font-medium leading-relaxed">@pageDesc</p>
         </div>
     </section>
 
-    <!-- ===== MEALS MENU ===== -->
-    <section class="max-w-7xl mx-auto px-6 py-16" x-data="{ tab: 't2' }">
+    <!-- LEVEL SWITCHER -->
+    <div class="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center gap-2 overflow-x-auto py-4 no-scrollbar">
+                @foreach (var lv in levels)
+                {
+                    <a href="/Customer/SchoolMenu?level=@lv.Id"
+                       class="flex-shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all @(lv.Id == level ? "bg-orange-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200")">
+                        @lv.Label <span class="text-[10px] font-semibold opacity-70 ml-1">@lv.Age</span>
+                    </a>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- NUTRITION HIGHLIGHT STRIP -->
+    <div class="bg-gray-50 border-b border-gray-100 py-5">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex flex-wrap gap-4 items-center">
+                <span class="text-xs font-bold text-gray-500 uppercase tracking-widest">Cam kết dinh dưỡng:</span>
+                @foreach (var badge in new[] {"ISO 22000:2018","VietGAP","Không chất bảo quản","Không phẩm màu công nghiệp","Xoay vòng 30 ngày"})
+                {
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 rounded-full text-xs font-semibold text-gray-700">
+                        <i data-lucide="check-circle" class="w-3 h-3 text-green-500"></i> @badge
+                    </span>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- MENU SECTION -->
+    <section class="py-16 max-w-7xl mx-auto px-6" x-data="{ day: 't2' }">
         <div class="text-center mb-12">
-            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Menu Tham Khảo Tuần Này</h2>
-            <p class="text-gray-500 max-w-2xl mx-auto">Thực đơn tại HuitMeal luôn được thiết kế mới xoay vòng theo 30 ngày, đảm bảo học sinh không phải ăn lặp lại một món bất kì trong suốt 4 tuần.</p>
+            <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-2">Thực đơn tham khảo</p>
+            <h2 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight mb-3">Thực đơn tuần này</h2>
+            <p class="text-gray-500 max-w-xl mx-auto text-sm leading-relaxed">Xoay vòng 30 ngày, đảm bảo không lặp lại một món trong suốt 4 tuần liên tiếp.</p>
         </div>
-        
+
         <!-- DAY TABS -->
-        <div class="flex flex-wrap justify-center gap-3 mb-12">
-            <button x-on:click="tab = 't2'" :class="tab === 't2' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-500 hover:bg-orange-50 border border-gray-200'" class="px-6 py-2 rounded-full font-bold transition-all duration-300">Thứ 2</button>
-            <button x-on:click="tab = 't3'" :class="tab === 't3' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-500 hover:bg-orange-50 border border-gray-200'" class="px-6 py-2 rounded-full font-bold transition-all duration-300">Thứ 3</button>
-            <button x-on:click="tab = 't4'" :class="tab === 't4' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-500 hover:bg-orange-50 border border-gray-200'" class="px-6 py-2 rounded-full font-bold transition-all duration-300">Thứ 4</button>
-            <button x-on:click="tab = 't5'" :class="tab === 't5' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-500 hover:bg-orange-50 border border-gray-200'" class="px-6 py-2 rounded-full font-bold transition-all duration-300">Thứ 5</button>
-            <button x-on:click="tab = 't6'" :class="tab === 't6' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-500 hover:bg-orange-50 border border-gray-200'" class="px-6 py-2 rounded-full font-bold transition-all duration-300">Thứ 6</button>
-        </div>
-
-        <!-- GRID SECTION (Thu 2 active by default to demonstrate) -->
-        <div x-show="tab === 't2'" x-transition.opacity.duration.500ms class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            
-            @if(level == "mamnon" || level == "tieuhoc") {
-                <!-- Combo Trưa -->
-                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
-                    <div class="relative overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=600" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
-                    </div>
-                    <div class="p-5 flex flex-col flex-grow">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Suất Ăn Trưa (Món mặn)</h3>
-                            <span class="text-green-500 font-bold whitespace-nowrap bg-green-50 px-2 py-1 rounded text-xs border border-green-100">BỮA CHÍNH</span>
-                        </div>
-                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Thịt nạc băm xào nấm rơm</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Trứng đúc thịt nạc mềm</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Giá hẹ xào đậu hũ non</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Canh mồng tơi nấu ngao</li>
-                        </ul>
-                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
-                            Xem chi tiết
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Bữa phụ chiều -->
-                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
-                    <div class="relative overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1551782450-a2132b4ba21d?q=80&w=600" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
-                    </div>
-                    <div class="p-5 flex flex-col flex-grow">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Bữa phụ xế chiều</h3>
-                            <span class="text-blue-500 font-bold whitespace-nowrap bg-blue-50 px-2 py-1 rounded text-xs border border-blue-100">BỮA PHỤ</span>
-                        </div>
-                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Bánh bông lan trứng muối mềm</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Sữa chua uống Probi lên men</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Hoa quả: Thanh long đỏ</li>
-                        </ul>
-                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
-                            Xem chi tiết
-                        </a>
-                    </div>
-                </div>
-            }
-
-            @if(level == "thcs" || level == "thpt") {
-                <!-- Khay cơm cấp 2-3 -->
-                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
-                    <div class="relative overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
-                    </div>
-                    <div class="p-5 flex flex-col flex-grow">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Sét Tăng Trưởng Toàn Diện</h3>
-                            <span class="text-orange-500 font-bold whitespace-nowrap bg-orange-50 px-2 py-1 rounded text-xs border border-orange-100">800 KCAL</span>
-                        </div>
-                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Bò xào hành tây măng tây</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Cá lóc chiên mắm xoài</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Cải chíp xào tỏi</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Canh chân giò bí đỏ</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Tráng miệng: Nho không hạt</li>
-                        </ul>
-                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
-                            Xem chi tiết
-                        </a>
-                    </div>
-                </div>
-
-                <!-- Khay B -->
-                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
-                    <div class="relative overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=600" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
-                        <div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">BEST RATINGS</div>
-                    </div>
-                    <div class="p-5 flex flex-col flex-grow">
-                        <div class="flex justify-between items-start mb-3">
-                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Sét Cơm Gà Dinh Dưỡng</h3>
-                            <span class="text-orange-500 font-bold whitespace-nowrap bg-orange-50 px-2 py-1 rounded text-xs border border-orange-100">750 KCAL</span>
-                        </div>
-                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Đùi gà xối mỡ chua ngọt</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Salad Nga trộn mayonnaise</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Đậu ve luộc chấm kho quẹt</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Canh rau dền tôm thịt</li>
-                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Sữa chua Vinamilk</li>
-                        </ul>
-                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
-                            Xem chi tiết
-                        </a>
-                    </div>
-                </div>
+        <div class="flex justify-center flex-wrap gap-3 mb-12">
+            @foreach (var (day, label) in new[] {("t2","Thứ Hai"),("t3","Thứ Ba"),("t4","Thứ Tư"),("t5","Thứ Năm"),("t6","Thứ Sáu")})
+            {
+                <button @@click="day='@day'"
+                        :class="day==='@day' ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300'"
+                        class="px-7 py-3 rounded-full font-bold text-sm transition-all">@label</button>
             }
         </div>
-        
-        <!-- Placeholder text for other days as they are just mock -->
-        <div x-show="tab !== 't2'" style="display: none;" class="text-center py-20 border-2 border-dashed border-gray-200 rounded-3xl bg-white">
-            <i data-lucide="calendar" class="w-12 h-12 text-gray-300 mx-auto mb-4"></i>
-            <h3 class="text-xl font-bold text-gray-500 mb-2">Đang tải biểu mẫu thực đơn ngày khác...</h3>
-            <p class="text-gray-400 text-sm">Do đây là dữ liệu demo nên tạm thời chỉ hiển thị Thứ 2.</p>
-        </div>
 
+        <!-- T2 -->
+        @foreach (var (dayKey, dayLabel) in new[] {("t2","Thứ Hai"),("t3","Thứ Ba"),("t4","Thứ Tư"),("t5","Thứ Năm"),("t6","Thứ Sáu")})
+        {
+            <div x-show="day==='@dayKey'"
+                 x-transition:enter="transition duration-400 ease-out"
+                 x-transition:enter-start="opacity-0 translate-y-4"
+                 x-transition:enter-end="opacity-100 translate-y-0">
+
+                <!-- Day header -->
+                <div class="flex items-center gap-4 mb-8">
+                    <div class="w-10 h-10 rounded-full bg-orange-500 flex items-center justify-center">
+                        <i data-lucide="calendar" class="w-5 h-5 text-white"></i>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-400 font-semibold uppercase tracking-widest">Thực đơn</p>
+                        <h3 class="text-lg font-black text-gray-900">@dayLabel</h3>
+                    </div>
+                    <div class="ml-auto hidden md:flex items-center gap-2 text-xs text-gray-500 font-medium bg-gray-50 border border-gray-200 px-4 py-2 rounded-full">
+                        <i data-lucide="flame" class="w-3.5 h-3.5 text-orange-500"></i>
+                        Tổng calo: ~970–1,110 kcal/ngày
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    @foreach (var meal in menu[dayKey])
+                    {
+                        var tc = tagColorMap.GetValueOrDefault(meal.TagColor, "bg-gray-100 text-gray-600 border-gray-200");
+                        <div class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 hover:-translate-y-1 transition-all duration-400 flex flex-col">
+                            <div class="relative h-48 overflow-hidden">
+                                <img src="@meal.Img" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                                <span class="absolute top-3 left-3 text-[10px] font-black px-3 py-1 rounded-full border @tc">@meal.Tag</span>
+                                <span class="absolute top-3 right-3 bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-black px-3 py-1 rounded-full flex items-center gap-1">
+                                    <i data-lucide="flame" class="w-3 h-3 text-orange-500"></i> @meal.Kcal
+                                </span>
+                            </div>
+                            <div class="p-6 flex flex-col flex-1">
+                                <h4 class="font-black text-gray-900 text-base mb-4">@meal.Name</h4>
+                                <ul class="space-y-2 flex-1 mb-5">
+                                    @foreach (var item in meal.Items)
+                                    {
+                                        <li class="flex items-start gap-2 text-sm text-gray-600">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0 mt-1.5"></span>
+                                            @item
+                                        </li>
+                                    }
+                                </ul>
+                                <div class="mt-auto pt-4 border-t border-gray-50 space-y-3">
+                                    <div class="flex items-center justify-between">
+                                        <div class="flex gap-1.5">
+                                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full font-semibold">Sạch</span>
+                                            <span class="text-[10px] bg-orange-50 text-orange-700 border border-orange-100 px-2 py-0.5 rounded-full font-semibold">Tươi</span>
+                                        </div>
+                                        <span class="text-xs text-gray-400 font-medium">HuitMeal ✓</span>
+                                    </div>
+                                    <a href="/Customer/MealDetail?level=@level&day=@dayKey"
+                                       class="flex items-center justify-center gap-2 w-full py-2.5 bg-orange-500 text-white rounded-xl font-bold text-sm hover:bg-orange-400 transition-all hover:gap-3">
+                                        Xem chi tiết thực đơn
+                                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        }
     </section>
 
+    <!-- WEEKLY NUTRITION TABLE -->
+    <section class="py-16 bg-gray-50 border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-10">
+                <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-2">Bảng dinh dưỡng</p>
+                <h2 class="text-3xl font-black text-gray-900 tracking-tight">Chỉ số dinh dưỡng trung bình / ngày</h2>
+            </div>
+            <div class="overflow-x-auto rounded-2xl border border-gray-100 shadow-sm">
+                <table class="w-full bg-white text-sm">
+                    <thead>
+                        <tr class="bg-orange-500 text-white text-xs font-bold uppercase tracking-widest">
+                            <th class="px-6 py-4 text-left">Dưỡng chất</th>
+                            <th class="px-6 py-4 text-center">Mầm Non</th>
+                            <th class="px-6 py-4 text-center">Tiểu Học</th>
+                            <th class="px-6 py-4 text-center">THCS</th>
+                            <th class="px-6 py-4 text-center">THPT</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-50">
+                        @foreach (var (nutrient, vals) in new (string, string[])[] {
+                            ("Năng lượng (kcal)", new[]{"800–900","950–1.050","1.100–1.250","1.300–1.500"}),
+                            ("Protein (g)", new[]{"25–30","35–40","50–60","65–75"}),
+                            ("Chất béo (g)", new[]{"25–30","30–35","35–45","45–55"}),
+                            ("Carbohydrate (g)", new[]{"120–140","150–170","170–200","200–230"}),
+                            ("Canxi (mg)", new[]{"700–800","800–1.000","1.000–1.200","1.000–1.200"}),
+                            ("Sắt (mg)", new[]{"8–10","10–12","12–15","15–18"}),
+                            ("Omega-3 (mg)", new[]{"700","900","1.100","1.300"}),
+                            ("Chất xơ (g)", new[]{"12–15","15–20","20–25","25–30"}),
+                        })
+                        {
+                            <tr class="hover:bg-orange-50/40 transition-colors">
+                                <td class="px-6 py-4 font-semibold text-gray-800">@nutrient</td>
+                                @foreach (var v in vals)
+                                {
+                                    <td class="px-6 py-4 text-center text-gray-600 font-medium">@v</td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA -->
+    <section class="py-20 bg-white">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="bg-gray-900 rounded-[40px] p-12 md:p-16 text-center relative overflow-hidden">
+                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-orange-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+                <div class="relative z-10">
+                    <p class="text-orange-400 text-xs font-bold uppercase tracking-[0.3em] mb-4">Hợp tác với HuitMeal</p>
+                    <h2 class="text-3xl md:text-5xl font-black text-white mb-5 tracking-tight">Đưa thực đơn này đến <span class="text-orange-400">trường của bạn</span></h2>
+                    <p class="text-gray-400 max-w-xl mx-auto font-medium mb-10 leading-relaxed">Liên hệ đội ngũ chuyên gia để nhận tư vấn thực đơn cá nhân hóa theo đặc thù từng trường, miễn phí tuần đầu tiên.</p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="/Customer/Contact"
+                           class="px-10 py-4 bg-orange-500 text-white rounded-full font-bold hover:bg-orange-400 hover:-translate-y-0.5 transition-all shadow-lg shadow-orange-500/25 text-sm">
+                            Đăng ký tư vấn miễn phí
+                        </a>
+                        <a href="/Customer/School"
+                           class="px-10 py-4 bg-white/10 text-white border border-white/20 rounded-full font-bold hover:bg-white/20 transition-all text-sm">
+                            Quay lại trang học đường
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 </div>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
+    </script>
+}

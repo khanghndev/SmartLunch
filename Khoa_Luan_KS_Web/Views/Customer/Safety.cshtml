@@ -1,125 +1,235 @@
 @{
-    ViewData["Title"] = "Vệ sinh an toàn thực phẩm";
+    ViewData["Title"] = "Vệ sinh an toàn thực phẩm - HuitMeal";
     Layout = "_LayoutCustomer";
 }
 
-<div class="w-full">
+<div class="w-full bg-white overflow-hidden">
+
     <!-- ===== HERO ===== -->
-    <section class="relative h-[400px] md:h-[500px] lg:h-[600px]">
-        <img src="/assets/images/banner-service.jpg" class="absolute inset-0 w-full h-full object-contain md:object-cover object-center" />
-        <div class="absolute inset-0 bg-black/40"></div>
-        <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 md:px-20 text-white">
-            <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight">
-                <span class="bg-yellow-400 text-black px-3 py-1 mr-2 inline-block">Vệ sinh</span>
-                <br class="md:hidden" /> an toàn thực phẩm
+    <section class="relative min-h-[560px] flex items-end overflow-hidden">
+        <img src="/assets/images/banner-service.jpg" class="absolute inset-0 w-full h-full object-cover brightness-60" />
+        <div class="absolute inset-0 bg-gradient-to-r from-gray-900/85 via-gray-900/50 to-transparent"></div>
+        <div class="relative z-10 max-w-7xl mx-auto px-6 pb-16 w-full"
+             x-data="{v:false}" x-init="setTimeout(()=>v=true,80)"
+             x-show="v" x-transition:enter="transition duration-700" x-transition:enter-start="opacity-0 translate-y-6" x-transition:enter-end="opacity-100 translate-y-0">
+            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-500/20 border border-green-400/30 text-green-300 text-[10px] font-bold uppercase tracking-[0.25em] mb-5">
+                <i data-lucide="shield-check" class="w-3 h-3"></i> Chất lượng & An toàn
+            </span>
+            <h1 class="text-5xl md:text-7xl font-black text-white tracking-tight leading-[1.05] mb-5">
+                Vệ sinh <span class="text-orange-400">an toàn</span> <br />thực phẩm
             </h1>
-        </div>
-    </section>
-
-    <!-- ===== SECTION 1 ===== -->
-    <section class="bg-white py-16">
-        <div class="max-w-7xl mx-auto px-6 md:px-20 grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- ===== LEFT ===== -->
-            <div class="grid grid-rows-2 gap-6 h-[520px]">
-                <div class="bg-[#f5f1e8] p-10 flex items-center">
-                    <h2 class="text-4xl font-bold leading-tight">
-                        <span class="bg-yellow-400 px-2">Cung ứng</span> thực phẩm <br /> sạch toàn quốc
-                    </h2>
-                </div>
-                <img src="/assets/images/s1.jpg" class="w-full h-full object-cover" />
-            </div>
-            <!-- ===== RIGHT ===== -->
-            <div class="relative h-[520px]">
-                <img src="/assets/images/s2.jpg" class="w-full h-full object-cover" />
-                <div class="absolute bottom-0 left-0 right-0 bg-black/40 text-white p-6">
-                    <p class="leading-relaxed">Từ khi ra đời, dịch vụ cung ứng nông sản, thực phẩm sạch của HUITMEAL đã giải quyết bài toán về nguồn cung ứng nguyên liệu cho cả những khách hàng nhỏ lẻ, và khách chuyên sỉ, nhà hàng, khách sạn,...</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- ===== SECTION 2 ===== -->
-    <section class="relative bg-[#2b2b2b] py-12 overflow-hidden text-white">
-        <div class="max-w-7xl mx-auto px-6 md:px-20 grid md:grid-cols-2 gap-10 items-center">
-            <!-- LEFT -->
-            <div class="max-w-xl">
-                <h2 class="text-3xl md:text-4xl font-bold mb-6 leading-tight">
-                    <span class="bg-yellow-400 text-black px-3 py-1 inline-block">Nguồn nguyên liệu</span><br />
-                    <span class="text-gray-200">sạch, uy tín, chất lượng</span>
-                </h2>
-                <p class="text-gray-300 mb-6 leading-relaxed">Xuất phát từ thế mạnh trong việc cung cấp suất ăn văn phòng, suất ăn công nghiệp; HUITMEAL đã nỗ lực phát triển dịch vụ phân phối nguyên liệu nông sản, thực phẩm sạch. Tùy theo từng yêu cầu cụ thể, chúng tôi sẽ lựa chọn những nguyên liệu tốt nhất, đóng gói, bảo quản và vận chuyển tới tận nơi.</p>
-                <p class="text-gray-300 mb-8 leading-relaxed">Khách hàng nhận và thanh toán đơn hàng cho nhân viên vận chuyển. Trong trường hợp khách hàng không hài lòng và quan ngại về an toàn thực phẩm, vui lòng liên hệ ngay với HUITMEAL để được xử lý ngay</p>
-                <a href="/Customer/ChooseHuitMeal">
-                    <button class="bg-orange-500 hover:bg-orange-600 transition px-6 py-3 rounded-full font-semibold">CHỌN HUITMEAL</button>
+            <p class="text-gray-300 text-lg max-w-xl font-medium leading-relaxed mb-8">
+                Từ nguồn nguyên liệu VietGAP đến bàn ăn — HuitMeal kiểm soát 100% quy trình, cam kết tuyệt đối an toàn cho từng bữa ăn.
+            </p>
+            <div class="flex flex-wrap gap-4">
+                <a href="/Customer/Contact" class="px-8 py-4 bg-orange-500 text-white rounded-full font-bold hover:bg-orange-400 hover:-translate-y-0.5 transition-all shadow-lg shadow-orange-500/30 text-sm">
+                    Tư vấn miễn phí
+                </a>
+                <a href="#advantages" class="px-8 py-4 bg-white/10 border border-white/20 text-white rounded-full font-bold hover:bg-white/20 transition-all text-sm backdrop-blur-sm">
+                    Xem ưu điểm
                 </a>
             </div>
-            <!-- RIGHT -->
-            <div class="relative flex justify-end items-center">
-                <div class="absolute right-[-120px] bottom-[-120px] w-[500px] h-[320px] bg-yellow-400 rounded-[50%] z-0"></div>
-                <img src="/assets/images/s3.png" alt="raw vegetables" class="relative z-10 w-[420px] md:w-[520px] object-contain" />
+        </div>
+        <!-- Stat strip -->
+        <div class="absolute bottom-0 right-0 hidden lg:flex">
+            @foreach(var (n,l) in new[]{("ISO 22000","Chứng nhận quốc tế"),("0","Sự cố ngộ độc"),("100%","Nguyên liệu VietGAP")})
+            {
+                <div class="bg-white/10 backdrop-blur-md border-l border-white/10 px-8 py-5 text-center">
+                    <p class="text-xl font-black text-orange-400">@n</p>
+                    <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">@l</p>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- ===== SUPPLY SECTION ===== -->
+    <section class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <!-- Images mosaic -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="rounded-[24px] overflow-hidden h-64">
+                        <img src="/assets/images/s1.jpg" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                    </div>
+                    <div class="rounded-[24px] overflow-hidden h-64 mt-8">
+                        <img src="/assets/images/s2.jpg" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                    </div>
+                    <div class="col-span-2 rounded-[24px] overflow-hidden h-48">
+                        <img src="https://images.unsplash.com/photo-1498579150354-977475b7ea0b?w=900&q=80" class="w-full h-full object-cover hover:scale-105 transition-transform duration-500" />
+                    </div>
+                </div>
+                <!-- Content -->
+                <div>
+                    <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-3">Cung ứng thực phẩm sạch</p>
+                    <h2 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight mb-6">
+                        Nguồn nguyên liệu <br /><span class="text-orange-600">sạch toàn quốc</span>
+                    </h2>
+                    <p class="text-gray-600 leading-relaxed mb-6">
+                        Từ khi ra đời, dịch vụ cung ứng nông sản và thực phẩm sạch của HuitMeal đã giải quyết bài toán nguồn cung cho cả khách hàng nhỏ lẻ lẫn chuyên sỉ, nhà hàng, khách sạn trên toàn quốc.
+                    </p>
+                    <p class="text-gray-600 leading-relaxed mb-8">
+                        Khách hàng nhận và thanh toán đơn hàng cho nhân viên vận chuyển. Trong trường hợp không hài lòng về an toàn thực phẩm, vui lòng liên hệ ngay với HuitMeal để được xử lý trong 24 giờ.
+                    </p>
+                    <div class="grid grid-cols-2 gap-4">
+                        @foreach(var (icon,label) in new[]{("leaf","Nông sản VietGAP"),("truck","Giao tận nơi"),("shield-check","Đổi trả 100%"),("clock","Xử lý 24h")})
+                        {
+                            <div class="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3">
+                                <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="@icon" class="w-4 h-4 text-orange-600"></i>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-800">@label</span>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
         </div>
     </section>
 
-    <!-- ===== ƯU ĐIỂM ===== -->
-    <section class="bg-gray-100 px-10 md:px-20 py-16" x-data="{ active: null }">
-        <h2 class="text-4xl font-bold mb-10 text-center">
-            <span class="bg-yellow-400 px-2">Ưu điểm</span> HUITMEAL
-        </h2>
-        <div class="space-y-4 max-w-4xl mx-auto">
-             <!-- Item 1 -->
-            <div class="rounded overflow-hidden shadow">
-                <div x-on:click="active = active === 0 ? null : 0" :class="active === 0 ? 'bg-yellow-400 text-black' : 'bg-[#e9e4d8]'" class="flex justify-between items-center px-6 py-5 cursor-pointer transition">
-                    <span class="font-semibold text-lg">An toàn tuyệt đối</span>
-                    <span class="text-2xl font-bold" x-text="active === 0 ? '−' : '+'"></span>
+    <!-- ===== PROCESS STEPS ===== -->
+    <section class="py-24 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-3">Quy trình kiểm soát</p>
+                <h2 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight">
+                    Từ <span class="text-green-600">nông trại</span> đến <span class="text-orange-600">bàn ăn</span>
+                </h2>
+            </div>
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8">
+                @foreach(var (step,icon,title,desc,color) in new[]{
+                    (1,"leaf","Tuyển chọn nguyên liệu","100% VietGAP, nguồn gốc rõ ràng, hợp đồng truy xuất","green"),
+                    (2,"test-tube-2","Kiểm định chất lượng","Phòng lab kiểm tra vi sinh & dư lượng hóa chất hàng ngày","blue"),
+                    (3,"chef-hat","Chế biến tiêu chuẩn","Bếp 1 chiều, HACCP, nhiệt độ giám sát liên tục","orange"),
+                    (4,"truck","Vận chuyển lạnh","Xe lạnh chuyên dụng, niêm phong an toàn","red"),
+                })
+                {
+                    <div class="group flex flex-col items-center text-center">
+                        <div class="w-16 h-16 rounded-2xl bg-white border border-gray-100 shadow-sm flex items-center justify-center mb-5 group-hover:bg-orange-500 group-hover:text-white group-hover:border-orange-500 group-hover:shadow-lg transition-all text-gray-600">
+                            <i data-lucide="@icon" class="w-7 h-7"></i>
+                        </div>
+                        <span class="text-[10px] font-black text-orange-500 uppercase tracking-widest mb-1">Bước @step</span>
+                        <h4 class="font-bold text-gray-900 mb-2 text-sm">@title</h4>
+                        <p class="text-xs text-gray-500 leading-relaxed">@desc</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== INGREDIENT SOURCE ===== -->
+    <section class="py-24 bg-gray-900">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+                <div>
+                    <p class="text-orange-400 text-xs font-bold uppercase tracking-[0.3em] mb-4">Nguồn nguyên liệu</p>
+                    <h2 class="text-4xl md:text-5xl font-black text-white tracking-tight leading-tight mb-6">
+                        Sạch, uy tín <br /><span class="text-orange-400">chất lượng đảm bảo</span>
+                    </h2>
+                    <p class="text-gray-400 leading-relaxed mb-5">
+                        HuitMeal đã nỗ lực phát triển dịch vụ phân phối nguyên liệu nông sản sạch từ nhiều năm. Tùy theo từng yêu cầu, chúng tôi lựa chọn nguyên liệu tốt nhất, đóng gói, bảo quản và vận chuyển tận nơi.
+                    </p>
+                    <p class="text-gray-400 leading-relaxed mb-10">
+                        So với việc tự tìm kiếm và mua nguyên liệu, khách hàng có thể sở hữu nông sản tươi sạch tại nhà với mức giá phải chăng hơn, tiết kiệm đáng kể chi phí và công sức.
+                    </p>
+                    <div class="flex flex-wrap gap-3 mb-8">
+                        @foreach(var cert in new[]{"ISO 22000:2018","HACCP","VietGAP","Bộ Y tế","Bộ NN&PTNT"})
+                        {
+                            <span class="flex items-center gap-1.5 bg-white/5 border border-white/10 rounded-full px-4 py-2 text-xs font-semibold text-gray-300">
+                                <i data-lucide="check-circle" class="w-3 h-3 text-green-400"></i> @cert
+                            </span>
+                        }
+                    </div>
+                    <a href="/Customer/ChooseHuitMeal" class="inline-flex items-center gap-2 px-8 py-4 bg-orange-500 text-white rounded-full font-bold hover:bg-orange-400 transition-all shadow-lg shadow-orange-500/20 text-sm">
+                        Chọn HuitMeal <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
                 </div>
-                <div x-show="active === 0" style="display: none;" class="bg-white px-6 py-6 border border-yellow-400">
-                    <p class="text-gray-700 leading-relaxed">Các nguồn nông sản, thực phẩm do HUITMEAL lựa chọn đều phải đảm bảo những tiêu chuẩn nghiêm ngặt về ATTP và trải qua các khâu kiểm soát chất lượng chặt chẽ. Trong trường hợp khách hàng phát hiện nông sản, thực phẩm bẩn, không đảm bảo chất lượng,... HUITMEAL cam kết chịu trách nhiệm và đổi trả theo yêu cầu.</p>
+                <div class="relative">
+                    <div class="absolute -bottom-8 -right-8 w-72 h-72 bg-orange-500/10 blur-[80px] rounded-full pointer-events-none"></div>
+                    <img src="/assets/images/s3.png" class="relative z-10 w-full max-w-md mx-auto object-contain drop-shadow-2xl" />
                 </div>
             </div>
-            <!-- Item 2 -->
-            <div class="rounded overflow-hidden shadow">
-                <div x-on:click="active = active === 1 ? null : 1" :class="active === 1 ? 'bg-yellow-400 text-black' : 'bg-[#e9e4d8]'" class="flex justify-between items-center px-6 py-5 cursor-pointer transition">
-                    <span class="font-semibold text-lg">Giao hàng tận nơi nhanh chóng</span>
-                    <span class="text-2xl font-bold" x-text="active === 1 ? '−' : '+'"></span>
+        </div>
+    </section>
+
+    <!-- ===== ADVANTAGES ACCORDION ===== -->
+    <section id="advantages" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
+                <div>
+                    <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-3">Tại sao chọn chúng tôi</p>
+                    <h2 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight leading-tight mb-6">
+                        Ưu điểm <span class="text-orange-600">HuitMeal</span>
+                    </h2>
+                    <p class="text-gray-600 leading-relaxed mb-8">Chúng tôi không chỉ cung cấp thực phẩm — chúng tôi cung cấp sự an tâm cho mỗi bữa ăn.</p>
+                    <!-- Stats -->
+                    <div class="grid grid-cols-2 gap-4">
+                        @foreach(var (n,l) in new[]{("10+","Năm kinh nghiệm"),("500+","Đối tác tin cậy"),("150k+","Suất ăn/ngày"),("0","Sự cố ngộ độc")})
+                        {
+                            <div class="bg-gray-50 border border-gray-100 rounded-2xl p-5 text-center">
+                                <p class="text-2xl font-black text-orange-600 mb-1">@n</p>
+                                <p class="text-xs text-gray-500 font-semibold uppercase tracking-widest">@l</p>
+                            </div>
+                        }
+                    </div>
                 </div>
-                <div x-show="active === 1" style="display: none;" class="bg-white px-6 py-6 border border-yellow-400">
-                    <p class="text-gray-700 leading-relaxed">HUITMEAL sở hữu mạng lưới phân phối nguyên liệu toàn quốc, nhờ đó có thể tiết kiệm thời gian cho khách hàng. Khách hàng chỉ cần cung cấp địa chỉ, nhân viên của chúng tôi sẽ vận chuyển đơn hàng đến tận nơi trong thời gian ngắn nhất.</p>
-                </div>
-            </div>
-            <!-- Item 3 -->
-            <div class="rounded overflow-hidden shadow">
-                <div x-on:click="active = active === 2 ? null : 2" :class="active === 2 ? 'bg-yellow-400 text-black' : 'bg-[#e9e4d8]'" class="flex justify-between items-center px-6 py-5 cursor-pointer transition">
-                    <span class="font-semibold text-lg">Tu vấn, hỗ trợ tối đa</span>
-                    <span class="text-2xl font-bold" x-text="active === 2 ? '−' : '+'"></span>
-                </div>
-                <div x-show="active === 2" style="display: none;" class="bg-white px-6 py-6 border border-yellow-400">
-                    <p class="text-gray-700 leading-relaxed">Đội ngũ nhân viên của chúng tôi không những giàu kinh nghiệm, mà còn luôn được đào tạo bài bản về kiến thức chuyên môn. Chúng tôi sẵn sàng giải đáp các thắc mắc và tư vấn tận tình cho khách hàng.</p>
-                </div>
-            </div>
-             <!-- Item 4 -->
-            <div class="rounded overflow-hidden shadow">
-                <div x-on:click="active = active === 3 ? null : 3" :class="active === 3 ? 'bg-yellow-400 text-black' : 'bg-[#e9e4d8]'" class="flex justify-between items-center px-6 py-5 cursor-pointer transition">
-                    <span class="font-semibold text-lg">Giá thành dịch vụ hợp lý</span>
-                    <span class="text-2xl font-bold" x-text="active === 3 ? '−' : '+'"></span>
-                </div>
-                <div x-show="active === 3" style="display: none;" class="bg-white px-6 py-6 border border-yellow-400">
-                    <p class="text-gray-700 leading-relaxed">Với nhiều năm kinh nghiệm trong ngành, chúng tôi đã lựa chọn được nhiều đối tác đảm bảo chất lượng nguyên liệu với chi phí vô cùng phải chăng. Ngoài ra, so với việc tự mình tìm kiếm, mua và vận chuyển nguyên liệu như trước đây, khách hàng có thể sở hữu những nông sản, thực phẩm ngay tại nhà với mức giá rẻ hơn, hoặc ít nhất là không đổi. Từ đó, khách hàng có thể tiết kiệm được một chi phí đáng kể.</p>
+                <!-- Accordion -->
+                <div x-data="{ open: 0 }" class="space-y-3">
+                    @foreach(var (idx,title,content,icon) in new[]{
+                        (0,"An toàn tuyệt đối","Các nguồn nông sản do HuitMeal lựa chọn đều đảm bảo tiêu chuẩn nghiêm ngặt về ATTP và trải qua kiểm soát chất lượng chặt chẽ. Phát hiện thực phẩm không đảm bảo — HuitMeal cam kết đổi trả ngay.","shield-check"),
+                        (1,"Giao hàng tận nơi nhanh chóng","HuitMeal sở hữu mạng lưới phân phối nguyên liệu toàn quốc. Khách hàng chỉ cần cung cấp địa chỉ, nhân viên sẽ vận chuyển đến tận nơi trong thời gian ngắn nhất.","truck"),
+                        (2,"Tư vấn & hỗ trợ tối đa","Đội ngũ nhân viên giàu kinh nghiệm và được đào tạo bài bản luôn sẵn sàng giải đáp thắc mắc, tư vấn tận tình 24/7 cho khách hàng.","headphones"),
+                        (3,"Giá thành hợp lý, tiết kiệm","Với nhiều năm kinh nghiệm, HuitMeal lựa chọn đối tác đảm bảo chất lượng với chi phí vô cùng phải chăng, giúp khách hàng tiết kiệm đáng kể.","wallet"),
+                        (4,"Truy xuất nguồn gốc minh bạch","Mỗi lô hàng đều có mã QR truy xuất nguồn gốc, chứng nhận kiểm định và hồ sơ sản xuất đầy đủ — khách hàng có thể kiểm tra bất kỳ lúc nào.","qr-code"),
+                    })
+                    {
+                        <div class="rounded-2xl overflow-hidden border border-gray-100 shadow-sm">
+                            <button @@click="open = open === @idx ? -1 : @idx"
+                                    class="w-full flex items-center justify-between px-6 py-5 text-left transition-all"
+                                    :class="open === @idx ? 'bg-orange-500 text-white' : 'bg-gray-50 text-gray-800 hover:bg-orange-50'">
+                                <div class="flex items-center gap-3">
+                                    <i data-lucide="@icon" class="w-5 h-5 flex-shrink-0" :class="open === @idx ? 'text-white' : 'text-orange-500'"></i>
+                                    <span class="font-bold text-sm">@title</span>
+                                </div>
+                                <i data-lucide="chevron-down" class="w-5 h-5 flex-shrink-0 transition-transform" :class="open === @idx ? 'rotate-180 text-white' : 'text-gray-400'"></i>
+                            </button>
+                            <div x-show="open === @idx" x-transition.opacity.duration.200ms class="bg-white px-6 py-5 border-t border-gray-100">
+                                <p class="text-gray-600 text-sm leading-relaxed">@content</p>
+                            </div>
+                        </div>
+                    }
                 </div>
             </div>
         </div>
     </section>
 
     <!-- ===== CTA ===== -->
-    <section class="relative h-[320px] overflow-hidden">
-        <img src="/assets/images/s4.jpg" class="absolute inset-0 w-full h-full object-cover object-center scale-105" />
-        <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
-        <div class="relative z-10 h-full flex flex-col justify-center px-10 md:px-20">
-            <h2 class="text-3xl md:text-4xl font-bold text-white mb-2">Bạn vẫn băn khoăn về dịch vụ?</h2>
-            <p class="text-gray-200 mb-6">HUITMEAL có thể giúp bạn.</p>
-            <a href="/Customer/Contact" class="w-fit">
-                <button class="bg-orange-500 hover:bg-orange-600 transition text-white px-6 py-3 rounded-full font-semibold">TƯ VẤN 1-1 MIỄN PHÍ</button>
-            </a>
+    <section class="py-24 bg-gray-50">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="relative overflow-hidden rounded-[40px] bg-gray-900 p-12 md:p-20 text-center">
+                <div class="absolute inset-0 bg-[url('/assets/images/s4.jpg')] bg-cover bg-center opacity-20"></div>
+                <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/80 to-gray-900/60"></div>
+                <div class="relative z-10">
+                    <p class="text-orange-400 text-xs font-bold uppercase tracking-[0.3em] mb-4">Liên hệ ngay</p>
+                    <h2 class="text-3xl md:text-5xl font-black text-white mb-5 tracking-tight leading-tight">
+                        Bạn còn băn khoăn <br /><span class="text-orange-400">về dịch vụ?</span>
+                    </h2>
+                    <p class="text-gray-400 max-w-xl mx-auto font-medium mb-10 leading-relaxed">
+                        Đội ngũ chuyên gia HuitMeal sẵn sàng tư vấn 1-1 hoàn toàn miễn phí, giúp bạn hiểu rõ quy trình và cam kết chất lượng của chúng tôi.
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-4">
+                        <a href="/Customer/Contact" class="px-10 py-4 bg-orange-500 text-white rounded-full font-bold hover:bg-orange-400 transition-all shadow-lg shadow-orange-500/25 text-sm flex items-center justify-center gap-2">
+                            <i data-lucide="phone" class="w-4 h-4"></i> Tư vấn 1-1 miễn phí
+                        </a>
+                        <a href="/Customer/ChooseHuitMeal" class="px-10 py-4 bg-white/10 text-white border border-white/20 rounded-full font-bold hover:bg-white/20 transition-all text-sm">
+                            Tìm hiểu thêm
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
     </section>
 </div>
+
+@section Scripts {
+    <script>document.addEventListener('DOMContentLoaded',()=>{lucide.createIcons();});</script>
+}

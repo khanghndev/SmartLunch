@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Khoa_Luan_KS_Web.Controllers
 {
+    [Authorize(Policy = "ManagerArea")]
     public class ManagerController : Controller
     {
         // 1. Dashboard

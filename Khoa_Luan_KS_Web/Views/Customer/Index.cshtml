@@ -177,28 +177,233 @@
         </div>
     </section>
 
-    <!-- VIDEO SECTION -->
-    <section class="bg-gray-900 py-24 relative overflow-hidden">
-        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
-        
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 animate-fadeInUp">
+    <!-- FEATURED MENU SECTION -->
+    <section class="py-24 bg-gray-50" x-data="{ activeMenu: 'all' }">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <!-- Header -->
+            <div class="flex flex-col md:flex-row items-start md:items-end justify-between gap-8 mb-14">
                 <div>
-                    <span class="text-red-500 font-bold tracking-widest uppercase text-xs mb-4 block">Góc nhìn thực tế</span>
-                    <h2 class="text-3xl md:text-5xl font-bold text-white leading-tight">Video Nổi Bật</h2>
+                    <span class="text-orange-600 font-bold tracking-[0.25em] uppercase text-xs mb-3 block">Thực đơn tiêu biểu</span>
+                    <h2 class="text-3xl md:text-5xl font-black text-gray-900 leading-tight tracking-tight">
+                        Khám phá <span class="text-orange-600">Thực Đơn</span> <br class="hidden md:block"/> của HuitMeal
+                    </h2>
                 </div>
-                <p class="text-gray-400 max-w-md text-sm md:text-base italic">
-                    Khám phá quy trình vận hành và không khí tại hệ thống bếp ăn hiện đại của HuitMeal qua loạt clip thực tế.
-                </p>
+                <a href="/Customer/Menu" class="flex items-center gap-2 font-bold text-orange-600 hover:gap-4 transition-all group whitespace-nowrap">
+                    Xem toàn bộ thực đơn
+                    <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                </a>
             </div>
-            
-            <div class="flex gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-8 no-scrollbar animate-fadeInUp animation-delay-200">
-                @foreach (var id in new[] { "7621052786553146631", "7616696611204353298", "7616382392541924616", "7615567401035271442", "7607405858137459986" })
+
+            <!-- Category Tabs -->
+            <div class="flex flex-wrap gap-3 mb-12">
+                @foreach (var (label, val) in new[] { ("Tất cả", "all"), ("Suất ăn nhà máy", "factory"), ("Suất ăn học đường", "school"), ("Suất ăn văn phòng", "office") })
                 {
-                    <div class="min-w-[300px] md:min-w-[350px] snap-start rounded-[40px] overflow-hidden border border-white/10 hover:border-red-500/50 transition-all duration-500 shadow-2xl hover:shadow-red-500/20">
-                        <iframe src="https://www.tiktok.com/embed/v2/@id" class="w-full h-[550px]" allowfullscreen></iframe>
-                    </div>
+                    <button
+                        @@click="activeMenu = '@val'"
+                        :class="activeMenu === '@val' ? 'bg-orange-500 text-white shadow-md shadow-orange-200' : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300 hover:text-orange-600'"
+                        class="px-6 py-3 rounded-full text-sm font-bold transition-all">
+                        @label
+                    </button>
                 }
+            </div>
+
+            <!-- Menu Cards Grid -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+
+                <!-- Card: Cơm gà sốt cà -->
+                <div x-show="activeMenu === 'all' || activeMenu === 'factory'"
+                     x-transition:enter="transition duration-300 ease-out"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 transition-all duration-400">
+                    <div class="relative overflow-hidden h-52">
+                        <img src="https://images.unsplash.com/photo-1512058564366-18510be2db19?w=400&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Nhà máy</span>
+                        </div>
+                        <div class="absolute top-3 right-3">
+                            <span class="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-black px-3 py-1.5 rounded-full">35.000đ</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h4 class="font-bold text-gray-900 text-base mb-1.5">Cơm gà sốt cà chua</h4>
+                        <p class="text-xs text-gray-500 mb-3 leading-relaxed">Gà ta hầm mềm, cà chua tươi, rau muống luộc, canh rau</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full font-semibold">ISO 22000</span>
+                            <span class="text-[10px] bg-orange-50 text-orange-700 border border-orange-100 px-2 py-0.5 rounded-full font-semibold">Nóng hổi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Cơm sườn nướng -->
+                <div x-show="activeMenu === 'all' || activeMenu === 'office'"
+                     x-transition:enter="transition duration-300 ease-out"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 transition-all duration-400">
+                    <div class="relative overflow-hidden h-52">
+                        <img src="https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Văn phòng</span>
+                        </div>
+                        <div class="absolute top-3 right-3">
+                            <span class="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-black px-3 py-1.5 rounded-full">40.000đ</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h4 class="font-bold text-gray-900 text-base mb-1.5">Cơm sườn nướng mật ong</h4>
+                        <p class="text-xs text-gray-500 mb-3 leading-relaxed">Sườn heo tươi ướp gia vị, cơm gạo ST25, dưa leo, canh chua</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full font-semibold">VietGAP</span>
+                            <span class="text-[10px] bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full font-semibold">Cân bằng</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Phần ăn học đường -->
+                <div x-show="activeMenu === 'all' || activeMenu === 'school'"
+                     x-transition:enter="transition duration-300 ease-out"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 transition-all duration-400">
+                    <div class="relative overflow-hidden h-52">
+                        <img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?w=400&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Học đường</span>
+                        </div>
+                        <div class="absolute top-3 right-3">
+                            <span class="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-black px-3 py-1.5 rounded-full">28.000đ</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h4 class="font-bold text-gray-900 text-base mb-1.5">Suất ăn dinh dưỡng học sinh</h4>
+                        <p class="text-xs text-gray-500 mb-3 leading-relaxed">Cơm trắng, cá hú kho, rau cải xào, canh bí đỏ hầm xương</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="text-[10px] bg-purple-50 text-purple-700 border border-purple-100 px-2 py-0.5 rounded-full font-semibold">Dinh dưỡng</span>
+                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full font-semibold">An toàn</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Bữa chính công nhân -->
+                <div x-show="activeMenu === 'all' || activeMenu === 'factory'"
+                     x-transition:enter="transition duration-300 ease-out"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 transition-all duration-400">
+                    <div class="relative overflow-hidden h-52">
+                        <img src="https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=400&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Nhà máy</span>
+                        </div>
+                        <div class="absolute top-3 right-3">
+                            <span class="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-black px-3 py-1.5 rounded-full">32.000đ</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h4 class="font-bold text-gray-900 text-base mb-1.5">Bữa chính ca sản xuất</h4>
+                        <p class="text-xs text-gray-500 mb-3 leading-relaxed">Cơm trắng, thịt heo kho trứng, đậu hũ chiên, canh rau muống</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="text-[10px] bg-red-50 text-red-700 border border-red-100 px-2 py-0.5 rounded-full font-semibold">Năng lượng cao</span>
+                            <span class="text-[10px] bg-orange-50 text-orange-700 border border-orange-100 px-2 py-0.5 rounded-full font-semibold">Nóng hổi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Combo văn phòng -->
+                <div x-show="activeMenu === 'all' || activeMenu === 'office'"
+                     x-transition:enter="transition duration-300 ease-out"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 transition-all duration-400">
+                    <div class="relative overflow-hidden h-52">
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-blue-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Văn phòng</span>
+                        </div>
+                        <div class="absolute top-3 right-3">
+                            <span class="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-black px-3 py-1.5 rounded-full">45.000đ</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h4 class="font-bold text-gray-900 text-base mb-1.5">Combo trưa văn phòng</h4>
+                        <p class="text-xs text-gray-500 mb-3 leading-relaxed">Salad rau củ, cơm gà sốt nấm, canh bí đao, tráng miệng trái cây</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full font-semibold">Lành mạnh</span>
+                            <span class="text-[10px] bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded-full font-semibold">Cao cấp</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Bento học sinh -->
+                <div x-show="activeMenu === 'all' || activeMenu === 'school'"
+                     x-transition:enter="transition duration-300 ease-out"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 transition-all duration-400">
+                    <div class="relative overflow-hidden h-52">
+                        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=400&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Học đường</span>
+                        </div>
+                        <div class="absolute top-3 right-3">
+                            <span class="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-black px-3 py-1.5 rounded-full">25.000đ</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h4 class="font-bold text-gray-900 text-base mb-1.5">Bento dinh dưỡng mầm non</h4>
+                        <p class="text-xs text-gray-500 mb-3 leading-relaxed">Cháo thịt bằm, trứng cút, rau dền, sữa chua trái cây</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="text-[10px] bg-purple-50 text-purple-700 border border-purple-100 px-2 py-0.5 rounded-full font-semibold">Mầm non</span>
+                            <span class="text-[10px] bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded-full font-semibold">Vitamin</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card: Bữa phụ nhà máy -->
+                <div x-show="activeMenu === 'all' || activeMenu === 'factory'"
+                     x-transition:enter="transition duration-300 ease-out"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 transition-all duration-400">
+                    <div class="relative overflow-hidden h-52">
+                        <img src="https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute top-3 left-3">
+                            <span class="bg-orange-500 text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">Nhà máy</span>
+                        </div>
+                        <div class="absolute top-3 right-3">
+                            <span class="bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-black px-3 py-1.5 rounded-full">15.000đ</span>
+                        </div>
+                    </div>
+                    <div class="p-5">
+                        <h4 class="font-bold text-gray-900 text-base mb-1.5">Bữa phụ ca đêm</h4>
+                        <p class="text-xs text-gray-500 mb-3 leading-relaxed">Bánh mì kẹp thịt heo, trứng ốp la, sữa tươi, trái cây theo mùa</p>
+                        <div class="flex flex-wrap gap-1.5">
+                            <span class="text-[10px] bg-yellow-50 text-yellow-700 border border-yellow-100 px-2 py-0.5 rounded-full font-semibold">Ca đêm</span>
+                            <span class="text-[10px] bg-orange-50 text-orange-700 border border-orange-100 px-2 py-0.5 rounded-full font-semibold">Bổ sung</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- CTA Card -->
+                <div x-show="activeMenu === 'all'"
+                     x-transition:enter="transition duration-300 ease-out"
+                     x-transition:enter-start="opacity-0 scale-95"
+                     x-transition:enter-end="opacity-100 scale-100"
+                     class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-[24px] p-8 flex flex-col justify-between">
+                    <div>
+                        <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-6">
+                            <i data-lucide="utensils" class="w-6 h-6 text-white"></i>
+                        </div>
+                        <h4 class="text-xl font-black text-white mb-3 leading-tight">100+ Món trong thực đơn tuần</h4>
+                        <p class="text-orange-100 text-sm leading-relaxed">Thực đơn xoay vòng đa dạng, đảm bảo không lặp lại trong 30 ngày.</p>
+                    </div>
+                    <a href="/Customer/Menu" class="mt-8 inline-flex items-center gap-2 bg-white text-orange-600 font-bold px-5 py-3 rounded-full text-sm hover:bg-orange-50 transition-all hover:gap-3">
+                        Xem thực đơn đầy đủ
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    </a>
+                </div>
+
             </div>
         </div>
     </section>

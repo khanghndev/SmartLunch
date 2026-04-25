@@ -1,227 +1,288 @@
 @{
-    ViewData["Title"] = "Chi tiết suất ăn";
+    ViewData["Title"] = "Chi tiết thực đơn - HuitMeal";
     Layout = "_LayoutCustomer";
+    string level = Context.Request.Query["level"].ToString();
+    string day   = Context.Request.Query["day"].ToString();
+    if (string.IsNullOrEmpty(level)) level = "mamnon";
+    if (string.IsNullOrEmpty(day))   day   = "t2";
+
+    var levelLabels = new Dictionary<string,string>{{"mamnon","Mầm Non"},{"tieuhoc","Tiểu Học"},{"thcs","THCS"},{"thpt","THPT"}};
+    string levelLabel = levelLabels.GetValueOrDefault(level, "Học đường");
+
+    // Full week meal data
+    var meals = new Dictionary<string,(string Title,string Tag,string Kcal,string Img,string Desc,string[] Ingredients,string[] Steps,(string Label,int Pct)[] Nutrients)>{
+        ["t2"]=(
+            "Cơm thịt heo kho trứng cút","Bữa chính trưa","650 kcal",
+            "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=900&q=80",
+            "Món cơm truyền thống với thịt heo ba chỉ kho mềm ngọt cùng trứng cút đậm đà. Nước kho sánh, màu đẹp, thơm mùi nước dừa – món ăn quen thuộc được yêu thích nhất trong thực đơn học đường.",
+            new[]{"Cơm gạo ST25 (180g)","Thịt heo ba chỉ tươi (100g)","Trứng cút luộc (4 quả)","Nước dừa tươi (100ml)","Tỏi, hành, nước mắm, đường","Rau muống xào tỏi (80g)","Canh bí đỏ hầm xương (200ml)","Dưa leo ngâm giấm (50g)"},
+            new[]{"Thịt heo rửa sạch, cắt miếng vừa, ướp 15 phút","Phi thơm tỏi hành, cho thịt vào xào săn","Thêm nước dừa, kho liu riu 30 phút","Cho trứng cút vào, kho thêm 10 phút","Nêm nếm vừa miệng, tắt bếp"},
+            new[]{("Tinh bột",62),("Protein",24),("Chất béo",14),("Chất xơ",8),("Vitamin C",45),("Canxi",35)}
+        ),
+        ["t3"]=(
+            "Cơm gà nướng mật ong","Bữa chính trưa","680 kcal",
+            "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=900&q=80",
+            "Đùi gà ta được ướp mật ong và gia vị đặc biệt, nướng vàng đều trong lò – giòn bên ngoài, mềm ngọt bên trong. Phục vụ kèm cơm trắng dẻo và canh rau thanh mát.",
+            new[]{"Cơm trắng gạo Jasmine (180g)","Đùi gà ta (120g)","Mật ong nguyên chất (15ml)","Nước tương, tỏi, gừng","Rau cải xào tỏi (80g)","Canh cà chua trứng (200ml)","Dưa cải trắng muối (40g)"},
+            new[]{"Gà ướp mật ong + nước tương 30 phút","Nướng lò 200°C trong 25 phút","Lật mặt, phết thêm mật ong, nướng 10 phút","Trình bày cùng cơm và rau"},
+            new[]{("Tinh bột",55),("Protein",32),("Chất béo",13),("Chất xơ",10),("Vitamin A",60),("Kẽm",40)}
+        ),
+        ["t4"]=(
+            "Cơm cá hú kho gừng","Bữa chính trưa","620 kcal",
+            "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=900&q=80",
+            "Cá hú biển tươi kho gừng – món ăn giàu omega-3, đặc biệt tốt cho phát triển trí não học sinh. Nước kho cá vàng ươm, thấm đều, kết hợp hài hòa với vị cay nhẹ của gừng tươi.",
+            new[]{"Cơm trắng (180g)","Cá hú tươi (130g)","Gừng tươi, sả (20g)","Nước mắm, tiêu, đường","Bắp cải xào (80g)","Canh rau dền (200ml)","Dưa hành muối (40g)"},
+            new[]{"Cá rửa, khứa nhẹ, ướp gia vị 20 phút","Cho cá vào nồi, kho vừa lửa","Thêm gừng, sả vào, kho thêm 15 phút","Nêm nếm, đậy nắp giữ ấm"},
+            new[]{("Tinh bột",58),("Protein",28),("Chất béo",14),("Omega-3",75),("Vitamin D",55),("Canxi",42)}
+        ),
+        ["t5"]=(
+            "Mì Ý bò bằm sốt cà","Bữa chính trưa","700 kcal",
+            "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=900&q=80",
+            "Mì Ý nấu chín vừa, phủ sốt cà chua bò bằm đậm đà – món ăn phổ biến trong thực đơn quốc tế hóa của HuitMeal, giúp học sinh làm quen với ẩm thực đa dạng và bổ dưỡng.",
+            new[]{"Mì Ý số 5 (150g)","Thịt bò bằm tươi (100g)","Cà chua bi (80g)","Hành tây, tỏi, cần tây","Dầu olive, muối, tiêu","Rau salad trộn (60g)","Bánh mì nướng bơ tỏi (1 lát)"},
+            new[]{"Luộc mì al dente, vớt ra","Xào bò bằm với hành tỏi","Cho cà chua vào, nêm gia vị","Trộn mì với sốt, trình bày"},
+            new[]{("Tinh bột",60),("Protein",26),("Chất béo",14),("Sắt",50),("Vitamin B12",65),("Lycopene",70)}
+        ),
+        ["t6"]=(
+            "Cơm chiên dương châu tôm","Bữa chính trưa","730 kcal",
+            "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=900&q=80",
+            "Cơm chiên dương châu truyền thống với tôm tươi, xúc xích, trứng và rau thập cẩm – màu sắc bắt mắt, thơm ngon, là món được học sinh yêu thích nhất trong thực đơn cuối tuần.",
+            new[]{"Cơm nguội (200g)","Tôm tươi (60g)","Trứng gà (1 quả)","Xúc xích (40g)","Cà rốt, đậu Hà Lan (50g)","Hành lá, tỏi, dầu ăn","Nước tương Maggi, muối, tiêu"},
+            new[]{"Xào tỏi với dầu ăn đến vàng thơm","Cho tôm, xúc xích vào xào sơ","Đẩy sang bên, đập trứng vào chiên","Cho cơm vào, đảo đều mạnh tay","Thêm rau, nêm gia vị, tắt bếp"},
+            new[]{("Tinh bột",65),("Protein",20),("Chất béo",15),("Vitamin A",50),("Kẽm",35),("Selen",40)}
+        ),
+    };
+
+    var current = meals.GetValueOrDefault(day, meals["t2"]);
+    var days = new[]{("t2","Thứ Hai"),("t3","Thứ Ba"),("t4","Thứ Tư"),("t5","Thứ Năm"),("t6","Thứ Sáu")};
 }
 
-<div class="bg-gray-50 font-sans pb-20">
-    <!-- Breadcrumb -->
-    <div class="bg-white border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center gap-2 text-sm text-gray-500">
-            <a href="/Customer" class="hover:text-orange-500 transition">Trang chủ</a>
-            <i data-lucide="chevron-right" class="w-4 h-4"></i>
-            <a href="/Customer/Office" class="hover:text-orange-500 transition">Suất ăn công nghiệp</a>
-            <i data-lucide="chevron-right" class="w-4 h-4"></i>
-            <span class="text-gray-900 font-medium">Bò lúc lắc hạt điều & Súp bí đỏ</span>
+<div class="w-full bg-white overflow-hidden">
+
+    <!-- HERO IMAGE -->
+    <section class="relative h-[420px] md:h-[560px] overflow-hidden">
+        <img src="@current.Img" class="absolute inset-0 w-full h-full object-cover brightness-75" />
+        <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/30 to-transparent"></div>
+
+        <!-- Back button -->
+        <a href="/Customer/SchoolMenu?level=@level&day=@day"
+           class="absolute top-6 left-6 z-20 flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-white/20 transition-all">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i> Quay lại thực đơn
+        </a>
+
+        <div class="absolute bottom-0 left-0 right-0 z-10 max-w-7xl mx-auto px-6 pb-10"
+             x-data="{v:false}" x-init="setTimeout(()=>v=true,80)"
+             x-show="v" x-transition:enter="transition duration-700" x-transition:enter-start="opacity-0 translate-y-6" x-transition:enter-end="opacity-100 translate-y-0">
+            <div class="flex flex-wrap items-end justify-between gap-4">
+                <div>
+                    <div class="flex flex-wrap items-center gap-2 mb-3">
+                        <span class="bg-orange-500 text-white text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest">@current.Tag</span>
+                        <span class="bg-white/10 text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/20">
+                            <i data-lucide="flame" class="w-3 h-3 inline text-orange-400 mr-1"></i>@current.Kcal
+                        </span>
+                        <span class="bg-white/10 text-white text-[10px] font-bold px-3 py-1 rounded-full border border-white/20">@levelLabel</span>
+                    </div>
+                    <h1 class="text-3xl md:text-5xl font-black text-white tracking-tight leading-tight">@current.Title</h1>
+                </div>
+                <!-- Rating -->
+                <div class="bg-white/10 backdrop-blur-lg border border-white/20 rounded-2xl px-6 py-4 text-center hidden md:block">
+                    <div class="flex gap-0.5 justify-center mb-1">
+                        @for(int i=0;i<5;i++){<i data-lucide="star" class="w-4 h-4 fill-amber-400 text-amber-400"></i>}
+                    </div>
+                    <p class="text-white font-black text-xl">4.9</p>
+                    <p class="text-gray-300 text-[10px]">1.2k học sinh đánh giá</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DAY SWITCHER -->
+    <div class="bg-white border-b border-gray-100 sticky top-0 z-30 shadow-sm">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center gap-2 overflow-x-auto py-3 no-scrollbar">
+                @foreach (var (d,label) in days)
+                {
+                    <a href="/Customer/MealDetail?level=@level&day=@d"
+                       class="flex-shrink-0 px-5 py-2 rounded-full text-sm font-bold transition-all @(d==day?"bg-orange-500 text-white shadow":"bg-gray-100 text-gray-600 hover:bg-gray-200")">
+                        @label
+                    </a>
+                }
+            </div>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="max-w-7xl mx-auto px-6 mt-8">
-        
-        <!-- Top Section: Slideshow & Info -->
-        <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6 md:p-10 mb-8 grid grid-cols-1 lg:grid-cols-2 gap-12">
-            
-            <!-- Left: Slideshow (Alpine.js) -->
-            <div x-data="{ 
-                activeSlide: 0, 
-                slides: [
-                    'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=800',
-                    'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=800',
-                    'https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=800',
-                    'https://images.unsplash.com/photo-1543339308-43e59d6b73a6?q=80&w=800'
-                ] 
-            }" class="flex flex-col gap-4">
-                
-                <!-- Main Image -->
-                <div class="w-full h-[300px] md:h-[450px] rounded-2xl overflow-hidden relative border border-gray-100 shadow-sm">
-                    <img :src="slides[activeSlide]" class="w-full h-full object-cover transition-all duration-500" alt="Món ăn">
-                    <div class="absolute top-4 left-4 bg-orange-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md uppercase tracking-wider">
-                        ISO 22000:2018
+    <!-- MAIN CONTENT -->
+    <div class="max-w-7xl mx-auto px-6 py-16">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-10">
+
+            <!-- LEFT: Description + Ingredients + Steps -->
+            <div class="lg:col-span-2 space-y-10">
+
+                <!-- Description -->
+                <div>
+                    <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-3">Giới thiệu món ăn</p>
+                    <p class="text-gray-700 text-lg leading-relaxed font-medium">@current.Desc</p>
+                </div>
+
+                <!-- Ingredients -->
+                <div>
+                    <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-4">Nguyên liệu</p>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        @foreach (var ing in current.Ingredients)
+                        {
+                            <div class="flex items-center gap-3 bg-gray-50 border border-gray-100 rounded-xl px-4 py-3">
+                                <div class="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="utensils" class="w-3.5 h-3.5 text-orange-600"></i>
+                                </div>
+                                <span class="text-sm font-semibold text-gray-800">@ing</span>
+                            </div>
+                        }
                     </div>
                 </div>
 
-                <!-- Thumbnails -->
-                <div class="grid grid-cols-4 gap-4">
-                    <template x-for="(slide, index) in slides" :key="index">
-                        <div x-on:click="activeSlide = index" 
-                             :class="activeSlide === index ? 'ring-2 ring-orange-500 opacity-100' : 'opacity-60 hover:opacity-100'"
-                             class="h-20 md:h-24 rounded-xl overflow-hidden cursor-pointer transition-all border border-gray-200">
-                            <img :src="slide" class="w-full h-full object-cover">
-                        </div>
-                    </template>
+                <!-- Preparation Steps -->
+                <div>
+                    <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-4">Quy trình chế biến</p>
+                    <div class="space-y-4">
+                        @for (int i = 0; i < current.Steps.Length; i++)
+                        {
+                            <div class="flex gap-4 items-start">
+                                <div class="w-9 h-9 rounded-full bg-orange-500 text-white font-black text-sm flex items-center justify-center flex-shrink-0">@(i+1)</div>
+                                <div class="flex-1 bg-gray-50 border border-gray-100 rounded-xl px-5 py-3.5">
+                                    <p class="text-sm font-semibold text-gray-800 leading-relaxed">@current.Steps[i]</p>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- Food Safety Certifications -->
+                <div class="bg-green-50 border border-green-100 rounded-2xl p-6">
+                    <p class="text-green-700 text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> Chứng nhận an toàn thực phẩm
+                    </p>
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                        @foreach (var cert in new[]{"ISO 22000:2018","HACCP","VietGAP","Không chất bảo quản","Không phẩm màu","Kiểm định hàng ngày"})
+                        {
+                            <div class="flex items-center gap-2 text-xs font-semibold text-green-800">
+                                <i data-lucide="check-circle" class="w-3.5 h-3.5 text-green-600 flex-shrink-0"></i> @cert
+                            </div>
+                        }
+                    </div>
                 </div>
             </div>
 
-            <!-- Right: Details -->
-            <div class="flex flex-col">
-                <div class="mb-6">
-                     <div class="flex items-center gap-2 mb-3">
-                        <span class="bg-red-100 text-red-600 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Bán chạy nhất</span>
-                        <span class="bg-blue-100 text-blue-600 text-xs font-bold px-2.5 py-1 rounded-md uppercase">Văn phòng</span>
-                     </div>
-                     <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight mb-2">Suất Tràn Năng Lượng: Bò lúc lắc hạt điều</h1>
-                     <p class="text-2xl font-black text-orange-500">55,000 <span class="text-lg font-medium text-gray-500 line-through ml-2">65,000</span></p>
+            <!-- RIGHT: Nutrition + Chef + Info -->
+            <div class="space-y-6">
+
+                <!-- Nutrition Chart -->
+                <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                    <p class="font-black text-gray-900 mb-1">Thành phần dinh dưỡng</p>
+                    <p class="text-xs text-gray-400 mb-5">Tính trên 1 khẩu phần ăn (@current.Kcal)</p>
+                    <div class="space-y-3.5">
+                        @foreach (var (label, pct) in current.Nutrients)
+                        {
+                            <div>
+                                <div class="flex justify-between text-xs font-semibold text-gray-700 mb-1.5">
+                                    <span>@label</span>
+                                    <span class="text-orange-600">@pct%</span>
+                                </div>
+                                <div class="h-2 bg-gray-100 rounded-full overflow-hidden">
+                                    <div class="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-1000"
+                                         style="width:@(pct)%"></div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <p class="text-[10px] text-gray-400 mt-4">* % Giá trị dinh dưỡng khuyến nghị hàng ngày theo Bộ Y tế VN</p>
                 </div>
 
-                <p class="text-gray-600 text-base md:text-lg leading-relaxed mb-8">
-                    Suất ăn được các chuyên gia dinh dưỡng HuitMeal thiết kế riêng cho người lao động trí óc cường độ cao. Đảm bảo nạp đủ năng lượng tức thì, bổ sung omega-3 từ hạt điều và vitamin từ bí đỏ giúp mắt và trí não hoạt động tối đa mà không gây cảm giác đầy bụng, buồn ngủ.
-                </p>
+                <!-- Chef Profile -->
+                <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                    <p class="text-orange-600 text-xs font-bold uppercase tracking-widest mb-4">Bếp trưởng phụ trách</p>
+                    <div class="flex items-center gap-4 mb-4">
+                        <img src="https://ui-avatars.com/api/?name=Nguyen+Thanh+Hai&background=FED7AA&color=C2410C&bold=true&size=64"
+                             class="w-14 h-14 rounded-full border-2 border-orange-100" />
+                        <div>
+                            <p class="font-black text-gray-900">Nguyễn Thanh Hải</p>
+                            <p class="text-xs text-gray-500">Bếp trưởng HuitMeal · 12 năm kinh nghiệm</p>
+                            <div class="flex gap-1 mt-1">
+                                @for(int i=0;i<5;i++){<i data-lucide="star" class="w-3 h-3 fill-amber-400 text-amber-400"></i>}
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-gray-600 leading-relaxed italic">"Mỗi bữa ăn là một tình yêu tôi gửi trao cho thế hệ tương lai. Chúng tôi nấu với tâm huyết như nấu cho chính con em mình."</p>
+                </div>
 
-                <!-- Nutrition Core -->
-                <div class="bg-gray-50 rounded-2xl p-6 mb-8 border border-gray-100">
-                    <h3 class="font-bold text-gray-900 mb-4 flex items-center gap-2">
-                        <i data-lucide="zap" class="w-5 h-5 text-yellow-500"></i> Hàm lượng dinh dưỡng ước tính
-                    </h3>
-                    <div class="grid grid-cols-4 gap-4 text-center">
-                        <div>
-                            <div class="text-2xl font-black text-gray-800">650</div>
-                            <div class="text-xs text-gray-500 uppercase font-semibold">Kcal</div>
-                        </div>
-                        <div>
-                            <div class="text-2xl font-black text-green-600">38<span class="text-lg">g</span></div>
-                            <div class="text-xs text-gray-500 uppercase font-semibold">Protein</div>
-                        </div>
-                        <div>
-                            <div class="text-2xl font-black text-orange-500">15<span class="text-lg">g</span></div>
-                            <div class="text-xs text-gray-500 uppercase font-semibold">Lipid (Béo)</div>
-                        </div>
-                        <div>
-                            <div class="text-2xl font-black text-blue-500">75<span class="text-lg">g</span></div>
-                            <div class="text-xs text-gray-500 uppercase font-semibold">Carbs</div>
-                        </div>
+                <!-- Meal Meta Info -->
+                <div class="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm">
+                    <p class="font-black text-gray-900 mb-4">Thông tin khẩu phần</p>
+                    <div class="space-y-3">
+                        @foreach (var (icon, label, val) in new[]{
+                            ("clock","Thời gian chuẩn bị","45 phút"),
+                            ("users","Phục vụ","1 học sinh"),
+                            ("thermometer","Nhiệt độ phục vụ","≥ 65°C"),
+                            ("package","Đóng gói","Hộp inox 1 chiều"),
+                            ("truck","Giao hàng","Trước 11:00 sáng"),
+                            ("calendar","Thực đơn xoay vòng","30 ngày"),
+                        })
+                        {
+                            <div class="flex items-center gap-3 text-sm">
+                                <div class="w-8 h-8 rounded-lg bg-orange-50 flex items-center justify-center flex-shrink-0">
+                                    <i data-lucide="@icon" class="w-3.5 h-3.5 text-orange-600"></i>
+                                </div>
+                                <span class="text-gray-500 flex-1">@label</span>
+                                <span class="font-bold text-gray-900">@val</span>
+                            </div>
+                        }
                     </div>
                 </div>
 
-                <!-- Features -->
-                <ul class="space-y-3 mb-10 text-gray-700 font-medium text-sm md:text-base">
-                    <li class="flex items-center gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-green-500"></i> Không sủ dụng chất tạo nạc, màu thực phẩm tổng hợp.</li>
-                    <li class="flex items-center gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-green-500"></i> Khay phân khẩu phần cách nhiệt an toàn sức khỏe.</li>
-                    <li class="flex items-center gap-3"><i data-lucide="check-circle-2" class="w-5 h-5 text-green-500"></i> Trái cây tráng miệng gọt sẵn tiệt trùng.</li>
-                </ul>
-
-                <a href="/Customer/Contact" class="bg-orange-500 hover:bg-orange-600 text-white font-bold text-lg py-4 rounded-xl text-center shadow-[0_10px_20px_rgba(249,115,22,0.3)] hover:shadow-[0_10px_25px_rgba(249,115,22,0.5)] hover:-translate-y-1 transition-all">
-                    LIÊN HỆ ĐẶT SUẤT CÔNG TY BẠN NGAY
+                <!-- CTA -->
+                <a href="/Customer/Contact"
+                   class="flex items-center justify-center gap-2 w-full py-4 bg-orange-500 text-white rounded-2xl font-bold text-sm hover:bg-orange-400 hover:-translate-y-0.5 transition-all shadow-lg shadow-orange-200">
+                    <i data-lucide="phone" class="w-4 h-4"></i>
+                    Đăng ký suất ăn cho trường
                 </a>
             </div>
         </div>
-
-        <!-- Details Tabs -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            
-            <!-- Khoản Left: Info & Chef -->
-            <div class="lg:col-span-2 space-y-8">
-                
-                <!-- Thành phần món ăn -->
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-4">Cấu trúc thực đơn trong mô hình này</h2>
-                    <div class="space-y-6">
-                        <div class="flex gap-4">
-                            <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 border"><img src="https://images.unsplash.com/photo-1600891964092-4316c288032e?q=80&w=200" class="w-full h-full object-cover"></div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-lg">Món chính: Bò úc lúc lắc hạt điều</h4>
-                                <p class="text-gray-600 text-sm mt-1">Sử dụng thăn bò nhập khẩu Úc, cắt hạt lựu lớn ướp dầu hào, xào lửa lớn với ớt chuông baby và hạt điều Bình Phước rang bơ.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 border"><img src="https://images.unsplash.com/photo-1525351484163-f51652bb2731?q=80&w=200" class="w-full h-full object-cover"></div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-lg">Món nướng/chiên: Trứng ốp la viền giòn</h4>
-                                <p class="text-gray-600 text-sm mt-1">Trứng gà ta loại 1, chiên trên chảo chống dính rắc thêm chút tiêu sọ đen.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 border"><img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?q=80&w=200" class="w-full h-full object-cover"></div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-lg">Món rau: Salad dầu giấm ngô ngọt</h4>
-                                <p class="text-gray-600 text-sm mt-1">Xà lách thủy tinh, cà chua bi, dưa chuột baby mix ngô ngọt xốt dầu giấm hoa quả.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="w-16 h-16 rounded-xl overflow-hidden shrink-0 border"><img src="https://images.unsplash.com/photo-1547592166-23ac45744acd?q=80&w=200" class="w-full h-full object-cover"></div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-lg">Món canh: Súp bí đỏ cốt dừa</h4>
-                                <p class="text-gray-600 text-sm mt-1">Bí đỏ nướng hầm nhừ xay nhuyễn cùng nước cốt dừa và kem tươi, vị ngọt tự nhiên không đường tinh luyện.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Nguồn gốc nguyên liệu -->
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                    <h2 class="text-2xl font-bold text-gray-900 mb-6 border-b pb-4">Truy xuất nguồn gốc nguyên liệu</h2>
-                    <p class="text-gray-600 mb-6">
-                        Tại HuitMeal, sự cam kết vững vàng nhất là sự minh bạch về nguồn gốc. Mỗi khay ăn được dọn ra đều từ những nguyên liệu có đầy đủ giấy chứng nhận Vệ Sinh An Toàn Thực Phẩm do bộ Y Tế cấp:
-                    </p>
-                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <li class="bg-gray-50 p-4 rounded-xl border border-gray-100 flex gap-3">
-                            <i data-lucide="scan-barcode" class="w-6 h-6 text-gray-400"></i>
-                            <div><strong class="block text-sm text-gray-900">Thịt Bò Úc</strong><span class="text-xs text-gray-500">Đối tác: MeatDeli VN</span></div>
-                        </li>
-                        <li class="bg-gray-50 p-4 rounded-xl border border-gray-100 flex gap-3">
-                            <i data-lucide="scan-barcode" class="w-6 h-6 text-gray-400"></i>
-                            <div><strong class="block text-sm text-gray-900">Rau củ hữu cơ</strong><span class="text-xs text-gray-500">Nông trại: VietGAP Mộc Châu</span></div>
-                        </li>
-                        <li class="bg-gray-50 p-4 rounded-xl border border-gray-100 flex gap-3">
-                            <i data-lucide="scan-barcode" class="w-6 h-6 text-gray-400"></i>
-                            <div><strong class="block text-sm text-gray-900">Gạo ST25</strong><span class="text-xs text-gray-500">Tổng kho Nông sản Vĩnh Long</span></div>
-                        </li>
-                        <li class="bg-gray-50 p-4 rounded-xl border border-gray-100 flex gap-3">
-                            <i data-lucide="scan-barcode" class="w-6 h-6 text-gray-400"></i>
-                            <div><strong class="block text-sm text-gray-900">Dầu ăn & Gia vị</strong><span class="text-xs text-gray-500">Tường An, Ajinomoto VN</span></div>
-                        </li>
-                    </ul>
-                </div>
-
-            </div>
-
-            <!-- Khoản Right: Chef & Trust -->
-            <div class="space-y-8">
-                <!-- Hồ sơ đầu bếp -->
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8 text-center">
-                    <h2 class="text-lg font-bold text-gray-900 mb-6 uppercase tracking-wider text-left">Đầu bếp chế biến</h2>
-                    <div class="w-32 h-32 rounded-full overflow-hidden mx-auto mb-4 border-4 border-orange-100 shadow-inner">
-                        <img src="https://images.unsplash.com/photo-1577219491135-ce391730fb2c?q=80&w=400" class="w-full h-full object-cover">
-                    </div>
-                    <h3 class="text-xl font-bold text-gray-900 mb-1">Chef. Trần Văn Thịnh</h3>
-                    <p class="text-orange-500 font-medium text-sm mb-4">Bếp trưởng Điều hành khối Văn phòng</p>
-                    <p class="text-gray-600 text-sm leading-relaxed mb-6 italic">
-                        "Mỗi bữa ăn tại HuitMeal không chỉ là no bụng mà là sự phục hồi năng lượng tinh thần. Nhiệm vụ của tôi là đưa ẩm thực nhà hàng hạng sang đóng gói trong khay ăn công sở."
-                    </p>
-                    <div class="bg-orange-50 text-orange-800 text-xs text-left p-4 rounded-xl space-y-2">
-                        <p><strong><i data-lucide="award" class="inline w-4 h-4 -mt-1 mr-1"></i>Kinh nghiệm:</strong> 15 năm (Từng là Bếp phó InterContinental)</p>
-                        <p><strong><i data-lucide="check-square" class="inline w-4 h-4 -mt-1 mr-1"></i>Chứng chỉ:</strong> Chuyên gia dinh dưỡng 2022 (Viện DD Quốc Gia)</p>
-                    </div>
-                </div>
-
-                <!-- Quy trình cam kết -->
-                <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-8">
-                    <h2 class="text-lg font-bold text-gray-900 mb-6 uppercase tracking-wider">HuitMeal Cam kết 3 zero</h2>
-                    <div class="space-y-4">
-                        <div class="flex gap-4">
-                            <div class="bg-red-100 text-red-500 w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold">0</div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-sm">Thực phẩm Tồn dư hóa chất</h4>
-                                <p class="text-gray-500 text-xs mt-1">Kiểm tra ngay tại khâu nhập liệu qua công nghệ test nhanh.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="bg-green-100 text-green-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold">0</div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-sm">Thực phẩm thừa từ ca trước</h4>
-                                <p class="text-gray-500 text-xs mt-1">Mọi công đoạn nấu đều chuẩn giờ, tiêu hủy toàn bộ phần tồn dư ngay trong ngày.</p>
-                            </div>
-                        </div>
-                        <div class="flex gap-4">
-                            <div class="bg-blue-100 text-blue-600 w-10 h-10 rounded-full flex items-center justify-center shrink-0 font-bold">0</div>
-                            <div>
-                                <h4 class="font-bold text-gray-900 text-sm">Sự cố an toàn thực phẩm</h4>
-                                <p class="text-gray-500 text-xs mt-1">Lưu mẫu 24h và tuân thủ tuyệt đối quy định ATVSTP của bộ Y tế.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-        </div>
     </div>
+
+    <!-- WEEK OVERVIEW -->
+    <section class="py-16 bg-gray-50 border-t border-gray-100">
+        <div class="max-w-7xl mx-auto px-6">
+            <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-3">Xem thêm</p>
+            <h2 class="text-3xl font-black text-gray-900 mb-8 tracking-tight">Thực đơn cả tuần</h2>
+            <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+                @foreach (var (d, label) in days)
+                {
+                    var m = meals[d];
+                    <a href="/Customer/MealDetail?level=@level&day=@d"
+                       class="group rounded-[20px] overflow-hidden border @(d==day?"border-orange-400 ring-2 ring-orange-200":"border-gray-100") bg-white hover:shadow-lg transition-all hover:-translate-y-1">
+                        <div class="relative h-28 overflow-hidden">
+                            <img src="@m.Img" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                            @if(d==day){<div class="absolute inset-0 bg-orange-500/20"></div>
+                            <div class="absolute top-2 right-2 w-5 h-5 rounded-full bg-orange-500 flex items-center justify-center"><i data-lucide="check" class="w-3 h-3 text-white"></i></div>}
+                        </div>
+                        <div class="p-3">
+                            <p class="text-[10px] font-black text-orange-500 uppercase tracking-widest">@label</p>
+                            <p class="text-xs font-bold text-gray-900 leading-tight truncate">@m.Title</p>
+                            <p class="text-[10px] text-gray-400 mt-0.5">@m.Kcal</p>
+                        </div>
+                    </a>
+                }
+            </div>
+        </div>
+    </section>
 </div>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar{display:none;}
+    .no-scrollbar{-ms-overflow-style:none;scrollbar-width:none;}
+</style>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
+    </script>
+}
