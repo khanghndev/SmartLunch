@@ -5,12 +5,13 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class MenuSuggestion
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
     public DateTime WeekStart { get; set; }
     public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
     public string SuggestionText { get; set; } = string.Empty;
     public string? AlgorithmVersion { get; set; }
-    public Guid? CreatedBy { get; set; }
+    public int? CreatedBy { get; set; }
 
     public virtual User? CreatedByUser { get; set; }
 }

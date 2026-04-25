@@ -49,7 +49,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, GetUs
             throw new InvalidOperationException("Email already exists.");
 
         Role? initialRole = null;
-        if (req.InitialRoleId.HasValue && req.InitialRoleId.Value != Guid.Empty)
+        if (req.InitialRoleId.HasValue && req.InitialRoleId.Value != 0)
         {
             initialRole = await _roleRepository.GetByIdAsync(req.InitialRoleId.Value)
                 ?? throw new ArgumentException("Initial role was not found.");
@@ -65,7 +65,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, GetUs
 
         var user = new User
         {
-            Id = Guid.NewGuid(),
+
             Username = req.Username.Trim(),
             Email = req.Email.Trim(),
             PasswordHash = _passwordHasher.HashPassword(req.Password),
@@ -84,7 +84,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, GetUs
         {
             await _userRoleRepository.CreateAsync(new UserRole
             {
-                Id = Guid.NewGuid(),
+
                 UserId = user.Id,
                 RoleId = initialRole.Id,
                 AssignedAt = DateTime.UtcNow,

@@ -15,13 +15,13 @@ public class OrderRepository : IOrderRepository
         _context = context;
     }
 
-    public async Task<Order?> GetByIdAsync(Guid id)
+    public async Task<Order?> GetByIdAsync(int id)
     {
         return await _context.Orders
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
-    public async Task<Order?> GetByIdWithDetailsAsync(Guid id)
+    public async Task<Order?> GetByIdWithDetailsAsync(int id)
     {
         return await _context.Orders
             .Include(o => o.Unit)
@@ -80,7 +80,7 @@ public class OrderRepository : IOrderRepository
     public async Task<List<MealStatisticItemDto>> GetMealStatisticsAsync(
         DateTime? startDate,
         DateTime? endDate,
-        Guid? unitId)
+        int? unitId)
     {
         var query = _context.Orders
             .Include(o => o.Unit)

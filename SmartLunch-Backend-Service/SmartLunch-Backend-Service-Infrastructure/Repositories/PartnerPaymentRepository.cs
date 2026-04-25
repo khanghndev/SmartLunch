@@ -14,7 +14,7 @@ public class PartnerPaymentRepository : IPartnerPaymentRepository
         _context = context;
     }
 
-    public async Task<PartnerPayment?> GetByIdAsync(Guid id)
+    public async Task<PartnerPayment?> GetByIdAsync(int id)
     {
         return await _context.PartnerPayments
             .FirstOrDefaultAsync(e => e.Id == id);

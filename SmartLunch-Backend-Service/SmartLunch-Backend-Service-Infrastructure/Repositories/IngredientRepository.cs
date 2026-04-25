@@ -14,7 +14,7 @@ public class IngredientRepository : IIngredientRepository
         _context = context;
     }
 
-    public async Task<Ingredient?> GetByIdAsync(Guid id)
+    public async Task<Ingredient?> GetByIdAsync(int id)
     {
         return await _context.Ingredients
             .FirstOrDefaultAsync(e => e.Id == id);

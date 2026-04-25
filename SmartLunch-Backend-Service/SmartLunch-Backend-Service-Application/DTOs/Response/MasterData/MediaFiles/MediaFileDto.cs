@@ -2,8 +2,8 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.MediaF
 
 public class MediaFileDto
 {
-    public Guid Id { get; set; }
-    public Guid OwnerUserId { get; set; }
+    public int Id { get; set; }
+    public int OwnerUserId { get; set; }
     public string Bucket { get; set; } = string.Empty;
     public string ObjectName { get; set; } = string.Empty;
     public string? OriginalFileName { get; set; }

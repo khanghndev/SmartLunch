@@ -6,14 +6,14 @@ namespace SmartLunch.Backend.Service.Application.Commands.IngredientIntake.Revie
 
 public class ReviewIngredientIntakeProposalCommand : IRequest<ReviewIngredientIntakeProposalResponse>
 {
-    public Guid ProposalId { get; }
+    public int ProposalId { get; }
     public ReviewIngredientIntakeProposalRequest Request { get; }
-    public Guid ReviewerUserId { get; }
+    public int ReviewerUserId { get; }
 
     public ReviewIngredientIntakeProposalCommand(
-        Guid proposalId,
+        int proposalId,
         ReviewIngredientIntakeProposalRequest request,
-        Guid reviewerUserId)
+        int reviewerUserId)
     {
         ProposalId = proposalId;
         Request = request;

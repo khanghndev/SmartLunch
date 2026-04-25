@@ -2,8 +2,8 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.UserUn
 
 public class CreateUserUnitResponse
 {
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public Guid UnitId { get; set; }
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public int UnitId { get; set; }
     public string Message { get; set; } = "User unit created successfully";
 }

@@ -84,7 +84,7 @@ public class GrantPermissionToRoleCommandHandler : IRequestHandler<GrantPermissi
         // Create new role permission assignment
         var rolePermission = new RolePermission
         {
-            Id = Guid.NewGuid(),
+
             RoleId = req.RoleId,
             PermissionId = req.PermissionId,
             AssignedAt = DateTime.UtcNow,

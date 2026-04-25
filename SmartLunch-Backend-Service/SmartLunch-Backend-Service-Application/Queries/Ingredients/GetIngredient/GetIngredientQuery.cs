@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Ingredients.GetIngredie
 
 public class GetIngredientQuery : IRequest<GetIngredientResponse>
 {
-    public Guid IngredientId { get; set; }
+    public int IngredientId { get; set; }
 
-    public GetIngredientQuery(Guid ingredientId)
+    public GetIngredientQuery(int ingredientId)
     {
         IngredientId = ingredientId;
     }

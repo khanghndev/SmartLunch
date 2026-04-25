@@ -28,7 +28,7 @@ public class CreateDishCommandHandler : IRequestHandler<CreateDishCommand, GetDi
 
         var entity = new Dish
         {
-            Id = Guid.NewGuid(),
+
             Name = req.Name.Trim(),
             Description = string.IsNullOrWhiteSpace(req.Description) ? null : req.Description.Trim(),
             Category = DishCatalogCategory.Normalize(req.Category),

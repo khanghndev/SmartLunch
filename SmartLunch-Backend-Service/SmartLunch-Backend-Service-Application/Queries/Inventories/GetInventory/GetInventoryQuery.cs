@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Inventories.GetInventor
 
 public class GetInventoryQuery : IRequest<GetInventoryResponse>
 {
-    public Guid InventoryId { get; set; }
+    public int InventoryId { get; set; }
 
-    public GetInventoryQuery(Guid inventoryId)
+    public GetInventoryQuery(int inventoryId)
     {
         InventoryId = inventoryId;
     }

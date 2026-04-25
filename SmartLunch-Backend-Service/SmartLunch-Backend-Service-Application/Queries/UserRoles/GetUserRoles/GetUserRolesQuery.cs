@@ -7,11 +7,11 @@ public class GetUserRolesQuery : IRequest<GetUserRolesResponse>
 {
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 10;
-    public Guid? UserId { get; set; }
-    public Guid? RoleId { get; set; }
+    public int? UserId { get; set; }
+    public int? RoleId { get; set; }
     public bool? IsActive { get; set; }
 
-    public GetUserRolesQuery(int page, int pageSize, Guid? userId, Guid? roleId, bool? isActive)
+    public GetUserRolesQuery(int page, int pageSize, int? userId, int? roleId, bool? isActive)
     {
         Page = page;
         PageSize = pageSize;

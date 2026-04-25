@@ -5,9 +5,10 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class MediaFile
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
 
-    public Guid OwnerUserId { get; set; }
+    public int OwnerUserId { get; set; }
     public virtual User? OwnerUser { get; set; }
 
     public string Bucket { get; set; } = string.Empty;

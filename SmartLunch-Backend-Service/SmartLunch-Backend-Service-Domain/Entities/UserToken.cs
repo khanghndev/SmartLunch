@@ -5,8 +5,9 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class UserToken
 {
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int UserId { get; set; }
     public string AccessToken { get; set; } = string.Empty;
     public string RefreshToken { get; set; } = string.Empty;
     public DateTime IssuedAt { get; set; } = DateTime.UtcNow;

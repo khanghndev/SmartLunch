@@ -14,7 +14,7 @@ public class PaymentRepository : IPaymentRepository
         _context = context;
     }
 
-    public async Task<Payment?> GetByIdAsync(Guid id)
+    public async Task<Payment?> GetByIdAsync(int id)
     {
         return await _context.Payments
             .FirstOrDefaultAsync(e => e.Id == id);

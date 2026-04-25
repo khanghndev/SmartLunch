@@ -5,10 +5,10 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Orders;
 /// </summary>
 public class CreateSalesInvoiceRequest
 {
-    public Guid UnitId { get; set; }
+    public int UnitId { get; set; }
 
     /// <summary>Khách hàng (đặt cơm) — tùy chọn.</summary>
-    public Guid? UserId { get; set; }
+    public int? UserId { get; set; }
 
     /// <summary>Ngày giao / ăn. Nếu không gửi (default), dùng ngày hiện tại (UTC).</summary>
     public DateOnly ScheduledDate { get; set; }
@@ -18,6 +18,6 @@ public class CreateSalesInvoiceRequest
 
 public class CreateSalesInvoiceLineRequest
 {
-    public Guid DishId { get; set; }
+    public int DishId { get; set; }
     public int Quantity { get; set; }
 }

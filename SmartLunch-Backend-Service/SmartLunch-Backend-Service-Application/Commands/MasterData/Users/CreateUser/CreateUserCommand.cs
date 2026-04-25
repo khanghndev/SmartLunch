@@ -4,4 +4,4 @@ using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Users;
 
 namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Users.CreateUser;
 
-public record CreateUserCommand(CreateUserRequest Request, Guid ActorUserId) : IRequest<GetUserResponse>;
+public record CreateUserCommand(CreateUserRequest Request, int ActorUserId) : IRequest<GetUserResponse>;

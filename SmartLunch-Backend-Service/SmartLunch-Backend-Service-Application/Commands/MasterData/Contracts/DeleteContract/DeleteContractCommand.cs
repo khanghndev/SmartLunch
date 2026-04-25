@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Contracts.D
 
 public class DeleteContractCommand : IRequest<DeleteContractResponse>
 {
-    public Guid ContractId { get; }
+    public int ContractId { get; }
 
-    public DeleteContractCommand(Guid contractId)
+    public DeleteContractCommand(int contractId)
     {
         ContractId = contractId;
     }

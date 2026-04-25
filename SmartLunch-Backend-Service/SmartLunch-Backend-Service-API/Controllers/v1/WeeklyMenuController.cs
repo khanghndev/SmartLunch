@@ -59,7 +59,7 @@ public class WeeklyMenuController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:weeklymenus.read")]
-    public async Task<ActionResult<BaseApiResponse<GetWeeklyMenuResponse>>> GetWeeklyMenu(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetWeeklyMenuResponse>>> GetWeeklyMenu(int id)
     {
         try
         {

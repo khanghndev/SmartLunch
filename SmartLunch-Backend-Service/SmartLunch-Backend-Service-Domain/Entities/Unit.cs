@@ -5,7 +5,8 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class Unit
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Address { get; set; }
     public string? Phone { get; set; }
@@ -24,8 +25,8 @@ public class Unit
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
-    public Guid? CreatedBy { get; set; }
-    public Guid? UpdatedBy { get; set; }
+    public int? CreatedBy { get; set; }
+    public int? UpdatedBy { get; set; }
 
     public virtual ICollection<UserUnit> UserUnits { get; set; } = new List<UserUnit>();
 }

@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Transactions.GetTransac
 
 public class GetTransactionQuery : IRequest<GetTransactionResponse>
 {
-    public Guid TransactionId { get; set; }
+    public int TransactionId { get; set; }
 
-    public GetTransactionQuery(Guid transactionId)
+    public GetTransactionQuery(int transactionId)
     {
         TransactionId = transactionId;
     }

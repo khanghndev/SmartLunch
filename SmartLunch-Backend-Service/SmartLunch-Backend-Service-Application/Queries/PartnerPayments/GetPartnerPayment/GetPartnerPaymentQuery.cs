@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.PartnerPayments.GetPart
 
 public class GetPartnerPaymentQuery : IRequest<GetPartnerPaymentResponse>
 {
-    public Guid PartnerPaymentId { get; set; }
+    public int PartnerPaymentId { get; set; }
 
-    public GetPartnerPaymentQuery(Guid partnerPaymentId)
+    public GetPartnerPaymentQuery(int partnerPaymentId)
     {
         PartnerPaymentId = partnerPaymentId;
     }

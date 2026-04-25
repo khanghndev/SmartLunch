@@ -4,9 +4,9 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.UserPermiss
 
 public class DeleteUserPermissionCommand : IRequest<bool>
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    public DeleteUserPermissionCommand(Guid id)
+    public DeleteUserPermissionCommand(int id)
     {
         Id = id;
     }

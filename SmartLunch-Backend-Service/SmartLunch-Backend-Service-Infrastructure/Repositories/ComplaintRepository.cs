@@ -14,7 +14,7 @@ public class ComplaintRepository : IComplaintRepository
         _context = context;
     }
 
-    public async Task<Complaint?> GetByIdAsync(Guid id)
+    public async Task<Complaint?> GetByIdAsync(int id)
     {
         return await _context.Complaints
             .FirstOrDefaultAsync(e => e.Id == id);

@@ -6,10 +6,10 @@ namespace SmartLunch.Backend.Service.Application.Commands.Media.CreateUploadUrl;
 
 public class CreateMediaUploadUrlCommand : IRequest<CreateMediaUploadUrlResponse>
 {
-    public Guid UserId { get; }
+    public int UserId { get; }
     public CreateMediaUploadUrlRequest Request { get; }
 
-    public CreateMediaUploadUrlCommand(Guid userId, CreateMediaUploadUrlRequest request)
+    public CreateMediaUploadUrlCommand(int userId, CreateMediaUploadUrlRequest request)
     {
         UserId = userId;
         Request = request;

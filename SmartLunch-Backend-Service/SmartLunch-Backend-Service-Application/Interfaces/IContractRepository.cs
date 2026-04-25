@@ -4,14 +4,14 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IContractRepository
 {
-    Task<Contract?> GetByIdAsync(Guid id);
+    Task<Contract?> GetByIdAsync(int id);
     Task<(List<Contract> Contracts, int TotalCount)> GetContractsAsync(
         int page,
         int pageSize,
         string? searchTerm = null,
-        Guid? partnerId = null);
-    Task<bool> ExistsContractNumberForPartnerAsync(Guid partnerId, string contractNumber, Guid? excludeContractId = null);
-    Task<int> CountPartnerPaymentsAsync(Guid contractId);
+        int? partnerId = null);
+    Task<bool> ExistsContractNumberForPartnerAsync(int partnerId, string contractNumber, int? excludeContractId = null);
+    Task<int> CountPartnerPaymentsAsync(int contractId);
     Task<Contract> CreateAsync(Contract contract);
     Task<Contract> UpdateAsync(Contract contract);
     Task DeleteAsync(Contract contract);

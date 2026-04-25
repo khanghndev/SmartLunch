@@ -59,7 +59,7 @@ public class DeliveryController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:deliveries.read")]
-    public async Task<ActionResult<BaseApiResponse<GetDeliveryResponse>>> GetDelivery(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetDeliveryResponse>>> GetDelivery(int id)
     {
         try
         {

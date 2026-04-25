@@ -6,10 +6,10 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Partners.Up
 
 public class UpdatePartnerCommand : IRequest<GetPartnerResponse>
 {
-    public Guid PartnerId { get; }
+    public int PartnerId { get; }
     public UpdatePartnerRequest Request { get; }
 
-    public UpdatePartnerCommand(Guid partnerId, UpdatePartnerRequest request)
+    public UpdatePartnerCommand(int partnerId, UpdatePartnerRequest request)
     {
         PartnerId = partnerId;
         Request = request;

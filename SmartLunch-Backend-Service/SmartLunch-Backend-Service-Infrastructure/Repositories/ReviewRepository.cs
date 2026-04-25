@@ -14,7 +14,7 @@ public class ReviewRepository : IReviewRepository
         _context = context;
     }
 
-    public async Task<Review?> GetByIdAsync(Guid id)
+    public async Task<Review?> GetByIdAsync(int id)
     {
         return await _context.Reviews
             .FirstOrDefaultAsync(e => e.Id == id);

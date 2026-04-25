@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Sentiments.GetSentiment
 
 public class GetSentimentQuery : IRequest<GetSentimentResponse>
 {
-    public Guid SentimentId { get; set; }
+    public int SentimentId { get; set; }
 
-    public GetSentimentQuery(Guid sentimentId)
+    public GetSentimentQuery(int sentimentId)
     {
         SentimentId = sentimentId;
     }

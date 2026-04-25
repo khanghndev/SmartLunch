@@ -14,7 +14,7 @@ public class TransactionRepository : ITransactionRepository
         _context = context;
     }
 
-    public async Task<Transaction?> GetByIdAsync(Guid id)
+    public async Task<Transaction?> GetByIdAsync(int id)
     {
         return await _context.Transactions
             .FirstOrDefaultAsync(e => e.Id == id);

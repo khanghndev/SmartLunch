@@ -67,7 +67,7 @@ public class UserController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:users.read")]
-    public async Task<ActionResult<BaseApiResponse<GetUserResponse>>> GetUser(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetUserResponse>>> GetUser(int id)
     {
         try
         {
@@ -122,9 +122,9 @@ public class UserController : ControllerBase
     }
 
     /// <summary>Cập nhật thông tin, đặt lại mật khẩu, khóa/mở (IsActive).</summary>
-    [HttpPut("{id:guid}")]
+    [HttpPut("{id:int}")]
     [Authorize(Policy = "permission:users.update")]
-    public async Task<ActionResult<BaseApiResponse<GetUserResponse>>> Update(Guid id, [FromBody] UpdateUserRequest request)
+    public async Task<ActionResult<BaseApiResponse<GetUserResponse>>> Update(int id, [FromBody] UpdateUserRequest request)
     {
         try
         {
@@ -157,10 +157,10 @@ public class UserController : ControllerBase
         }
     }
 
-    private Guid RequireUserId()
+    private int RequireUserId()
     {
         var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(raw) || !Guid.TryParse(raw, out var userId))
+        if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
             throw new UnauthorizedAccessException("Invalid user context.");
         return userId;
     }

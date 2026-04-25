@@ -62,7 +62,7 @@ public class PartnerController : ControllerBase
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:partners.read")]
     public async Task<ActionResult<BaseApiResponse<GetPartnerResponse>>> GetPartner(
-        Guid id,
+        int id,
         [FromQuery] bool includeContracts = true)
     {
         try
@@ -117,9 +117,9 @@ public class PartnerController : ControllerBase
     /// <summary>
     /// Cập nhật thông tin đối tác.
     /// </summary>
-    [HttpPut("{id:guid}")]
+    [HttpPut("{id:int}")]
     [Authorize(Policy = "permission:partners.update")]
-    public async Task<ActionResult<BaseApiResponse<GetPartnerResponse>>> UpdatePartner(Guid id, [FromBody] UpdatePartnerRequest request)
+    public async Task<ActionResult<BaseApiResponse<GetPartnerResponse>>> UpdatePartner(int id, [FromBody] UpdatePartnerRequest request)
     {
         try
         {

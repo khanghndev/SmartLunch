@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.UserTokens.GetUserToken
 
 public class GetUserTokenQuery : IRequest<GetUserTokenResponse>
 {
-    public Guid UserTokenId { get; set; }
+    public int UserTokenId { get; set; }
 
-    public GetUserTokenQuery(Guid userTokenId)
+    public GetUserTokenQuery(int userTokenId)
     {
         UserTokenId = userTokenId;
     }

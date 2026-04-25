@@ -59,7 +59,7 @@ public class ReviewController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:reviews.read")]
-    public async Task<ActionResult<BaseApiResponse<GetReviewResponse>>> GetReview(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetReviewResponse>>> GetReview(int id)
     {
         try
         {

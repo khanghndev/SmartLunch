@@ -67,7 +67,7 @@ public class IngredientSourceController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:ingredientsources.read")]
-    public async Task<ActionResult<BaseApiResponse<GetIngredientSourceResponse>>> GetIngredientSource(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetIngredientSourceResponse>>> GetIngredientSource(int id)
     {
         try
         {
@@ -115,10 +115,10 @@ public class IngredientSourceController : ControllerBase
         }
     }
 
-    [HttpPut("{id:guid}")]
+    [HttpPut("{id:int}")]
     [Authorize(Policy = "permission:ingredientsources.update")]
     public async Task<ActionResult<BaseApiResponse<GetIngredientSourceResponse>>> UpdateIngredientSource(
-        Guid id,
+        int id,
         [FromBody] UpdateIngredientSourceRequest request)
     {
         try
@@ -139,9 +139,9 @@ public class IngredientSourceController : ControllerBase
         }
     }
 
-    [HttpDelete("{id:guid}")]
+    [HttpDelete("{id:int}")]
     [Authorize(Policy = "permission:ingredientsources.update")]
-    public async Task<ActionResult<BaseApiResponse<DeleteIngredientSourceResponse>>> DeleteIngredientSource(Guid id)
+    public async Task<ActionResult<BaseApiResponse<DeleteIngredientSourceResponse>>> DeleteIngredientSource(int id)
     {
         try
         {

@@ -5,11 +5,12 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class Ingredient
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty; // kg, l, etc.
     public string? Description { get; set; }
-    public Guid? DefaultSupplierId { get; set; }
+    public int? DefaultSupplierId { get; set; }
     public decimal? CostPerUnit { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

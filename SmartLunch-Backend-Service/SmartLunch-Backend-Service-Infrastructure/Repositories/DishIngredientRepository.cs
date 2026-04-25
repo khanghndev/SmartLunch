@@ -14,7 +14,7 @@ public class DishIngredientRepository : IDishIngredientRepository
         _context = context;
     }
 
-    public async Task<DishIngredient?> GetByIdAsync(Guid id)
+    public async Task<DishIngredient?> GetByIdAsync(int id)
     {
         return await _context.DishIngredients
             .Include(di => di.Dish)
@@ -22,7 +22,7 @@ public class DishIngredientRepository : IDishIngredientRepository
             .FirstOrDefaultAsync(di => di.Id == id);
     }
 
-    public async Task<DishIngredient?> GetByDishAndIngredientAsync(Guid dishId, Guid ingredientId)
+    public async Task<DishIngredient?> GetByDishAndIngredientAsync(int dishId, int ingredientId)
     {
         return await _context.DishIngredients
             .Include(di => di.Dish)
@@ -30,7 +30,7 @@ public class DishIngredientRepository : IDishIngredientRepository
             .FirstOrDefaultAsync(di => di.DishId == dishId && di.IngredientId == ingredientId);
     }
 
-    public async Task<IEnumerable<DishIngredient>> GetByDishIdAsync(Guid dishId)
+    public async Task<IEnumerable<DishIngredient>> GetByDishIdAsync(int dishId)
     {
         return await _context.DishIngredients
             .Include(di => di.Dish)
@@ -39,7 +39,7 @@ public class DishIngredientRepository : IDishIngredientRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<DishIngredient>> GetByIngredientIdAsync(Guid ingredientId)
+    public async Task<IEnumerable<DishIngredient>> GetByIngredientIdAsync(int ingredientId)
     {
         return await _context.DishIngredients
             .Include(di => di.Dish)
@@ -48,7 +48,7 @@ public class DishIngredientRepository : IDishIngredientRepository
             .ToListAsync();
     }
 
-    public async Task<(List<DishIngredient> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? dishId = null, Guid? ingredientId = null)
+    public async Task<(List<DishIngredient> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, int? dishId = null, int? ingredientId = null)
     {
         var query = _context.DishIngredients
             .Include(di => di.Dish)
@@ -85,7 +85,7 @@ public class DishIngredientRepository : IDishIngredientRepository
         return dishIngredient;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var dishIngredient = await _context.DishIngredients.FindAsync(id);
         if (dishIngredient == null) return false;
@@ -95,7 +95,7 @@ public class DishIngredientRepository : IDishIngredientRepository
         return true;
     }
 
-    public async Task<bool> DeleteByDishAndIngredientAsync(Guid dishId, Guid ingredientId)
+    public async Task<bool> DeleteByDishAndIngredientAsync(int dishId, int ingredientId)
     {
         var dishIngredient = await GetByDishAndIngredientAsync(dishId, ingredientId);
         if (dishIngredient == null) return false;
@@ -105,7 +105,7 @@ public class DishIngredientRepository : IDishIngredientRepository
         return true;
     }
 
-    public async Task<bool> ExistsByDishAndIngredientAsync(Guid dishId, Guid ingredientId)
+    public async Task<bool> ExistsByDishAndIngredientAsync(int dishId, int ingredientId)
     {
         return await _context.DishIngredients.AnyAsync(di => di.DishId == dishId && di.IngredientId == ingredientId);
     }

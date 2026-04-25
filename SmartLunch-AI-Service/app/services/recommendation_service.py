@@ -3,6 +3,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from app.core.rules_loader import RulesProfile, _default_profile
+from app.schemas.recommendation import MealPlanPair, WeekPlan, Recommendation, DayPlan
+import random
 
 @dataclass(frozen=True)
 class ScoredItem:
@@ -17,15 +19,6 @@ class RecommendationService:
 
     Replace with your model later (collaborative filtering, content-based, LLM ranking, etc.).
     """
-
-    DEFAULT_MENU: list[tuple[str, list[str]]] = [
-        ("Grilled chicken salad", ["healthy", "high_protein", "low_oil"]),
-        ("Pho bo (beef noodle soup)", ["soup", "comfort", "high_protein"]),
-        ("Vegetable tofu bowl", ["vegetarian", "healthy", "high_fiber"]),
-        ("Banh mi (pork)", ["quick", "budget"]),
-        ("Salmon rice bowl", ["healthy", "omega3", "high_protein"]),
-        ("Fruit yogurt parfait", ["light", "dessert", "healthy"]),
-    ]
 
     def recommend(
         self,
@@ -57,7 +50,10 @@ class RecommendationService:
         top_k: int,
         rules_profile: RulesProfile | None = None,
     ) -> list[ScoredItem]:
-        menu = menu_items or self.DEFAULT_MENU
+        menu = menu_items or []
+        if not menu:
+            return []
+            
         return self.recommend(
             menu=menu, 
             dietary_preferences=dietary_preferences, 
@@ -127,6 +123,15 @@ class RecommendationService:
         score = max(0.0, min(1.0, score))
         if not reasons:
             reasons.append("Popular choice")
+            
+        # Add randomness for variety if configured
+        randomness = float(scoring_cfg.get("randomness", 0.0))
+        if randomness > 0:
+            noise = random.uniform(0, randomness)
+            score += noise
+            score = max(0.0, min(1.0, score))  # Re-clamp
+            reasons.append("Variety boost")
+
         return score, reasons, True
 
     def recommend_meal_plan_today_ortools(
@@ -174,7 +179,10 @@ class RecommendationService:
                     if (i, j) in incompatible_set:
                         continue
                     plan_score = max(0.0, min(1.0, (m.score + s.score) / 2.0))
-                    best.append(MealPlanPair(main=m, soup=s, plan_score=plan_score))
+                    # Chuyển đổi sang Pydantic model
+                    main_rec = Recommendation(name=m.name, score=m.score, reasons=m.reasons)
+                    soup_rec = Recommendation(name=s.name, score=s.score, reasons=s.reasons)
+                    best.append(MealPlanPair(main=main_rec, soup=soup_rec, plan_score=plan_score))
             best.sort(key=lambda x: x.plan_score, reverse=True)
             return best[:top_k]
 
@@ -262,8 +270,8 @@ class RecommendationService:
                 break
 
             i, j = chosen_pair
-            main_item = ScoredItem(name=main_names[i], score=main_scores[i], reasons=main_reasons[i])
-            soup_item = ScoredItem(name=soup_names[j], score=soup_scores[j], reasons=soup_reasons[j])
+            main_item = Recommendation(name=main_names[i], score=main_scores[i], reasons=main_reasons[i])
+            soup_item = Recommendation(name=soup_names[j], score=soup_scores[j], reasons=soup_reasons[j])
             plan_score = max(0.0, min(1.0, (main_scores[i] + soup_scores[j]) / 2.0))
             solutions.append(MealPlanPair(main=main_item, soup=soup_item, plan_score=plan_score))
 
@@ -299,7 +307,7 @@ class RecommendationService:
         except ImportError:  # pragma: no cover
             # Fallback: greedy daily picks using recommend_meal_plan_today_ortools (top_k=1).
             # This keeps the API functional even without OR-Tools installed.
-            daily_plans: list[DayPlanPair] = []
+            daily_plans: list[DayPlan] = []
             incompatible_set = set(incompatible_pairs)
             used_main: set[int] = set()
             used_soup: set[int] = set()
@@ -328,12 +336,14 @@ class RecommendationService:
                 picked_pair = picked[0]
                 mi = next(i for i, (n, _) in enumerate(main_menu) if n == picked_pair.main.name)
                 sj = next(j for j, (n, _) in enumerate(soup_menu) if n == picked_pair.soup.name)
-                daily_plans.append(DayPlanPair(day=d, main=picked_pair.main, soup=picked_pair.soup))
+                
+                # Sử dụng Recommendation model từ picked_pair
+                daily_plans.append(DayPlan(day=d, main=picked_pair.main, soup=picked_pair.soup))
                 used_main.add(mi)
                 used_soup.add(sj)
 
             plan_score = sum((x.main.score + x.soup.score) / 2.0 for x in daily_plans) / max(1, len(daily_plans))
-            return [WeekPlan(day_plans=daily_plans, plan_score=plan_score)]
+            return [WeekPlan(days=daily_plans, plan_score=plan_score)]
 
         prefs = self._normalize_set(dietary_preferences)
         alls = self._normalize_set(allergies)
@@ -449,16 +459,16 @@ class RecommendationService:
                     return solutions
                 chosen_pairs.append(chosen)
 
-            day_plans: list[DayPlanPair] = []
+            daily_plans: list[DayPlan] = []
             for d, (i, j) in enumerate(chosen_pairs):
-                main_item = ScoredItem(name=main_names[i], score=main_scores[i], reasons=main_reasons[i])
-                soup_item = ScoredItem(name=soup_names[j], score=soup_scores[j], reasons=soup_reasons[j])
-                day_plans.append(DayPlanPair(day=days[d], main=main_item, soup=soup_item))
+                main_rec = Recommendation(name=main_names[i], score=main_scores[i], reasons=main_reasons[i])
+                soup_rec = Recommendation(name=soup_names[j], score=soup_scores[j], reasons=soup_reasons[j])
+                daily_plans.append(DayPlan(day=days[d], main=main_rec, soup=soup_rec))
 
             plan_score = (
-                sum((x.main.score + x.soup.score) / 2.0 for x in day_plans) / max(1, len(day_plans))
+                sum((x.main.score + x.soup.score) / 2.0 for x in daily_plans) / max(1, len(daily_plans))
             )
-            solutions.append(WeekPlan(day_plans=day_plans, plan_score=plan_score))
+            solutions.append(WeekPlan(days=daily_plans, plan_score=plan_score))
 
             # No-good constraint: forbid repeating the exact same schedule.
             # Since we choose exactly one pair per day, sum over the selected day-pairs must be D.

@@ -5,13 +5,14 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class Complaint
 {
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public Guid? OrderId { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int UserId { get; set; }
+    public int? OrderId { get; set; }
     public string Title { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
     public string Status { get; set; } = "new"; // new|in_progress|resolved|rejected
-    public Guid? AssignedTo { get; set; }
+    public int? AssignedTo { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? ResolvedAt { get; set; }
 

@@ -59,7 +59,7 @@ public class UnitController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:units.read")]
-    public async Task<ActionResult<BaseApiResponse<GetUnitResponse>>> GetUnit(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetUnitResponse>>> GetUnit(int id)
     {
         try
         {

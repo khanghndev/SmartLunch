@@ -2,7 +2,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.IngredientInvento
 
 public class IngredientSourceBatchDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string? BatchNumber { get; set; }
     public string? OriginDetails { get; set; }
     public DateTime? ProductionDate { get; set; }

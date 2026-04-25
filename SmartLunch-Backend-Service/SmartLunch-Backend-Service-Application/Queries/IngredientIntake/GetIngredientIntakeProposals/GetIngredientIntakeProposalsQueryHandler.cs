@@ -38,7 +38,7 @@ public class GetIngredientIntakeProposalsQueryHandler
             throw new UnauthorizedAccessException("You are not allowed to view intake proposals.");
 
         var seeAll = IntakeProposalAccessHelper.IsElevatedReviewer(roleNames);
-        Guid? filter = seeAll ? null : request.ActorUserId;
+        int? filter = seeAll ? null : request.ActorUserId;
 
         var (items, total) = await _repository.GetPagedAsync(req.Page, req.PageSize, filter, cancellationToken);
 

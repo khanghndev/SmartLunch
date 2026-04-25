@@ -31,7 +31,7 @@ public class CreateIngredientSourceCommandHandler : IRequestHandler<CreateIngred
 
         var entity = new IngredientSource
         {
-            Id = Guid.NewGuid(),
+
             IngredientId = req.IngredientId,
             PartnerId = req.PartnerId,
             BatchNumber = string.IsNullOrWhiteSpace(req.BatchNumber) ? null : req.BatchNumber.Trim(),

@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.RolePermissions.GetRole
 
 public class GetRolePermissionQuery : IRequest<GetRolePermissionResponse>
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    public GetRolePermissionQuery(Guid id)
+    public GetRolePermissionQuery(int id)
     {
         Id = id;
     }

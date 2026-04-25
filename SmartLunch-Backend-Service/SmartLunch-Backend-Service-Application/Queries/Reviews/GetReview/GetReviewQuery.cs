@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Reviews.GetReview;
 
 public class GetReviewQuery : IRequest<GetReviewResponse>
 {
-    public Guid ReviewId { get; set; }
+    public int ReviewId { get; set; }
 
-    public GetReviewQuery(Guid reviewId)
+    public GetReviewQuery(int reviewId)
     {
         ReviewId = reviewId;
     }

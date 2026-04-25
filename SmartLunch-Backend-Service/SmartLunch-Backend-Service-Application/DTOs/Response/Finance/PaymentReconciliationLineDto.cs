@@ -2,7 +2,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.Finance;
 
 public class PaymentReconciliationLineDto
 {
-    public Guid OrderId { get; set; }
+    public int OrderId { get; set; }
     public DateTime ScheduledDate { get; set; }
     public string? UnitName { get; set; }
     public decimal OrderTotal { get; set; }

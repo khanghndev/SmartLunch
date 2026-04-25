@@ -52,7 +52,7 @@
 //                 // Use provided token directly
 //                 await SetUserFromToken(context, devToken);
 //             }
-//             else if (!string.IsNullOrEmpty(devUserId) && Guid.TryParse(devUserId, out var userId))
+//             else if (!string.IsNullOrEmpty(devUserId) && int.TryParse(devUserId, out var userId))
 //             {
 //                 // Authenticate by user ID
 //                 await SetUserFromId(context, dbContext, userId);
@@ -88,7 +88,7 @@
 //             return Task.CompletedTask;
 //         }
 
-//         private async Task SetUserFromId(HttpContext context, SmartLunchDBContext dbContext, Guid userId)
+//         private async Task SetUserFromId(HttpContext context, SmartLunchDBContext dbContext, int userId)
 //         {
 //             try
 //             {

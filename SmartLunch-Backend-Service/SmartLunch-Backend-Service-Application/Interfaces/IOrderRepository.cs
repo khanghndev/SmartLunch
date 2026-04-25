@@ -5,8 +5,8 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IOrderRepository
 {
-    Task<Order?> GetByIdAsync(Guid id);
-    Task<Order?> GetByIdWithDetailsAsync(Guid id);
+    Task<Order?> GetByIdAsync(int id);
+    Task<Order?> GetByIdWithDetailsAsync(int id);
     Task<(List<Order> Orders, int TotalCount)> GetOrdersAsync(
         int page,
         int pageSize,
@@ -17,7 +17,7 @@ public interface IOrderRepository
     Task<List<MealStatisticItemDto>> GetMealStatisticsAsync(
         DateTime? startDate,
         DateTime? endDate,
-        Guid? unitId);
+        int? unitId);
 
     Task<bool> InvoiceCodeExistsAsync(string invoiceCode, CancellationToken cancellationToken = default);
 

@@ -95,7 +95,7 @@ public class LoginAdminCommandHandler : IRequestHandler<LoginAdminCommand, Login
         // Store new token in database
         var userToken = new UserToken
         {
-            Id = Guid.NewGuid(),
+
             UserId = user.Id,
             AccessToken = accessToken,
             RefreshToken = refreshToken,

@@ -78,7 +78,7 @@ public class GrantRoleToUserCommandHandler : IRequestHandler<GrantRoleToUserComm
         // Create new user role assignment
         var userRole = new UserRole
         {
-            Id = Guid.NewGuid(),
+
             UserId = req.UserId,
             RoleId = req.RoleId,
             AssignedAt = DateTime.UtcNow,

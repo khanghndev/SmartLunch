@@ -2,7 +2,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.DishIng
 
 public class UpdateDishIngredientRequest
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public decimal Quantity { get; set; }
     public string? Unit { get; set; }
 }

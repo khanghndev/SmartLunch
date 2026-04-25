@@ -59,7 +59,7 @@ public class MenuScheduleController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:menuschedules.read")]
-    public async Task<ActionResult<BaseApiResponse<GetMenuScheduleResponse>>> GetMenuSchedule(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetMenuScheduleResponse>>> GetMenuSchedule(int id)
     {
         try
         {

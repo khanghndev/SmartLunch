@@ -14,7 +14,7 @@ public class RolePermissionRepository : IRolePermissionRepository
         _context = context;
     }
 
-    public async Task<RolePermission?> GetByIdAsync(Guid id)
+    public async Task<RolePermission?> GetByIdAsync(int id)
     {
         return await _context.RolePermissions
             .Include(rp => rp.Role)
@@ -22,7 +22,7 @@ public class RolePermissionRepository : IRolePermissionRepository
             .FirstOrDefaultAsync(rp => rp.Id == id);
     }
 
-    public async Task<RolePermission?> GetByRoleAndPermissionAsync(Guid roleId, Guid permissionId)
+    public async Task<RolePermission?> GetByRoleAndPermissionAsync(int roleId, int permissionId)
     {
         return await _context.RolePermissions
             .Include(rp => rp.Role)
@@ -30,7 +30,7 @@ public class RolePermissionRepository : IRolePermissionRepository
             .FirstOrDefaultAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
     }
 
-    public async Task<IEnumerable<RolePermission>> GetByRoleIdAsync(Guid roleId)
+    public async Task<IEnumerable<RolePermission>> GetByRoleIdAsync(int roleId)
     {
         return await _context.RolePermissions
             .Include(rp => rp.Role)
@@ -39,7 +39,7 @@ public class RolePermissionRepository : IRolePermissionRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<RolePermission>> GetActiveByRoleIdAsync(Guid roleId)
+    public async Task<IEnumerable<RolePermission>> GetActiveByRoleIdAsync(int roleId)
     {
         return await _context.RolePermissions
             .Include(rp => rp.Role)
@@ -48,7 +48,7 @@ public class RolePermissionRepository : IRolePermissionRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<RolePermission>> GetByPermissionIdAsync(Guid permissionId)
+    public async Task<IEnumerable<RolePermission>> GetByPermissionIdAsync(int permissionId)
     {
         return await _context.RolePermissions
             .Include(rp => rp.Role)
@@ -71,7 +71,7 @@ public class RolePermissionRepository : IRolePermissionRepository
         return rolePermission;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var rolePermission = await _context.RolePermissions.FindAsync(id);
         if (rolePermission == null) return false;
@@ -81,7 +81,7 @@ public class RolePermissionRepository : IRolePermissionRepository
         return true;
     }
 
-    public async Task<bool> DeleteByRoleAndPermissionAsync(Guid roleId, Guid permissionId)
+    public async Task<bool> DeleteByRoleAndPermissionAsync(int roleId, int permissionId)
     {
         var rolePermission = await GetByRoleAndPermissionAsync(roleId, permissionId);
         if (rolePermission == null) return false;
@@ -91,12 +91,12 @@ public class RolePermissionRepository : IRolePermissionRepository
         return true;
     }
 
-    public async Task<bool> ExistsByRoleAndPermissionAsync(Guid roleId, Guid permissionId)
+    public async Task<bool> ExistsByRoleAndPermissionAsync(int roleId, int permissionId)
     {
         return await _context.RolePermissions.AnyAsync(rp => rp.RoleId == roleId && rp.PermissionId == permissionId);
     }
 
-    public async Task<(List<RolePermission> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? roleId = null, Guid? permissionId = null, bool? isActive = null)
+    public async Task<(List<RolePermission> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, int? roleId = null, int? permissionId = null, bool? isActive = null)
     {
         var query = _context.RolePermissions
             .Include(rp => rp.Role)

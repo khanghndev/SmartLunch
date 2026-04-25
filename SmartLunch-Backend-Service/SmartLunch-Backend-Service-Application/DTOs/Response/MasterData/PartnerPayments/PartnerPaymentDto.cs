@@ -2,9 +2,9 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Partne
 
 public class PartnerPaymentDto
 {
-    public Guid Id { get; set; }
-    public Guid ContractId { get; set; }
-    public Guid PartnerId { get; set; }
+    public int Id { get; set; }
+    public int ContractId { get; set; }
+    public int PartnerId { get; set; }
     public DateTime PaymentDate { get; set; }
     public decimal Amount { get; set; }
     public string Method { get; set; } = string.Empty;
