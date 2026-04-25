@@ -40,4 +40,11 @@ public class MenuSuggestionRepository : IMenuSuggestionRepository
 
         return (menuSuggestions, totalCount);
     }
+
+    public async Task AddAsync(MenuSuggestion menuSuggestion, CancellationToken cancellationToken = default)
+    {
+        await _context.MenuSuggestions.AddAsync(menuSuggestion, cancellationToken);
+    }
+
+    public Task CommitAsync() => _context.SaveChangesAsync();
 }
