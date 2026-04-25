@@ -1,8 +1,9 @@
-CREATE TABLE orders (
+﻿CREATE TABLE orders (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     UserId INT NULL,
     UnitId INT NULL,
+    ContractId INT NULL COMMENT 'Hợp đồng liên quan',
     OrderDate DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     ScheduledDate DATE NOT NULL,
     Status VARCHAR(20) NOT NULL DEFAULT 'pending',
@@ -17,8 +18,10 @@ CREATE TABLE orders (
     UNIQUE INDEX UQ_orders_invoice_code (InvoiceCode),
     INDEX IX_orders_user (UserId),
     INDEX IX_orders_unit (UnitId),
+    INDEX IX_orders_contract (ContractId),
     INDEX IX_orders_scheduled_status (ScheduledDate, Status),
     CONSTRAINT FK_orders_user FOREIGN KEY (UserId) REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT FK_orders_unit FOREIGN KEY (UnitId) REFERENCES units (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_orders_contract FOREIGN KEY (ContractId) REFERENCES contracts (Id) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT FK_orders_sales FOREIGN KEY (CreatedBySalesUserId) REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'Đơn hàng suất ăn';

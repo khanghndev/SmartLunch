@@ -1,16 +1,20 @@
--- =====================================================
+﻿-- =====================================================
 -- Table: users
 -- Description: User accounts for RBAC system
 -- =====================================================
 CREATE TABLE users (
     Id INT NOT NULL AUTO_INCREMENT COMMENT 'Auto-increment Primary Key',
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     Username VARCHAR(100) NOT NULL COMMENT 'Tên đăng nhập',
     Email VARCHAR(255) NOT NULL COMMENT 'Email',
     PasswordHash VARCHAR(500) NOT NULL COMMENT 'Mật khẩu đã hash (BCrypt/Argon2)',
     FirstName VARCHAR(100) NULL COMMENT 'Họ',
     LastName VARCHAR(100) NULL COMMENT 'Tên',
     PhoneNumber VARCHAR(20) NULL COMMENT 'Số điện thoại',
+    AvatarUrl VARCHAR(500) NULL COMMENT 'Ảnh đại diện',
+    Gender VARCHAR(10) NULL COMMENT 'Giới tính',
+    BirthDate DATE NULL COMMENT 'Ngày sinh',
+    Address VARCHAR(255) NULL COMMENT 'Địa chỉ',
     Provider VARCHAR(50) NOT NULL DEFAULT 'system' COMMENT 'Nhà cung cấp xác thực (system, google, facebook, firebase)',
     IsActive TINYINT(1) NOT NULL DEFAULT 1 COMMENT 'Trạng thái hoạt động',
     IsEmailVerified TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Email đã xác thực',

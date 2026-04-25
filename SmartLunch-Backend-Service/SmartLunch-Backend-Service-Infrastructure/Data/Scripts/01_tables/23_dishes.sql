@@ -1,11 +1,16 @@
-CREATE TABLE dishes (
+﻿CREATE TABLE dishes (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     Name VARCHAR(255) NOT NULL COMMENT 'Tên món ăn',
     Description VARCHAR(255) NULL COMMENT 'Mô tả',
     Category VARCHAR(100) NULL COMMENT 'Danh mục',
     Price DECIMAL(10,2) NOT NULL COMMENT 'Giá mỗi phần',
+    ImageUrl VARCHAR(500) NULL COMMENT 'Ảnh món ăn',
     DietaryLabel VARCHAR(50) NULL COMMENT 'Nhãn dinh dưỡng',
+    Calories DECIMAL(10,2) NULL COMMENT 'Năng lượng (kcal)',
+    Protein DECIMAL(10,2) NULL COMMENT 'Đạm (g)',
+    Fat DECIMAL(10,2) NULL COMMENT 'Béo (g)',
+    Carbs DECIMAL(10,2) NULL COMMENT 'Bột đường (g)',
     IsActive TINYINT(1) NOT NULL DEFAULT 1,
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,

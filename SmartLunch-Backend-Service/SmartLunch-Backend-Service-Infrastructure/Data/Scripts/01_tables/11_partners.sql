@@ -1,9 +1,9 @@
--- =====================================================
+﻿-- =====================================================
 -- Table: partners (Nhà cung cấp)
 -- =====================================================
 CREATE TABLE partners (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     LegalName VARCHAR(255) NOT NULL COMMENT 'Tên pháp lý',
     BusinessRegistrationNumber VARCHAR(100) NULL COMMENT 'Số ĐKKD',
     TaxId VARCHAR(50) NULL COMMENT 'Mã số thuế',
@@ -12,6 +12,8 @@ CREATE TABLE partners (
     ContactPerson VARCHAR(255) NULL,
     Phone VARCHAR(50) NULL,
     Email VARCHAR(255) NULL,
+    LogoUrl VARCHAR(500) NULL COMMENT 'Logo đối tác',
+    Website VARCHAR(255) NULL,
     PerformanceRating DECIMAL(3,2) NULL,
     ComplianceInfo VARCHAR(2000) NULL COMMENT 'Thông tin tuân thủ',
     FinancialTerms VARCHAR(1000) NULL COMMENT 'Điều khoản thanh toán',
