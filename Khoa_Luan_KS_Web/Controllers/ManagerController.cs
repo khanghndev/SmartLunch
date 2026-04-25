@@ -9,9 +9,14 @@ namespace Khoa_Luan_KS_Web.Controllers
 
         // 2. Catalog
         public IActionResult CatalogEmployees() => View();
+        public IActionResult EmployeeDetail(string id) => View();
         public IActionResult CatalogSuppliers() => View();
+        public IActionResult SupplierDetail(string id) => View();
         public IActionResult CatalogCustomers() => View();
+        public IActionResult CustomerDetail(string id) => View();
         public IActionResult CatalogMeals() => View();
+        public IActionResult MealDetail(string id) => View();
+        public IActionResult MealEdit(string id) => View();
 
         // 3. Menu
         public IActionResult MenuDashboard() => View();

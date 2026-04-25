@@ -13,6 +13,10 @@
       "PackagePath": "staticwebassets\\assets\\images\\Logo.jpg"
     },
     {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Logo_tròn.png",
+      "PackagePath": "staticwebassets\\assets\\images\\Logo_tròn.png"
+    },
+    {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 131006.png",
       "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 131006.png"
     },
@@ -181,6 +185,10 @@
       "PackagePath": "staticwebassets\\assets\\images\\about3.jpg"
     },
     {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\achievements_hero.png",
+      "PackagePath": "staticwebassets\\assets\\images\\achievements_hero.png"
+    },
+    {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh1.jpg",
       "PackagePath": "staticwebassets\\assets\\images\\anh1.jpg"
     },
@@ -269,8 +277,8 @@
       "PackagePath": "staticwebassets\\assets\\images\\banner5.jpg"
     },
     {
-      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerbantinhaseca.jpg",
-      "PackagePath": "staticwebassets\\assets\\images\\bannerbantinhaseca.jpg"
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerbantinHuitMeal.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\bannerbantinHuitMeal.jpg"
     },
     {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerlienhe.jpg",
@@ -279,6 +287,10 @@
     {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannervechungtoi.jpg",
       "PackagePath": "staticwebassets\\assets\\images\\bannervechungtoi.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\choose_hero.png",
+      "PackagePath": "staticwebassets\\assets\\images\\choose_hero.png"
     },
     {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\cn1.jpg",
@@ -323,6 +335,10 @@
     {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\hieu.jpg",
       "PackagePath": "staticwebassets\\assets\\images\\hieu.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\home_hero.png",
+      "PackagePath": "staticwebassets\\assets\\images\\home_hero.png"
     },
     {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\hop.jpg",
@@ -373,6 +389,10 @@
       "PackagePath": "staticwebassets\\assets\\images\\map.jpg"
     },
     {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\news_hero.png",
+      "PackagePath": "staticwebassets\\assets\\images\\news_hero.png"
+    },
+    {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\nhan.jpg",
       "PackagePath": "staticwebassets\\assets\\images\\nhan.jpg"
     },
@@ -381,12 +401,20 @@
       "PackagePath": "staticwebassets\\assets\\images\\nhiem.jpg"
     },
     {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\partners_hero.png",
+      "PackagePath": "staticwebassets\\assets\\images\\partners_hero.png"
+    },
+    {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\phat.jpg",
       "PackagePath": "staticwebassets\\assets\\images\\phat.jpg"
     },
     {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\recruitment_banner.jpg",
       "PackagePath": "staticwebassets\\assets\\images\\recruitment_banner.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\recruitment_hero.png",
+      "PackagePath": "staticwebassets\\assets\\images\\recruitment_hero.png"
     },
     {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\s1.jpg",

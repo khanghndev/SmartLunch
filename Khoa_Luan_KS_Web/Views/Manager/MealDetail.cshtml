@@ -1,0 +1,214 @@
+@{
+    ViewData["Title"] = "Hồ sơ Dinh dưỡng Thực Đơn";
+    Layout = "_LayoutManager";
+}
+
+<div class="px-4 py-6 md:p-8 space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex text-sm text-gray-500 font-medium" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="/Manager/CatalogMeals" class="hover:text-green-600 transition flex items-center gap-2">
+                    <i class="fas fa-utensils"></i> Danh mục Menu
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 text-xs mx-1"></i>
+                    <span class="ml-1 md:ml-2 text-gray-900 font-bold">Mã Số: MNU-8821 (Văn phòng)</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header Action -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
+                Menu Văn Phòng Chuẩn Kèm Trà Đá
+            </h1>
+            <p class="text-sm font-bold text-green-600 border border-green-200 bg-green-50 px-3 py-1 rounded w-fit mt-3 uppercase tracking-wider">
+                Active Catalog (Đang kinh doanh)
+            </p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="bg-white border border-gray-300 text-gray-700 font-bold px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-50 transition flex items-center gap-2 text-sm">
+                <i class="fas fa-print"></i> In Nhãn Dinh Dưỡng
+            </button>
+            <a href="/Manager/MealEdit/M001" class="bg-gray-800 hover:bg-gray-900 text-white font-bold px-6 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2 text-sm">
+                <i class="fas fa-edit"></i> Edit Thực Đơn
+            </a>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Cột Trái: Ảnh lớn và Bảng dinh dưỡng (Span 5) -->
+        <div class="lg:col-span-5 space-y-6">
+            
+            <!-- Food Hero Image -->
+            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden relative group">
+                <div class="absolute right-4 top-4 z-10 w-12 h-12 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center cursor-pointer hover:bg-white/50 transition">
+                    <i class="fas fa-expand text-white text-xl"></i>
+                </div>
+                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80" class="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-700" alt="Menu" />
+            </div>
+
+            <!-- Tổng quan Vận hành -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+                <div>
+                    <div class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1">Giá niên yết hệ thống</div>
+                    <h3 class="text-3xl font-black text-green-600">35,000 <span class="text-sm">VND</span></h3>
+                </div>
+                <div class="w-px h-12 bg-gray-200"></div>
+                <div class="text-right">
+                    <div class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1">Cost NS/NL Tạm tính</div>
+                    <h3 class="text-xl font-bold text-gray-800">~ 21,500 <span class="text-xs">VND</span></h3>
+                </div>
+            </div>
+
+            <!-- Nutrition Facts Card -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="bg-gray-900 text-white p-4">
+                    <h3 class="font-black text-xl tracking-wide border-b-4 border-white pb-2 inline-block">Nutrition Facts</h3>
+                    <p class="text-xs text-gray-300 mt-2 font-medium">Bảng phân tích Dinh dưỡng theo chuẩn FDA (Cho 1 phần 400g)</p>
+                </div>
+                
+                <div class="p-6 space-y-5">
+                    <!-- Calories -->
+                    <div class="flex items-end justify-between border-b-[8px] border-black pb-2">
+                        <div class="font-black text-3xl">Calories</div>
+                        <div class="font-black text-4xl text-orange-500">650</div>
+                    </div>
+
+                    <!-- Macro List -->
+                    <div class="space-y-3 font-semibold text-sm text-gray-800">
+                        
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span><span class="font-black">Total Fat</span> (Lipid)</span>
+                            <span class="font-black">15g</span>
+                        </div>
+                        <div class="pl-4 flex justify-between text-gray-500 border-b border-gray-200 pb-2 text-xs">
+                            <span>Saturated Fat</span>
+                            <span>4g</span>
+                        </div>
+                        
+                        <div class="flex justify-between border-b border-gray-200 pb-2">
+                            <span><span class="font-black">Total Carbohydrate</span> (Tinh bột)</span>
+                            <span class="font-black">80g</span>
+                        </div>
+                        <div class="pl-4 flex justify-between text-gray-500 border-b border-gray-200 pb-2 text-xs">
+                            <span>Dietary Fiber</span>
+                            <span>8g</span>
+                        </div>
+
+                        <div class="flex justify-between border-b border-gray-200 pb-2 text-lg">
+                            <span><span class="font-black text-blue-800">Protein</span> (Chất Đạm)</span>
+                            <span class="font-black text-blue-600">30g</span>
+                        </div>
+                    </div>
+
+                    <!-- Warning Tags -->
+                    <div class="pt-2">
+                        <div class="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Thẻ Cảnh Báo Phụ Gia (Allergy)</div>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded text-xs font-bold border border-amber-200">Đậu nành</span>
+                            <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded text-xs font-bold border border-gray-200">Trứng gà</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Cột Phải: Thành phần và Mô tả (Span 7) -->
+        <div class="lg:col-span-7 space-y-6">
+            
+            <!-- Description Block -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
+                <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                    <i class="fas fa-quote-left text-gray-300"></i> Miêu tả Khẩu phần
+                </h3>
+                <p class="text-gray-600 font-medium leading-relaxed text-[15px]">
+                    Thực đơn thiết kế dành riêng cho nhóm nhân viên văn phòng có mức vận động nhẹ nhàng. Hàm lượng Canxi và Vitamin E được cân bằng để chống nhức mỏi. Phần chất tạo ngọt từ đường hóa học được cắt giảm hoàn toàn, thay thế bằng vị ngọt tự nhiên từ rau củ luộc chậm. Món best-seller trong 3 quý liên tiếp.
+                </p>
+            </div>
+
+            <!-- Components Detail (Danh sách món con) -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                    <h3 class="font-black text-gray-900 text-lg border-l-4 border-green-500 pl-3">Khung Cấu Trúc Bữa Ăn</h3>
+                    <div class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded">5 Món Tách Biệt</div>
+                </div>
+                
+                <div class="p-2 space-y-1">
+                    <!-- Item 1 -->
+                    <div class="p-4 hover:bg-gray-50 rounded-xl transition flex items-center gap-4">
+                        <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center text-xl shrink-0">🍲</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-900">Thịt Ba chỉ Rang Cháy Cạnh</h4>
+                            <p class="text-xs text-gray-500 font-medium mt-0.5">Món chính • Nguồn: CP Foods (Thịt ba rọi rút sườn)</p>
+                        </div>
+                        <div class="text-[11px] font-bold text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">150g</div>
+                    </div>
+                    
+                    <!-- Item 2 -->
+                    <div class="p-4 hover:bg-gray-50 rounded-xl transition flex items-center gap-4">
+                        <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-lg flex items-center justify-center text-xl shrink-0">🍳</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-900">Trứng Gà Ốp la Lòng Đào</h4>
+                            <p class="text-xs text-gray-500 font-medium mt-0.5">Món ăn kèm bổ sung đạm • Nguồn: Ba Huân</p>
+                        </div>
+                        <div class="text-[11px] font-bold text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">1 Quả</div>
+                    </div>
+
+                    <!-- Item 3 -->
+                    <div class="p-4 hover:bg-gray-50 rounded-xl transition flex items-center gap-4">
+                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center text-xl shrink-0">🥗</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-900">Salad Xà lách Dầu Dấm</h4>
+                            <p class="text-xs text-gray-500 font-medium mt-0.5">Rau xanh cung cấp chất xơ • Xà lách mỡ, Cà chua bi</p>
+                        </div>
+                        <div class="text-[11px] font-bold text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">100g</div>
+                    </div>
+
+                    <!-- Item 4 -->
+                    <div class="p-4 hover:bg-gray-50 rounded-xl transition flex items-center gap-4">
+                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-xl shrink-0">🥣</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-900">Canh Chua Nấu Nghiêu Xưa</h4>
+                            <p class="text-xs text-gray-500 font-medium mt-0.5">Canh chan nước thanh mát • Nghêu, dứa, cà chua</p>
+                        </div>
+                        <div class="text-[11px] font-bold text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">Bát bé</div>
+                    </div>
+
+                    <!-- Item 5 -->
+                    <div class="p-4 hover:bg-gray-50 rounded-xl transition flex items-center gap-4">
+                        <div class="w-12 h-12 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center text-xl shrink-0">🍚</div>
+                        <div class="flex-1">
+                            <h4 class="font-bold text-gray-900">Cơm Trắng Niêu Thơm</h4>
+                            <p class="text-xs text-gray-500 font-medium mt-0.5">Gạo ST25 chuẩn độ mềm</p>
+                        </div>
+                        <div class="text-[11px] font-bold text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">Phiếu tự do</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes System -->
+            <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-400 shadow-sm">
+                        <i class="fas fa-info"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-gray-900 text-sm">Giao thức Chuẩn bị</h4>
+                        <p class="text-xs text-gray-500 mt-0.5 font-medium">Bếp trưởng cần lưu ý ướp thịt ba rọi trước tổi thiểu 2 giờ để thịt lên màu đẹp nhất.</p>
+                    </div>
+                </div>
+            </div>
+
+        </div> <!-- End right col -->
+
+    </div>
+</div>

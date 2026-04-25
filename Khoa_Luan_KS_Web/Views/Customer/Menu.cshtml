@@ -1,12 +1,184 @@
 @{
-    ViewData["Title"] = "Thực đơn";
+    ViewData["Title"] = "Thực đơn tiêu biểu";
     Layout = "_LayoutCustomer";
 }
 
-<div class="w-full min-h-[50vh] flex items-center justify-center py-20 bg-gray-50">
-    <div class="text-center">
-        <h1 class="text-4xl font-bold mb-4 text-gray-800">Thực đơn Haseca</h1>
-        <p class="text-gray-500 mb-8">Tính năng đang trong quá trình số hoá và cập nhật...</p>
-        <a href="/Customer" class="px-6 py-2 bg-yellow-400 text-black font-semibold rounded shadow hover:bg-yellow-500 transition">Về trang chủ</a>
-    </div>
+<div class="bg-gray-50 font-sans min-h-screen">
+    <!-- ===== HERO SECTION ===== -->
+    <section class="relative h-[300px] md:h-[400px] flex items-center justify-center overflow-hidden">
+        <img src="https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=1920" class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black/60"></div>
+        <div class="relative z-10 text-center px-4">
+            <span class="inline-block px-4 py-1.5 bg-orange-500 text-white font-bold rounded-full mb-4 text-sm tracking-widest">HUITMEAL CATERING</span>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">Thực Đơn Tiêu Biểu</h1>
+            <p class="text-gray-200 mt-2 text-lg md:text-xl max-w-2xl mx-auto">Đa dạng, đầy đủ dinh dưỡng và được thiết kế chuẩn khoa học cho từng đối tượng khách hàng.</p>
+        </div>
+    </section>
+
+    <!-- ===== MENU NAVIGATION TABS (AlpineJS) ===== -->
+    <section class="max-w-7xl mx-auto px-4 py-12" x-data="{ activeCategory: 'truonghoc' }">
+        <!-- TABS -->
+        <div class="flex flex-wrap justify-center gap-3 md:gap-4 mb-12">
+            <button x-on:click="activeCategory = 'truonghoc'" 
+                    :class="activeCategory === 'truonghoc' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-600 hover:bg-orange-50'" 
+                    class="px-6 py-3 rounded-xl font-bold text-sm md:text-base transition-all duration-300 border border-gray-100 flex items-center gap-2">
+                <i data-lucide="graduation-cap" class="w-5 h-5"></i> Khối Trường Học
+            </button>
+            <button x-on:click="activeCategory = 'vanphong'" 
+                    :class="activeCategory === 'vanphong' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-600 hover:bg-orange-50'" 
+                    class="px-6 py-3 rounded-xl font-bold text-sm md:text-base transition-all duration-300 border border-gray-100 flex items-center gap-2">
+                <i data-lucide="briefcase" class="w-5 h-5"></i> Khối Văn Phòng
+            </button>
+            <button x-on:click="activeCategory = 'congnhan'" 
+                    :class="activeCategory === 'congnhan' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-600 hover:bg-orange-50'" 
+                    class="px-6 py-3 rounded-xl font-bold text-sm md:text-base transition-all duration-300 border border-gray-100 flex items-center gap-2">
+                <i data-lucide="factory" class="w-5 h-5"></i> Khối Công Nhân
+            </button>
+        </div>
+
+        <!-- ================= CONTENT: TRƯỜNG HỌC ================= -->
+        <div x-show="activeCategory === 'truonghoc'" x-transition.opacity.duration.500ms class="space-y-12">
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                 <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">Thực đơn Mầm non & Tiểu học</h2>
+                 <p class="text-gray-600">Thức ăn được cắt nhỏ, hầm nhừ, hạn chế gia vị cay nóng, tăng cường rau củ quả và sữa tươi giúp các bé dễ tiêu hóa và phát triển toàn diện.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Món 1 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
+                    <div class="relative h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=600" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div class="absolute top-4 right-4 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full">Bữa trưa</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Combo Thịt băm xào ngô ngọt</h3>
+                        <p class="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-2">Cơm mềm, thịt heo băm xào ngô ngọt, mướp xào tôm, canh bí đỏ thịt băm, tráng miệng chuối tây.</p>
+                        <div class="text-xs text-orange-500 font-bold bg-orange-50 inline-block px-3 py-1 rounded border border-orange-100">
+                            Khuyên dùng: Khối Mầm non
+                        </div>
+                    </div>
+                </div>
+                 <!-- Món 2 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
+                    <div class="relative h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1588166524941-3bf61a9c4033?q=80&w=600" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                        <div class="absolute top-4 right-4 bg-yellow-500 text-white text-xs font-bold px-3 py-1 rounded-full">Bữa nhẹ</div>
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Cơm đùi gà xốt chua ngọt</h3>
+                        <p class="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-2">Đùi gà công nghiệp xốt cà chua dễ ăn, kết hợp cải chíp xào tỏi, canh rau ngót cá rô, tráng miệng nho không hạt.</p>
+                        <div class="text-xs text-orange-500 font-bold bg-orange-50 inline-block px-3 py-1 rounded border border-orange-100">
+                            Khuyên dùng: Khối Tiểu học
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="w-full border-t border-gray-200 border-dashed my-8"></div>
+            
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                 <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">Thực đơn THCS & THPT</h2>
+                 <p class="text-gray-600">Đẩy mạnh năng lượng và Canxi để đáp ứng sự phát triển mạnh mẽ về thể chất của thanh thiếu niên.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Món 1 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl hover:-translate-y-2 transition-all duration-300 group">
+                    <div class="relative h-56 overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600" class="w-full h-full object-cover group-hover:scale-110 transition duration-500">
+                    </div>
+                    <div class="p-6">
+                        <h3 class="text-xl font-bold text-gray-900 mb-2">Khay 5 món Dinh dưỡng</h3>
+                        <p class="text-gray-600 text-sm mb-4 leading-relaxed line-clamp-2">Bò lúc lắc xào cần tây, trứng cuộn ngũ sắc, rau muống xào tỏi, canh cải chua sườn non, sữa lúa mạch Milo.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CONTENT: VĂN PHÒNG ================= -->
+        <div x-show="activeCategory === 'vanphong'" style="display: none;" x-transition.opacity.duration.500ms class="space-y-8">
+            <div class="text-center max-w-3xl mx-auto mb-10">
+                 <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">Set Ăn Healthy & Văn Phòng Tiêu Chuẩn</h2>
+                 <p class="text-gray-600">Cân đối tinh bột, ít dầu mỡ, nhiều rau xanh giúp dân văn phòng luôn tỉnh táo vào buổi chiều.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- VP 1 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
+                    <img src="https://images.unsplash.com/photo-1612928646193-272e50df8298?q=80&w=600" class="w-full h-48 object-cover">
+                    <div class="p-6 text-center">
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Set Năng Động (35k)</h3>
+                        <ul class="text-sm text-gray-600 space-y-2 text-left mb-6">
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Cá diêu hồng sốt cà</li>
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Thịt luộc cà pháo</li>
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Rau dền luộc</li>
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Canh cải ngọt thịt băm</li>
+                        </ul>
+                    </div>
+                </div>
+                <!-- VP 2 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-xl border-2 border-orange-500 relative transform md:-translate-y-4 transition-all duration-300">
+                    <div class="absolute top-0 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-xs font-bold px-4 py-1 rounded-b-lg shadow-sm">BÁN CHẠY NHẤT</div>
+                    <img src="https://images.unsplash.com/photo-1543339308-43e59d6b73a6?q=80&w=600" class="w-full h-48 object-cover">
+                    <div class="p-6 text-center">
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Set Tiêu Chuẩn (45k)</h3>
+                        <ul class="text-sm text-gray-600 space-y-2 text-left mb-6">
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Sườn ram chua ngọt</li>
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Mực xào hành cần</li>
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Đậu ve xào tỏi</li>
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Canh chua chả cá</li>
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Tráng miệng: Dưa hấu</li>
+                        </ul>
+                    </div>
+                </div>
+                 <!-- VP 3 -->
+                <div class="bg-white rounded-2xl overflow-hidden shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100">
+                    <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?q=80&w=600" class="w-full h-48 object-cover">
+                    <div class="p-6 text-center">
+                        <h3 class="text-xl font-bold text-gray-900 mb-3">Set Eat Clean (55k)</h3>
+                        <ul class="text-sm text-gray-600 space-y-2 text-left mb-6">
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Cơm gạo lứt</li>
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Ức gà áp chảo sốt chanh leo</li>
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Salad mix sốt mè rang</li>
+                            <li><i data-lucide="check" class="w-4 h-4 inline text-green-500 mr-2"></i>Canh nấm chay</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= CONTENT: CÔNG NHÂN ================= -->
+        <div x-show="activeCategory === 'congnhan'" style="display: none;" x-transition.opacity.duration.500ms class="space-y-8">
+             <div class="text-center max-w-3xl mx-auto mb-10">
+                 <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-4">Set Ăn Công Nhân Nhà Máy</h2>
+                 <p class="text-gray-600">Chú trọng tới LƯỢNG và CHẤT. Đảm bảo nhân công ăn no, đủ năng lượng, không gánh nặng chi phí.</p>
+            </div>
+            
+            <div class="flex flex-col md:flex-row gap-8 items-center bg-white p-8 rounded-3xl shadow-md border border-gray-100">
+                <div class="w-full md:w-1/2 rounded-2xl overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1590868309235-ea34bed7bd7f?q=80&w=600" class="w-full h-[300px] object-cover hover:scale-105 transition duration-500">
+                </div>
+                <div class="w-full md:w-1/2 space-y-4">
+                    <div class="inline-block bg-blue-100 text-blue-700 font-bold px-3 py-1 rounded text-sm mb-2">Đồng giá 22.000đ - 25.000đ</div>
+                    <h3 class="text-3xl font-bold text-gray-900">Suất ăn tăng ca đặc biệt</h3>
+                    <p class="text-gray-600 leading-relaxed">Khay ăn Inox 5 ngăn luôn được làm nóng. Thực đơn tham khảo:</p>
+                    <div class="grid grid-cols-2 gap-y-3 gap-x-6 text-gray-800 font-medium">
+                        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-orange-500"></div> Cơm trắng (Thêm thoải mái)</div>
+                        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-orange-500"></div> Đùi tỏi gà kho gừng</div>
+                        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-orange-500"></div> Cá trê chiên giòn mắm me</div>
+                        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-orange-500"></div> Trứng chiên hành</div>
+                        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-orange-500"></div> Bắp cải luộc dầm cà chua</div>
+                        <div class="flex items-center gap-2"><div class="w-2 h-2 rounded-full bg-orange-500"></div> Chuối tráng miệng</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </section>
+
+    <!-- ===== CALL TO ACTION ===== -->
+    <section class="bg-[#1f2a37] py-16 text-center text-white px-4">
+        <h2 class="text-3xl font-bold mb-4">Bạn muốn nhận Menu đầy đủ 30 ngày?</h2>
+        <p class="mb-8 text-gray-300 max-w-2xl mx-auto">HuitMeal cung cấp hơn 500+ món ăn tránh lặp lại, đặc biệt có phiên bản món ăn từng miền (Bắc - Trung - Nam) đáp ứng sát nhất nhu cầu thực khách.</p>
+        <a href="/Customer/Contact" class="inline-block px-8 py-3 bg-yellow-400 hover:bg-yellow-500 text-black font-bold rounded-lg transition-colors shadow-lg">
+            GỬI YÊU CẦU TẠI ĐÂY
+        </a>
+    </section>
 </div>

@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "Re8Z6gqbt+oC2hstW+hkVlVS5xUpNHT0sf4KpeFmBGI=",
+  "Hash": "tEIImeaiBOu/pJS9+OoNLvWwQQky76f3iL9X+B5o3ls=",
   "Source": "Khoa_Luan_KS_Web",
   "BasePath": "_content/Khoa_Luan_KS_Web",
   "Mode": "Default",
@@ -647,6 +647,27 @@
       "OriginalItemSpec": "wwwroot\\assets\\images\\about3.jpg"
     },
     {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\achievements_hero.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/achievements_hero#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "4m1ditbyh1",
+      "Integrity": "bF8atbTuXtkpTY/hkzgcNEo+lDZBTN5TCxxLj0ygq6c=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\achievements_hero.png"
+    },
+    {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh1.jpg",
       "SourceId": "Khoa_Luan_KS_Web",
       "SourceType": "Discovered",
@@ -1109,12 +1130,12 @@
       "OriginalItemSpec": "wwwroot\\assets\\images\\banner5.jpg"
     },
     {
-      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerbantinhaseca.jpg",
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerbantinHuitMeal.jpg",
       "SourceId": "Khoa_Luan_KS_Web",
       "SourceType": "Discovered",
       "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
       "BasePath": "_content/Khoa_Luan_KS_Web",
-      "RelativePath": "assets/images/bannerbantinhaseca#[.{fingerprint}]?.jpg",
+      "RelativePath": "assets/images/bannerbantinHuitMeal#[.{fingerprint}]?.jpg",
       "AssetKind": "All",
       "AssetMode": "All",
       "AssetRole": "Primary",
@@ -1127,7 +1148,7 @@
       "Integrity": "ssEvGFgBeePV21iZhjKrznwKy+41xW0tciRhz75eXH4=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
-      "OriginalItemSpec": "wwwroot\\assets\\images\\bannerbantinhaseca.jpg"
+      "OriginalItemSpec": "wwwroot\\assets\\images\\bannerbantinHuitMeal.jpg"
     },
     {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerlienhe.jpg",
@@ -1170,6 +1191,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\assets\\images\\bannervechungtoi.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\choose_hero.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/choose_hero#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "024ac4pskk",
+      "Integrity": "CN+Ad5c/q58H2/fyTzB0F14zYTjE9zdq2pT0q8Kqccc=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\choose_hero.png"
     },
     {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\cn1.jpg",
@@ -1424,6 +1466,27 @@
       "OriginalItemSpec": "wwwroot\\assets\\images\\hieu.jpg"
     },
     {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\home_hero.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/home_hero#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "g52egmo1gn",
+      "Integrity": "nBWum84NihPnEt9154/1lf+P5muD+21ECD4PRQKW5YA=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\home_hero.png"
+    },
+    {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\hop.jpg",
       "SourceId": "Khoa_Luan_KS_Web",
       "SourceType": "Discovered",
@@ -1613,6 +1676,27 @@
       "OriginalItemSpec": "wwwroot\\assets\\images\\kitchen-bg.jpg"
     },
     {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Logo_tròn.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/Logo_tròn#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "oxk9yxhk2q",
+      "Integrity": "xJdbA0+TBvT4V3SC0ujCCcVSyPfBU7U39cr6EGuij5U=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\Logo_tròn.png"
+    },
+    {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Logo.jpg",
       "SourceId": "Khoa_Luan_KS_Web",
       "SourceType": "Discovered",
@@ -1627,8 +1711,8 @@
       "RelatedAsset": "",
       "AssetTraitName": "",
       "AssetTraitValue": "",
-      "Fingerprint": "ylfb515cr1",
-      "Integrity": "OsMnqmAKRcSjGL632UDEefdJ0MNPgK1j0JRKHMO7jTA=",
+      "Fingerprint": "xt2waa6yq1",
+      "Integrity": "VWhOpQTFnyRdAUGgiIgsb/ZCj8gwYOkvbI+Os9DE6Ag=",
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\assets\\images\\Logo.jpg"
@@ -1697,6 +1781,27 @@
       "OriginalItemSpec": "wwwroot\\assets\\images\\map.jpg"
     },
     {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\news_hero.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/news_hero#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "k4oc4dxqk7",
+      "Integrity": "JG3tq6TJttdhAYXEfV31/k9/X5CsTg2gHJYb/L0l8Xc=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\news_hero.png"
+    },
+    {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\nhan.jpg",
       "SourceId": "Khoa_Luan_KS_Web",
       "SourceType": "Discovered",
@@ -1737,6 +1842,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\assets\\images\\nhiem.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\partners_hero.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/partners_hero#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "w5bbn4z9aw",
+      "Integrity": "RITpmRbE/55vSJGZwqRYP5Iuz7vS3GBtCOxBQJYK0+4=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\partners_hero.png"
     },
     {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\phat.jpg",
@@ -2031,6 +2157,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\assets\\images\\recruitment_banner.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\recruitment_hero.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/recruitment_hero#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "6b7c72uvcu",
+      "Integrity": "Av9ivQw/FpJZQc3bxAKi8fHSbAIn+offKd4L6W4xkWQ=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\recruitment_hero.png"
     },
     {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\s1.jpg",
@@ -6137,6 +6284,88 @@
       ]
     },
     {
+      "Route": "assets/images/achievements_hero.4m1ditbyh1.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\achievements_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "670424"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"bF8atbTuXtkpTY/hkzgcNEo+lDZBTN5TCxxLj0ygq6c=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:29:08 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "4m1ditbyh1"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/achievements_hero.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-bF8atbTuXtkpTY/hkzgcNEo+lDZBTN5TCxxLj0ygq6c="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/achievements_hero.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\achievements_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "670424"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"bF8atbTuXtkpTY/hkzgcNEo+lDZBTN5TCxxLj0ygq6c=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:29:08 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-bF8atbTuXtkpTY/hkzgcNEo+lDZBTN5TCxxLj0ygq6c="
+        }
+      ]
+    },
+    {
       "Route": "assets/images/anh1.6g19o0s6pz.jpg",
       "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh1.jpg",
       "Selectors": [],
@@ -7941,8 +8170,8 @@
       ]
     },
     {
-      "Route": "assets/images/bannerbantinhaseca.jpg",
-      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerbantinhaseca.jpg",
+      "Route": "assets/images/bannerbantinHuitMeal.jpg",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerbantinHuitMeal.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -7978,8 +8207,8 @@
       ]
     },
     {
-      "Route": "assets/images/bannerbantinhaseca.malasqj9kl.jpg",
-      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerbantinhaseca.jpg",
+      "Route": "assets/images/bannerbantinHuitMeal.malasqj9kl.jpg",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerbantinHuitMeal.jpg",
       "Selectors": [],
       "ResponseHeaders": [
         {
@@ -8014,7 +8243,7 @@
         },
         {
           "Name": "label",
-          "Value": "assets/images/bannerbantinhaseca.jpg"
+          "Value": "assets/images/bannerbantinHuitMeal.jpg"
         },
         {
           "Name": "integrity",
@@ -8183,6 +8412,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-7CRrFQdy8UK0bdu46V51ir6oAy9qRfFHOzZZ9h94ae4="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/choose_hero.024ac4pskk.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\choose_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "879998"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"CN+Ad5c/q58H2/fyTzB0F14zYTjE9zdq2pT0q8Kqccc=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:22:33 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "024ac4pskk"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/choose_hero.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-CN+Ad5c/q58H2/fyTzB0F14zYTjE9zdq2pT0q8Kqccc="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/choose_hero.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\choose_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "879998"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"CN+Ad5c/q58H2/fyTzB0F14zYTjE9zdq2pT0q8Kqccc=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:22:33 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-CN+Ad5c/q58H2/fyTzB0F14zYTjE9zdq2pT0q8Kqccc="
         }
       ]
     },
@@ -9171,6 +9482,88 @@
       ]
     },
     {
+      "Route": "assets/images/home_hero.g52egmo1gn.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\home_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "959494"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"nBWum84NihPnEt9154/1lf+P5muD+21ECD4PRQKW5YA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:12:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "g52egmo1gn"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/home_hero.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-nBWum84NihPnEt9154/1lf+P5muD+21ECD4PRQKW5YA="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/home_hero.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\home_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "959494"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"nBWum84NihPnEt9154/1lf+P5muD+21ECD4PRQKW5YA=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:12:40 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-nBWum84NihPnEt9154/1lf+P5muD+21ECD4PRQKW5YA="
+        }
+      ]
+    },
+    {
       "Route": "assets/images/hop.jpg",
       "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\hop.jpg",
       "Selectors": [],
@@ -9909,6 +10302,88 @@
       ]
     },
     {
+      "Route": "assets/images/Logo_tròn.oxk9yxhk2q.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Logo_tròn.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "46242"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"xJdbA0+TBvT4V3SC0ujCCcVSyPfBU7U39cr6EGuij5U=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 18 Apr 2026 14:41:48 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "oxk9yxhk2q"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/Logo_tròn.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-xJdbA0+TBvT4V3SC0ujCCcVSyPfBU7U39cr6EGuij5U="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/Logo_tròn.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Logo_tròn.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "46242"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"xJdbA0+TBvT4V3SC0ujCCcVSyPfBU7U39cr6EGuij5U=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 18 Apr 2026 14:41:48 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-xJdbA0+TBvT4V3SC0ujCCcVSyPfBU7U39cr6EGuij5U="
+        }
+      ]
+    },
+    {
       "Route": "assets/images/Logo.jpg",
       "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Logo.jpg",
       "Selectors": [],
@@ -9919,7 +10394,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "54059"
+          "Value": "14309"
         },
         {
           "Name": "Content-Type",
@@ -9927,11 +10402,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"OsMnqmAKRcSjGL632UDEefdJ0MNPgK1j0JRKHMO7jTA=\""
+          "Value": "\"VWhOpQTFnyRdAUGgiIgsb/ZCj8gwYOkvbI+Os9DE6Ag=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Thu, 22 Jan 2026 03:24:02 GMT"
+          "Value": "Sat, 18 Apr 2026 14:40:18 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -9941,12 +10416,12 @@
       "EndpointProperties": [
         {
           "Name": "integrity",
-          "Value": "sha256-OsMnqmAKRcSjGL632UDEefdJ0MNPgK1j0JRKHMO7jTA="
+          "Value": "sha256-VWhOpQTFnyRdAUGgiIgsb/ZCj8gwYOkvbI+Os9DE6Ag="
         }
       ]
     },
     {
-      "Route": "assets/images/Logo.ylfb515cr1.jpg",
+      "Route": "assets/images/Logo.xt2waa6yq1.jpg",
       "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Logo.jpg",
       "Selectors": [],
       "ResponseHeaders": [
@@ -9956,7 +10431,7 @@
         },
         {
           "Name": "Content-Length",
-          "Value": "54059"
+          "Value": "14309"
         },
         {
           "Name": "Content-Type",
@@ -9964,11 +10439,11 @@
         },
         {
           "Name": "ETag",
-          "Value": "\"OsMnqmAKRcSjGL632UDEefdJ0MNPgK1j0JRKHMO7jTA=\""
+          "Value": "\"VWhOpQTFnyRdAUGgiIgsb/ZCj8gwYOkvbI+Os9DE6Ag=\""
         },
         {
           "Name": "Last-Modified",
-          "Value": "Thu, 22 Jan 2026 03:24:02 GMT"
+          "Value": "Sat, 18 Apr 2026 14:40:18 GMT"
         },
         {
           "Name": "Cache-Control",
@@ -9978,7 +10453,7 @@
       "EndpointProperties": [
         {
           "Name": "fingerprint",
-          "Value": "ylfb515cr1"
+          "Value": "xt2waa6yq1"
         },
         {
           "Name": "label",
@@ -9986,7 +10461,7 @@
         },
         {
           "Name": "integrity",
-          "Value": "sha256-OsMnqmAKRcSjGL632UDEefdJ0MNPgK1j0JRKHMO7jTA="
+          "Value": "sha256-VWhOpQTFnyRdAUGgiIgsb/ZCj8gwYOkvbI+Os9DE6Ag="
         }
       ]
     },
@@ -10237,6 +10712,88 @@
       ]
     },
     {
+      "Route": "assets/images/news_hero.k4oc4dxqk7.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\news_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "747589"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"JG3tq6TJttdhAYXEfV31/k9/X5CsTg2gHJYb/L0l8Xc=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:48:57 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "k4oc4dxqk7"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/news_hero.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-JG3tq6TJttdhAYXEfV31/k9/X5CsTg2gHJYb/L0l8Xc="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/news_hero.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\news_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "747589"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"JG3tq6TJttdhAYXEfV31/k9/X5CsTg2gHJYb/L0l8Xc=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:48:57 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-JG3tq6TJttdhAYXEfV31/k9/X5CsTg2gHJYb/L0l8Xc="
+        }
+      ]
+    },
+    {
       "Route": "assets/images/nhan.1cj2kz0bh1.jpg",
       "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\nhan.jpg",
       "Selectors": [],
@@ -10397,6 +10954,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-wBbCuIdzh9WaG1cOBqkDJyMh12ihPpZPIY/VKuKDoAY="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/partners_hero.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\partners_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "653559"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"RITpmRbE/55vSJGZwqRYP5Iuz7vS3GBtCOxBQJYK0+4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:06:53 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-RITpmRbE/55vSJGZwqRYP5Iuz7vS3GBtCOxBQJYK0+4="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/partners_hero.w5bbn4z9aw.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\partners_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "653559"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"RITpmRbE/55vSJGZwqRYP5Iuz7vS3GBtCOxBQJYK0+4=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:06:53 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "w5bbn4z9aw"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/partners_hero.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-RITpmRbE/55vSJGZwqRYP5Iuz7vS3GBtCOxBQJYK0+4="
         }
       ]
     },
@@ -11545,6 +12184,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-GM4FjcxtjxtlfDkCXCLvmI/0o3Rd3VREb9fQwEIqA7M="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/recruitment_hero.6b7c72uvcu.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\recruitment_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "850423"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"Av9ivQw/FpJZQc3bxAKi8fHSbAIn+offKd4L6W4xkWQ=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:53:38 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "6b7c72uvcu"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/recruitment_hero.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-Av9ivQw/FpJZQc3bxAKi8fHSbAIn+offKd4L6W4xkWQ="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/recruitment_hero.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\recruitment_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "850423"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"Av9ivQw/FpJZQc3bxAKi8fHSbAIn+offKd4L6W4xkWQ=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 09:53:38 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-Av9ivQw/FpJZQc3bxAKi8fHSbAIn+offKd4L6W4xkWQ="
         }
       ]
     },

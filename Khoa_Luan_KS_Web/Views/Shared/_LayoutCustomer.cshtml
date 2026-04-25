@@ -1,220 +1,328 @@
+@{
+    var role = Context.Request.Cookies["user_role"];
+    var userName = Context.Request.Cookies["user_name"];
+    bool isLoggedIn = !string.IsNullOrEmpty(role);
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - SmartLunch</title>
+    <title>@ViewData["Title"] - HuitMeal</title>
+    <link rel="icon" type="image/png" href="/assets/images/Logo_tròn.png" />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Alpine JS for interactions -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
-<body class="flex flex-col min-h-screen bg-gray-100">
-    <!-- ===== TOP BAR (Cuộn lên) ===== -->
-    <div class="w-full bg-[#1f2a37] text-white text-sm px-6 py-2 flex justify-between items-center relative z-[60]">
-        <div class="flex gap-6">
-          <span class="flex items-center gap-2">
-            <i data-lucide="phone" style="width: 16px; height: 16px"></i>
+<body class="flex flex-col min-h-screen bg-gray-100" x-data="{ mobileMenuOpen: false }">
+    
+    <!-- ===== TOP BAR (Hidden on Mobile) ===== -->
+    <div class="hidden md:flex w-full bg-[#0F172A] text-white/70 text-[10px] font-bold uppercase tracking-widest px-8 justify-between items-center relative z-[60] border-b border-white/5" style="padding: 7px">
+        <div class="flex gap-8">
+          <a href="tel:0966741866" class="flex items-center gap-2 hover:text-red-500 transition-colors">
+            <i data-lucide="phone" class="w-3.5 h-3.5 text-red-500"></i>
             0966 741 866
-          </span>
-          <span class="flex items-center gap-2">
-            <i data-lucide="mail" style="width: 16px; height: 16px"></i>
-            contact@haseca.com
-          </span>
+          </a>
+          <a href="mailto:contact@HuitMeal.com" class="flex items-center gap-2 hover:text-red-500 transition-colors">
+            <i data-lucide="mail" class="w-3.5 h-3.5 text-red-500"></i>
+            contact@HuitMeal.com
+          </a>
         </div>
-        <div>
-            <!-- Replace with real Auth Logic later (Server-side) -->
-            <a href="/Auth/Login" class="hover:text-orange-400 transition">Đăng nhập</a>
+        <div class="flex items-center gap-6">
+            <div class="flex gap-4 border-r border-white/10 pr-6">
+                <a href="#" class="hover:text-white transition-colors"><i data-lucide="facebook" class="w-3.5 h-3.5"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i data-lucide="youtube" class="w-3.5 h-3.5"></i></a>
+            </div>
+            @if (!isLoggedIn)
+            {
+                <a href="/Auth/Login" class="text-white hover:text-red-500 transition-colors flex items-center gap-2">
+                    <i data-lucide="user" class="w-3.5 h-3.5"></i>
+                    ĐĂNG NHẬP
+                </a>
+            }
         </div>
     </div>
 
-    <!-- HEADER / NAVBAR (Đứng im - Sticky & Smooth Animation) -->
+    <!-- HEADER / NAVBAR -->
     <header 
         x-data="{ isScrolled: false }" 
         x-on:scroll.window="isScrolled = (window.pageYOffset > 40)"
         class="w-full sticky top-0 z-50 transition-all duration-300 ease-in-out border-b border-gray-100"
         :class="isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-white shadow-none'"
     >
-        <div class="max-w-7xl mx-auto flex items-center px-6 h-[72px]" id="navbar">
+        <div class="max-w-7xl mx-auto flex items-center justify-between px-6 h-[72px]">
           <!-- LOGO -->
-          <a href="/Customer">
-            <h1 class="text-3xl font-black italic tracking-tighter flex items-end">
-                <span class="text-[#7DBE42]">ha</span><span class="text-[#F3A530]">se</span><span class="text-[#7DBE42]">ca</span>
-            </h1>
+          <a href="/Customer" class="shrink-0">
+            <img src="/assets/images/Logo.jpg" alt="HuitMeal Logo" class="h-10 w-auto object-contain">
           </a>
 
-          <!-- ===== MENU ===== -->
-          <div class="flex-1 flex justify-center h-full gap-6 lg:gap-8 text-sm lg:text-[15px]">
-
-            <!-- ===== GIỚI THIỆU ===== -->
+          <!-- DESKTOP MENU (Hidden on Mobile) -->
+          <nav class="hidden lg:flex flex-1 items-center justify-center gap-6 lg:gap-8 text-sm lg:text-[15px] h-full">
+            <!-- GIỚI THIỆU -->
             <div class="group relative flex items-center h-full cursor-pointer">
-              <span class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors flex items-center gap-1 relative">
-                GIỚI THIỆU 
-                <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300 group-hover:-rotate-180"></i>
-                <span class="absolute -bottom-[26px] left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span>
+              <span class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors flex items-center gap-1">
+                GIỚI THIỆU <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-hover:-rotate-180"></i>
               </span>
-              <div class="absolute top-[100%] left-0 w-60 bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-xl py-3 border border-gray-100 
-                          opacity-0 invisible translate-y-4 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 
-                          transition-all duration-300 ease-out z-50">
-                <!-- Cầu nối focus giúp giữ hover khi rê chuột lệch -->
-                <div class="absolute -top-4 left-0 w-full h-6 bg-transparent"></div>
-                <a href="/Customer/About" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Về chúng tôi</a>
-                <a href="/Customer/Achievements" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Thành tựu nổi bật</a>
+              <div class="absolute top-full left-0 w-60 bg-white shadow-xl rounded-xl py-3 border border-gray-100 opacity-0 invisible translate-y-4 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50">
+                <a href="/Customer/About" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all">Về chúng tôi</a>
+                <a href="/Customer/Achievements" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all">Thành tựu</a>
               </div>
             </div>
 
-            <div class="group flex items-center h-full">
-              <a href="/Customer/Reviews" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">ĐÁNH GIÁ <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
-            </div>
-            
-            <div class="group flex items-center h-full">
-              <a href="/Customer/ChooseHaseca" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">CHỌN HASECA <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
-            </div>
+            <a href="/Customer/Reviews" class="font-semibold text-gray-800 hover:text-orange-500 transition-colors h-full flex items-center">ĐÁNH GIÁ</a>
+            <a href="/Customer/ChooseHuitMeal" class="font-semibold text-gray-800 hover:text-orange-500 transition-colors h-full flex items-center">CHỌN HUITMEAL</a>
 
-            <!-- ===== DỊCH VỤ ===== -->
+            <!-- DỊCH VỤ -->
             <div class="group relative flex items-center h-full cursor-pointer">
-              <span class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors flex items-center gap-1 relative">
-                DỊCH VỤ 
-                <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300 group-hover:-rotate-180"></i>
-                <span class="absolute -bottom-[26px] left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span>
+              <span class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors flex items-center gap-1">
+                DỊCH VỤ <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-hover:-rotate-180"></i>
               </span>
-              <div class="absolute top-[100%] left-0 w-[280px] bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-xl py-3 border border-gray-100 
-                          opacity-0 invisible translate-y-4 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 
-                          transition-all duration-300 ease-out z-50">
-                <!-- Cầu nối focus -->
-                <div class="absolute -top-4 left-0 w-full h-6 bg-transparent"></div>
-                <a href="/Customer/Service/Safety" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Cung ứng thực phẩm sạch</a>
-                <a href="/Customer/Service/SafetyS" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Vệ sinh công nghiệp</a>
-                <a href="/Customer/Menu" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200 border-t my-1 border-gray-50">Thực đơn</a>
-                <a href="/Customer/Service/School" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200 border-t mt-1 border-gray-50 pt-3">Suất ăn trường học</a>
-                <a href="/Customer/Service/Office" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Suất ăn văn phòng</a>
-                <a href="/Customer/Service/Factory" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Suất ăn công nhân</a>
+              <div class="absolute top-full left-0 w-[280px] bg-white shadow-xl rounded-xl py-3 border border-gray-100 opacity-0 invisible translate-y-4 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50">
+                <a href="/Customer/Safety" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn sạch</a>
+                <a href="/Customer/SafetyS" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all">Vệ sinh công nghiệp</a>
+                <a href="/Customer/Menu" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all border-t mt-1 pt-3">Thực đơn</a>
+                <a href="/Customer/School" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn trường học</a>
+                <a href="/Customer/Office" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn văn phòng</a>
+                <a href="/Customer/Factory" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn nhà máy</a>
               </div>
             </div>
 
-            <div class="group flex items-center h-full">
-              <a href="/Customer/Partners" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">ĐỐI TÁC <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
-            </div>
-            
-            <div class="group flex items-center h-full">
-              <a href="/Customer/Haseca" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">BẢN TIN HASECA <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
-            </div>
-            
-            <div class="group flex items-center h-full">
-              <a href="/Customer/Recruitment" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">TUYỂN DỤNG <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
-            </div>
-            
-            <div class="group flex items-center h-full">
-              <a href="/Customer/Contact" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">LIÊN HỆ <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
-            </div>
+            <a href="/Customer/Partners" class="font-semibold text-gray-800 hover:text-orange-500 transition-colors h-full flex items-center">ĐỐI TÁC</a>
+            <a href="/Customer/HuitMeal" class="font-semibold text-gray-800 hover:text-orange-500 transition-colors h-full flex items-center uppercase">Bản tin</a>
+          </nav>
+
+          <!-- DESKTOP PROFILE (Right Side) -->
+          <div class="hidden lg:flex items-center ml-4">
+              @if (isLoggedIn)
+              {
+                  <div x-data="{ profileOpen: false }" 
+                       x-on:mouseenter="profileOpen = true" 
+                       x-on:mouseleave="profileOpen = false" 
+                       class="relative h-full flex items-center">
+                      <button class="flex items-center gap-3 hover:text-orange-600 transition-all cursor-pointer py-2 group">
+                          <div class="w-9 h-9 rounded-full bg-red-600 flex items-center justify-center text-white font-black text-[11px] shadow-sm group-hover:scale-105 transition-transform uppercase">
+                              @(string.IsNullOrEmpty(userName) ? "U" : userName.Substring(0, 1).ToUpper())
+                          </div>
+                          <div class="hidden xl:block text-left">
+                              <p class="text-[9px] text-gray-400 font-bold uppercase tracking-widest leading-none mb-1">Xin chào,</p>
+                              <p class="text-xs font-bold text-gray-800">@userName</p>
+                          </div>
+                          <i data-lucide="chevron-down" class="w-4 h-4 text-gray-400 transition-transform duration-300" :class="profileOpen ? 'rotate-180' : ''"></i>
+                      </button>
+                      
+                      <div x-show="profileOpen" x-transition.opacity.duration.200ms class="absolute right-0 top-full pt-0 z-[100]" style="display: none;">
+                          <div class="w-64 bg-white rounded-2xl shadow-[0_10px_40px_-10px_rgba(0,0,0,0.2)] py-2 border border-gray-100 mt-2 overflow-hidden">
+                              <div class="px-6 py-4 bg-gray-50/50 border-b border-gray-100">
+                                  <p class="text-[9px] text-gray-400 font-black uppercase tracking-widest mb-1">Quản lý tài khoản</p>
+                                  <h4 class="font-bold text-gray-900 text-sm truncate">@userName</h4>
+                              </div>
+                              <div class="p-2 space-y-1">
+                                  <a href="/Customer/Profile" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-xl transition-all">
+                                      <i data-lucide="user" class="w-4 h-4 opacity-50"></i> Thông tin hồ sơ
+                                  </a>
+                                  <a href="/Customer/Orders" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-xl transition-all">
+                                      <i data-lucide="package" class="w-4 h-4 opacity-50"></i> Quản lý đơn hàng
+                                  </a>
+                                  <a href="/Customer/Contracts" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-xl transition-all">
+                                      <i data-lucide="file-signature" class="w-4 h-4 opacity-50"></i> Hợp đồng điện tử
+                                  </a>
+                              </div>
+                              <div class="p-2 border-t border-gray-50 mt-1">
+                                  <a href="/Auth/Logout" class="flex items-center gap-3 px-4 py-2.5 text-sm text-red-600 hover:bg-red-50 rounded-xl transition-all font-bold">
+                                      <i data-lucide="log-out" class="w-4 h-4"></i> Đăng xuất
+                                  </a>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              }
+          </div>
+
+          <!-- MOBILE ACTIONS (Hamburger) -->
+          <div class="flex items-center gap-4 lg:hidden">
+            @if(isLoggedIn)
+            {
+                <a href="/Customer/Profile" class="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center text-white text-[10px] font-black">
+                    @(string.IsNullOrEmpty(userName) ? "U" : userName.Substring(0, 1).ToUpper())
+                </a>
+            }
+            <button @@click="mobileMenuOpen = true" class="w-10 h-10 flex items-center justify-center text-gray-800">
+              <i data-lucide="menu" class="w-7 h-7"></i>
+            </button>
           </div>
         </div>
-      </div>
     </header>
+
+    <!-- MOBILE MENU DRAWER -->
+    <div x-show="mobileMenuOpen" 
+         class="fixed inset-0 z-[100] lg:hidden" style="display: none;"
+         @@keydown.escape.window="mobileMenuOpen = false">
+        <!-- Backdrop -->
+        <div x-show="mobileMenuOpen" 
+             x-transition:enter="transition-opacity ease-out duration-300" 
+             x-transition:enter-start="opacity-0" 
+             x-transition:enter-end="opacity-100" 
+             x-transition:leave="transition-opacity ease-in duration-200" 
+             x-transition:leave-start="opacity-100" 
+             x-transition:leave-end="opacity-0" 
+             @@click="mobileMenuOpen = false" 
+             class="absolute inset-0 bg-black/60 backdrop-blur-sm"></div>
+        
+        <!-- Drawer Panel -->
+        <div x-show="mobileMenuOpen" 
+             x-transition:enter="transition ease-out duration-300 transform" 
+             x-transition:enter-start="translate-x-full" 
+             x-transition:enter-end="translate-x-0" 
+             x-transition:leave="transition ease-in duration-200 transform" 
+             x-transition:leave-start="translate-x-0" 
+             x-transition:leave-end="translate-x-full" 
+             class="absolute right-0 top-0 h-full w-[300px] bg-white shadow-2xl flex flex-col">
+            
+            <div class="p-6 flex items-center justify-between border-b">
+                <img src="/assets/images/Logo.jpg" class="h-8 w-auto">
+                <button @@click="mobileMenuOpen = false" class="w-10 h-10 flex items-center justify-center text-gray-400">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <nav class="flex-1 overflow-y-auto p-6 space-y-1">
+                <!-- User Profile on Mobile Menu -->
+                @if(isLoggedIn)
+                {
+                    <div class="mb-8 p-4 bg-gray-50 rounded-2xl">
+                        <div class="flex items-center gap-3 mb-4">
+                            <div class="w-10 h-10 rounded-full bg-red-600 flex items-center justify-center text-white font-black">
+                                @(string.IsNullOrEmpty(userName) ? "U" : userName.Substring(0, 1).ToUpper())
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-sm text-gray-900">@userName</h4>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase">Khách hàng</p>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <a href="/Customer/Profile" class="flex items-center justify-center gap-2 py-2 bg-white rounded-lg text-[10px] font-bold border border-gray-100"><i data-lucide="user" class="w-3 h-3"></i> HỒ SƠ</a>
+                            <a href="/Customer/Orders" class="flex items-center justify-center gap-2 py-2 bg-white rounded-lg text-[10px] font-bold border border-gray-100"><i data-lucide="package" class="w-3 h-3"></i> ĐƠN HÀNG</a>
+                        </div>
+                        <a href="/Auth/Logout" class="mt-2 flex items-center justify-center gap-2 py-2 text-red-500 text-[10px] font-bold"><i data-lucide="log-out" class="w-3 h-3"></i> ĐĂNG XUẤT</a>
+                    </div>
+                }
+                else
+                {
+                    <a href="/Auth/Login" class="block w-full py-4 bg-gray-900 text-white text-center rounded-xl font-bold text-sm mb-6">ĐĂNG NHẬP</a>
+                }
+
+                <div x-data="{ open: false }" class="space-y-1">
+                    <button @@click="open = !open" class="w-full flex items-center justify-between p-3 font-bold text-gray-800 hover:bg-gray-50 rounded-xl transition-all">
+                        GIỚI THIỆU <i data-lucide="chevron-down" class="w-4 h-4 transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="open" class="pl-4 space-y-1">
+                        <a href="/Customer/About" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Về chúng tôi</a>
+                        <a href="/Customer/Achievements" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Thành tựu</a>
+                    </div>
+                </div>
+
+                <a href="/Customer/Reviews" class="block p-3 font-bold text-gray-800 hover:bg-gray-50 rounded-xl">ĐÁNH GIÁ</a>
+                <a href="/Customer/ChooseHuitMeal" class="block p-3 font-bold text-gray-800 hover:bg-gray-50 rounded-xl">CHỌN HUITMEAL</a>
+
+                <div x-data="{ open: false }" class="space-y-1">
+                    <button @@click="open = !open" class="w-full flex items-center justify-between p-3 font-bold text-gray-800 hover:bg-gray-50 rounded-xl transition-all">
+                        DỊCH VỤ <i data-lucide="chevron-down" class="w-4 h-4 transition-transform" :class="open ? 'rotate-180' : ''"></i>
+                    </button>
+                    <div x-show="open" class="pl-4 space-y-1">
+                        <a href="/Customer/Safety" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Suất ăn sạch</a>
+                        <a href="/Customer/SafetyS" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Vệ sinh công nghiệp</a>
+                        <a href="/Customer/Menu" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Thực đơn</a>
+                        <a href="/Customer/School" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Suất ăn trường học</a>
+                        <a href="/Customer/Office" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Suất ăn văn phòng</a>
+                        <a href="/Customer/Factory" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Suất ăn nhà máy</a>
+                    </div>
+                </div>
+
+                <a href="/Customer/Partners" class="block p-3 font-bold text-gray-800 hover:bg-gray-50 rounded-xl">ĐỐI TÁC</a>
+                <a href="/Customer/HuitMeal" class="block p-3 font-bold text-gray-800 hover:bg-gray-50 rounded-xl">BẢN TIN</a>
+                <a href="/Customer/Recruitment" class="block p-3 font-bold text-gray-800 hover:bg-gray-50 rounded-xl">TUYỂN DỤNG</a>
+                <a href="/Customer/Contact" class="block p-3 font-bold text-gray-800 hover:bg-gray-50 rounded-xl">LIÊN HỆ</a>
+            </nav>
+
+            <div class="p-6 border-t bg-gray-50 space-y-4">
+                <div class="flex items-center gap-3 text-xs text-gray-500 font-medium">
+                    <i data-lucide="phone" class="w-4 h-4 text-orange-500"></i> 0966 741 866
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-500 font-medium">
+                    <i data-lucide="mail" class="w-4 h-4 text-orange-500"></i> contact@HuitMeal.com
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- CONTENT -->
     <main class="flex-1">
         @RenderBody()
     </main>
 
-    <!-- FLOATING CONTACT BUTTONS -->
-    <div class="fixed right-4 bottom-10 flex flex-col gap-3 z-50">
-        <a href="https://m.me/" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-[#0084FF] shadow-lg hover:scale-110 transition">
-            <i data-lucide="message-circle" class="text-white fill-white" style="width: 24px; height: 24px;"></i>
-        </a>
-        <a href="https://zalo.me/" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-[#0068FF] shadow-lg hover:scale-110 transition overflow-hidden">
-            <span class="text-white font-bold text-sm">Zalo</span>
-        </a>
-        <a href="tel:0966741866" class="w-12 h-12 flex items-center justify-center rounded-full bg-white border-2 border-yellow-400 shadow-lg hover:scale-110 transition">
-            <i data-lucide="phone" class="text-[#FFD700] fill-[#FFD700]" style="width: 22px; height: 22px;"></i>
-        </a>
-    </div>
+    <!-- FOOTER (Optimized for Mobile) -->
+    <footer class="bg-[#111111] text-gray-400 pt-16 pb-10 px-6 relative border-t border-white/5">
+        <div class="max-w-7xl mx-auto space-y-16">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
+                <!-- Brand -->
+                <div class="space-y-6">
+                    <img src="/assets/images/Logo.jpg" class="h-8 bg-white p-1 rounded-lg">
+                    <p class="text-sm leading-relaxed">Giải pháp suất ăn công nghiệp hàng đầu Việt Nam.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-red-600 transition-all"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-red-600 transition-all"><i data-lucide="youtube" class="w-5 h-5"></i></a>
+                    </div>
+                </div>
 
-    <!-- FOOTER -->
-    <footer class="bg-[#1A1A1A] text-[#BBBBBB] font-sans py-10 px-6 mt-10">
-        <div class="max-w-[1400px] mx-auto">
-          <!-- TOP SECTION: LOGO & BASIC CONTACT & SOCIAL -->
-          <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-gray-700 pb-6 mb-8 gap-6">
-            <div class="flex flex-col md:flex-row md:items-center gap-6">
-              <div class="relative">
-                <h1 class="text-4xl font-black italic tracking-tighter flex items-end">
-                  <span class="text-[#7DBE42]">ha</span><span class="text-[#F3A530]">se</span><span class="text-[#7DBE42]">ca</span>
-                </h1>
-                <div class="h-1.5 w-full bg-[#F3A530] rounded-full mt-[-4px] opacity-80"></div>
-              </div>
-              <div class="lg:ml-4">
-                <h2 class="text-white text-xl font-medium mb-2">Công ty cổ phần dịch vụ quốc tế Hà Thành</h2>
-                <div class="flex flex-wrap gap-6 text-sm">
-                  <div class="flex items-center gap-2">
-                    <div class="border border-gray-500 rounded-full p-1"><i data-lucide="phone" style="width:12px; height:12px;"></i></div>
-                    <span class="font-semibold">0966 741 866</span>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <div class="border border-gray-500 rounded-full p-1"><i data-lucide="mail" style="width:12px; height:12px;"></i></div>
-                    <span class="font-semibold">contact@haseca.com</span>
-                  </div>
+                <!-- Links -->
+                <div class="grid grid-cols-2 gap-8 lg:col-span-2">
+                    <div class="space-y-4">
+                        <h4 class="text-white font-bold uppercase text-xs tracking-widest">HuitMeal</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="/Customer/About" class="hover:text-red-500">Giới thiệu</a></li>
+                            <li><a href="/Customer/Recruitment" class="hover:text-red-500">Tuyển dụng</a></li>
+                            <li><a href="/Customer/Contact" class="hover:text-red-500">Liên hệ</a></li>
+                        </ul>
+                    </div>
+                    <div class="space-y-4">
+                        <h4 class="text-white font-bold uppercase text-xs tracking-widest">Dịch vụ</h4>
+                        <ul class="space-y-3 text-sm">
+                            <li><a href="/Customer/Factory" class="hover:text-red-500">Nhà máy</a></li>
+                            <li><a href="/Customer/Office" class="hover:text-red-500">Văn phòng</a></li>
+                            <li><a href="/Customer/School" class="hover:text-red-500">Trường học</a></li>
+                        </ul>
+                    </div>
                 </div>
-              </div>
-            </div>
-            <div class="flex gap-4">
-              <i data-lucide="facebook" class="text-white cursor-pointer hover:text-blue-500 transition" style="width:32px; height:32px;"></i>
-              <i data-lucide="youtube" class="text-white cursor-pointer hover:text-red-600 transition" style="width:32px; height:32px;"></i>
-            </div>
-          </div>
-          <!-- BOTTOM SECTION: BRANCHES AND LINKS -->
-          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
-            <div class="lg:col-span-6">
-              <h3 class="text-white font-bold mb-6 text-base tracking-wider uppercase underline underline-offset-8 decoration-transparent">CHI NHÁNH</h3>
-              <div class="space-y-6 text-sm">
-                <div class="flex gap-3">
-                  <span class="text-white font-bold whitespace-nowrap min-w-[100px]">CHI NHÁNH 1</span>
-                  <div>
-                    <p>Tầng 2, Toà CT4 tổ hợp TMDV The Pride, KĐT mới An Hưng, P. La Khê, Q. Hà Đông, Hà Nội</p>
-                    <p class="mt-1 font-semibold text-gray-200">024 9996 7799 - 0966 741 866</p>
-                  </div>
+
+                <!-- Contact -->
+                <div class="space-y-6">
+                    <h4 class="text-white font-bold uppercase text-xs tracking-widest">Kết nối</h4>
+                    <div class="space-y-4 text-xs">
+                        <div class="flex gap-3"><i data-lucide="map-pin" class="w-4 h-4 text-red-500"></i> Hà Đông, Hà Nội</div>
+                        <div class="flex gap-3"><i data-lucide="phone" class="w-4 h-4 text-orange-500"></i> 0966 741 866</div>
+                        <div class="flex gap-3"><i data-lucide="mail" class="w-4 h-4 text-gray-400"></i> contact@HuitMeal.com</div>
+                    </div>
                 </div>
-                <div class="flex gap-3">
-                  <span class="text-white font-bold whitespace-nowrap min-w-[100px]">CHI NHÁNH 2</span>
-                  <div>
-                    <p>Số 24 đường 39 Khu Đô Thị Vạn Phúc, Phường Hiệp Bình Phước, Thành Phố Thủ Đức</p>
-                    <p class="mt-1 font-semibold text-gray-200">028 9996 7799 - 0923 787 787</p>
-                  </div>
+            </div>
+
+            <!-- Bottom Bar -->
+            <div class="pt-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-6 text-[10px] font-bold uppercase tracking-widest">
+                <p>&copy; @DateTime.Now.Year HuitMeal.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-white">Bảo mật</a>
+                    <a href="#" class="hover:text-white">Điều khoản</a>
                 </div>
-                <div class="flex gap-3">
-                  <span class="text-white font-bold whitespace-nowrap min-w-[100px]">CHI NHÁNH 3</span>
-                  <div>
-                    <p>Khu TĐC Làng Chài (phân khu 3), Cẩm An, Hội An, Quảng Nam</p>
-                  </div>
-                </div>
-              </div>
             </div>
-            <div class="lg:col-span-3">
-              <h3 class="text-white font-bold mb-6 text-base tracking-wider">TRUY CẬP NHANH</h3>
-              <ul class="space-y-3 text-sm">
-                <li class="hover:text-white transition cursor-pointer">Giới thiệu Haseca</li>
-                <li class="hover:text-white transition cursor-pointer">Chọn Haseca</li>
-                <li class="hover:text-white transition cursor-pointer">Bản tin Haseca</li>
-                <li class="hover:text-white transition cursor-pointer">Tuyển dụng</li>
-                <li class="hover:text-white transition cursor-pointer">Liên hệ</li>
-              </ul>
-            </div>
-            <div class="lg:col-span-3">
-              <h3 class="text-white font-bold mb-6 text-base tracking-wider">DỊCH VỤ</h3>
-              <ul class="space-y-3 text-sm">
-                <li class="hover:text-white transition cursor-pointer">Suất ăn công nghiệp</li>
-                <li class="hover:text-white transition cursor-pointer">Suất ăn trường học</li>
-                <li class="hover:text-white transition cursor-pointer">Vệ sinh công nghiệp</li>
-                <li class="hover:text-white transition cursor-pointer">Cung ứng thực phẩm sạch</li>
-              </ul>
-            </div>
-          </div>
         </div>
     </footer>
 
-    <!-- Init Lucide and Scripts -->
+    <!-- Init Lucide -->
     <script>
-      lucide.createIcons();
+      document.addEventListener('DOMContentLoaded', () => {
+        lucide.createIcons();
+      });
     </script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

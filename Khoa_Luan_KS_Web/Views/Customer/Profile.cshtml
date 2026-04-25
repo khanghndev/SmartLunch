@@ -1,0 +1,113 @@
+@{
+    ViewData["Title"] = "Hồ sơ doanh nghiệp";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<div class="max-w-7xl mx-auto px-6 py-12">
+    <!-- Breadcrumb -->
+    <nav class="flex text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="/Customer" class="hover:text-orange-500 font-medium transition flex items-center gap-1">
+                    <i data-lucide="home" class="w-4 h-4"></i> Trang chủ
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
+                    <span class="ml-1 md:ml-2 font-medium text-gray-700">Hồ sơ doanh nghiệp</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <div class="flex flex-col md:flex-row gap-8">
+        <!-- Sidebar Navigation -->
+        <div class="w-full md:w-64 flex-shrink-0">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sticky top-24">
+                <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
+                    <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xl shadow-sm">
+                        K
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-gray-900">TRƯỜNG THPT HOÀNG VĂN THỤ</h3>
+                        <p class="text-xs text-gray-500">Khách hàng Doanh nghiệp</p>
+                    </div>
+                </div>
+
+                <nav class="space-y-1 text-sm font-medium">
+                    <a href="/Customer/Profile" class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg transition-colors">
+                        <i data-lucide="user" class="w-4 h-4"></i> Hồ sơ doanh nghiệp
+                    </a>
+                    <a href="/Customer/Orders" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+                        <i data-lucide="shopping-bag" class="w-4 h-4 text-gray-400"></i> Lịch sử đơn hàng
+                    </a>
+                    <a href="/Customer/Contracts" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+                        <i data-lucide="file-signature" class="w-4 h-4 text-gray-400"></i> Hợp đồng điện tử
+                    </a>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1">
+            <h1 class="text-2xl font-bold text-gray-900 mb-6 tracking-tight">Hồ sơ Doanh nghiệp</h1>
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="p-6 md:p-8">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tên Doanh Nghiệp</label>
+                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">CTRƯỜNG THPT HOÀNG VĂN THỤ</div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Mã Số Thuế (MST)</label>
+                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">0312345678</div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Người Đại Diện</label>
+                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">Nguyễn Văn Khang - Giám đốc</div>
+                            </div>
+                        </div>
+
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Địa chỉ Giao Dịch / Giao Suất Ăn</label>
+                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 leading-relaxed">
+                                    Tòa tháp 1, Lô A, KCN Tân Tạo, Phường Tân Tạo A, Quận Bình Tân, TP Hồ Chí Minh
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Điện Thoại Liên Hệ</label>
+                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">0909 123 456</div>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Email Hỗ Trợ Đơn Hàng</label>
+                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">contact@congtyk.com</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-8 pt-6 border-t border-gray-100 flex items-center gap-3 text-sm text-amber-600 bg-amber-50 p-4 rounded-lg">
+                        <i data-lucide="info" class="w-5 h-5 flex-shrink-0"></i>
+                        <p>Thông tin của quý khách được xác thực dựa trên Hợp đồng đã ký kết. Nếu có thay đổi xin vui lòng gửi yêu cầu phía dưới.</p>
+                    </div>
+                </div>
+                <!-- Action bar bottom -->
+                <div class="bg-gray-50/80 px-6 py-4 border-t border-gray-100 flex justify-end">
+                    <button class="bg-white border border-gray-300 shadow-sm text-gray-700 px-5 py-2.5 rounded-lg text-sm font-bold hover:bg-gray-50 transition-colors flex items-center gap-2">
+                        <i data-lucide="edit-3" class="w-4 h-4"></i> Gửi yêu cầu thay đổi
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        if(window.lucide) {
+            lucide.createIcons();
+        }
+    });
+</script>

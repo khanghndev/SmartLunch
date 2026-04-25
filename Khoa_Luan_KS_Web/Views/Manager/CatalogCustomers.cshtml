@@ -1,38 +1,290 @@
 @{
-    ViewData["Title"] = "Quản lý Khách hàng";
+    ViewData["Title"] = "Quản lý Khách Hàng";
     Layout = "_LayoutManager";
 }
 
-<div class="p-2 sm:p-6 space-y-6">
-    <h1 class="text-2xl font-bold text-green-600">Quản lý Khách hàng (Doanh nghiệp & Cá nhân)</h1>
-    
-    <div class="bg-white rounded shadow overflow-x-auto">
-        <table class="w-full text-left text-sm whitespace-nowrap">
-            <thead class="bg-blue-50 text-blue-800 uppercase text-xs">
-                <tr>
-                    <th class="p-4">Tên khách hàng</th>
-                    <th class="p-4">Loại hình</th>
-                    <th class="p-4">Địa chỉ / Khu vực</th>
-                    <th class="p-4">Liên hệ chính</th>
-                    <th class="p-4">Trạng thái</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-b">
-                    <td class="p-4 font-bold text-gray-700">Trường THPT Amsterdam</td>
-                    <td class="p-4"><span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs">Trường học</span></td>
-                    <td class="p-4 text-gray-500">Cầu Giấy, Hà Nội</td>
-                    <td class="p-4">Cô Lan - 098x xxx xxx</td>
-                    <td class="p-4 text-green-600 font-medium">Đang phục vụ</td>
-                </tr>
-                <tr class="border-b">
-                    <td class="p-4 font-bold text-gray-700">Nhà máy Samsung SEV</td>
-                    <td class="p-4"><span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs">Khu Công nghiệp</span></td>
-                    <td class="p-4 text-gray-500">Yên Phong, Bắc Ninh</td>
-                    <td class="p-4">Mr. Kim - 091x xxx xxx</td>
-                    <td class="p-4 text-green-600 font-medium">Đang phục vụ</td>
-                </tr>
-            </tbody>
-        </table>
+<div class="px-4 py-6 md:p-8 space-y-8" x-data="{ isModalOpen: false, search: '' }">
+    <!-- Header Page -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Đối Tác Khách Hàng B2B</h1>
+            <p class="text-sm text-gray-500 mt-1">Quản lý Tập khách hàng Doanh nghiệp, Trường học, Bệnh viện</p>
+        </div>
+        <button x-on:click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+            <i class="fas fa-plus"></i> Khởi tạo Khách hàng
+        </button>
     </div>
+
+    <!-- Toolbar Filters -->
+    <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <div class="relative w-full md:w-96 text-gray-400 focus-within:text-green-600">
+            <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2"></i>
+            <input type="text" x-model="search" placeholder="Tìm tên đối tác, đại diện liên hệ..." class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block pl-10 p-2.5 transition-colors" />
+        </div>
+        <div class="flex items-center gap-3 w-full md:w-auto">
+            <select class="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 flex-1 md:w-auto font-medium shadow-sm">
+                <option selected>Tất cả Phân Khúc</option>
+                <option>Khu Công Nghiệp</option>
+                <option>Trường Học (Học sinh)</option>
+                <option>Khối Văn Phòng</option>
+            </select>
+            <button class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-sm transition">
+                <i class="fas fa-filter text-gray-400"></i> <span class="hidden sm:inline font-medium text-sm">Lọc trạng thái</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Table Card -->
+    <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-gray-50 border-b border-gray-100 text-gray-500 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                        <th class="px-6 py-4">Tên Tổ Chức / Khách hàng</th>
+                        <th class="px-6 py-4">Phân khúc & Khu vực</th>
+                        <th class="px-6 py-4">Quy mô Suất ăn (Ước tính)</th>
+                        <th class="px-6 py-4">Hợp Đồng</th>
+                        <th class="px-6 py-4 text-center">Tác vụ</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    
+                    <!-- Row 1 -->
+                    <tr class="hover:bg-gray-50/80 transition-colors group">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center font-bold text-blue-700 shadow-sm shrink-0">
+                                    <i class="fas fa-school text-lg"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-gray-900 text-[15px] group-hover:text-green-600 transition">Trường THPT Amsterdam</div>
+                                    <div class="text-[12px] text-gray-500 mt-0.5"><i class="fas fa-user-circle text-gray-400 mr-1"></i> P. Hiệu Trưởng (Cô Lan)</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1 items-start">
+                                <span class="bg-indigo-50 text-indigo-700 border border-indigo-100 px-2 py-0.5 rounded text-[11px] font-bold">Khối Trường Học</span>
+                                <span class="text-gray-500 text-xs font-medium"><i class="fas fa-map-marker-alt text-gray-300 mr-1"></i> Cầu Giấy, Hà Nội</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1.5 w-32">
+                                <div class="flex justify-between text-[11px] font-bold">
+                                    <span class="text-gray-900">~ 2,500 suất</span>
+                                    <span class="text-gray-400">/ngày</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                                    <div class="bg-indigo-500 h-1.5 rounded-full" style="width: 70%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1">
+                                <div class="flex items-center gap-2 text-green-600 font-bold text-xs bg-green-50 px-2.5 py-1 w-fit rounded border border-green-100">
+                                    Đang phục vụ
+                                </div>
+                                <div class="text-[10px] text-gray-400 font-medium">HĐ còn: 18 tháng</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center opacity-70 group-hover:opacity-100 transition-opacity">
+                            <div class="flex items-center justify-center gap-2">
+                                <a href="/Manager/CustomerDetail/CLI001" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shadow-sm" title="Quản trị Giao dịch">
+                                    <i class="fas fa-chart-line text-xs"></i>
+                                </a>
+                                <button class="w-8 h-8 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-200 hover:text-gray-900 transition border border-gray-200" title="Chỉnh sửa Hồ sơ">
+                                    <i class="fas fa-pen text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Row 2 -->
+                    <tr class="hover:bg-gray-50/80 transition-colors group">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center font-bold text-orange-700 shadow-sm shrink-0">
+                                    <i class="fas fa-industry text-lg"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-gray-900 text-[15px] group-hover:text-green-600 transition">Nhà máy Samsung SEV</div>
+                                    <div class="text-[12px] text-gray-500 mt-0.5"><i class="fas fa-user-circle text-gray-400 mr-1"></i> GĐ Nhân Sự (Mr. Kim)</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1 items-start">
+                                <span class="bg-orange-50 text-orange-700 border border-orange-100 px-2 py-0.5 rounded text-[11px] font-bold">Khu Công Nghiệp</span>
+                                <span class="text-gray-500 text-xs font-medium"><i class="fas fa-map-marker-alt text-gray-300 mr-1"></i> Yên Phong, Bắc Ninh</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1.5 w-32">
+                                <div class="flex justify-between text-[11px] font-bold">
+                                    <span class="text-gray-900">~ 18,000 suất</span>
+                                    <span class="text-gray-400">/ngày</span>
+                                </div>
+                                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                                    <div class="bg-orange-500 h-1.5 rounded-full" style="width: 100%"></div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1">
+                                <div class="flex items-center gap-2 text-green-600 font-bold text-xs bg-green-50 px-2.5 py-1 w-fit rounded border border-green-100">
+                                    Đang phục vụ
+                                </div>
+                                <div class="text-[10px] text-gray-400 font-medium">HĐ còn: 3 năm</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center opacity-70 group-hover:opacity-100 transition-opacity">
+                            <div class="flex items-center justify-center gap-2">
+                                <a href="/Manager/CustomerDetail/CLI002" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shadow-sm" title="Quản trị Giao dịch">
+                                    <i class="fas fa-chart-line text-xs"></i>
+                                </a>
+                                <button class="w-8 h-8 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-200 hover:text-gray-900 transition border border-gray-200" title="Chỉnh sửa Hồ sơ">
+                                    <i class="fas fa-pen text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                    <!-- Row 3 -->
+                    <tr class="hover:bg-gray-50/80 transition-colors group opacity-60">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-4">
+                                <div class="w-10 h-10 rounded-xl bg-gray-50 border border-gray-200 flex items-center justify-center font-bold text-gray-500 shadow-sm shrink-0">
+                                    <i class="fas fa-building text-lg"></i>
+                                </div>
+                                <div>
+                                    <div class="font-bold text-gray-600 text-[15px] transition line-through decoration-gray-400">Tòa soạn Báo Thanh Niên</div>
+                                    <div class="text-[12px] text-gray-400 mt-0.5"><i class="fas fa-user-circle text-gray-300 mr-1"></i> Admin Tòa nhà</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex flex-col gap-1 items-start">
+                                <span class="bg-gray-100 text-gray-600 border border-gray-200 px-2 py-0.5 rounded text-[11px] font-bold">Khối Văn Phòng</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="text-[12px] font-bold text-gray-400">Không có dữ liệu suất ăn</div>
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-2 text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 w-fit rounded border border-red-100">
+                                Kêts thúc HĐ
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-center opacity-70 group-hover:opacity-100 transition-opacity">
+                            <div class="flex items-center justify-center gap-2">
+                                <button class="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-gray-300 transition shadow-sm" title="Xem Archive">
+                                    <i class="fas fa-archive text-xs"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
+            <span class="text-sm font-medium text-gray-500">Hiển thị <span class="text-gray-900 font-bold">1-3</span> trên <span class="text-gray-900 font-bold">28</span> khách hàng B2B</span>
+            <div class="flex gap-2">
+                <button class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-500 bg-white font-medium hover:bg-gray-50 transition shadow-sm disabled:opacity-50" disabled>Trước</button>
+                <button class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white font-medium hover:bg-gray-50 transition shadow-sm">Sau</button>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- MODAL: Khởi Tạo Khách Hàng CRM -->
+    <div x-show="isModalOpen" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4" x-transition.opacity.duration.300ms>
+        
+        <div x-on:click="isModalOpen = false" class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"></div>
+        
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl z-10 overflow-hidden transform transition-all flex flex-col max-h-[90vh]" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
+            
+            <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center font-bold shadow-sm text-lg">
+                        <i class="fas fa-building"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-xl font-bold text-gray-900 tracking-tight">Cập nhật Hồ sơ Doanh nghiệp Mới</h3>
+                        <p class="text-xs font-medium text-gray-500 mt-0.5">Thiết lập luồng phục vụ cho Khách hàng B2B</p>
+                    </div>
+                </div>
+                <button x-on:click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 bg-white hover:bg-gray-100 w-8 h-8 rounded-lg flex items-center justify-center transition border border-gray-100 shadow-sm">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="px-6 py-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
+                <form class="space-y-8">
+                    
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4 flex items-center gap-2">
+                            <i class="fas fa-archway text-gray-400"></i> Định danh Doanh nghiệp
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Tên Tổ Chức/Công Ty <span class="text-red-500">*</span></label>
+                                <input type="text" placeholder="Trường ABCD..." class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Phân khúc (Loại hình) <span class="text-red-500">*</span></label>
+                                <select class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm">
+                                    <option>Khối Văn phòng Doanh nghiệp (Office)</option>
+                                    <option>Khu Công nghiệp / Chế xuất (Factory)</option>
+                                    <option>Trường học các cấp (School)</option>
+                                    <option>Bệnh viện / Cơ sở Y tế (Hospital)</option>
+                                </select>
+                            </div>
+                            <div class="md:col-span-2">
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Địa chỉ Khu vực Căn tin / Vận hành</label>
+                                <input type="text" placeholder="Số ..., Quận ..., TP..." class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div>
+                        <h4 class="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4 flex items-center gap-2 mt-2">
+                            <i class="fas fa-chart-line text-gray-400"></i> Nhu Cầu & Liên Hệ Ký Kết
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Quy mô Suất Ăn Ước tính <span class="text-red-500">*</span></label>
+                                <div class="flex">
+                                    <input type="number" placeholder="1000" class="w-full bg-white border border-gray-300 border-r-0 rounded-l-lg text-gray-900 text-sm focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
+                                    <span class="inline-flex items-center px-3 bg-gray-50 border border-gray-300 rounded-r-lg text-gray-500 text-sm font-bold">
+                                        suất/ngày
+                                    </span>
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Email Kế Toán / Đầu Mối</label>
+                                <input type="email" placeholder="admin@domain.com" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Số Hotline Đại diện</label>
+                                <input type="text" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3 shrink-0">
+                <button type="button" x-on:click="isModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 transition shadow-sm">
+                    Hủy thao tác
+                </button>
+                <button type="button" class="px-6 py-2.5 text-sm font-bold text-white bg-green-600 rounded-xl hover:bg-green-700 transition shadow-md flex items-center gap-2">
+                    <i class="fas fa-layer-group"></i> Nạp Dữ Liệu CRM
+                </button>
+            </div>
+        </div>
+    </div>
+
 </div>

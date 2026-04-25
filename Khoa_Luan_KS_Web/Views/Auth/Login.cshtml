@@ -57,7 +57,8 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@currentConfig.Title - SmartLunch</title>
+    <title>@currentConfig.Title - HuitMeal</title>
+    <link rel="icon" type="image/png" href="/assets/images/Logo_tròn.png" />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
@@ -91,10 +92,8 @@
         <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 sm:p-10 border border-gray-100">
             <!-- Header Logo & Title -->
             <div class="flex items-center gap-4 mb-6">
-                <div class="w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center border shadow-sm">
-                    <span class="text-xl font-black italic tracking-tighter flex items-end">
-                        <span class="text-[#7DBE42]">h</span><span class="text-[#F3A530]">s</span><span class="text-[#7DBE42]">c</span>
-                    </span>
+                <div class="w-12 h-12 flex items-center justify-center">
+                    <img src="/assets/images/Logo.jpg" class="h-full object-contain mix-blend-multiply" alt="HuitMeal">
                 </div>
                 <div>
                     <p class="text-[11px] font-bold uppercase tracking-widest text-[#F3A530]">
@@ -109,14 +108,22 @@
             <p class="text-sm text-gray-600 mb-8 font-medium">@currentConfig.Subtitle</p>
 
             <!-- Login Form -->
-            <form action="@actionUrl" method="get" class="space-y-5">
+            <form action="/Auth/Login" method="post" class="space-y-5">
+                @if (TempData["Error"] != null)
+                {
+                    <div class="bg-red-50 text-red-600 px-4 py-3 rounded-lg flex items-center gap-2 font-medium border border-red-100">
+                        <i data-lucide="alert-circle" class="w-5 h-5 flex-shrink-0"></i>
+                        <span>@TempData["Error"]</span>
+                    </div>
+                }
+                
                 <div>
                     <label class="block text-sm font-semibold text-gray-700 mb-1">Email / Số điện thoại</label>
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i data-lucide="mail" class="text-gray-400 w-5 h-5"></i>
                         </div>
-                        <input type="text" class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 @currentConfig.InputRing sm:text-sm bg-gray-50 transition" placeholder="Nhập email...">
+                        <input type="text" name="email" required value="customer@gmail.com" class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 @currentConfig.InputRing sm:text-sm bg-gray-50 transition" placeholder="Nhập email...">
                     </div>
                 </div>
 
@@ -126,7 +133,7 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i data-lucide="lock" class="text-gray-400 w-5 h-5"></i>
                         </div>
-                        <input type="password" class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 @currentConfig.InputRing sm:text-sm bg-gray-50 transition" placeholder="••••••••">
+                        <input type="password" name="password" required class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 @currentConfig.InputRing sm:text-sm bg-gray-50 transition" placeholder="Nhập mật khẩu (123456)">
                         <div class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer">
                             <i data-lucide="eye" class="text-gray-400 w-5 h-5 hover:text-gray-600 transition"></i>
                         </div>

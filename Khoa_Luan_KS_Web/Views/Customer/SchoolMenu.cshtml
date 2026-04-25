@@ -1,0 +1,166 @@
+@{
+    ViewData["Title"] = "Thực đơn Trường học";
+    Layout = "_LayoutCustomer";
+    string level = ViewData["Level"] as string ?? "mamnon";
+    
+    string title = "Suất ăn Trường Học";
+    string desc = "Đảm bảo dinh dưỡng học đường chuẩn hóa.";
+    string imgHero = "https://images.unsplash.com/photo-1576867757603-05b134ebc379?q=80&w=1920";
+    
+    if (level == "mamnon") {
+        title = "Thực đơn Khối Mầm non (3-5 tuổi)";
+        desc = "Thức ăn được cắt nhỏ, hầm nhừ, hạn chế gia vị cay nóng, sử dụng màu sắc tự nhiên giúp các bé hứng thú hơn trong bữa ăn. Tuyệt đối không dùng xương vụn.";
+        imgHero = "https://images.unsplash.com/photo-1516627145497-ae6968895b74?q=80&w=1920";
+    } else if (level == "tieuhoc") {
+        title = "Thực đơn Khối Tiểu học (6-11 tuổi)";
+        desc = "Tập trung cung cấp đầy đủ nhóm chất cơ bản, đa dạng thực đơn để tránh cảm giác nhàm chán, khuyến khích các bé ăn nhiều rau củ quả hơn.";
+        imgHero = "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=1920";
+    } else if (level == "thcs") {
+        title = "Thực đơn Khối THCS (12-15 tuổi)";
+        desc = "Giai đoạn bản lề của tuổi dậy thì. Thực đơn được tăng cường Protein và Canxi giúp phát triển chiều cao vượt trội và duy trì năng lượng học tập.";
+        imgHero = "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1920";
+    } else if (level == "thpt") {
+        title = "Thực đơn Khối THPT (16-18 tuổi)";
+        desc = "Khẩu phần ăn lớn, đầy đặn, đa dạng ẩm thực (có thêm thức ăn nhẹ Á - Âu). Giúp các em duy trì trí óc minh mẫn trong mùa thi cử áp lực.";
+        imgHero = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1920";
+    }
+}
+
+<div class="bg-gray-50 font-sans min-h-screen pb-20">
+    <!-- ===== HERO SECTION ===== -->
+    <section class="relative h-[300px] md:h-[400px] flex items-center justify-center overflow-hidden">
+        <img src="@imgHero" class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black/60"></div>
+        <div class="relative z-10 text-center px-4">
+            <span class="inline-block px-4 py-1.5 bg-yellow-400 text-black font-bold rounded-full mb-4 text-sm tracking-widest uppercase">
+                DINH DƯỠNG HỌC ĐƯỜNG CHUYÊN SÂU
+            </span>
+            <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-4">@title</h1>
+            <p class="text-gray-200 mt-2 text-lg md:text-xl max-w-3xl mx-auto leading-relaxed">@desc</p>
+        </div>
+    </section>
+
+    <!-- ===== MEALS MENU ===== -->
+    <section class="max-w-7xl mx-auto px-6 py-16" x-data="{ tab: 't2' }">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Menu Tham Khảo Tuần Này</h2>
+            <p class="text-gray-500 max-w-2xl mx-auto">Thực đơn tại HuitMeal luôn được thiết kế mới xoay vòng theo 30 ngày, đảm bảo học sinh không phải ăn lặp lại một món bất kì trong suốt 4 tuần.</p>
+        </div>
+        
+        <!-- DAY TABS -->
+        <div class="flex flex-wrap justify-center gap-3 mb-12">
+            <button x-on:click="tab = 't2'" :class="tab === 't2' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-500 hover:bg-orange-50 border border-gray-200'" class="px-6 py-2 rounded-full font-bold transition-all duration-300">Thứ 2</button>
+            <button x-on:click="tab = 't3'" :class="tab === 't3' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-500 hover:bg-orange-50 border border-gray-200'" class="px-6 py-2 rounded-full font-bold transition-all duration-300">Thứ 3</button>
+            <button x-on:click="tab = 't4'" :class="tab === 't4' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-500 hover:bg-orange-50 border border-gray-200'" class="px-6 py-2 rounded-full font-bold transition-all duration-300">Thứ 4</button>
+            <button x-on:click="tab = 't5'" :class="tab === 't5' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-500 hover:bg-orange-50 border border-gray-200'" class="px-6 py-2 rounded-full font-bold transition-all duration-300">Thứ 5</button>
+            <button x-on:click="tab = 't6'" :class="tab === 't6' ? 'bg-orange-500 text-white shadow-lg scale-105' : 'bg-white text-gray-500 hover:bg-orange-50 border border-gray-200'" class="px-6 py-2 rounded-full font-bold transition-all duration-300">Thứ 6</button>
+        </div>
+
+        <!-- GRID SECTION (Thu 2 active by default to demonstrate) -->
+        <div x-show="tab === 't2'" x-transition.opacity.duration.500ms class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+            
+            @if(level == "mamnon" || level == "tieuhoc") {
+                <!-- Combo Trưa -->
+                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?q=80&w=600" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
+                    </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Suất Ăn Trưa (Món mặn)</h3>
+                            <span class="text-green-500 font-bold whitespace-nowrap bg-green-50 px-2 py-1 rounded text-xs border border-green-100">BỮA CHÍNH</span>
+                        </div>
+                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Thịt nạc băm xào nấm rơm</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Trứng đúc thịt nạc mềm</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Giá hẹ xào đậu hũ non</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Canh mồng tơi nấu ngao</li>
+                        </ul>
+                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Bữa phụ chiều -->
+                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1551782450-a2132b4ba21d?q=80&w=600" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
+                    </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Bữa phụ xế chiều</h3>
+                            <span class="text-blue-500 font-bold whitespace-nowrap bg-blue-50 px-2 py-1 rounded text-xs border border-blue-100">BỮA PHỤ</span>
+                        </div>
+                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Bánh bông lan trứng muối mềm</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Sữa chua uống Probi lên men</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Hoa quả: Thanh long đỏ</li>
+                        </ul>
+                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            }
+
+            @if(level == "thcs" || level == "thpt") {
+                <!-- Khay cơm cấp 2-3 -->
+                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
+                    </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Sét Tăng Trưởng Toàn Diện</h3>
+                            <span class="text-orange-500 font-bold whitespace-nowrap bg-orange-50 px-2 py-1 rounded text-xs border border-orange-100">800 KCAL</span>
+                        </div>
+                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Bò xào hành tây măng tây</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Cá lóc chiên mắm xoài</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Cải chíp xào tỏi</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Canh chân giò bí đỏ</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Tráng miệng: Nho không hạt</li>
+                        </ul>
+                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Khay B -->
+                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1628840042765-356cda07504e?q=80&w=600" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
+                        <div class="absolute top-3 left-3 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">BEST RATINGS</div>
+                    </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Sét Cơm Gà Dinh Dưỡng</h3>
+                            <span class="text-orange-500 font-bold whitespace-nowrap bg-orange-50 px-2 py-1 rounded text-xs border border-orange-100">750 KCAL</span>
+                        </div>
+                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Đùi gà xối mỡ chua ngọt</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Salad Nga trộn mayonnaise</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Đậu ve luộc chấm kho quẹt</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Canh rau dền tôm thịt</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Sữa chua Vinamilk</li>
+                        </ul>
+                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            }
+        </div>
+        
+        <!-- Placeholder text for other days as they are just mock -->
+        <div x-show="tab !== 't2'" style="display: none;" class="text-center py-20 border-2 border-dashed border-gray-200 rounded-3xl bg-white">
+            <i data-lucide="calendar" class="w-12 h-12 text-gray-300 mx-auto mb-4"></i>
+            <h3 class="text-xl font-bold text-gray-500 mb-2">Đang tải biểu mẫu thực đơn ngày khác...</h3>
+            <p class="text-gray-400 text-sm">Do đây là dữ liệu demo nên tạm thời chỉ hiển thị Thứ 2.</p>
+        </div>
+
+    </section>
+
+</div>

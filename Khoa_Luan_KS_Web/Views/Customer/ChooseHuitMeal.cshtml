@@ -1,0 +1,273 @@
+@{
+    ViewData["Title"] = "Tại sao chọn HuitMeal - Giải pháp số 1";
+    Layout = "_LayoutCustomer";
+}
+
+<style>
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    .animation-delay-200 { animation-delay: 0.2s; }
+    .animation-delay-400 { animation-delay: 0.4s; }
+    .animation-delay-600 { animation-delay: 0.6s; }
+
+    .glass-title {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+</style>
+
+<div class="w-full bg-white overflow-hidden">
+    <!-- HERO SECTION -->
+    <section class="relative h-[400px] md:h-[600px] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0">
+            <img src="/assets/images/choose_hero.png" alt="Why Choose Us Hero" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-white"></div>
+        </div>
+        
+        <div class="relative z-10 text-center px-4 animate-fadeInUp">
+            <span class="inline-block px-4 py-1.5 mb-6 text-xs font-bold tracking-[0.2em] uppercase text-white glass-title rounded-full">Giá trị cốt lõi</span>
+            <h1 class="text-4xl md:text-6xl font-extrabold text-white leading-tight mb-4">
+                Tại Sao Chọn <span class="text-yellow-400">HuitMeal?</span>
+            </h1>
+            <p class="text-gray-200 text-lg md:text-xl max-w-2xl mx-auto font-light leading-relaxed">
+                Chúng tôi không chỉ cung cấp bữa ăn, chúng tôi kiến tạo giải pháp dinh dưỡng 
+                toàn diện cho sự phát triển của doanh nghiệp bạn.
+            </p>
+        </div>
+    </section>
+
+    <!-- QUICK VALUES GRID -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-20 mb-24">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Card 1 -->
+            <div class="bg-white p-10 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 hover:shadow-2xl transition-all duration-500 animate-fadeInUp group">
+                <div class="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-red-600 transition-colors duration-500">
+                    <i data-lucide="history" class="text-red-600 w-8 h-8 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">15+ Năm Kinh Nghiệm</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">Hành trình khẳng định vị thế dẫn đầu trong ngành cung ứng suất ăn công nghiệp tại Việt Nam.</p>
+            </div>
+
+            <!-- Card 2 -->
+            <div class="bg-white p-10 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 hover:shadow-2xl transition-all duration-500 animate-fadeInUp animation-delay-200 group">
+                <div class="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-blue-600 transition-colors duration-500">
+                    <i data-lucide="cpu" class="text-blue-600 w-8 h-8 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">Công Nghệ Số AI</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">Tiên phong ứng dụng AI và ERP vào quản trị bếp ăn, đảm bảo minh bạch và hiệu quả tuyệt đối.</p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="bg-white p-10 rounded-[40px] shadow-[0_20px_50px_rgba(0,0,0,0.05)] border border-gray-100 hover:shadow-2xl transition-all duration-500 animate-fadeInUp animation-delay-400 group">
+                <div class="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mb-8 group-hover:bg-green-600 transition-colors duration-500">
+                    <i data-lucide="shield-check" class="text-green-600 w-8 h-8 group-hover:text-white transition-colors"></i>
+                </div>
+                <h3 class="text-xl font-bold text-gray-900 mb-4">An Toàn Tuyệt Đối</h3>
+                <p class="text-gray-500 text-sm leading-relaxed">Quy trình kiểm soát 1 chiều đạt chuẩn ISO 22000, HACCP và FSSC 22000 quốc tế.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- DETAILED REASONS (ACCORDION) -->
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <div class="text-center mb-20 animate-fadeInUp">
+            <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight">Khám Phá Chi Tiết</h2>
+            <div class="w-24 h-1.5 bg-yellow-400 mx-auto rounded-full"></div>
+        </div>
+
+        <div class="space-y-6" x-data="{ openIndex: 0 }">
+            <!-- Item 1: Kinh nghiệm -->
+            <div class="group border border-gray-100 rounded-[32px] overflow-hidden transition-all duration-500 shadow-sm hover:shadow-xl animate-fadeInUp">
+                <div x-on:click="openIndex = openIndex === 0 ? null : 0" 
+                     :class="openIndex === 0 ? 'bg-gray-50' : 'bg-white'"
+                     class="flex justify-between items-center px-8 py-6 cursor-pointer group-hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-6">
+                        <span class="text-4xl font-black text-gray-100 group-hover:text-yellow-400/20 transition-colors">01</span>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-800">Dày dặn kinh nghiệm thực chiến</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 group-hover:text-yellow-600 group-hover:border-yellow-600 transition-all">
+                        <i data-lucide="plus" class="w-5 h-5 transition-transform duration-500" :class="openIndex === 0 ? 'rotate-45' : ''"></i>
+                    </div>
+                </div>
+                <div x-show="openIndex === 0" x-transition.opacity.duration.500ms>
+                    <div class="p-8 md:p-12 bg-white">
+                        <div class="grid lg:grid-cols-2 gap-12 items-center">
+                            <div class="space-y-6">
+                                <p class="text-gray-600 leading-relaxed italic border-l-4 border-yellow-400 pl-6">
+                                    "Hơn 15 năm qua, HuitMeal đã đồng hành cùng hơn 80 doanh nghiệp, tập đoàn lớn, cung cấp hơn 200.000 bữa ăn mỗi ngày."
+                                </p>
+                                <div class="grid grid-cols-2 gap-6">
+                                    <div class="p-4 bg-gray-50 rounded-2xl">
+                                        <div class="text-red-600 font-bold mb-1">Thấu hiểu</div>
+                                        <p class="text-xs text-gray-500">Khẩu vị người lao động 3 miền.</p>
+                                    </div>
+                                    <div class="p-4 bg-gray-50 rounded-2xl">
+                                        <div class="text-red-600 font-bold mb-1">Đa dạng</div>
+                                        <p class="text-xs text-gray-500">Thực đơn 40 ngày không lặp.</p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="rounded-3xl overflow-hidden shadow-2xl">
+                                <img src="/assets/images/b1.jpg" alt="Experience" class="w-full h-full object-cover" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Item 2: Quản lý -->
+            <div class="group border border-gray-100 rounded-[32px] overflow-hidden transition-all duration-500 shadow-sm hover:shadow-xl animate-fadeInUp animation-delay-200">
+                <div x-on:click="openIndex = openIndex === 1 ? null : 1" 
+                     :class="openIndex === 1 ? 'bg-gray-50' : 'bg-white'"
+                     class="flex justify-between items-center px-8 py-6 cursor-pointer group-hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-6">
+                        <span class="text-4xl font-black text-gray-100 group-hover:text-yellow-400/20 transition-colors">02</span>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-800">Cơ cấu quản lý toàn diện</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 group-hover:text-yellow-600 group-hover:border-yellow-600 transition-all">
+                        <i data-lucide="plus" class="w-5 h-5 transition-transform duration-500" :class="openIndex === 1 ? 'rotate-45' : ''"></i>
+                    </div>
+                </div>
+                <div x-show="openIndex === 1" x-transition.opacity.duration.500ms>
+                    <div class="p-8 md:p-12 bg-white">
+                        <div class="grid lg:grid-cols-2 gap-12 items-center">
+                            <div class="rounded-3xl overflow-hidden shadow-2xl order-2 lg:order-1">
+                                <img src="/assets/images/b2.jpg" alt="Management" class="w-full h-full object-cover" />
+                            </div>
+                            <div class="space-y-6 order-1 lg:order-2">
+                                <h4 class="text-2xl font-bold text-gray-900">Vận hành tinh gọn, hiệu quả</h4>
+                                <ul class="space-y-4">
+                                    <li class="flex gap-4">
+                                        <div class="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0"><i data-lucide="check" class="text-white w-4 h-4"></i></div>
+                                        <p class="text-gray-600 text-sm">Phân công nhiệm vụ cụ thể giữa các phòng ban.</p>
+                                    </li>
+                                    <li class="flex gap-4">
+                                        <div class="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0"><i data-lucide="check" class="text-white w-4 h-4"></i></div>
+                                        <p class="text-gray-600 text-sm">Nhân sự chất lượng từ các nhà hàng, khách sạn 5 sao.</p>
+                                    </li>
+                                    <li class="flex gap-4">
+                                        <div class="w-6 h-6 bg-yellow-400 rounded-full flex items-center justify-center flex-shrink-0"><i data-lucide="check" class="text-white w-4 h-4"></i></div>
+                                        <p class="text-gray-600 text-sm">Xử lý yêu cầu khách hàng trong thời gian ngắn nhất.</p>
+                                    </li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Item 3: Công nghệ -->
+            <div class="group border border-gray-100 rounded-[32px] overflow-hidden transition-all duration-500 shadow-sm hover:shadow-xl animate-fadeInUp animation-delay-400">
+                <div x-on:click="openIndex = openIndex === 2 ? null : 2" 
+                     :class="openIndex === 2 ? 'bg-gray-50' : 'bg-white'"
+                     class="flex justify-between items-center px-8 py-6 cursor-pointer group-hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-6">
+                        <span class="text-4xl font-black text-gray-100 group-hover:text-yellow-400/20 transition-colors">03</span>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-800">Tiên phong ứng dụng công nghệ</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 group-hover:text-yellow-600 group-hover:border-yellow-600 transition-all">
+                        <i data-lucide="plus" class="w-5 h-5 transition-transform duration-500" :class="openIndex === 2 ? 'rotate-45' : ''"></i>
+                    </div>
+                </div>
+                <div x-show="openIndex === 2" x-transition.opacity.duration.500ms>
+                    <div class="p-8 md:p-12 bg-white">
+                        <div class="relative rounded-[40px] overflow-hidden p-12 text-white">
+                            <img src="/assets/images/b5.png" class="absolute inset-0 w-full h-full object-cover" />
+                            <div class="absolute inset-0 bg-black/80"></div>
+                            <div class="relative z-10 grid md:grid-cols-2 gap-12">
+                                <div>
+                                    <div class="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center mb-6">
+                                        <i data-lucide="camera" class="text-white w-7 h-7"></i>
+                                    </div>
+                                    <h4 class="text-2xl font-bold mb-4">Trí tuệ nhân tạo AI</h4>
+                                    <p class="text-gray-400 text-sm leading-relaxed">Nhận diện khuôn mặt vào công tác chấm công, kiểm soát suất ăn và hoạt động của các bếp ăn nhằm nâng cao hiệu quả quản trị.</p>
+                                </div>
+                                <div>
+                                    <div class="w-14 h-14 bg-red-600 rounded-2xl flex items-center justify-center mb-6">
+                                        <i data-lucide="bar-chart-3" class="text-white w-7 h-7"></i>
+                                    </div>
+                                    <h4 class="text-2xl font-bold mb-4">Hệ thống CRM, ERP</h4>
+                                    <p class="text-gray-400 text-sm leading-relaxed">Quản lý khách hàng hiệu quả, dễ dàng tổng hợp góp ý và hoạch định tài nguyên tối ưu.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Item 4: Vệ sinh -->
+            <div class="group border border-gray-100 rounded-[32px] overflow-hidden transition-all duration-500 shadow-sm hover:shadow-xl animate-fadeInUp">
+                <div x-on:click="openIndex = openIndex === 3 ? null : 3" 
+                     :class="openIndex === 3 ? 'bg-gray-50' : 'bg-white'"
+                     class="flex justify-between items-center px-8 py-6 cursor-pointer group-hover:bg-gray-50 transition-colors">
+                    <div class="flex items-center gap-6">
+                        <span class="text-4xl font-black text-gray-100 group-hover:text-yellow-400/20 transition-colors">04</span>
+                        <h3 class="text-lg md:text-xl font-bold text-gray-800">Tuyệt đối đảm bảo vệ sinh ATTP</h3>
+                    </div>
+                    <div class="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 group-hover:text-yellow-600 group-hover:border-yellow-600 transition-all">
+                        <i data-lucide="plus" class="w-5 h-5 transition-transform duration-500" :class="openIndex === 3 ? 'rotate-45' : ''"></i>
+                    </div>
+                </div>
+                <div x-show="openIndex === 3" x-transition.opacity.duration.500ms>
+                    <div class="p-8 md:p-12 bg-white">
+                        <div class="grid lg:grid-cols-2 gap-12 items-start">
+                            <div class="bg-gray-900 p-10 rounded-[40px] text-white">
+                                <h4 class="text-xl font-bold mb-8 text-yellow-400 uppercase tracking-widest">Quy trình kiểm duyệt</h4>
+                                <div class="grid gap-4 text-sm text-gray-400">
+                                    <div class="flex gap-4 items-start"><span class="text-yellow-400 font-bold">01</span> Kiểm chứng hồ sơ năng lực nhà cung cấp.</div>
+                                    <div class="flex gap-4 items-start"><span class="text-yellow-400 font-bold">02</span> Kiểm tra nhiệt độ xe đông lạnh định kỳ.</div>
+                                    <div class="flex gap-4 items-start"><span class="text-yellow-400 font-bold">03</span> Xét nghiệm mẫu định kỳ 1 lần/tháng.</div>
+                                    <div class="flex gap-4 items-start"><span class="text-yellow-400 font-bold">04</span> Vận hành theo mô hình bếp ăn 1 chiều.</div>
+                                </div>
+                            </div>
+                            <div class="space-y-6">
+                                <h4 class="text-2xl font-bold text-gray-900">Nguyên liệu chuẩn VietGAP</h4>
+                                <p class="text-gray-500 text-sm leading-relaxed">HuitMeal chỉ hợp tác với các nhà cung cấp uy tín hàng đầu như Metro, Big C và các trang trại đạt chuẩn GlobalGAP.</p>
+                                <img src="/assets/images/b6.jpg" class="rounded-3xl shadow-xl w-full h-48 object-cover" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CALL TO ACTION -->
+    <section class="bg-gray-50 py-24">
+        <div class="max-w-4xl mx-auto px-4 text-center">
+            <div class="mb-12 animate-fadeInUp">
+                <i data-lucide="heart" class="text-red-500 w-12 h-12 mx-auto mb-6 fill-red-500 animate-pulse"></i>
+                <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6">Sẵn sàng để kiến tạo những bữa ăn tử tế?</h2>
+                <p class="text-gray-500 text-lg">Chúng tôi luôn cầu thị và lấy khách hàng làm trung tâm của mọi dịch vụ.</p>
+            </div>
+            <div class="flex flex-wrap justify-center gap-6 animate-fadeInUp animation-delay-200">
+                <a href="/Customer/Contact" class="px-10 py-5 bg-red-600 text-white font-bold rounded-2xl hover:bg-red-700 transition-all transform hover:scale-105 shadow-xl shadow-red-600/30 uppercase tracking-widest">
+                    Hợp tác ngay
+                </a>
+                <a href="/Customer/Recruitment" class="px-10 py-5 bg-white text-gray-800 font-bold rounded-2xl hover:bg-gray-100 transition-all border border-gray-200 uppercase tracking-widest">
+                    Tuyển dụng
+                </a>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+    </script>
+}

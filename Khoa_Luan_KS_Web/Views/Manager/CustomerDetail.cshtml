@@ -1,0 +1,245 @@
+@{
+    ViewData["Title"] = "Phòng Chỉ Huy Khách Hàng";
+    Layout = "_LayoutManager";
+}
+
+<div class="px-4 py-6 md:p-8 space-y-6">
+    <!-- Breadcrumb -->
+    <nav class="flex text-sm text-gray-500 font-medium" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="/Manager/CatalogCustomers" class="hover:text-green-600 transition flex items-center gap-2">
+                    <i class="fas fa-users-cog"></i> Quản lý Khách Hàng
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 text-xs mx-1"></i>
+                    <span class="ml-1 md:ml-2 text-gray-900 font-bold">Khối KH: Trường THPT Amsterdam</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header Alert & Actions -->
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center p-1.5 shadow-sm text-indigo-700">
+                    <i class="fas fa-school text-xl"></i>
+                </div>
+                Hội Đồng Trường THPT Chuyên Hanoi-Amsterdam
+            </h1>
+            <p class="text-sm text-gray-500 mt-1 ml-14">Hợp đồng HSD: <span class="font-bold text-gray-700">31/12/2026</span> • Dịch vụ: <span class="font-bold text-gray-700">Bếp Công Nghiệp tại chỗ</span></p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button class="bg-white border border-gray-300 text-gray-700 font-bold px-4 py-2 rounded-xl shadow-sm hover:bg-gray-50 transition flex items-center gap-2 text-sm">
+                <i class="fas fa-file-invoice-dollar text-gray-500"></i> Xuất Công Nợ
+            </button>
+            <button class="bg-gray-800 hover:bg-gray-900 text-white font-bold px-5 py-2 rounded-xl shadow-sm transition flex items-center gap-2 text-sm">
+                <i class="fas fa-cog"></i> Tùy chỉnh Dịch vụ
+            </button>
+        </div>
+    </div>
+
+    <!-- KPIs Hạng Nặng (Top Widgets) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        
+        <!-- Widget 1: Công suất -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-16 h-16 bg-gradient-to-bl from-blue-50 to-transparent z-0"></div>
+            <div class="relative z-10">
+                <div class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <i class="fas fa-concierge-bell text-blue-500"></i> Quy mô Phục vụ
+                </div>
+                <h3 class="text-3xl font-extrabold text-gray-900 group-hover:text-blue-600 transition">2,500 <span class="text-sm text-gray-500 font-medium">suất/ngày</span></h3>
+                <div class="mt-2 flex items-center gap-2 text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded w-fit">
+                    <i class="fas fa-arrow-up"></i> Tăng 5% sv TT
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget 2: Doanh thu Tạm tính -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-16 h-16 bg-gradient-to-bl from-green-50 to-transparent z-0"></div>
+            <div class="relative z-10">
+                <div class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <i class="fas fa-coins text-green-500"></i> DT Tháng Này
+                </div>
+                <h3 class="text-3xl font-extrabold text-gray-900 group-hover:text-green-600 transition">1.8 <span class="text-sm text-gray-500 font-medium tracking-normal">TỶ VNĐ</span></h3>
+                <p class="text-[11px] text-gray-400 font-medium mt-2 line-clamp-1">Tính theo đơn giá hợp đồng: 35.000đ/suất</p>
+            </div>
+        </div>
+
+        <!-- Widget 3: Độ Hài Lòng -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 relative overflow-hidden group">
+            <div class="absolute right-0 top-0 w-16 h-16 bg-gradient-to-bl from-yellow-50 to-transparent z-0"></div>
+            <div class="relative z-10">
+                <div class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <i class="fas fa-smile-beam text-yellow-500"></i> Khảo sát Người ăn
+                </div>
+                <h3 class="text-3xl font-extrabold text-gray-900 group-hover:text-yellow-600 transition">94%</h3>
+                <div class="w-full bg-gray-100 rounded-full h-1.5 mt-3">
+                    <div class="bg-yellow-400 h-1.5 rounded-full" style="width: 94%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Widget 4: Cảnh Báo An Toàn -->
+        <div class="bg-red-50 rounded-2xl shadow-sm border border-red-100 p-6 relative overflow-hidden group">
+            <div class="relative z-10">
+                <div class="text-[11px] font-bold text-red-500 uppercase tracking-widest mb-2 flex items-center gap-1.5">
+                    <i class="fas fa-exclamation-triangle"></i> Ghi nhận Sự cố
+                </div>
+                <h3 class="text-3xl font-extrabold text-red-700">0</h3>
+                <p class="text-[11px] text-red-600 font-bold mt-2">Zero ca Ngộ độc Nhiễm khuẩn trong 3 năm.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
+        
+        <!-- Cột Trái 1: Contract & Contacts -->
+        <div class="xl:col-span-1 space-y-6">
+            
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-5 border-b border-gray-100 pb-3 flex items-center gap-2">
+                    <i class="fas fa-file-contract text-gray-400"></i> Cam Kết Dịch Vụ (SLA)
+                </h3>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-500 font-medium">Bảo lãnh HĐ</span>
+                        <span class="font-bold text-gray-900">Có (Vietcombank)</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-500 font-medium">Kỳ hóa đơn</span>
+                        <span class="font-bold text-gray-900">Ngày 30 hàng tháng</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm">
+                        <span class="text-gray-500 font-medium">Thời hạn Nợ</span>
+                        <span class="font-bold text-gray-900 text-orange-600">Max 15 Ngày</span>
+                    </div>
+                    <div class="flex justify-between items-center text-sm pt-4 border-t border-gray-100">
+                        <span class="text-gray-500 font-medium">Ca Phục vụ</span>
+                        <div class="flex gap-1">
+                            <span class="bg-gray-100 text-gray-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded">Trưa</span>
+                            <span class="bg-gray-100 text-gray-600 text-[10px] uppercase font-bold px-2 py-0.5 rounded">Tối (Nội trú)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Management Team -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 class="text-[13px] font-bold text-gray-900 uppercase tracking-wider mb-5 border-b border-gray-100 pb-3 flex items-center gap-2">
+                    <i class="fas fa-address-book text-gray-400"></i> Phân Hành Quản Lý
+                </h3>
+                
+                <div class="space-y-4">
+                    <!-- Client Side -->
+                    <div class="bg-blue-50 border border-blue-100 rounded-xl p-3">
+                        <div class="text-[10px] text-blue-600 font-bold uppercase mb-2">Đại điện Khách Hàng (Client)</div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold text-xs shadow-sm">L</div>
+                            <div>
+                                <div class="text-sm font-bold text-gray-900">Cô Phạm Ngọc Lan</div>
+                                <div class="text-xs text-gray-500 font-medium">Phó HT / Trưởng Ban Bán trú</div>
+                            </div>
+                        </div>
+                        <div class="mt-2 text-xs text-gray-600 font-medium flex items-center gap-2"><i class="fas fa-phone-alt"></i> 0988 123 456</div>
+                    </div>
+                    
+                    <!-- Internal Side -->
+                    <div class="bg-green-50 border border-green-100 rounded-xl p-3">
+                        <div class="text-[10px] text-green-600 font-bold uppercase mb-2">Quản lý Bếp Bộ phận (Internal)</div>
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full bg-white text-green-600 flex items-center justify-center font-bold text-xs shadow-sm">B</div>
+                            <div>
+                                <div class="text-sm font-bold text-gray-900">Bếp trưởng Minh Tuấn</div>
+                                <div class="text-xs text-gray-500 font-medium">Chỉ huy Bếp Ăn Cơ Sở 1</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+        </div>
+
+        <!-- Cột Phải: Logs & Invoicing -->
+        <div class="xl:col-span-2 space-y-6">
+            
+            <!-- Invoices Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                    <h3 class="font-bold text-gray-900 border-l-4 border-indigo-500 pl-3">Sổ phụ Kế Toán (Xác nhận Đối Soát)</h3>
+                    <div class="text-xs font-bold text-indigo-600 bg-indigo-50 px-3 py-1.5 rounded-lg border border-indigo-100 cursor-pointer">
+                        <i class="fas fa-download mr-1"></i> Tải Full Data CSV
+                    </div>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm whitespace-nowrap">
+                        <thead class="bg-white border-b border-gray-100 text-gray-500 text-[10px] uppercase font-bold tracking-wider">
+                            <tr>
+                                <th class="px-6 py-4">Mã HĐ</th>
+                                <th class="px-6 py-4">Kỳ Đối Soát</th>
+                                <th class="px-6 py-4">KL Suất Ăn</th>
+                                <th class="px-6 py-4">Tổng Tiền Thu</th>
+                                <th class="px-6 py-4">Trạng Thái</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50">
+                            <!-- Tháng 3 -->
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-bold text-gray-900">INV-2603-AMS</td>
+                                <td class="px-6 py-4 text-gray-600 font-medium"><i class="far fa-calendar-alt text-gray-400 mr-1"></i>01/03 - 31/03/2026</td>
+                                <td class="px-6 py-4 text-gray-700 font-bold">52,500 <span class="font-medium text-gray-400 text-xs">suất</span></td>
+                                <td class="px-6 py-4 text-gray-900 font-bold">1,837,500,000 đ</td>
+                                <td class="px-6 py-4">
+                                    <span class="bg-green-50 text-green-700 border border-green-100 text-[10px] font-bold px-2.5 py-1 rounded">Đã Thanh Toán</span>
+                                </td>
+                            </tr>
+                            
+                            <!-- Tháng 2 -->
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 font-bold text-gray-900">INV-2602-AMS</td>
+                                <td class="px-6 py-4 text-gray-600 font-medium"><i class="far fa-calendar-alt text-gray-400 mr-1"></i>01/02 - 28/02/2026</td>
+                                <td class="px-6 py-4 text-gray-700 font-bold">39,200 <span class="font-medium text-gray-400 text-xs">suất</span></td>
+                                <td class="px-6 py-4 text-gray-900 font-bold">1,372,000,000 đ</td>
+                                <td class="px-6 py-4">
+                                    <span class="bg-green-50 text-green-700 border border-green-100 text-[10px] font-bold px-2.5 py-1 rounded">Đã Thanh Toán</span>
+                                </td>
+                            </tr>
+
+                            <!-- Tháng 1 -->
+                            <tr class="hover:bg-gray-50 transition opacity-70">
+                                <td class="px-6 py-4 font-bold text-gray-900">INV-2601-AMS</td>
+                                <td class="px-6 py-4 text-gray-600 font-medium"><i class="far fa-calendar-alt text-gray-400 mr-1"></i>01/01 - 31/01/2026</td>
+                                <td class="px-6 py-4 text-gray-700 font-bold">48,000 <span class="font-medium text-gray-400 text-xs">suất</span></td>
+                                <td class="px-6 py-4 text-gray-900 font-bold">1,680,000,000 đ</td>
+                                <td class="px-6 py-4">
+                                    <span class="bg-gray-100 text-gray-600 border border-gray-200 text-[10px] font-bold px-2.5 py-1 rounded">Đã Chốt Sổ Năm</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Customer Note Board -->
+            <div class="bg-amber-50 border border-amber-100 rounded-2xl p-6">
+                <h4 class="font-bold text-amber-800 text-sm mb-4 flex items-center gap-2">
+                    <i class="fas fa-sticky-note"></i> Ghi chú Vận hành Đặc thù Cơ sở
+                </h4>
+                <ul class="text-sm text-amber-900 space-y-2 list-disc list-inside marker:text-amber-400">
+                    <li class="font-medium">Trường học yêu cầu nêm nếm nhạt (Giảm 20% muối và mỳ chính).</li>
+                    <li class="font-medium">Kiểm tra Giấy khám sức khỏe định kỳ của toàn đội Bếp 6 tháng/lần và nộp bản Copy cho Chị Y Tế trường.</li>
+                    <li class="font-medium">Ngày thi Học kỳ sẽ cắt giảm 50% suất ăn thứ 2 (Ca học chiều). Bộ phận Kinh doanh cần đối soát với trường sớm.</li>
+                </ul>
+            </div>
+
+        </div>
+
+    </div>
+</div>

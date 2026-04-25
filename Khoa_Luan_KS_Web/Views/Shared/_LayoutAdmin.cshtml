@@ -1,9 +1,13 @@
+@{
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
 <!DOCTYPE html>
 <html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - SmartLunch Admin</title>
+    <title>@ViewData["Title"] - HuitMeal Admin</title>
+    <link rel="icon" type="image/png" href="/assets/images/Logo_tròn.png" />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome (matching React) -->
@@ -12,19 +16,23 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
         [x-cloak] { display: none !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #d1d5db; }
     </style>
 </head>
-<body class="flex flex-col min-h-screen bg-gray-50 text-gray-800" x-data="{ sidebarOpen: false }">
+<body class="flex flex-col h-screen overflow-hidden bg-gray-50 text-gray-800" x-data="{ sidebarOpen: false }">
     
     <!-- HEADER -->
-    <header class="bg-white shadow px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-20 relative">
+    <header class="bg-white shadow px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-20 relative shrink-0">
         <div class="flex items-center gap-3">
             <!-- Mobile Toggle -->
             <button class="md:hidden p-2 text-green-600 rounded shadow bg-green-50" x-on:click="sidebarOpen = !sidebarOpen">
                 <i class="fas fa-bars"></i>
             </button>
             <div class="w-10 h-10 bg-green-100 flex items-center justify-center rounded text-green-600 font-bold">SL</div>
-            <h1 class="hidden sm:block text-lg sm:text-xl font-bold text-green-600">Ngọc Tâm i-food</h1>
+            <h1 class="hidden sm:block text-lg sm:text-xl font-bold text-green-600">HUIT MEAL</h1>
         </div>
         
         <div class="flex items-center gap-2 sm:gap-4 relative" x-data="{ profileOpen: false }">
@@ -51,27 +59,43 @@
         <div x-show="sidebarOpen" x-on:click="sidebarOpen = false" x-cloak class="fixed inset-0 bg-black/30 z-30 md:hidden"></div>
 
         <!-- SIDEBAR -->
-        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-xl transform transition-transform duration-300 md:relative md:translate-x-0 overflow-y-auto">
-            <nav class="flex flex-col gap-2 p-4 h-full">
-                <a href="/Admin/Index" class="flex items-center gap-2 p-2 rounded transition-colors @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "bg-green-500 text-white" : "hover:bg-green-100 hover:text-green-700")">
-                    <i class="fas fa-home w-5 text-center"></i> Dashboard
+        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-100 shadow-xl transform transition-transform duration-300 md:relative md:translate-x-0 overflow-y-auto custom-scrollbar">
+            <nav class="flex flex-col gap-1.5 p-4 min-h-full text-[14px] font-medium text-gray-600">
+                <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-3 mt-1">Bảng Điều Khiển</div>
+                
+                <a href="/Admin/Index" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(action == "Index" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-home w-5 text-center @(action == "Index" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Tổng quan Hệ thống</span>
                 </a>
-                <a href="/Admin/Users" class="flex items-center gap-2 p-2 rounded transition-colors @(ViewContext.RouteData.Values["action"]?.ToString() == "Users" ? "bg-green-500 text-white" : "hover:bg-green-100 hover:text-green-700")">
-                    <i class="fas fa-user w-5 text-center"></i> Quản lý tài khoản
+                
+                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Quản trị Cấp cao</div>
+
+                <a href="/Admin/Users" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(action == "Users" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-users-cog w-5 text-center @(action == "Users" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Quản lý Tài khoản (SSO)</span>
                 </a>
-                <a href="/Admin/BackupRestore" class="flex items-center gap-2 p-2 rounded transition-colors @(ViewContext.RouteData.Values["action"]?.ToString() == "BackupRestore" ? "bg-green-500 text-white" : "hover:bg-green-100 hover:text-green-700")">
-                    <i class="fas fa-database w-5 text-center"></i> Sao lưu & Phục hồi
+                
+                <a href="/Admin/BackupRestore" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(action == "BackupRestore" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-database w-5 text-center @(action == "BackupRestore" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Sao lưu & Phục hồi</span>
                 </a>
-                <a href="/Admin/ActivityLog" class="flex items-center gap-2 p-2 rounded transition-colors @(ViewContext.RouteData.Values["action"]?.ToString() == "ActivityLog" ? "bg-green-500 text-white" : "hover:bg-green-100 hover:text-green-700")">
-                    <i class="fas fa-clipboard-list w-5 text-center"></i> Nhật ký hệ thống
+                
+                <a href="/Admin/ActivityLog" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(action == "ActivityLog" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-clipboard-list w-5 text-center @(action == "ActivityLog" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Nhật ký Audit Log</span>
                 </a>
-                <a href="/Admin/AiConfig" class="flex items-center gap-2 p-2 rounded transition-colors @(ViewContext.RouteData.Values["action"]?.ToString() == "AiConfig" ? "bg-green-500 text-white" : "hover:bg-green-100 hover:text-green-700")">
-                    <i class="fas fa-robot w-5 text-center"></i> Cấu hình AI
+                
+                <a href="/Admin/AiConfig" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(action == "AiConfig" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-robot w-5 text-center @(action == "AiConfig" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Cấu hình Hệ thống AI</span>
                 </a>
-                <hr class="my-2">
-                <a href="/Customer" target="_blank" class="flex items-center gap-2 p-2 rounded transition-colors hover:bg-gray-100 text-gray-500 hover:text-gray-700">
-                    <i class="fas fa-external-link-alt w-5 text-center"></i> Web Khách Hàng
-                </a>
+
+                <div class="mt-auto pt-4 flex flex-col gap-2 border-t border-gray-100">
+                    <a href="/Customer" target="_blank" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all text-gray-500 hover:text-gray-800 hover:bg-gray-50 font-medium">
+                        <i class="fas fa-external-link-alt w-5 text-center opacity-70"></i>
+                        <span>Cổng Khách Hàng</span>
+                    </a>
+                </div>
             </nav>
         </aside>
 

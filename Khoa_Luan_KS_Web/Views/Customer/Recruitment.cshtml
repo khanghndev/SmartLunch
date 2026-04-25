@@ -1,217 +1,225 @@
 @{
-    ViewData["Title"] = "Tuyển dụng";
+    ViewData["Title"] = "Tuyển dụng - Đồng hành cùng HuitMeal";
     Layout = "_LayoutCustomer";
+
+    var jobs = new[] {
+        new { Id = 1, Title = "Trưởng Bếp Công Nghiệp", Location = "TP. Hồ Chí Minh", Type = "Full-time", Salary = "Thỏa thuận", Deadline = "30/06/2024", Count = "02" },
+        new { Id = 2, Title = "Chuyên Viên Kế Toán Nội Bộ", Location = "Bình Dương", Type = "Full-time", Salary = "12 - 15 Triệu", Deadline = "15/07/2024", Count = "01" },
+        new { Id = 3, Title = "Nhân Viên Phục Vụ Suất Ăn", Location = "Đồng Nai", Type = "Part-time", Salary = "Theo giờ", Deadline = "10/06/2024", Count = "05" },
+        new { Id = 4, Title = "Chuyên Viên Nhân Sự Đào Tạo", Location = "TP. Hồ Chí Minh", Type = "Full-time", Salary = "15 - 20 Triệu", Deadline = "20/07/2024", Count = "01" },
+    };
 }
 
-<div class="w-full bg-white text-[#1f2a37]">
-    <!-- ================= 1. BANNER ================= -->
-    <section class="relative w-full h-[400px] md:h-[600px] overflow-hidden">
-        <img src="/assets/images/recruitment_banner.jpg" alt="Banner" class="absolute inset-0 w-full h-full object-cover" />
-        <div class="absolute inset-0 bg-black/30"></div>
-        <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-4 md:px-6 z-10">
-            <h1 class="text-2xl sm:text-3xl md:text-6xl font-black text-white mb-4 md:mb-6 leading-tight">
-                <span class="bg-[#ffc107] text-black px-3 py-1 md:px-4 md:py-2 inline-block">Phát triển</span> cùng Haseca
-            </h1>
-            <p class="max-w-xl md:max-w-3xl text-white/90 text-sm sm:text-base md:text-lg leading-relaxed">
-                Trong suốt hành trình tạo giá trị của mình, HASECA không ngừng tìm kiếm và đào tạo nhân tài với tâm niệm: con người là nhân tố trung tâm quyết định sự thành công, phồn thịnh và phát triển bền vững của doanh nghiệp.
-            </p>
-        </div>
-    </section>
+<style>
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(40px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fadeInUp { animation: fadeInUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
+    .glass-effect { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
+</style>
 
-    <!-- ================= CARDS ================= -->
-    <div class="relative z-20 px-4 mt-[-60px] md:mt-[-80px] mb-20">
-        <div class="max-w-6xl mx-auto grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5 md:gap-6">
-            <!-- Card 1 -->
-            <div class="bg-white shadow-xl py-10 px-6 flex flex-col items-center text-center rounded-md hover:-translate-y-2 transition duration-300">
-                <div class="w-16 h-16 flex items-center justify-center border-2 border-[#f39200] rounded-full mb-4">
-                    <i data-lucide="users" class="text-[#f39200] w-7 h-7"></i>
-                </div>
-                <h3 class="font-bold text-lg uppercase">Môi trường</h3>
-                <p class="text-gray-600 text-sm mt-1">chuyên nghiệp</p>
-            </div>
-            <!-- Card 2 -->
-            <div class="bg-white shadow-xl py-10 px-6 flex flex-col items-center text-center rounded-md hover:-translate-y-2 transition duration-300">
-                <div class="w-16 h-16 flex items-center justify-center border-2 border-[#f39200] rounded-full mb-4">
-                    <i data-lucide="trending-up" class="text-[#f39200] w-7 h-7"></i>
-                </div>
-                <h3 class="font-bold text-lg uppercase">Cơ hội phát triển</h3>
-                <p class="text-gray-600 text-sm mt-1">sự nghiệp bền vững</p>
-            </div>
-            <!-- Card 3 -->
-            <div class="bg-white shadow-xl py-10 px-6 flex flex-col items-center text-center rounded-md hover:-translate-y-2 transition duration-300">
-                <div class="w-16 h-16 flex items-center justify-center border-2 border-[#f39200] rounded-full mb-4">
-                    <i data-lucide="lightbulb" class="text-[#f39200] w-7 h-7"></i>
-                </div>
-                <h3 class="font-bold text-lg uppercase">Đào tạo</h3>
-                <p class="text-gray-600 text-sm mt-1">bài bản</p>
-            </div>
+<div class="w-full bg-white overflow-hidden">
+    <!-- HERO SECTION -->
+    <section class="relative h-[600px] md:h-[750px] flex items-center overflow-hidden">
+        <div class="absolute inset-0">
+            <img src="/assets/images/recruitment_hero.png" alt="Recruitment Hero" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-r from-[#0F172A]/90 via-[#0F172A]/40 to-transparent"></div>
         </div>
-    </div>
-
-    <!-- QUOTE -->
-    <section class="max-w-7xl mx-auto py-20 md:py-28 px-4 md:px-6">
-        <div class="relative bg-gradient-to-br from-[#1f1f1f] via-[#2b2b2b] to-[#111] rounded-3xl p-8 md:p-16 overflow-hidden">
-            <div class="absolute -top-20 -left-20 w-72 h-72 bg-[#ffc107]/20 blur-3xl rounded-full"></div>
-            <div class="absolute -bottom-20 -right-20 w-72 h-72 bg-[#ffc107]/10 blur-3xl rounded-full"></div>
-            <div class="relative max-w-3xl mx-auto text-center">
-                <div class="text-[#ffc107] text-5xl mb-6 opacity-80">“</div>
-                <p class="text-white/90 text-lg md:text-xl leading-relaxed font-light">
-                    Con người chính là sức mạnh của Haseca. Đích đến của chúng tôi là sức khỏe, sự hài lòng và cảm giác ngon miệng của khách hàng.
+        
+        <div class="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full animate-fadeInUp">
+            <div class="max-w-3xl">
+                <span class="inline-block px-5 py-2 mb-8 text-[11px] font-black tracking-[0.4em] uppercase text-red-500 bg-red-500/10 rounded-full border border-red-500/20">Careers at HuitMeal</span>
+                <h1 class="text-5xl md:text-8xl font-black text-white leading-[0.95] mb-8">
+                    Phát Triển <br />
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-400">Cùng Chúng Tôi</span>
+                </h1>
+                <p class="text-gray-300 text-lg md:text-xl font-light leading-relaxed mb-12 max-w-2xl">
+                    Chúng tôi tin rằng con người là tài sản quý giá nhất. Tại HuitMeal, mỗi cá nhân đều được trao cơ hội để tỏa sáng và kiến tạo tương lai.
                 </p>
-                <div class="mt-10 flex flex-col items-center">
-                    <div class="w-14 h-14 rounded-full bg-[#ffc107] flex items-center justify-center text-black font-bold text-lg shadow-lg">CEO</div>
-                    <h3 class="mt-4 text-[#ffc107] text-xl md:text-2xl font-semibold">Tổng Giám Đốc</h3>
-                    <p class="text-gray-400 text-sm mt-1">Haseca Corporation</p>
+                <a href="#open-positions" class="inline-flex items-center gap-4 bg-red-600 hover:bg-red-700 text-white px-10 py-5 rounded-2xl font-black uppercase tracking-widest text-xs transition-all hover:-translate-y-1 shadow-2xl shadow-red-600/30">
+                    Xem các vị trí ứng tuyển <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- CORE VALUES SECTION -->
+    <section class="relative z-20 -mt-24 md:-mt-32 px-6 mb-32">
+        <div class="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Môi trường -->
+            <div class="bg-white p-12 rounded-[48px] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.1)] border border-gray-100 flex flex-col items-center text-center animate-fadeInUp group hover:-translate-y-3 transition-all duration-500" style="animation-delay: 0.1s;">
+                <div class="w-24 h-24 rounded-3xl bg-red-50 flex items-center justify-center mb-8 group-hover:bg-red-600 transition-colors duration-500">
+                    <i data-lucide="users" class="w-10 h-10 text-red-600 group-hover:text-white transition-colors duration-500"></i>
+                </div>
+                <h3 class="text-xl font-black text-gray-900 uppercase tracking-widest mb-4">Môi trường</h3>
+                <p class="text-gray-500 font-light leading-relaxed">Không gian làm việc năng động, chuyên nghiệp và đầy cảm hứng sáng tạo.</p>
+            </div>
+            <!-- Cơ hội -->
+            <div class="bg-white p-12 rounded-[48px] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.1)] border border-gray-100 flex flex-col items-center text-center animate-fadeInUp group hover:-translate-y-3 transition-all duration-500" style="animation-delay: 0.2s;">
+                <div class="w-24 h-24 rounded-3xl bg-orange-50 flex items-center justify-center mb-8 group-hover:bg-orange-600 transition-colors duration-500">
+                    <i data-lucide="trending-up" class="w-10 h-10 text-orange-600 group-hover:text-white transition-colors duration-500"></i>
+                </div>
+                <h3 class="text-xl font-black text-gray-900 uppercase tracking-widest mb-4">Cơ hội</h3>
+                <p class="text-gray-500 font-light leading-relaxed">Lộ trình thăng tiến rõ ràng, ghi nhận xứng đáng mọi đóng góp của bạn.</p>
+            </div>
+            <!-- Đào tạo -->
+            <div class="bg-white p-12 rounded-[48px] shadow-[0_30px_100px_-20px_rgba(0,0,0,0.1)] border border-gray-100 flex flex-col items-center text-center animate-fadeInUp group hover:-translate-y-3 transition-all duration-500" style="animation-delay: 0.3s;">
+                <div class="w-24 h-24 rounded-3xl bg-blue-50 flex items-center justify-center mb-8 group-hover:bg-blue-600 transition-colors duration-500">
+                    <i data-lucide="graduation-cap" class="w-10 h-10 text-blue-600 group-hover:text-white transition-colors duration-500"></i>
+                </div>
+                <h3 class="text-xl font-black text-gray-900 uppercase tracking-widest mb-4">Đào tạo</h3>
+                <p class="text-gray-500 font-light leading-relaxed">Chương trình huấn luyện bài bản từ chuyên gia hàng đầu trong ngành.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- CEO QUOTE SECTION -->
+    <section class="py-24 px-6 bg-gray-50/50 relative overflow-hidden">
+        <div class="max-w-5xl mx-auto relative z-10 animate-fadeInUp">
+            <div class="bg-[#0F172A] rounded-[64px] p-12 md:p-24 text-center relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-red-600/10 to-transparent"></div>
+                <i data-lucide="quote" class="w-20 h-20 text-red-600 opacity-20 absolute -top-4 -left-4"></i>
+                
+                <p class="text-2xl md:text-4xl font-light text-white leading-relaxed mb-12 relative z-10 italic">
+                    "Tại HuitMeal, chúng tôi không chỉ xây dựng một doanh nghiệp, chúng tôi xây dựng một <span class="text-red-500 font-black">đại gia đình</span>. Nơi mỗi thành viên đều cảm thấy được trân trọng và hạnh phúc mỗi ngày."
+                </p>
+                
+                <div class="flex flex-col items-center relative z-10">
+                    <div class="w-20 h-20 rounded-full border-4 border-red-600 p-1 mb-6">
+                        <div class="w-full h-full bg-red-600 rounded-full flex items-center justify-center text-white font-black text-xs italic shadow-lg">CEO</div>
+                    </div>
+                    <h4 class="text-2xl font-black text-white uppercase tracking-widest mb-2">HuitMeal Leader</h4>
+                    <p class="text-gray-400 font-bold uppercase text-[10px] tracking-[0.3em]">Tổng Giám Đốc Corporation</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- FACTS -->
-    <section class="max-w-7xl mx-auto py-16 md:py-24 px-4 md:px-6">
-        <div class="text-center mb-12 md:mb-16">
-            <h2 class="text-3xl sm:text-4xl md:text-6xl font-extrabold text-[#1f2937] leading-tight">
-                <span class="relative inline-block mr-2 md:mr-3">Haseca's<span class="absolute left-0 bottom-1 md:bottom-2 w-full h-2 md:h-4 bg-[#ffc107] -z-10"></span></span> facts
-            </h2>
-            <div class="mt-6 md:mt-10">
-                <button class="bg-[#f59e0b] hover:bg-orange-600 text-white px-6 md:px-10 py-3 md:py-4 rounded-full font-bold uppercase text-xs md:text-sm tracking-wide shadow-md transition">Vị trí tuyển dụng</button>
+    <!-- OPEN POSITIONS SECTION -->
+    <section id="open-positions" class="py-32 px-6">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-end mb-20 animate-fadeInUp">
+                <div class="max-w-xl">
+                    <span class="text-red-600 text-xs font-black uppercase tracking-[0.3em] mb-4 block">Joining the team</span>
+                    <h2 class="text-4xl md:text-6xl font-black text-gray-900 leading-tight">Vị Trí <span class="text-red-600">Đang Tuyển</span></h2>
+                </div>
+                <div class="mt-8 md:mt-0 flex gap-4">
+                    <div class="relative">
+                        <input type="text" placeholder="Tìm kiếm vị trí..." class="px-6 py-4 bg-gray-50 border-none rounded-2xl w-64 text-sm font-bold focus:ring-2 focus:ring-red-600 transition-all shadow-inner" />
+                        <i data-lucide="search" class="w-4 h-4 text-gray-400 absolute right-5 top-1/2 -translate-y-1/2"></i>
+                    </div>
+                </div>
             </div>
-        </div>
-        <div class="grid md:grid-cols-2 gap-10 items-center">
-            <div>
-                <h3 class="text-2xl md:text-3xl font-bold mb-4 leading-tight">Tạo dựng cơ hội nghề nghiệp cho sinh viên</h3>
-                <p class="text-gray-600 leading-relaxed text-sm md:text-base">Đầu năm 2019, HASECA đã ký kết, hợp tác với Trường cao đẳng Hùng Vương Hà Nội, nhận các bạn sinh viên về thực tập, học nghề và sẵn sàng bao tiêu đầu ra cho các sinh viên có nguyện vọng về công ty làm việc sau khi ra trường.</p>
-                <p class="text-gray-600 leading-relaxed text-sm md:text-base mt-4">Các bếp ăn công nghiệp của Haseca hoạt động 24/24 giờ mang bữa ăn tới công nhân ở các nhà máy từ sáng cho tới đêm khuya, kể cả ngày lễ, tết. Với một khối lượng công việc lớn như vậy, nếu không có lửa nhiệt huyết và tình yêu với nghề thì không thể hoàn thành tốt được.</p>
-                <p class="text-gray-600 leading-relaxed text-sm md:text-base mt-4">Căn phòng để tập trung nghiên cứu và phát triển công tác đào tạo là thứ được chúng tôi quan tâm đầu tư từ những bước đi đầu tiên. Việc đào tạo không chỉ quan tâm tới các kỹ năng cứng về chuyên môn nghiệp vụ mà còn trang bị thêm các kỹ năng mềm cho toàn bộ đội ngũ nhân viên.</p>
-            </div>
-            <div>
-                <img src="/assets/images/fact1.jpg" alt="HASECA" class="w-full h-auto shadow-sm rounded-xl" />
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 animate-fadeInUp">
+                @foreach (var job in jobs)
+                {
+                    <div class="group bg-white p-10 rounded-[48px] border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 relative overflow-hidden">
+                        <div class="absolute top-0 right-0 w-32 h-32 bg-gray-50 rounded-bl-[100px] -mr-8 -mt-8 transition-colors group-hover:bg-red-50"></div>
+                        
+                        <div class="relative z-10 flex flex-col h-full">
+                            <div class="flex justify-between items-start mb-8">
+                                <span class="px-4 py-1.5 bg-gray-100 rounded-xl text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:bg-red-600 group-hover:text-white transition-colors">@job.Type</span>
+                                <div class="flex flex-col items-end">
+                                    <span class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Hạn nộp</span>
+                                    <span class="text-sm font-black text-red-600">@job.Deadline</span>
+                                </div>
+                            </div>
+                            
+                            <h3 class="text-2xl font-black text-gray-900 mb-6 group-hover:text-red-600 transition-colors leading-tight">@job.Title</h3>
+                            
+                            <div class="flex flex-wrap gap-6 mb-10">
+                                <div class="flex items-center gap-2 text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                                    <i data-lucide="map-pin" class="w-4 h-4 text-red-500"></i> @job.Location
+                                </div>
+                                <div class="flex items-center gap-2 text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                                    <i data-lucide="dollar-sign" class="w-4 h-4 text-green-500"></i> @job.Salary
+                                </div>
+                                <div class="flex items-center gap-2 text-[11px] text-gray-500 font-bold uppercase tracking-widest">
+                                    <i data-lucide="users" class="w-4 h-4 text-blue-500"></i> @job.Count Slot
+                                </div>
+                            </div>
+                            
+                            <div class="mt-auto pt-8 border-t border-gray-50 flex justify-between items-center">
+                                <a href="#" class="text-xs font-black text-gray-400 hover:text-red-600 transition-colors flex items-center gap-2">
+                                    CHI TIẾT <i data-lucide="info" class="w-4 h-4"></i>
+                                </a>
+                                <button class="bg-gray-900 text-white px-8 py-4 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-red-600 shadow-lg shadow-gray-900/10 group-hover:shadow-red-600/30 transition-all">Ứng tuyển ngay</button>
+                            </div>
+                        </div>
+                    </div>
+                }
             </div>
         </div>
     </section>
 
-    <!-- 4 GIÁ TRỊ -->
-    <section class="max-w-7xl mx-auto py-24 px-6 h-auto hidden md:block">
-        <div class="text-center mb-20">
-            <h2 class="text-5xl font-extrabold text-[#1f2937]">
-                <span class="relative inline-block mr-2">4 giá trị<span class="absolute left-0 bottom-2 w-full h-3 bg-[#ffc107] -z-10"></span></span> làm nên Haseca
-            </h2>
-        </div>
-        <div class="relative w-full py-20 flex items-center justify-center overflow-hidden">
-            <div class="relative w-full max-w-[1200px] h-[700px] flex items-center justify-center">
-                <!-- CIRCLES -->
-                <div class="absolute rounded-full border border-[#f59e0b]/20" style="width: 750px; height: 750px;"></div>
-                <div class="absolute rounded-full border border-[#f59e0b]/20" style="width: 600px; height: 600px;"></div>
-                <div class="absolute rounded-full border border-[#f59e0b]/20" style="width: 450px; height: 450px;"></div>
-                <div class="absolute rounded-full border border-[#f59e0b]/20" style="width: 300px; height: 300px;"></div>
-                <!-- CENTER ICON -->
-                <div class="absolute flex items-center justify-center w-28 h-28 md:w-32 md:h-32 rounded-full border border-[#f59e0b] bg-white z-10 shadow">
-                    <i data-lucide="gem" class="text-[#f59e0b] w-10 h-10 md:w-12 md:h-12"></i>
-                </div>
-                <!-- LEFT TOP -->
-                <div class="absolute left-0 top-[15%] flex items-center">
-                    <div class="bg-[#f3f3f3] rounded-2xl px-6 md:px-8 py-5 md:py-6 w-[300px] md:w-[420px] shadow-lg">
-                        <p class="text-gray-700 text-sm md:text-[15px] leading-relaxed">Công việc HASECA liên quan đến sức khỏe và hiệu quả làm việc của người lao động nên không thể làm qua loa mà thiếu chuyên môn.</p>
+    <!-- RECRUITMENT PROCESS SECTION -->
+    <section class="py-32 px-6 bg-[#F8FAFC]">
+        <div class="max-w-7xl mx-auto">
+            <div class="text-center mb-24 animate-fadeInUp">
+                <span class="text-red-600 text-xs font-black uppercase tracking-[0.4em] mb-4 block">How we hire</span>
+                <h2 class="text-4xl md:text-6xl font-black text-gray-900 leading-tight">Quy Trình <span class="text-red-600">Tuyển Dụng</span></h2>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 animate-fadeInUp">
+                <!-- Step 1 -->
+                <div class="relative flex flex-col items-center text-center group">
+                    <div class="w-20 h-20 rounded-[32px] bg-white shadow-xl flex items-center justify-center mb-8 relative z-10 group-hover:bg-red-600 transition-all duration-500 group-hover:-translate-y-2">
+                        <i data-lucide="file-text" class="w-8 h-8 text-red-600 group-hover:text-white transition-colors duration-500"></i>
+                        <span class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-gray-900 text-white font-black text-[10px] flex items-center justify-center">01</span>
                     </div>
-                    <div class="-ml-10 md:-ml-14 w-20 h-20 md:w-28 md:h-28 bg-[#ffc107] rounded-full flex items-center justify-center font-bold text-sm md:text-lg shadow-md">Kỹ năng</div>
+                    <h4 class="text-lg font-black text-gray-900 uppercase tracking-widest mb-4">Nộp hồ sơ</h4>
+                    <p class="text-gray-500 text-sm font-light leading-relaxed">Gửi CV của bạn trực tuyến qua hệ thống tuyển dụng.</p>
+                    <div class="hidden md:block absolute top-10 left-[70%] w-full h-[2px] bg-dashed border-t-2 border-dashed border-gray-200"></div>
                 </div>
-                <!-- RIGHT TOP -->
-                <div class="absolute right-0 top-[15%] flex items-center">
-                    <div class="mr-[-40px] md:mr-[-56px] w-20 h-20 md:w-28 md:h-28 bg-[#ffc107] rounded-full flex items-center justify-center font-bold text-sm md:text-lg shadow-md z-10">Sáng tạo</div>
-                    <div class="bg-[#f3f3f3] rounded-2xl px-6 md:px-8 py-5 md:py-6 w-[300px] md:w-[420px] shadow-lg">
-                        <p class="text-gray-700 text-sm md:text-[15px] leading-relaxed">Phương châm làm việc của HASECA là không ngừng học hỏi và cải tiến để mang đến hiệu quả công việc tốt hơn.</p>
+                <!-- Step 2 -->
+                <div class="relative flex flex-col items-center text-center group">
+                    <div class="w-20 h-20 rounded-[32px] bg-white shadow-xl flex items-center justify-center mb-8 relative z-10 group-hover:bg-red-600 transition-all duration-500 group-hover:-translate-y-2">
+                        <i data-lucide="phone-call" class="w-8 h-8 text-red-600 group-hover:text-white transition-colors duration-500"></i>
+                        <span class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-gray-900 text-white font-black text-[10px] flex items-center justify-center">02</span>
                     </div>
+                    <h4 class="text-lg font-black text-gray-900 uppercase tracking-widest mb-4">Phỏng vấn sơ vấn</h4>
+                    <p class="text-gray-500 text-sm font-light leading-relaxed">Trao đổi nhanh qua điện thoại để hiểu thêm về bạn.</p>
+                    <div class="hidden md:block absolute top-10 left-[70%] w-full h-[2px] bg-dashed border-t-2 border-dashed border-gray-200"></div>
                 </div>
-                <!-- LEFT BOTTOM -->
-                <div class="absolute left-0 bottom-[15%] flex items-center">
-                    <div class="bg-[#f3f3f3] rounded-2xl px-6 md:px-8 py-5 md:py-6 w-[300px] md:w-[420px] shadow-lg">
-                        <p class="text-gray-700 text-sm md:text-[15px] leading-relaxed">Hành động xuất phát từ sự chân thành mới đủ bền vững và đủ để lan tỏa những giá trị tốt đẹp đến cho cộng đồng.</p>
+                <!-- Step 3 -->
+                <div class="relative flex flex-col items-center text-center group">
+                    <div class="w-20 h-20 rounded-[32px] bg-white shadow-xl flex items-center justify-center mb-8 relative z-10 group-hover:bg-red-600 transition-all duration-500 group-hover:-translate-y-2">
+                        <i data-lucide="coffee" class="w-8 h-8 text-red-600 group-hover:text-white transition-colors duration-500"></i>
+                        <span class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-gray-900 text-white font-black text-[10px] flex items-center justify-center">03</span>
                     </div>
-                    <div class="-ml-10 md:-ml-14 w-20 h-20 md:w-28 md:h-28 bg-[#ffc107] rounded-full flex items-center justify-center font-bold text-sm md:text-lg shadow-md">Tâm - Đức</div>
+                    <h4 class="text-lg font-black text-gray-900 uppercase tracking-widest mb-4">Gặp gỡ trực tiếp</h4>
+                    <p class="text-gray-500 text-sm font-light leading-relaxed">Phỏng vấn chuyên sâu và tham quan môi trường làm việc.</p>
+                    <div class="hidden md:block absolute top-10 left-[70%] w-full h-[2px] bg-dashed border-t-2 border-dashed border-gray-200"></div>
                 </div>
-                <!-- RIGHT BOTTOM -->
-                <div class="absolute right-0 bottom-[15%] flex items-center">
-                    <div class="mr-[-40px] md:mr-[-56px] w-20 h-20 md:w-28 md:h-28 bg-[#ffc107] rounded-full flex items-center justify-center font-bold text-sm md:text-lg shadow-md z-10">Nhiệt huyết</div>
-                    <div class="bg-[#f3f3f3] rounded-2xl px-6 md:px-8 py-5 md:py-6 w-[300px] md:w-[420px] shadow-lg">
-                        <p class="text-gray-700 text-sm md:text-[15px] leading-relaxed">Tình yêu chính là thứ giúp HASECA có thể xử lý tốt khối lượng công việc lớn mà vẫn đảm bảo chất lượng cho khách hàng.</p>
+                <!-- Step 4 -->
+                <div class="relative flex flex-col items-center text-center group">
+                    <div class="w-20 h-20 rounded-[32px] bg-white shadow-xl flex items-center justify-center mb-8 relative z-10 group-hover:bg-red-600 transition-all duration-500 group-hover:-translate-y-2">
+                        <i data-lucide="party-popper" class="w-8 h-8 text-red-600 group-hover:text-white transition-colors duration-500"></i>
+                        <span class="absolute -top-3 -right-3 w-8 h-8 rounded-full bg-red-600 text-white font-black text-[10px] flex items-center justify-center">04</span>
                     </div>
+                    <h4 class="text-lg font-black text-gray-900 uppercase tracking-widest mb-4">Chào mừng gia nhập</h4>
+                    <p class="text-gray-500 text-sm font-light leading-relaxed">Nhận lời mời làm việc và bắt đầu hành trình tại HuitMeal.</p>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- VỊ TRÍ TUYỂN DỤNG -->
-    <section class="w-full bg-gray-100 py-16 md:py-24 px-4 md:px-6">
-        <div class="max-w-6xl mx-auto">
-            <h2 class="text-3xl md:text-5xl font-extrabold text-center mb-10 md:mb-14">
-                <span class="bg-[#ffc107] px-3 py-1 mr-2">Vị trí</span> tuyển dụng
-            </h2>
-            <!-- DESKTOP TABLE -->
-            <div class="hidden md:block">
-                <div class="bg-[#ffc107] text-black font-semibold uppercase text-sm">
-                    <div class="grid grid-cols-5 gap-4 px-6 py-4">
-                        <div class="flex items-center gap-1"><i data-lucide="hash" class="w-4 h-4"></i> SL</div>
-                        <div>Công việc</div>
-                        <div class="flex items-center gap-1"><i data-lucide="map-pin" class="w-4 h-4"></i> Nơi làm việc</div>
-                        <div class="flex items-center gap-1"><i data-lucide="briefcase" class="w-4 h-4"></i> Vị trí</div>
-                        <div class="flex items-center gap-1"><i data-lucide="clock" class="w-4 h-4"></i> Hạn nộp</div>
-                    </div>
-                </div>
-                <div class="bg-white divide-y">
-                    <div class="grid grid-cols-5 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition">
-                        <div class="flex items-center gap-1"><i data-lucide="hash" class="w-3 h-3 text-gray-500"></i>02</div>
-                        <div class="font-medium">Nhân viên bếp</div>
-                        <div class="flex items-center gap-1 text-gray-600"><i data-lucide="map-pin" class="w-3 h-3"></i>Hà Nội</div>
-                        <div class="flex items-center gap-1 text-gray-600"><i data-lucide="briefcase" class="w-3 h-3"></i>Full-time</div>
-                        <div class="flex items-center gap-1 text-red-500 font-medium"><i data-lucide="clock" class="w-3 h-3"></i>30/12/2025</div>
-                    </div>
-                    <div class="grid grid-cols-5 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition">
-                        <div class="flex items-center gap-1"><i data-lucide="hash" class="w-3 h-3 text-gray-500"></i>01</div>
-                        <div class="font-medium">Kế toán nội bộ</div>
-                        <div class="flex items-center gap-1 text-gray-600"><i data-lucide="map-pin" class="w-3 h-3"></i>TP.HCM</div>
-                        <div class="flex items-center gap-1 text-gray-600"><i data-lucide="briefcase" class="w-3 h-3"></i>Full-time</div>
-                        <div class="flex items-center gap-1 text-red-500 font-medium"><i data-lucide="clock" class="w-3 h-3"></i>15/01/2026</div>
-                    </div>
-                     <div class="grid grid-cols-5 gap-4 px-6 py-4 items-center hover:bg-gray-50 transition">
-                        <div class="flex items-center gap-1"><i data-lucide="hash" class="w-3 h-3 text-gray-500"></i>03</div>
-                        <div class="font-medium">Phục vụ</div>
-                        <div class="flex items-center gap-1 text-gray-600"><i data-lucide="map-pin" class="w-3 h-3"></i>Bắc Ninh</div>
-                        <div class="flex items-center gap-1 text-gray-600"><i data-lucide="briefcase" class="w-3 h-3"></i>Part-time</div>
-                        <div class="flex items-center gap-1 text-red-500 font-medium"><i data-lucide="clock" class="w-3 h-3"></i>10/01/2026</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- MOBILE CARD -->
-            <div class="md:hidden space-y-4">
-                 <div class="bg-white rounded-xl shadow p-4 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-semibold text-base">Nhân viên bếp</h3>
-                        <div class="flex items-center gap-1 text-xs bg-[#ffc107] px-2 py-1 rounded"><i data-lucide="hash" class="w-3 h-3"></i>02</div>
-                    </div>
-                    <div class="flex items-center gap-2 text-sm text-gray-600"><i data-lucide="map-pin" class="w-4 h-4"></i>Hà Nội</div>
-                    <div class="flex items-center gap-2 text-sm text-gray-600"><i data-lucide="briefcase" class="w-4 h-4"></i>Full-time</div>
-                    <div class="flex items-center gap-2 text-sm text-red-500 font-medium"><i data-lucide="clock" class="w-4 h-4"></i>30/12/2025</div>
-                </div>
-                <div class="bg-white rounded-xl shadow p-4 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-semibold text-base">Kế toán nội bộ</h3>
-                        <div class="flex items-center gap-1 text-xs bg-[#ffc107] px-2 py-1 rounded"><i data-lucide="hash" class="w-3 h-3"></i>01</div>
-                    </div>
-                    <div class="flex items-center gap-2 text-sm text-gray-600"><i data-lucide="map-pin" class="w-4 h-4"></i>TP.HCM</div>
-                    <div class="flex items-center gap-2 text-sm text-gray-600"><i data-lucide="briefcase" class="w-4 h-4"></i>Full-time</div>
-                    <div class="flex items-center gap-2 text-sm text-red-500 font-medium"><i data-lucide="clock" class="w-4 h-4"></i>15/01/2026</div>
-                </div>
-                 <div class="bg-white rounded-xl shadow p-4 space-y-3">
-                    <div class="flex justify-between items-center">
-                        <h3 class="font-semibold text-base">Phục vụ</h3>
-                        <div class="flex items-center gap-1 text-xs bg-[#ffc107] px-2 py-1 rounded"><i data-lucide="hash" class="w-3 h-3"></i>03</div>
-                    </div>
-                    <div class="flex items-center gap-2 text-sm text-gray-600"><i data-lucide="map-pin" class="w-4 h-4"></i>Bắc Ninh</div>
-                    <div class="flex items-center gap-2 text-sm text-gray-600"><i data-lucide="briefcase" class="w-4 h-4"></i>Part-time</div>
-                    <div class="flex items-center gap-2 text-sm text-red-500 font-medium"><i data-lucide="clock" class="w-4 h-4"></i>10/01/2026</div>
-                </div>
-            </div>
+    <!-- CALL TO ACTION -->
+    <section class="py-32 px-6">
+        <div class="max-w-7xl mx-auto text-center animate-fadeInUp">
+            <h2 class="text-3xl md:text-5xl font-black text-gray-900 mb-8 leading-tight">Chưa thấy vị trí phù hợp?</h2>
+            <p class="text-gray-500 text-lg mb-12 max-w-2xl mx-auto font-light">Hãy gửi CV của bạn vào kho nhân sự của chúng tôi. Chúng tôi sẽ liên hệ ngay khi có cơ hội phù hợp với năng lực của bạn.</p>
+            <a href="mailto:tuyendung@huitmeal.com" class="inline-flex items-center gap-4 bg-gray-900 hover:bg-red-600 text-white px-12 py-5 rounded-[24px] font-black uppercase tracking-widest text-xs transition-all hover:scale-105 shadow-2xl shadow-gray-900/20">
+                Gửi CV Ứng Tuyển Tự Do <i data-lucide="mail" class="w-4 h-4"></i>
+            </a>
         </div>
     </section>
 </div>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+    </script>
+}

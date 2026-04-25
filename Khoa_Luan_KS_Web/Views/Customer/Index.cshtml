@@ -1,190 +1,447 @@
 @{
-    ViewData["Title"] = "Trang Chủ";
+    ViewData["Title"] = "Trang Chủ - HuitMeal";
     Layout = "_LayoutCustomer";
 }
 
-<div class="w-full overflow-hidden">
-    <!-- ================= BANNER ================= -->
-    <section class="relative w-full h-[420px] sm:h-[500px] md:h-[650px] lg:h-[750px]" id="banner-section">
-        <img id="banner-img" src="/assets/images/banner1.jpg" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000" />
-        <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
-        <div class="absolute inset-0 flex items-center px-4 sm:px-8 md:px-16 lg:px-32">
-            <div class="max-w-xl lg:max-w-3xl text-white">
-                <h1 id="banner-title" class="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
-                    Cung cấp suất ăn công nghiệp số 1
+<style>
+    @@keyframes fadeInUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @@keyframes float {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+
+    .animate-fadeInUp {
+        animation: fadeInUp 0.8s ease-out forwards;
+    }
+
+    .animate-float {
+        animation: float 3s ease-in-out infinite;
+    }
+
+    .animation-delay-200 { animation-delay: 0.2s; }
+    .animation-delay-400 { animation-delay: 0.4s; }
+    .animation-delay-600 { animation-delay: 0.6s; }
+
+    .glass-effect {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+</style>
+
+<div class="w-full overflow-hidden bg-white">
+    <!-- HERO SECTION -->
+    <section class="relative min-h-[600px] lg:min-h-screen flex items-center pt-20 overflow-hidden">
+        <div class="absolute inset-0">
+            <img src="/assets/images/home_hero.png" alt="Home Hero" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+        </div>
+        
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+            <div class="max-w-3xl animate-fadeInUp">
+                <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full glass-effect mb-8 text-white text-sm font-medium border border-white/10">
+                    <span class="w-2 h-2 rounded-full bg-red-500 animate-pulse"></span>
+                    Hệ thống suất ăn công nghiệp số 1 Việt Nam
+                </div>
+                <h1 class="text-4xl md:text-6xl lg:text-7xl font-extrabold text-white leading-tight mb-8">
+                    Tận Tâm Phục Vụ <br/>
+                    <span class="text-red-500">Bữa Ăn Tử Tế</span>
                 </h1>
-                <button class="bg-orange-500 hover:bg-orange-600 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-bold text-sm sm:text-base">
-                    TÌM HIỂU THÊM
-                </button>
-            </div>
-        </div>
-    </section>
-
-    <!-- ================= VIDEO ================= -->
-    <section class="bg-gray-100 py-12 md:py-16 px-4 sm:px-8 md:px-20">
-        <h2 class="text-2xl md:text-3xl font-extrabold mb-8 md:mb-10 relative">
-            VIDEO NỔI BẬT
-            <span class="absolute left-0 -bottom-2 w-14 h-1.5 bg-yellow-400"></span>
-        </h2>
-        <div class="flex gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4">
-            @foreach (var id in new[] { "7621052786553146631", "7616696611204353298", "7616382392541924616", "7615567401035271442", "7607405858137459986" })
-            {
-                <div class="min-w-[240px] sm:min-w-[280px] md:min-w-[320px] snap-start rounded-xl overflow-hidden shadow-lg">
-                    <iframe src="https://www.tiktok.com/embed/v2/@id" class="w-full h-[420px] sm:h-[460px] md:h-[480px]" allowfullscreen></iframe>
-                </div>
-            }
-        </div>
-    </section>
-
-    <!-- ================= ABOUT ================= -->
-    <section id="about-section" class="bg-white py-16 md:py-24 px-4 sm:px-8 md:px-20">
-        <div class="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
-            <div>
-                <h2 class="text-3xl sm:text-4xl lg:text-[44px] font-extrabold leading-tight mb-6">
-                    <span class="bg-yellow-400 px-3 py-1 inline-block">Haseca</span><br />
-                    Trao an tâm – Gửi<br />niềm tin
-                </h2>
-                <p class="text-gray-600 text-sm sm:text-base leading-relaxed max-w-lg mb-8 text-justify">
-                    Cùng 6 công ty thành viên, HASECA đảm bảo đáp ứng các tiêu chuẩn vệ sinh an toàn quốc tế như HACCP, ISO 22000, và tuân thủ các tiêu chuẩn an toàn thực phẩm của EU. Chúng tôi tâm niệm: 3 yếu tố làm nên bữa ăn ngon là nguyên liệu sạch, bếp ăn an toàn và con người.
+                <p class="text-lg md:text-xl text-gray-300 mb-12 max-w-2xl font-light leading-relaxed">
+                    HuitMeal mang đến giải pháp dinh dưỡng toàn diện với tiêu chuẩn vệ sinh quốc tế, 
+                    đảm bảo sức khỏe và năng lượng cho hàng triệu người lao động mỗi ngày.
                 </p>
-                <button class="bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-semibold text-sm sm:text-base">
-                    VỀ CHÚNG TÔI
-                </button>
+                <div class="flex flex-wrap gap-4">
+                    <a href="/Customer/About" class="px-8 py-4 bg-red-600 hover:bg-red-700 text-white font-bold rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-lg shadow-red-600/30">
+                        Khám phá ngay
+                    </a>
+                    <a href="/Customer/Contact" class="px-8 py-4 glass-effect text-white font-bold rounded-2xl transition-all duration-300 hover:bg-white/20 border border-white/20">
+                        Liên hệ tư vấn
+                    </a>
+                </div>
             </div>
-            <div class="bg-[#f5efe4] rounded-xl px-6 sm:px-10 md:px-12 py-10 md:py-14 space-y-6 md:space-y-8 shadow-sm">
-                <div>
-                    <h3 class="text-3xl sm:text-4xl font-extrabold text-orange-500 counter" data-target="32">0</h3>
-                    <p class="text-gray-600 mt-1 text-sm sm:text-base">+ Tỉnh thành với 80% khách hàng nước ngoài, có vốn đầu tư FDI</p>
+        </div>
+
+        <!-- Floating decorative card -->
+        <div class="hidden lg:block absolute right-32 top-1/2 -translate-y-1/2 animate-float">
+            <div class="glass-effect p-8 rounded-[40px] w-80 text-white">
+                <div class="flex items-center gap-4 mb-6">
+                    <div class="w-12 h-12 bg-green-500/20 rounded-2xl flex items-center justify-center">
+                        <i data-lucide="shield-check" class="text-green-400 w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold">100%</div>
+                        <div class="text-xs text-gray-400 uppercase tracking-widest">An toàn thực phẩm</div>
+                    </div>
                 </div>
-                <div class="border-t"></div>
-                <div>
-                    <h3 class="text-3xl sm:text-4xl font-extrabold text-orange-500 counter" data-target="200000">0</h3>
-                    <p class="text-gray-600 mt-1 text-sm sm:text-base">+ số lượng thức ăn sạch cung ứng mỗi ngày</p>
+                <div class="space-y-4">
+                    <div class="h-1.5 w-full bg-white/10 rounded-full overflow-hidden">
+                        <div class="h-full bg-red-500 w-[95%]"></div>
+                    </div>
+                    <p class="text-sm text-gray-400 leading-relaxed italic">
+                        "Cam kết mang đến nguồn năng lượng sạch cho sự phát triển bền vững."
+                    </p>
                 </div>
-                <div class="border-t"></div>
-                <div>
-                    <h3 class="text-3xl sm:text-4xl font-extrabold text-orange-500 counter" data-target="2300">0</h3>
-                    <p class="text-gray-600 mt-1 text-sm sm:text-base">+ Nhân sự được đào tạo về chuyên môn và vệ sinh an toàn thực phẩm</p>
+            </div>
+        </div>
+
+        <div class="absolute bottom-0 left-0 w-full overflow-hidden leading-[0]">
+            <svg class="relative block w-[calc(100%+1.3px)] h-[50px] md:h-[80px]" viewBox="0 0 1200 120" preserveAspectRatio="none">
+                <path d="M321.39,56.44c58-10.79,114.16-30.13,172-41.86,82.39-16.72,168.19-17.73,250.45-.39C823.78,31,906.67,72,985.66,92.83c70.05,18.48,146.53,26.09,214.34,3V120H0V95.8C57.23,103.19,113.4,83.48,170.1,68.61,226.71,53.74,283.3,64,321.39,56.44Z" class="fill-white"></path>
+            </svg>
+        </div>
+    </section>
+
+    <!-- STATS / ABOUT SECTION -->
+    <section id="about-section" class="py-24 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-20 items-center">
+                <div class="animate-fadeInUp">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-1 bg-red-600 rounded-full"></div>
+                        <span class="text-red-600 font-bold tracking-widest uppercase text-sm">Về HuitMeal</span>
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-8 leading-tight">
+                        Trao An Tâm – <br/>
+                        <span class="text-red-600">Gửi Trọn Niềm Tin</span>
+                    </h2>
+                    <p class="text-gray-500 text-lg leading-relaxed mb-10 text-justify">
+                        HUITMEAL tự hào là đối tác chiến lược của hơn 200 doanh nghiệp FDI tại Việt Nam. 
+                        Chúng tôi vận hành hệ thống bếp ăn chuẩn quốc tế, kiểm soát chặt chẽ từ khâu nhập nguyên liệu 
+                        đến bàn ăn của khách hàng. Mỗi bữa ăn là một cam kết về sức khỏe và sự tử tế.
+                    </p>
+                    <div class="flex gap-4">
+                        <a href="/Customer/About" class="flex items-center gap-2 font-bold text-red-600 hover:gap-4 transition-all group">
+                            Tìm hiểu thêm về chúng tôi 
+                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 animate-fadeInUp animation-delay-400">
+                    <!-- Stat Card 1 -->
+                    <div class="bg-gray-50 p-8 rounded-[32px] border border-gray-100 hover:shadow-xl transition-all duration-300">
+                        <div class="w-14 h-14 bg-red-100 rounded-2xl flex items-center justify-center mb-6">
+                            <i data-lucide="map-pin" class="text-red-600 w-7 h-7"></i>
+                        </div>
+                        <div class="text-4xl font-extrabold text-gray-900 mb-2">
+                            <span class="counter" data-target="32">0</span>+
+                        </div>
+                        <p class="text-gray-500 font-medium uppercase tracking-wider text-xs">Tỉnh thành phục vụ</p>
+                    </div>
+
+                    <!-- Stat Card 2 -->
+                    <div class="bg-gray-50 p-8 rounded-[32px] border border-gray-100 hover:shadow-xl transition-all duration-300 translate-y-6">
+                        <div class="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6">
+                            <i data-lucide="utensils" class="text-blue-600 w-7 h-7"></i>
+                        </div>
+                        <div class="text-4xl font-extrabold text-gray-900 mb-2">
+                            <span class="counter" data-target="200">0</span>k+
+                        </div>
+                        <p class="text-gray-500 font-medium uppercase tracking-wider text-xs">Suất ăn mỗi ngày</p>
+                    </div>
+
+                    <!-- Stat Card 3 -->
+                    <div class="bg-gray-50 p-8 rounded-[32px] border border-gray-100 hover:shadow-xl transition-all duration-300">
+                        <div class="w-14 h-14 bg-green-100 rounded-2xl flex items-center justify-center mb-6">
+                            <i data-lucide="users" class="text-green-600 w-7 h-7"></i>
+                        </div>
+                        <div class="text-4xl font-extrabold text-gray-900 mb-2">
+                            <span class="counter" data-target="2300">0</span>+
+                        </div>
+                        <p class="text-gray-500 font-medium uppercase tracking-wider text-xs">Nhân sự chuyên môn</p>
+                    </div>
+
+                    <!-- Stat Card 4 -->
+                    <div class="bg-gray-50 p-8 rounded-[32px] border border-gray-100 hover:shadow-xl transition-all duration-300 translate-y-6">
+                        <div class="w-14 h-14 bg-yellow-100 rounded-2xl flex items-center justify-center mb-6">
+                            <i data-lucide="award" class="text-yellow-600 w-7 h-7"></i>
+                        </div>
+                        <div class="text-4xl font-extrabold text-gray-900 mb-2">
+                            <span class="counter" data-target="15">0</span>+
+                        </div>
+                        <p class="text-gray-500 font-medium uppercase tracking-wider text-xs">Năm kinh nghiệm</p>
+                    </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- ================= SERVICE ================= -->
-    <section class="bg-white py-14 md:py-20 px-4 sm:px-8 md:px-20">
-        <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-10 md:mb-14">
-            <span class="bg-yellow-400 px-3 py-1">Dịch vụ</span> Haseca
-        </h2>
-        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-5 md:gap-8">
-            <!-- Service 1 -->
-            <div class="relative h-[220px] sm:h-[260px] md:h-[320px] lg:h-[380px] xl:h-[420px] rounded-xl overflow-hidden group cursor-pointer">
-                <img src="/assets/images/service1.jpg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
-                <div class="absolute bottom-4 left-4 right-4 z-10 group-hover:opacity-0 transition duration-300">
-                    <h3 class="text-white font-bold text-sm sm:text-base md:text-lg">SUẤT ĂN CÔNG NGHIỆP</h3>
+    <!-- VIDEO SECTION -->
+    <section class="bg-gray-900 py-24 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')]"></div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6 animate-fadeInUp">
+                <div>
+                    <span class="text-red-500 font-bold tracking-widest uppercase text-xs mb-4 block">Góc nhìn thực tế</span>
+                    <h2 class="text-3xl md:text-5xl font-bold text-white leading-tight">Video Nổi Bật</h2>
                 </div>
-                <div class="absolute inset-0 bg-black/30 transition duration-300 group-hover:bg-orange-500/90"></div>
-                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-20 transition duration-500">
-                    <div class="text-[140px] md:text-[180px] text-white">🍃</div>
-                </div>
-                <div class="absolute inset-0 flex flex-col justify-end p-5 md:p-6 opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition duration-500">
-                    <h3 class="text-white font-bold text-base md:text-xl mb-2">SUẤT ĂN CÔNG NGHIỆP</h3>
-                    <p class="text-white/90 text-sm md:text-base leading-relaxed mb-4 line-clamp-3">Thực đơn phong phú, món ăn ngon, đảm bảo an toàn thực phẩm.</p>
-                    <a href="/Customer/Service/Safety" class="inline-block bg-white text-gray-800 px-5 py-2 rounded-full text-sm font-semibold hover:bg-gray-200 transition w-fit">TÌM HIỂU THÊM</a>
-                </div>
+                <p class="text-gray-400 max-w-md text-sm md:text-base italic">
+                    Khám phá quy trình vận hành và không khí tại hệ thống bếp ăn hiện đại của HuitMeal qua loạt clip thực tế.
+                </p>
             </div>
-            <!-- Service 2 -->
-            <div class="relative h-[220px] sm:h-[260px] md:h-[320px] lg:h-[380px] xl:h-[420px] rounded-xl overflow-hidden group cursor-pointer">
-                <img src="/assets/images/service2.jpg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
-                <div class="absolute bottom-4 left-4 right-4 z-10 group-hover:opacity-0 transition duration-300">
-                    <h3 class="text-white font-bold text-sm sm:text-base md:text-lg">SUẤT ĂN TRƯỜNG HỌC</h3>
-                </div>
-                <div class="absolute inset-0 bg-black/30 transition duration-300 group-hover:bg-orange-500/90"></div>
-                <div class="absolute inset-0 flex flex-col justify-end p-5 md:p-6 opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition duration-500">
-                    <h3 class="text-white font-bold text-base md:text-xl mb-2">SUẤT ĂN TRƯỜNG HỌC</h3>
-                    <p class="text-white/90 text-sm md:text-base leading-relaxed mb-4 line-clamp-3">Môi trường chế biến sạch sẽ, chuyên nghiệp.</p>
-                </div>
-            </div>
-            <!-- Service 3 -->
-             <div class="relative h-[220px] sm:h-[260px] md:h-[320px] lg:h-[380px] xl:h-[420px] rounded-xl overflow-hidden group cursor-pointer">
-                <img src="/assets/images/service3.jpg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
-                <div class="absolute bottom-4 left-4 right-4 z-10 group-hover:opacity-0 transition duration-300">
-                    <h3 class="text-white font-bold text-sm sm:text-base md:text-lg">SUẤT ĂN VĂN PHÒNG</h3>
-                </div>
-                <div class="absolute inset-0 bg-black/30 transition duration-300 group-hover:bg-orange-500/90"></div>
-                <div class="absolute inset-0 flex flex-col justify-end p-5 md:p-6 opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition duration-500">
-                    <h3 class="text-white font-bold text-base md:text-xl mb-2">SUẤT ĂN VĂN PHÒNG</h3>
-                    <p class="text-white/90 text-sm md:text-base leading-relaxed mb-4 line-clamp-3">Thực đơn đa dạng, phù hợp môi trường làm việc.</p>
-                </div>
-            </div>
-            <!-- Service 4 -->
-            <div class="relative h-[220px] sm:h-[260px] md:h-[320px] lg:h-[380px] xl:h-[420px] rounded-xl overflow-hidden group cursor-pointer">
-                <img src="/assets/images/service3.jpg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
-                <div class="absolute bottom-4 left-4 right-4 z-10 group-hover:opacity-0 transition duration-300">
-                    <h3 class="text-white font-bold text-sm sm:text-base md:text-lg">SUẤT ĂN CÔNG NHÂN</h3>
-                </div>
-                <div class="absolute inset-0 bg-black/30 transition duration-300 group-hover:bg-orange-500/90"></div>
-                <div class="absolute inset-0 flex flex-col justify-end p-5 md:p-6 opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition duration-500">
-                    <h3 class="text-white font-bold text-base md:text-xl mb-2">SUẤT ĂN CÔNG NHÂN</h3>
-                    <p class="text-white/90 text-sm md:text-base leading-relaxed mb-4 line-clamp-3">Khẩu phần hợp lý đảm bảo năng lượng.</p>
-                </div>
+            
+            <div class="flex gap-8 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-8 no-scrollbar animate-fadeInUp animation-delay-200">
+                @foreach (var id in new[] { "7621052786553146631", "7616696611204353298", "7616382392541924616", "7615567401035271442", "7607405858137459986" })
+                {
+                    <div class="min-w-[300px] md:min-w-[350px] snap-start rounded-[40px] overflow-hidden border border-white/10 hover:border-red-500/50 transition-all duration-500 shadow-2xl hover:shadow-red-500/20">
+                        <iframe src="https://www.tiktok.com/embed/v2/@id" class="w-full h-[550px]" allowfullscreen></iframe>
+                    </div>
+                }
             </div>
         </div>
     </section>
 
-    <!-- ================= WHY ================= -->
-    <section class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-16 md:py-24 px-4 sm:px-8 md:px-20">
-        <div class="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
-            <div>
-                <h2 class="text-3xl md:text-4xl font-extrabold mb-6">
-                    <span class="bg-yellow-400 text-black px-3 py-1">Tại sao</span> chọn HASECA
-                </h2>
-                <a href="/Customer/ChooseHaseca" class="bg-orange-500 hover:bg-orange-600 px-6 py-2.5 md:py-3 rounded-full font-bold text-sm md:text-base transition inline-block">
-                    TÌM HIỂU THÊM
+    <!-- SERVICES SECTION -->
+    <section class="py-24 bg-white relative">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-20 animate-fadeInUp">
+                <span class="text-red-600 font-bold tracking-[0.2em] uppercase text-xs mb-4 block">Giải pháp tối ưu</span>
+                <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-6">Dịch vụ tại HuitMeal</h2>
+                <div class="w-24 h-1.5 bg-red-600 mx-auto rounded-full"></div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Service 1 -->
+                <a href="/Customer/Factory" class="group relative h-[450px] rounded-[40px] overflow-hidden animate-fadeInUp">
+                    <img src="/assets/images/service1.jpg" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:from-red-900/90 transition-all duration-500"></div>
+                    <div class="absolute inset-0 p-8 flex flex-col justify-end">
+                        <div class="mb-4 transform translate-y-10 group-hover:translate-y-0 transition-transform duration-500">
+                            <span class="text-red-500 text-xs font-bold uppercase tracking-widest mb-2 block">Dành cho nhà máy</span>
+                            <h3 class="text-white text-2xl font-bold mb-4">Suất ăn công nghiệp</h3>
+                            <p class="text-gray-300 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                Thực đơn phong phú, đảm bảo đủ năng lượng cho công nhân sản xuất.
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white group-hover:bg-red-500 transition-colors">
+                            <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+                        </div>
+                    </div>
                 </a>
-                <div class="relative mt-8 md:mt-12">
-                    <div class="absolute -top-4 -left-4 w-full h-full bg-yellow-200 rounded-xl blur-sm opacity-60"></div>
-                    <img src="/assets/images/banner2.jpg" class="relative rounded-xl shadow-xl w-full" />
-                </div>
-            </div>
-            <div class="space-y-3 md:space-y-4" id="why-accordion">
-                <!-- Accordion handled via JS below -->
+
+                <!-- Service 2 -->
+                <a href="/Customer/School" class="group relative h-[450px] rounded-[40px] overflow-hidden animate-fadeInUp animation-delay-200">
+                    <img src="/assets/images/service2.jpg" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:from-blue-900/90 transition-all duration-500"></div>
+                    <div class="absolute inset-0 p-8 flex flex-col justify-end">
+                        <div class="mb-4 transform translate-y-10 group-hover:translate-y-0 transition-transform duration-500">
+                            <span class="text-blue-400 text-xs font-bold uppercase tracking-widest mb-2 block">Dành cho giáo dục</span>
+                            <h3 class="text-white text-2xl font-bold mb-4">Suất ăn học đường</h3>
+                            <p class="text-gray-300 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                Dinh dưỡng chuẩn khoa học giúp trẻ phát triển trí tuệ và thể chất.
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white group-hover:bg-blue-500 transition-colors">
+                            <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Service 3 -->
+                <a href="/Customer/Office" class="group relative h-[450px] rounded-[40px] overflow-hidden animate-fadeInUp animation-delay-400">
+                    <img src="/assets/images/service3.jpg" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:from-orange-900/90 transition-all duration-500"></div>
+                    <div class="absolute inset-0 p-8 flex flex-col justify-end">
+                        <div class="mb-4 transform translate-y-10 group-hover:translate-y-0 transition-transform duration-500">
+                            <span class="text-orange-400 text-xs font-bold uppercase tracking-widest mb-2 block">Dành cho văn phòng</span>
+                            <h3 class="text-white text-2xl font-bold mb-4">Cơm trưa văn phòng</h3>
+                            <p class="text-gray-300 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                Bữa trưa ngon lành, đa dạng thực đơn mỗi ngày cho dân công sở.
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white group-hover:bg-orange-500 transition-colors">
+                            <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Service 4 -->
+                <a href="/Customer/Safety" class="group relative h-[450px] rounded-[40px] overflow-hidden animate-fadeInUp animation-delay-600">
+                    <img src="https://images.unsplash.com/photo-1556910103-1c02745aae4d?auto=format&fit=crop&q=80" class="w-full h-full object-cover transition duration-700 group-hover:scale-110" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent group-hover:from-green-900/90 transition-all duration-500"></div>
+                    <div class="absolute inset-0 p-8 flex flex-col justify-end">
+                        <div class="mb-4 transform translate-y-10 group-hover:translate-y-0 transition-transform duration-500">
+                            <span class="text-green-400 text-xs font-bold uppercase tracking-widest mb-2 block">Quản lý bếp ăn</span>
+                            <h3 class="text-white text-2xl font-bold mb-4">Vận hành bếp ăn</h3>
+                            <p class="text-gray-300 text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-500">
+                                Quy trình vận hành chuyên nghiệp, tiết kiệm chi phí cho doanh nghiệp.
+                            </p>
+                        </div>
+                        <div class="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center text-white group-hover:bg-green-500 transition-colors">
+                            <i data-lucide="arrow-up-right" class="w-6 h-6"></i>
+                        </div>
+                    </div>
+                </a>
             </div>
         </div>
     </section>
+
+    <!-- WHY CHOOSE US -->
+    <section class="bg-gray-50 py-24 relative overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid lg:grid-cols-2 gap-16 items-center">
+                <div class="relative animate-fadeInUp">
+                    <div class="absolute -top-10 -left-10 w-40 h-40 bg-red-600/10 rounded-full blur-3xl"></div>
+                    <img src="/assets/images/banner2.jpg" class="relative rounded-[60px] shadow-2xl z-10 w-full object-cover h-[500px]" />
+                    <div class="absolute -bottom-6 -right-6 bg-white p-8 rounded-[32px] shadow-xl z-20 animate-float hidden md:block">
+                        <div class="flex items-center gap-4">
+                            <div class="w-12 h-12 bg-yellow-100 rounded-2xl flex items-center justify-center">
+                                <i data-lucide="star" class="text-yellow-600 w-6 h-6 fill-yellow-600"></i>
+                            </div>
+                            <div>
+                                <div class="text-lg font-bold">Uy tín hàng đầu</div>
+                                <div class="text-sm text-gray-500">Hơn 200+ Đối tác FDI</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="animate-fadeInUp animation-delay-400">
+                    <div class="flex items-center gap-3 mb-6">
+                        <div class="w-12 h-1 bg-red-600 rounded-full"></div>
+                        <span class="text-red-600 font-bold tracking-widest uppercase text-sm">Vì sao chọn chúng tôi?</span>
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-bold text-gray-900 mb-10 leading-tight">
+                        Giá Trị Vượt Trội <br/>
+                        <span class="text-red-600">Từ Tâm Huyết</span>
+                    </h2>
+
+                    <div class="space-y-6" id="why-accordion">
+                        <!-- Modern Accordion via JS -->
+                    </div>
+
+                    <div class="mt-12">
+                        <a href="/Customer/ChooseHuitMeal" class="px-8 py-4 border-2 border-red-600 text-red-600 font-bold rounded-2xl hover:bg-red-600 hover:text-white transition-all duration-300">
+                            Khám phá tất cả giá trị
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- PARTNER LOGO SLIDESHOW -->
+    <section class="py-24 bg-white overflow-hidden border-t border-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 text-center">
+            <h2 class="text-xl md:text-2xl font-bold text-gray-400 uppercase tracking-[0.3em] animate-fadeInUp">Đối tác đồng hành cùng chúng tôi</h2>
+        </div>
+
+        <div class="relative flex overflow-x-hidden">
+            <div class="py-12 animate-marquee whitespace-nowrap flex items-center gap-16 md:gap-24">
+                <!-- Partner Logos -->
+                <img src="https://tranhuynhmec.com/thumbs/300x200x2/upload/news/cty-cp-may-sai-gon-3-6372-8253.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 1">
+                <img src="https://saigonlandvn.com.vn/wp-content/uploads/2022/09/LOGSGL.png" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 2">
+                <img src="https://hrchannels.com/Upload/avatar/20230405/151852605_Logo-2022.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 3">
+                <img src="https://tse1.mm.bing.net/th/id/OIP.OE3b2cCCT9gMIrclJ_c3VQHaD4?pid=Api" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 4">
+                <img src="https://tafaviet.com.vn/sites/default/files/inline-images/trang-trai-cung-cap-trung-ga.png" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 5">
+                <img src="https://citifruit.com/uploads/images/cua-hang-trai-cay-nhap-khau-chat-luong.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 6">
+                <!-- Duplicates for seamless loop -->
+                <img src="https://tranhuynhmec.com/thumbs/300x200x2/upload/news/cty-cp-may-sai-gon-3-6372-8253.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 1">
+                <img src="https://saigonlandvn.com.vn/wp-content/uploads/2022/09/LOGSGL.png" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 2">
+                <img src="https://hrchannels.com/Upload/avatar/20230405/151852605_Logo-2022.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 3">
+                <img src="https://tse1.mm.bing.net/th/id/OIP.OE3b2cCCT9gMIrclJ_c3VQHaD4?pid=Api" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 4">
+                <img src="https://tafaviet.com.vn/sites/default/files/inline-images/trang-trai-cung-cap-trung-ga.png" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 5">
+                <img src="https://citifruit.com/uploads/images/cua-hang-trai-cay-nhap-khau-chat-luong.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 6">
+            </div>
+
+            <div class="absolute top-0 py-12 animate-marquee2 whitespace-nowrap flex items-center gap-16 md:gap-24">
+                <!-- Duplicate logos for marquee effect -->
+                <img src="https://tranhuynhmec.com/thumbs/300x200x2/upload/news/cty-cp-may-sai-gon-3-6372-8253.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 1">
+                <img src="https://saigonlandvn.com.vn/wp-content/uploads/2022/09/LOGSGL.png" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 2">
+                <img src="https://hrchannels.com/Upload/avatar/20230405/151852605_Logo-2022.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 3">
+                <img src="https://tse1.mm.bing.net/th/id/OIP.OE3b2cCCT9gMIrclJ_c3VQHaD4?pid=Api" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 4">
+                <img src="https://tafaviet.com.vn/sites/default/files/inline-images/trang-trai-cung-cap-trung-ga.png" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 5">
+                <img src="https://citifruit.com/uploads/images/cua-hang-trai-cay-nhap-khau-chat-luong.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 6">
+                <!-- Duplicates for seamless loop -->
+                <img src="https://tranhuynhmec.com/thumbs/300x200x2/upload/news/cty-cp-may-sai-gon-3-6372-8253.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 1">
+                <img src="https://saigonlandvn.com.vn/wp-content/uploads/2022/09/LOGSGL.png" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 2">
+                <img src="https://hrchannels.com/Upload/avatar/20230405/151852605_Logo-2022.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 3">
+                <img src="https://tse1.mm.bing.net/th/id/OIP.OE3b2cCCT9gMIrclJ_c3VQHaD4?pid=Api" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 4">
+                <img src="https://tafaviet.com.vn/sites/default/files/inline-images/trang-trai-cung-cap-trung-ga.png" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 5">
+                <img src="https://citifruit.com/uploads/images/cua-hang-trai-cay-nhap-khau-chat-luong.jpg" class="h-12 md:h-16 object-contain grayscale hover:grayscale-0 transition-all duration-500 opacity-60 hover:opacity-100" alt="Partner 6">
+            </div>
+        </div>
+    </section>
+
+    <style>
+        @@keyframes marquee {
+            0% { transform: translateX(0); }
+            100% { transform: translateX(-100%); }
+        }
+
+        @@keyframes marquee2 {
+            0% { transform: translateX(100%); }
+            100% { transform: translateX(0); }
+        }
+
+        .animate-marquee {
+            animation: marquee 40s linear infinite;
+        }
+
+        .animate-marquee2 {
+            animation: marquee2 40s linear infinite;
+        }
+
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
 </div>
 
 @section Scripts {
     <script>
-        // --- 1. BANNER CAROUSEL ---
-        const slides = [
-            { image: '/assets/images/banner1.jpg', title: 'Cung cấp suất ăn công nghiệp số 1' },
-            { image: '/assets/images/banner2.jpg', title: 'Thực phẩm sạch chuẩn quốc tế' },
-            { image: '/assets/images/banner3.jpg', title: 'Dinh dưỡng cao và đa dạng' }
-        ];
-        let currentSlide = 0;
-        setInterval(() => {
-            currentSlide = (currentSlide + 1) % slides.length;
-            document.getElementById('banner-img').src = slides[currentSlide].image;
-            document.getElementById('banner-title').innerText = slides[currentSlide].title;
-        }, 4000);
-
-        // --- 2. ACCORDION (WHY SECTION) ---
+        // --- 1. ACCORDION (WHY SECTION) ---
         const whyData = [
-            { title: "Hơn 15 năm kinh nghiệm trong ngành", content: "Trải qua hơn 15 năm..." },
-            { title: "Cơ cấu quản lý toàn diện", content: "HASECA xây dựng quy trình..." },
-            { title: "Phục vụ doanh nghiệp nước ngoài", content: "Với kinh nghiệm dày dặn..." }
+            { 
+                title: "Hơn 15 năm kinh nghiệm thực chiến", 
+                content: "HuitMeal tự hào có bề dày kinh nghiệm phục vụ hàng ngàn đối tác, thấu hiểu sâu sắc nhu cầu dinh dưỡng của từng ngành nghề từ nhà máy đến văn phòng.",
+                icon: "history"
+            },
+            { 
+                title: "Tiêu chuẩn vệ sinh quốc tế", 
+                content: "Hệ thống vận hành đạt chuẩn HACCP, ISO 22000 và FSSC 22000. Chúng tôi kiểm soát nguồn nguyên liệu đầu vào 100% VietGAP và Organic.",
+                icon: "shield-check"
+            },
+            { 
+                title: "Đội ngũ chuyên gia dinh dưỡng", 
+                content: "Mỗi thực đơn được thiết kế bởi các chuyên gia dinh dưỡng hàng đầu, đảm bảo cân bằng dưỡng chất và đa dạng khẩu vị mỗi ngày.",
+                icon: "users"
+            }
         ];
 
         const container = document.getElementById('why-accordion');
         whyData.forEach((item, index) => {
             const html = `
-                <div class="why-item rounded-xl px-4 md:px-5 py-3 md:py-4 transition bg-white/5 hover:bg-white/10 cursor-pointer" onclick="toggleWhy(` + index + `)">
+                <div class="why-item rounded-3xl px-6 md:px-8 py-5 md:py-6 transition-all duration-300 border border-gray-100 hover:border-red-100 cursor-pointer bg-white group" onclick="toggleWhy(` + index + `)">
                     <div class="flex justify-between items-center">
-                        <span class="why-title text-sm sm:text-base md:text-lg font-semibold">`+ (index+1) +`. ` + item.title + `</span>
-                        <span class="why-icon text-xl transition">+</span>
+                        <div class="flex items-center gap-4">
+                            <div class="w-10 h-10 bg-red-50 rounded-xl flex items-center justify-center text-red-600 group-hover:bg-red-600 group-hover:text-white transition-colors">
+                                <i data-lucide="`+ item.icon +`" class="w-5 h-5"></i>
+                            </div>
+                            <span class="why-title text-base md:text-lg font-bold text-gray-800 transition-colors">` + item.title + `</span>
+                        </div>
+                        <div class="why-icon-box w-8 h-8 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 group-hover:text-red-600 group-hover:border-red-600 transition-all">
+                             <i data-lucide="plus" class="w-4 h-4 transition-transform duration-300 why-icon"></i>
+                        </div>
                     </div>
                     <div class="why-content overflow-hidden transition-all duration-500 max-h-0 opacity-0">
-                        <p class="text-gray-300 text-sm md:text-base leading-relaxed mt-3">` + item.content + `</p>
+                        <p class="text-gray-500 text-sm md:text-base leading-relaxed mt-5 pl-14">` + item.content + `</p>
                     </div>
                 </div>
             `;
@@ -195,46 +452,63 @@
             const items = document.querySelectorAll('.why-item');
             items.forEach((el, i) => {
                 const content = el.querySelector('.why-content');
-                const title = el.querySelector('.why-title');
                 const icon = el.querySelector('.why-icon');
+                const title = el.querySelector('.why-title');
+                const iconBox = el.querySelector('.why-icon-box');
                 if (i === index) {
-                    content.classList.toggle('max-h-0');
-                    content.classList.toggle('max-h-40');
-                    content.classList.toggle('opacity-0');
-                    content.classList.toggle('opacity-100');
-                    el.classList.toggle('bg-white/10');
-                    title.classList.toggle('text-yellow-400');
-                    icon.classList.toggle('rotate-45');
+                    const isOpen = !content.classList.contains('max-h-0');
+                    if (isOpen) {
+                        content.classList.add('max-h-0', 'opacity-0');
+                        content.classList.remove('max-h-40', 'opacity-100');
+                        icon.classList.remove('rotate-45');
+                        title.classList.remove('text-red-600');
+                        iconBox.classList.remove('bg-red-600', 'text-white', 'border-red-600');
+                    } else {
+                        content.classList.remove('max-h-0', 'opacity-0');
+                        content.classList.add('max-h-40', 'opacity-100');
+                        icon.classList.add('rotate-45');
+                        title.classList.add('text-red-600');
+                        iconBox.classList.add('bg-red-600', 'text-white', 'border-red-600');
+                    }
                 } else {
                     content.classList.add('max-h-0', 'opacity-0');
                     content.classList.remove('max-h-40', 'opacity-100');
-                    el.classList.remove('bg-white/10');
-                    title.classList.remove('text-yellow-400');
                     icon.classList.remove('rotate-45');
+                    title.classList.remove('text-red-600');
+                    iconBox.classList.remove('bg-red-600', 'text-white', 'border-red-600');
                 }
             });
         }
 
-        // --- 3. COUNT UP ---
-        const observer = new IntersectionObserver(entries => {
+        // --- 2. COUNT UP ---
+        const countObserver = new IntersectionObserver(entries => {
             if(entries[0].isIntersecting) {
                 document.querySelectorAll('.counter').forEach(counter => {
                     const target = +counter.getAttribute('data-target');
                     let count = 0;
-                    const updateCount = setInterval(() => {
-                        const inc = target / 100;
-                        count += inc;
-                        if(count < target) {
-                            counter.innerText = Math.ceil(count);
+                    const duration = 2000;
+                    const startTime = performance.now();
+                    
+                    const updateCount = (currentTime) => {
+                        const elapsed = currentTime - startTime;
+                        const progress = Math.min(elapsed / duration, 1);
+                        const easeOut = 1 - Math.pow(1 - progress, 3);
+                        counter.innerText = Math.ceil(easeOut * target);
+                        
+                        if (progress < 1) {
+                            requestAnimationFrame(updateCount);
                         } else {
                             counter.innerText = target;
-                            clearInterval(updateCount);
                         }
-                    }, 20);
+                    };
+                    requestAnimationFrame(updateCount);
                 });
-                observer.disconnect();
+                countObserver.disconnect();
             }
-        });
-        observer.observe(document.getElementById('about-section'));
+        }, { threshold: 0.5 });
+        countObserver.observe(document.getElementById('about-section'));
+        
+        // Refresh Lucide icons
+        lucide.createIcons();
     </script>
 }

@@ -7,10 +7,10 @@ namespace Khoa_Luan_KS_Web.Controllers
         public IActionResult Index() => View();
         public IActionResult About() => View();
         public IActionResult Achievements() => View();
-        public IActionResult ChooseHaseca() => View();
+        public IActionResult ChooseHuitMeal() => View();
         public IActionResult Reviews() => View();
         public IActionResult Partners() => View();
-        public IActionResult Haseca() => View();
+        public IActionResult HuitMeal() => View();
         public IActionResult Recruitment() => View();
         public IActionResult Contact() => View();
         
@@ -23,5 +23,16 @@ namespace Khoa_Luan_KS_Web.Controllers
         
         // Menu
         public IActionResult Menu() => View();
+        public IActionResult MealDetail() => View();
+        
+        // Private Profile Dashboard Functions
+        public IActionResult Profile() => View();
+        public IActionResult Orders() => View();
+        public IActionResult Contracts() => View();
+        public IActionResult SchoolMenu(string level)
+        {
+            ViewData["Level"] = string.IsNullOrEmpty(level) ? "mamnon" : level.ToLower();
+            return View();
+        }
     }
 }

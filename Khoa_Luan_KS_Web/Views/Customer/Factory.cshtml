@@ -100,115 +100,132 @@
     </section>
 
     <!-- ===== MEALS ===== -->
-    <section class="bg-white py-12" x-data="{ tab: 'man' }">
+    <section class="bg-gray-50 py-16" x-data="{ tab: 'man' }">
         <div class="max-w-7xl mx-auto px-6">
-            <h2 class="text-2xl md:text-4xl font-bold text-center mb-8">Chọn suất ăn</h2>
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- LEFT -->
-                <div class="md:col-span-2">
-                    <!-- TAB -->
-                    <div class="flex justify-center gap-4 mb-8">
-                        <button x-on:click="tab = 'man'" :class="tab === 'man' ? 'bg-orange-500 text-white' : 'bg-gray-200'" class="px-6 py-2 rounded-full transition">Món mặn</button>
-                        <button x-on:click="tab = 'chay'" :class="tab === 'chay' ? 'bg-green-600 text-white' : 'bg-gray-200'" class="px-6 py-2 rounded-full transition">Món chay</button>
+            <h2 class="text-2xl md:text-4xl font-bold text-center mb-8">Danh mục Thực đơn Điển hình</h2>
+            
+            <!-- TAB -->
+            <div class="flex justify-center gap-4 mb-12">
+                <button x-on:click="tab = 'man'" :class="tab === 'man' ? 'bg-orange-500 text-white shadow-xl scale-105' : 'bg-white text-gray-600 hover:bg-orange-50'" class="px-8 py-3 rounded-full font-bold transition-all duration-300 border border-gray-200">Món mặn</button>
+                <button x-on:click="tab = 'chay'" :class="tab === 'chay' ? 'bg-green-600 text-white shadow-xl scale-105' : 'bg-white text-gray-600 hover:bg-green-50'" class="px-8 py-3 rounded-full font-bold transition-all duration-300 border border-gray-200">Món chay</button>
+            </div>
+
+            <!-- GRID MẶN -->
+            <div x-show="tab === 'man'" x-transition.opacity.duration.500ms class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Meal 1 -->
+                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
+                    <div class="relative overflow-hidden">
+                        <img src="https://suatancongnghiepthuyluan.com/wp-content/uploads/2022/12/8f83343e085dd003894c22-e1671504623220.jpg" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
                     </div>
-
-                    <!-- GRID MẶN -->
-                    <div x-show="tab === 'man'" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <!-- Meal 1 -->
-                        <div class="bg-white border rounded-xl overflow-hidden hover:shadow-lg transition">
-                            <div class="relative">
-                                <img src="https://suatancongnghiepthuyluan.com/wp-content/uploads/2022/12/8f83343e085dd003894c22-e1671504623220.jpg" class="w-full h-[180px] object-cover" />
-                            </div>
-                            <div class="p-4 flex flex-col gap-3 min-h-[180px]">
-                                <div class="flex justify-between items-center">
-                                    <h3 class="font-semibold text-sm">Suất tiết kiệm</h3>
-                                    <span class="text-orange-500 font-bold whitespace-nowrap">20,000đ</span>
-                                </div>
-                                <ul class="text-xs text-gray-600 space-y-1">
-                                    <li>• Tôm rim</li>
-                                    <li>• Khoai tây xào thịt</li>
-                                    <li>• Canh bí đao</li>
-                                    <li>• Ổi</li>
-                                </ul>
-                                <button class="mt-auto bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600">Đặt suất</button>
-                            </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Suất Tiết Kiệm</h3>
+                            <span class="text-orange-500 font-black whitespace-nowrap bg-orange-50 px-2 py-1 rounded text-sm">20K</span>
                         </div>
-
-                         <!-- Meal 2 -->
-                        <div class="bg-white border rounded-xl overflow-hidden hover:shadow-lg transition">
-                            <div class="relative">
-                                <img src="https://suatancongnghiepphumy.com/public/userfiles/services/25k/suat-an-cong-nghiep-25k-cong-nhan-vien-6.jpg" class="w-full h-[180px] object-cover" />
-                            </div>
-                            <div class="p-4 flex flex-col gap-3 min-h-[180px]">
-                                <div class="flex justify-between items-center">
-                                    <h3 class="font-semibold text-sm">Suất tiêu chuẩn</h3>
-                                    <span class="text-orange-500 font-bold whitespace-nowrap">25,000đ</span>
-                                </div>
-                                <ul class="text-xs text-gray-600 space-y-1">
-                                    <li>• Ba rọi khìa nước dừa</li>
-                                    <li>• rau muống xào tỏi</li>
-                                    <li>• canh chua môn</li>
-                                    <li>• Táo</li>
-                                </ul>
-                                <button class="mt-auto bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600">Đặt suất</button>
-                            </div>
-                        </div>
-
-                         <!-- Meal 3 -->
-                        <div class="bg-white border rounded-xl overflow-hidden hover:shadow-lg transition">
-                            <div class="relative">
-                                <img src="https://suatancongnghiepphumy.com/public/userfiles/services/30k/suat-an-cong-nghiep-30k-15.jpg" class="w-full h-[180px] object-cover" />
-                            </div>
-                            <div class="p-4 flex flex-col gap-3 min-h-[180px]">
-                                <div class="flex justify-between items-center">
-                                    <h3 class="font-semibold text-sm">Suất tăng ca</h3>
-                                    <span class="text-orange-500 font-bold whitespace-nowrap">30,000đ</span>
-                                </div>
-                                <ul class="text-xs text-gray-600 space-y-1">
-                                    <li>• Gà kho, cá chiên</li>
-                                    <li>• Cải xào</li>
-                                    <li>• canh bí đỏ</li>
-                                    <li>• Chuối</li>
-                                </ul>
-                                <button class="mt-auto bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600">Đặt suất</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- GRID CHAY -->
-                    <div x-show="tab === 'chay'" style="display: none;" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <div class="bg-white border rounded-xl overflow-hidden hover:shadow-lg transition">
-                            <div class="p-4 flex flex-col gap-3 min-h-[180px]">
-                                <div class="flex justify-between items-center">
-                                    <h3 class="font-semibold text-sm">Suất chay cơ bản</h3>
-                                    <span class="text-orange-500 font-bold whitespace-nowrap">18,000đ</span>
-                                </div>
-                                <ul class="text-xs text-gray-600 space-y-1">
-                                    <li>• Đậu hũ kho</li>
-                                    <li>• Canh rau</li>
-                                    <li>• Rau luộc</li>
-                                </ul>
-                                <button class="mt-auto bg-orange-500 text-white py-2 rounded-lg hover:bg-orange-600">Đặt suất</button>
-                            </div>
-                        </div>
+                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Tôm rim thịt</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Khoai tây xào tỏi</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Canh bí đao nấu giò</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Tráng miệng: Ổi</li>
+                        </ul>
+                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
+                            Xem chi tiết
+                        </a>
                     </div>
                 </div>
 
-                <!-- RIGHT -->
-                <div>
-                     <div class="bg-white rounded-xl shadow-lg border p-6 sticky top-24">
-                        <h3 class="font-bold text-xl mb-4 border-b pb-2">Đơn của bạn</h3>
-                        <div class="text-gray-500 text-sm text-center py-4">
-                            Chưa có suất ăn nào được chọn
+                <!-- Meal 2 -->
+                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
+                    <div class="relative overflow-hidden">
+                        <div class="absolute top-3 left-3 z-10 bg-red-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow">PHỔ BIẾN</div>
+                        <img src="https://suatancongnghiepphumy.com/public/userfiles/services/25k/suat-an-cong-nghiep-25k-cong-nhan-vien-6.jpg" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
+                    </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Suất Tiêu Chuẩn</h3>
+                            <span class="text-orange-500 font-black whitespace-nowrap bg-orange-50 px-2 py-1 rounded text-sm">25K</span>
                         </div>
-                        <div class="border-t mt-4 pt-4 flex justify-between font-bold text-lg">
-                            <span>Tổng cộng:</span>
-                            <span class="text-orange-500">0đ</span>
+                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Ba rọi khìa nước dừa</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Rau muống xào</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Canh chua dọc mùng</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Táo tráng miệng</li>
+                        </ul>
+                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Meal 3 -->
+                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
+                    <div class="relative overflow-hidden">
+                        <img src="https://suatancongnghiepphumy.com/public/userfiles/services/30k/suat-an-cong-nghiep-30k-15.jpg" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
+                    </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Suất Đặc Biệt</h3>
+                            <span class="text-orange-500 font-black whitespace-nowrap bg-orange-50 px-2 py-1 rounded text-sm">30K</span>
                         </div>
-                        <button class="w-full bg-orange-500 text-white py-3 rounded-xl mt-6 font-bold hover:bg-orange-600 hover:shadow-lg transition">THANH TOÁN</button>
+                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Gà ngũ vị hương</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Cá lóc chiên mắm</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Cải xanh xào</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Canh bí đỏ xương</li>
+                        </ul>
+                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+
+                <!-- Meal 4 -->
+                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
+                    <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1590868309235-ea34bed7bd7f?q=80&w=600" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
+                    </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Suất Tăng Ca Đêm</h3>
+                            <span class="text-orange-500 font-black whitespace-nowrap bg-orange-50 px-2 py-1 rounded text-sm">35K</span>
+                        </div>
+                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Sườn xào chua ngọt</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Đậu khuôn nhồi thịt</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Canh rong biển đậu hũ non</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-orange-400 rounded-full mt-1.5"></div>Sữa đậu nành chai</li>
+                        </ul>
+                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-orange-50 text-orange-600 font-bold py-3 rounded-xl group-hover:bg-orange-500 group-hover:text-white transition-colors border border-orange-100 group-hover:border-transparent">
+                            Xem chi tiết
+                        </a>
                     </div>
                 </div>
             </div>
+
+            <!-- GRID CHAY -->
+            <div x-show="tab === 'chay'" style="display: none;" x-transition.opacity.duration.500ms class="grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <!-- Chay 1 -->
+                <div class="bg-white border border-gray-100 rounded-2xl overflow-hidden hover:shadow-[0_8px_30px_rgb(0,0,0,0.12)] hover:-translate-y-1 transition-all duration-300 flex flex-col h-full group">
+                     <div class="relative overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=600" class="w-full h-[200px] object-cover group-hover:scale-110 transition-transform duration-500" />
+                    </div>
+                    <div class="p-5 flex flex-col flex-grow">
+                        <div class="flex justify-between items-start mb-3">
+                            <h3 class="font-bold text-gray-900 text-lg leading-tight">Suất Chay Cơ Bản</h3>
+                            <span class="text-orange-500 font-black whitespace-nowrap bg-orange-50 px-2 py-1 rounded text-sm">18K</span>
+                        </div>
+                        <ul class="text-sm text-gray-600 space-y-1.5 flex-grow mb-6">
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5"></div>Đậu hũ kho tộ</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5"></div>Rau củ xào chay</li>
+                            <li class="flex items-start gap-2"><div class="w-1.5 h-1.5 bg-green-500 rounded-full mt-1.5"></div>Canh củ quả chay</li>
+                        </ul>
+                        <a href="/Customer/MealDetail" class="mt-auto block text-center w-full bg-green-50 text-green-700 font-bold py-3 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-colors border border-green-100 group-hover:border-transparent">
+                            Xem chi tiết
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
         </div>
     </section>
 
