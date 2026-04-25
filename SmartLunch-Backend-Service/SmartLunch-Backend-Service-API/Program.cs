@@ -160,9 +160,6 @@ else
 // RabbitMQ consumer background service (consumes events from AI service, etc.)
 builder.Services.AddHostedService<SmartLunch.Backend.Service.API.Services.RabbitMQConsumerBackgroundService>();
 
-// Auto-lock orders background service
-builder.Services.AddHostedService<SmartLunch.Backend.Service.API.Services.Jobs.AutoLockOrdersService>();
-
 // SignalR (Real-time)
 builder.Services.AddSignalR();
 
