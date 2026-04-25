@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SmartLunch Admin</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome (matching React) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen bg-gray-50 text-gray-800" x-data="{ sidebarOpen: false }">
+    
+    <!-- HEADER -->
+    <header class="bg-white shadow px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-20 relative">
+        <div class="flex items-center gap-3">
+            <!-- Mobile Toggle -->
+            <button class="md:hidden p-2 text-green-600 rounded shadow bg-green-50" x-on:click="sidebarOpen = !sidebarOpen">
+                <i class="fas fa-bars"></i>
+            </button>
+            <div class="w-10 h-10 bg-green-100 flex items-center justify-center rounded text-green-600 font-bold">SL</div>
+            <h1 class="hidden sm:block text-lg sm:text-xl font-bold text-green-600">Ngọc Tâm i-food</h1>
+        </div>
+        
+        <div class="flex items-center gap-2 sm:gap-4 relative" x-data="{ profileOpen: false }">
+            <i class="fas fa-lock text-green-600 text-lg"></i>
+            <button x-on:click="profileOpen = !profileOpen" class="flex items-center gap-2 px-3 py-1 rounded hover:bg-green-50 transition bg-white relative">
+                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">A</div>
+                <span class="font-medium text-gray-700">Admin User</span>
+                <i class="fas fa-chevron-down text-gray-500 text-sm"></i>
+            </button>
+            <!-- Dropdown -->
+            <div x-show="profileOpen" x-on:click.outside="profileOpen = false" x-cloak class="absolute right-0 top-full mt-2 w-48 bg-white shadow-lg rounded-md py-2 z-50">
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 flex items-center gap-2">
+                    <i class="fas fa-user"></i> Cập nhật thông tin
+                </a>
+                <a href="/Auth/LogOut" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 flex-col md:flex-row overflow-hidden relative">
+        <!-- OVERLAY MOBILE -->
+        <div x-show="sidebarOpen" x-on:click="sidebarOpen = false" x-cloak class="fixed inset-0 bg-black/30 z-30 md:hidden"></div>
+
+        <!-- SIDEBAR -->
+        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-40 w-64 bg-white shadow-xl transform transition-transform duration-300 md:relative md:translate-x-0 overflow-y-auto">
+            <nav class="flex flex-col gap-2 p-4 h-full">
+                <a href="/Admin/Index" class="flex items-center gap-2 p-2 rounded transition-colors @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "bg-green-500 text-white" : "hover:bg-green-100 hover:text-green-700")">
+                    <i class="fas fa-home w-5 text-center"></i> Dashboard
+                </a>
+                <a href="/Admin/Users" class="flex items-center gap-2 p-2 rounded transition-colors @(ViewContext.RouteData.Values["action"]?.ToString() == "Users" ? "bg-green-500 text-white" : "hover:bg-green-100 hover:text-green-700")">
+                    <i class="fas fa-user w-5 text-center"></i> Quản lý tài khoản
+                </a>
+                <a href="/Admin/BackupRestore" class="flex items-center gap-2 p-2 rounded transition-colors @(ViewContext.RouteData.Values["action"]?.ToString() == "BackupRestore" ? "bg-green-500 text-white" : "hover:bg-green-100 hover:text-green-700")">
+                    <i class="fas fa-database w-5 text-center"></i> Sao lưu & Phục hồi
+                </a>
+                <a href="/Admin/ActivityLog" class="flex items-center gap-2 p-2 rounded transition-colors @(ViewContext.RouteData.Values["action"]?.ToString() == "ActivityLog" ? "bg-green-500 text-white" : "hover:bg-green-100 hover:text-green-700")">
+                    <i class="fas fa-clipboard-list w-5 text-center"></i> Nhật ký hệ thống
+                </a>
+                <a href="/Admin/AiConfig" class="flex items-center gap-2 p-2 rounded transition-colors @(ViewContext.RouteData.Values["action"]?.ToString() == "AiConfig" ? "bg-green-500 text-white" : "hover:bg-green-100 hover:text-green-700")">
+                    <i class="fas fa-robot w-5 text-center"></i> Cấu hình AI
+                </a>
+                <hr class="my-2">
+                <a href="/Customer" target="_blank" class="flex items-center gap-2 p-2 rounded transition-colors hover:bg-gray-100 text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-external-link-alt w-5 text-center"></i> Web Khách Hàng
+                </a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 p-4 sm:p-6 overflow-y-auto bg-gray-50">
+            @RenderBody()
+        </main>
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

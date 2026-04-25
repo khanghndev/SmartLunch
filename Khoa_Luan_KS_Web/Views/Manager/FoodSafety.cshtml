@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Quản lý ATTP";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <h1 class="text-2xl font-bold text-green-600">Quản lý An Toàn Thực Phẩm (ATTP)</h1>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white border rounded shadow p-6">
+            <h3 class="font-bold text-lg mb-4 text-gray-800">Lưu mẫu thực phẩm 24h</h3>
+            <ul class="space-y-3">
+                <li class="flex justify-between items-center border-b pb-2">
+                    <span>Mẫu ngày: 26/04/2026</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Đã lưu</span>
+                </li>
+                <li class="flex justify-between items-center border-b pb-2">
+                    <span>Mẫu ngày: 25/04/2026</span>
+                    <span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Đã lưu</span>
+                </li>
+            </ul>
+        </div>
+        <div class="bg-white border rounded shadow p-6">
+             <h3 class="font-bold text-lg mb-4 text-gray-800">Chứng nhận Kiểm định</h3>
+             <button class="w-full py-2 bg-gray-100 hover:bg-gray-200 border border-dashed border-gray-400 rounded text-gray-600">
+                 + Tải lên chứng nhận mới (PDF/JPG)
+             </button>
+             <div class="mt-4 flex flex-col gap-2">
+                 <a href="#" class="text-blue-500 hover:underline"><i class="fas fa-file-pdf text-red-500 mr-2"></i>ChungNhau_VSATTP_BCA.pdf</a>
+             </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Tồn Kho";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-green-600">Quản lý Kho (Inventory)</h1>
+        <button class="bg-green-600 text-white px-4 py-2 rounded shadow">+ Kiểm kê mới</button>
+    </div>
+
+    <div class="bg-white rounded shadow overflow-x-auto">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-gray-100 text-gray-600">
+                <tr>
+                    <th class="p-4">Nguyên liệu</th>
+                    <th class="p-4">SL Thực tế</th>
+                    <th class="p-4">SL Lý thuyết</th>
+                    <th class="p-4">Hạn dùng gần nhất</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b">
+                     <td class="p-4 font-bold text-gray-700">Dầu ăn Neptune 5L</td>
+                     <td class="p-4 text-green-600 font-bold">12 Can</td>
+                     <td class="p-4 text-gray-500">12 Can</td>
+                     <td class="p-4">12/12/2026</td>
+                </tr>
+                 <tr class="border-b bg-red-50">
+                     <td class="p-4 font-bold text-gray-700">Thịt heo tươi</td>
+                     <td class="p-4 text-red-600 font-bold">15 kg</td>
+                     <td class="p-4 text-gray-500">20 kg</td>
+                     <td class="p-4 text-red-600 font-bold">Thất thoát 5kg!</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

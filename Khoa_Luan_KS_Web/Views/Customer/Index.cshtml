@@ -1,0 +1,240 @@
+@{
+    ViewData["Title"] = "Trang Chủ";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="w-full overflow-hidden">
+    <!-- ================= BANNER ================= -->
+    <section class="relative w-full h-[420px] sm:h-[500px] md:h-[650px] lg:h-[750px]" id="banner-section">
+        <img id="banner-img" src="/assets/images/banner1.jpg" class="absolute inset-0 w-full h-full object-cover transition-opacity duration-1000" />
+        <div class="absolute inset-0 bg-gradient-to-r from-black/70 via-black/40 to-transparent"></div>
+        <div class="absolute inset-0 flex items-center px-4 sm:px-8 md:px-16 lg:px-32">
+            <div class="max-w-xl lg:max-w-3xl text-white">
+                <h1 id="banner-title" class="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold leading-tight mb-6">
+                    Cung cấp suất ăn công nghiệp số 1
+                </h1>
+                <button class="bg-orange-500 hover:bg-orange-600 px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-bold text-sm sm:text-base">
+                    TÌM HIỂU THÊM
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= VIDEO ================= -->
+    <section class="bg-gray-100 py-12 md:py-16 px-4 sm:px-8 md:px-20">
+        <h2 class="text-2xl md:text-3xl font-extrabold mb-8 md:mb-10 relative">
+            VIDEO NỔI BẬT
+            <span class="absolute left-0 -bottom-2 w-14 h-1.5 bg-yellow-400"></span>
+        </h2>
+        <div class="flex gap-4 md:gap-6 overflow-x-auto snap-x snap-mandatory scroll-smooth pb-4">
+            @foreach (var id in new[] { "7621052786553146631", "7616696611204353298", "7616382392541924616", "7615567401035271442", "7607405858137459986" })
+            {
+                <div class="min-w-[240px] sm:min-w-[280px] md:min-w-[320px] snap-start rounded-xl overflow-hidden shadow-lg">
+                    <iframe src="https://www.tiktok.com/embed/v2/@id" class="w-full h-[420px] sm:h-[460px] md:h-[480px]" allowfullscreen></iframe>
+                </div>
+            }
+        </div>
+    </section>
+
+    <!-- ================= ABOUT ================= -->
+    <section id="about-section" class="bg-white py-16 md:py-24 px-4 sm:px-8 md:px-20">
+        <div class="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+            <div>
+                <h2 class="text-3xl sm:text-4xl lg:text-[44px] font-extrabold leading-tight mb-6">
+                    <span class="bg-yellow-400 px-3 py-1 inline-block">Haseca</span><br />
+                    Trao an tâm – Gửi<br />niềm tin
+                </h2>
+                <p class="text-gray-600 text-sm sm:text-base leading-relaxed max-w-lg mb-8 text-justify">
+                    Cùng 6 công ty thành viên, HASECA đảm bảo đáp ứng các tiêu chuẩn vệ sinh an toàn quốc tế như HACCP, ISO 22000, và tuân thủ các tiêu chuẩn an toàn thực phẩm của EU. Chúng tôi tâm niệm: 3 yếu tố làm nên bữa ăn ngon là nguyên liệu sạch, bếp ăn an toàn và con người.
+                </p>
+                <button class="bg-orange-500 hover:bg-orange-600 text-white px-6 sm:px-8 py-2.5 sm:py-3 rounded-full font-semibold text-sm sm:text-base">
+                    VỀ CHÚNG TÔI
+                </button>
+            </div>
+            <div class="bg-[#f5efe4] rounded-xl px-6 sm:px-10 md:px-12 py-10 md:py-14 space-y-6 md:space-y-8 shadow-sm">
+                <div>
+                    <h3 class="text-3xl sm:text-4xl font-extrabold text-orange-500 counter" data-target="32">0</h3>
+                    <p class="text-gray-600 mt-1 text-sm sm:text-base">+ Tỉnh thành với 80% khách hàng nước ngoài, có vốn đầu tư FDI</p>
+                </div>
+                <div class="border-t"></div>
+                <div>
+                    <h3 class="text-3xl sm:text-4xl font-extrabold text-orange-500 counter" data-target="200000">0</h3>
+                    <p class="text-gray-600 mt-1 text-sm sm:text-base">+ số lượng thức ăn sạch cung ứng mỗi ngày</p>
+                </div>
+                <div class="border-t"></div>
+                <div>
+                    <h3 class="text-3xl sm:text-4xl font-extrabold text-orange-500 counter" data-target="2300">0</h3>
+                    <p class="text-gray-600 mt-1 text-sm sm:text-base">+ Nhân sự được đào tạo về chuyên môn và vệ sinh an toàn thực phẩm</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= SERVICE ================= -->
+    <section class="bg-white py-14 md:py-20 px-4 sm:px-8 md:px-20">
+        <h2 class="text-3xl sm:text-4xl md:text-5xl font-extrabold mb-10 md:mb-14">
+            <span class="bg-yellow-400 px-3 py-1">Dịch vụ</span> Haseca
+        </h2>
+        <div class="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-5 md:gap-8">
+            <!-- Service 1 -->
+            <div class="relative h-[220px] sm:h-[260px] md:h-[320px] lg:h-[380px] xl:h-[420px] rounded-xl overflow-hidden group cursor-pointer">
+                <img src="/assets/images/service1.jpg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
+                <div class="absolute bottom-4 left-4 right-4 z-10 group-hover:opacity-0 transition duration-300">
+                    <h3 class="text-white font-bold text-sm sm:text-base md:text-lg">SUẤT ĂN CÔNG NGHIỆP</h3>
+                </div>
+                <div class="absolute inset-0 bg-black/30 transition duration-300 group-hover:bg-orange-500/90"></div>
+                <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-20 transition duration-500">
+                    <div class="text-[140px] md:text-[180px] text-white">🍃</div>
+                </div>
+                <div class="absolute inset-0 flex flex-col justify-end p-5 md:p-6 opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition duration-500">
+                    <h3 class="text-white font-bold text-base md:text-xl mb-2">SUẤT ĂN CÔNG NGHIỆP</h3>
+                    <p class="text-white/90 text-sm md:text-base leading-relaxed mb-4 line-clamp-3">Thực đơn phong phú, món ăn ngon, đảm bảo an toàn thực phẩm.</p>
+                    <a href="/Customer/Service/Safety" class="inline-block bg-white text-gray-800 px-5 py-2 rounded-full text-sm font-semibold hover:bg-gray-200 transition w-fit">TÌM HIỂU THÊM</a>
+                </div>
+            </div>
+            <!-- Service 2 -->
+            <div class="relative h-[220px] sm:h-[260px] md:h-[320px] lg:h-[380px] xl:h-[420px] rounded-xl overflow-hidden group cursor-pointer">
+                <img src="/assets/images/service2.jpg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
+                <div class="absolute bottom-4 left-4 right-4 z-10 group-hover:opacity-0 transition duration-300">
+                    <h3 class="text-white font-bold text-sm sm:text-base md:text-lg">SUẤT ĂN TRƯỜNG HỌC</h3>
+                </div>
+                <div class="absolute inset-0 bg-black/30 transition duration-300 group-hover:bg-orange-500/90"></div>
+                <div class="absolute inset-0 flex flex-col justify-end p-5 md:p-6 opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition duration-500">
+                    <h3 class="text-white font-bold text-base md:text-xl mb-2">SUẤT ĂN TRƯỜNG HỌC</h3>
+                    <p class="text-white/90 text-sm md:text-base leading-relaxed mb-4 line-clamp-3">Môi trường chế biến sạch sẽ, chuyên nghiệp.</p>
+                </div>
+            </div>
+            <!-- Service 3 -->
+             <div class="relative h-[220px] sm:h-[260px] md:h-[320px] lg:h-[380px] xl:h-[420px] rounded-xl overflow-hidden group cursor-pointer">
+                <img src="/assets/images/service3.jpg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
+                <div class="absolute bottom-4 left-4 right-4 z-10 group-hover:opacity-0 transition duration-300">
+                    <h3 class="text-white font-bold text-sm sm:text-base md:text-lg">SUẤT ĂN VĂN PHÒNG</h3>
+                </div>
+                <div class="absolute inset-0 bg-black/30 transition duration-300 group-hover:bg-orange-500/90"></div>
+                <div class="absolute inset-0 flex flex-col justify-end p-5 md:p-6 opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition duration-500">
+                    <h3 class="text-white font-bold text-base md:text-xl mb-2">SUẤT ĂN VĂN PHÒNG</h3>
+                    <p class="text-white/90 text-sm md:text-base leading-relaxed mb-4 line-clamp-3">Thực đơn đa dạng, phù hợp môi trường làm việc.</p>
+                </div>
+            </div>
+            <!-- Service 4 -->
+            <div class="relative h-[220px] sm:h-[260px] md:h-[320px] lg:h-[380px] xl:h-[420px] rounded-xl overflow-hidden group cursor-pointer">
+                <img src="/assets/images/service3.jpg" class="w-full h-full object-cover transition duration-500 group-hover:scale-110" />
+                <div class="absolute bottom-4 left-4 right-4 z-10 group-hover:opacity-0 transition duration-300">
+                    <h3 class="text-white font-bold text-sm sm:text-base md:text-lg">SUẤT ĂN CÔNG NHÂN</h3>
+                </div>
+                <div class="absolute inset-0 bg-black/30 transition duration-300 group-hover:bg-orange-500/90"></div>
+                <div class="absolute inset-0 flex flex-col justify-end p-5 md:p-6 opacity-0 translate-y-6 group-hover:opacity-100 group-hover:translate-y-0 transition duration-500">
+                    <h3 class="text-white font-bold text-base md:text-xl mb-2">SUẤT ĂN CÔNG NHÂN</h3>
+                    <p class="text-white/90 text-sm md:text-base leading-relaxed mb-4 line-clamp-3">Khẩu phần hợp lý đảm bảo năng lượng.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= WHY ================= -->
+    <section class="bg-gradient-to-br from-gray-900 via-gray-800 to-black text-white py-16 md:py-24 px-4 sm:px-8 md:px-20">
+        <div class="grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+            <div>
+                <h2 class="text-3xl md:text-4xl font-extrabold mb-6">
+                    <span class="bg-yellow-400 text-black px-3 py-1">Tại sao</span> chọn HASECA
+                </h2>
+                <a href="/Customer/ChooseHaseca" class="bg-orange-500 hover:bg-orange-600 px-6 py-2.5 md:py-3 rounded-full font-bold text-sm md:text-base transition inline-block">
+                    TÌM HIỂU THÊM
+                </a>
+                <div class="relative mt-8 md:mt-12">
+                    <div class="absolute -top-4 -left-4 w-full h-full bg-yellow-200 rounded-xl blur-sm opacity-60"></div>
+                    <img src="/assets/images/banner2.jpg" class="relative rounded-xl shadow-xl w-full" />
+                </div>
+            </div>
+            <div class="space-y-3 md:space-y-4" id="why-accordion">
+                <!-- Accordion handled via JS below -->
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        // --- 1. BANNER CAROUSEL ---
+        const slides = [
+            { image: '/assets/images/banner1.jpg', title: 'Cung cấp suất ăn công nghiệp số 1' },
+            { image: '/assets/images/banner2.jpg', title: 'Thực phẩm sạch chuẩn quốc tế' },
+            { image: '/assets/images/banner3.jpg', title: 'Dinh dưỡng cao và đa dạng' }
+        ];
+        let currentSlide = 0;
+        setInterval(() => {
+            currentSlide = (currentSlide + 1) % slides.length;
+            document.getElementById('banner-img').src = slides[currentSlide].image;
+            document.getElementById('banner-title').innerText = slides[currentSlide].title;
+        }, 4000);
+
+        // --- 2. ACCORDION (WHY SECTION) ---
+        const whyData = [
+            { title: "Hơn 15 năm kinh nghiệm trong ngành", content: "Trải qua hơn 15 năm..." },
+            { title: "Cơ cấu quản lý toàn diện", content: "HASECA xây dựng quy trình..." },
+            { title: "Phục vụ doanh nghiệp nước ngoài", content: "Với kinh nghiệm dày dặn..." }
+        ];
+
+        const container = document.getElementById('why-accordion');
+        whyData.forEach((item, index) => {
+            const html = `
+                <div class="why-item rounded-xl px-4 md:px-5 py-3 md:py-4 transition bg-white/5 hover:bg-white/10 cursor-pointer" onclick="toggleWhy(` + index + `)">
+                    <div class="flex justify-between items-center">
+                        <span class="why-title text-sm sm:text-base md:text-lg font-semibold">`+ (index+1) +`. ` + item.title + `</span>
+                        <span class="why-icon text-xl transition">+</span>
+                    </div>
+                    <div class="why-content overflow-hidden transition-all duration-500 max-h-0 opacity-0">
+                        <p class="text-gray-300 text-sm md:text-base leading-relaxed mt-3">` + item.content + `</p>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += html;
+        });
+
+        function toggleWhy(index) {
+            const items = document.querySelectorAll('.why-item');
+            items.forEach((el, i) => {
+                const content = el.querySelector('.why-content');
+                const title = el.querySelector('.why-title');
+                const icon = el.querySelector('.why-icon');
+                if (i === index) {
+                    content.classList.toggle('max-h-0');
+                    content.classList.toggle('max-h-40');
+                    content.classList.toggle('opacity-0');
+                    content.classList.toggle('opacity-100');
+                    el.classList.toggle('bg-white/10');
+                    title.classList.toggle('text-yellow-400');
+                    icon.classList.toggle('rotate-45');
+                } else {
+                    content.classList.add('max-h-0', 'opacity-0');
+                    content.classList.remove('max-h-40', 'opacity-100');
+                    el.classList.remove('bg-white/10');
+                    title.classList.remove('text-yellow-400');
+                    icon.classList.remove('rotate-45');
+                }
+            });
+        }
+
+        // --- 3. COUNT UP ---
+        const observer = new IntersectionObserver(entries => {
+            if(entries[0].isIntersecting) {
+                document.querySelectorAll('.counter').forEach(counter => {
+                    const target = +counter.getAttribute('data-target');
+                    let count = 0;
+                    const updateCount = setInterval(() => {
+                        const inc = target / 100;
+                        count += inc;
+                        if(count < target) {
+                            counter.innerText = Math.ceil(count);
+                        } else {
+                            counter.innerText = target;
+                            clearInterval(updateCount);
+                        }
+                    }, 20);
+                });
+                observer.disconnect();
+            }
+        });
+        observer.observe(document.getElementById('about-section'));
+    </script>
+}

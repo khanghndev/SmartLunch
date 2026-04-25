@@ -1,0 +1,32 @@
+@{
+    ViewData["Title"] = "Thư viện Suất ăn";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <div class="flex justify-between items-center">
+         <h1 class="text-2xl font-bold text-green-600">Thư viện Suất ăn</h1>
+         <button class="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700">+ Tạo Suất Ăn Mới</button>
+    </div>
+   
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Meal Card -->
+        <div class="bg-white rounded overflow-hidden shadow">
+            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=400&q=80" alt="Cơm" class="w-full h-40 object-cover" />
+            <div class="p-4">
+                <h3 class="font-bold text-gray-800">Suất ăn Văn Phòng Tiêu chuẩn</h3>
+                <p class="text-green-600 font-bold mt-1">35,000đ</p>
+                <div class="mt-2 text-xs text-gray-500">Kcal: 650 | Protein: 30g</div>
+            </div>
+        </div>
+        <!-- Meal Card -->
+        <div class="bg-white rounded overflow-hidden shadow">
+            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=400&q=80" alt="Salad" class="w-full h-40 object-cover" />
+            <div class="p-4">
+                <h3 class="font-bold text-gray-800">Suất ăn Dành cho Ăn Kiêng</h3>
+                <p class="text-green-600 font-bold mt-1">45,000đ</p>
+                <div class="mt-2 text-xs text-gray-500">Kcal: 350 | Protein: 15g</div>
+            </div>
+        </div>
+    </div>
+</div>

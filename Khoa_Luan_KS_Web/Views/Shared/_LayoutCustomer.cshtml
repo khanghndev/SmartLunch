@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - SmartLunch</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Alpine JS for interactions -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body class="flex flex-col min-h-screen bg-gray-100">
+    <!-- ===== TOP BAR (Cuộn lên) ===== -->
+    <div class="w-full bg-[#1f2a37] text-white text-sm px-6 py-2 flex justify-between items-center relative z-[60]">
+        <div class="flex gap-6">
+          <span class="flex items-center gap-2">
+            <i data-lucide="phone" style="width: 16px; height: 16px"></i>
+            0966 741 866
+          </span>
+          <span class="flex items-center gap-2">
+            <i data-lucide="mail" style="width: 16px; height: 16px"></i>
+            contact@haseca.com
+          </span>
+        </div>
+        <div>
+            <!-- Replace with real Auth Logic later (Server-side) -->
+            <a href="/Auth/Login" class="hover:text-orange-400 transition">Đăng nhập</a>
+        </div>
+    </div>
+
+    <!-- HEADER / NAVBAR (Đứng im - Sticky & Smooth Animation) -->
+    <header 
+        x-data="{ isScrolled: false }" 
+        x-on:scroll.window="isScrolled = (window.pageYOffset > 40)"
+        class="w-full sticky top-0 z-50 transition-all duration-300 ease-in-out border-b border-gray-100"
+        :class="isScrolled ? 'bg-white/95 backdrop-blur-md shadow-lg' : 'bg-white shadow-none'"
+    >
+        <div class="max-w-7xl mx-auto flex items-center px-6 h-[72px]" id="navbar">
+          <!-- LOGO -->
+          <a href="/Customer">
+            <h1 class="text-3xl font-black italic tracking-tighter flex items-end">
+                <span class="text-[#7DBE42]">ha</span><span class="text-[#F3A530]">se</span><span class="text-[#7DBE42]">ca</span>
+            </h1>
+          </a>
+
+          <!-- ===== MENU ===== -->
+          <div class="flex-1 flex justify-center h-full gap-6 lg:gap-8 text-sm lg:text-[15px]">
+
+            <!-- ===== GIỚI THIỆU ===== -->
+            <div class="group relative flex items-center h-full cursor-pointer">
+              <span class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors flex items-center gap-1 relative">
+                GIỚI THIỆU 
+                <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300 group-hover:-rotate-180"></i>
+                <span class="absolute -bottom-[26px] left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span>
+              </span>
+              <div class="absolute top-[100%] left-0 w-60 bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-xl py-3 border border-gray-100 
+                          opacity-0 invisible translate-y-4 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 
+                          transition-all duration-300 ease-out z-50">
+                <!-- Cầu nối focus giúp giữ hover khi rê chuột lệch -->
+                <div class="absolute -top-4 left-0 w-full h-6 bg-transparent"></div>
+                <a href="/Customer/About" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Về chúng tôi</a>
+                <a href="/Customer/Achievements" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Thành tựu nổi bật</a>
+              </div>
+            </div>
+
+            <div class="group flex items-center h-full">
+              <a href="/Customer/Reviews" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">ĐÁNH GIÁ <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
+            </div>
+            
+            <div class="group flex items-center h-full">
+              <a href="/Customer/ChooseHaseca" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">CHỌN HASECA <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
+            </div>
+
+            <!-- ===== DỊCH VỤ ===== -->
+            <div class="group relative flex items-center h-full cursor-pointer">
+              <span class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors flex items-center gap-1 relative">
+                DỊCH VỤ 
+                <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300 group-hover:-rotate-180"></i>
+                <span class="absolute -bottom-[26px] left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span>
+              </span>
+              <div class="absolute top-[100%] left-0 w-[280px] bg-white shadow-[0_10px_40px_-10px_rgba(0,0,0,0.15)] rounded-xl py-3 border border-gray-100 
+                          opacity-0 invisible translate-y-4 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 
+                          transition-all duration-300 ease-out z-50">
+                <!-- Cầu nối focus -->
+                <div class="absolute -top-4 left-0 w-full h-6 bg-transparent"></div>
+                <a href="/Customer/Service/Safety" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Cung ứng thực phẩm sạch</a>
+                <a href="/Customer/Service/SafetyS" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Vệ sinh công nghiệp</a>
+                <a href="/Customer/Menu" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200 border-t my-1 border-gray-50">Thực đơn</a>
+                <a href="/Customer/Service/School" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200 border-t mt-1 border-gray-50 pt-3">Suất ăn trường học</a>
+                <a href="/Customer/Service/Office" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Suất ăn văn phòng</a>
+                <a href="/Customer/Service/Factory" class="block px-5 py-2.5 font-medium text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 hover:pl-6 transition-all duration-200">Suất ăn công nhân</a>
+              </div>
+            </div>
+
+            <div class="group flex items-center h-full">
+              <a href="/Customer/Partners" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">ĐỐI TÁC <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
+            </div>
+            
+            <div class="group flex items-center h-full">
+              <a href="/Customer/Haseca" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">BẢN TIN HASECA <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
+            </div>
+            
+            <div class="group flex items-center h-full">
+              <a href="/Customer/Recruitment" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">TUYỂN DỤNG <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
+            </div>
+            
+            <div class="group flex items-center h-full">
+              <a href="/Customer/Contact" class="font-semibold text-gray-800 group-hover:text-orange-500 transition-colors relative flex items-center h-full">LIÊN HỆ <span class="absolute bottom-0 left-0 w-0 h-[3px] bg-orange-500 transition-all duration-300 group-hover:w-full rounded-t"></span></a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- CONTENT -->
+    <main class="flex-1">
+        @RenderBody()
+    </main>
+
+    <!-- FLOATING CONTACT BUTTONS -->
+    <div class="fixed right-4 bottom-10 flex flex-col gap-3 z-50">
+        <a href="https://m.me/" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-[#0084FF] shadow-lg hover:scale-110 transition">
+            <i data-lucide="message-circle" class="text-white fill-white" style="width: 24px; height: 24px;"></i>
+        </a>
+        <a href="https://zalo.me/" target="_blank" class="w-12 h-12 flex items-center justify-center rounded-full bg-[#0068FF] shadow-lg hover:scale-110 transition overflow-hidden">
+            <span class="text-white font-bold text-sm">Zalo</span>
+        </a>
+        <a href="tel:0966741866" class="w-12 h-12 flex items-center justify-center rounded-full bg-white border-2 border-yellow-400 shadow-lg hover:scale-110 transition">
+            <i data-lucide="phone" class="text-[#FFD700] fill-[#FFD700]" style="width: 22px; height: 22px;"></i>
+        </a>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-[#1A1A1A] text-[#BBBBBB] font-sans py-10 px-6 mt-10">
+        <div class="max-w-[1400px] mx-auto">
+          <!-- TOP SECTION: LOGO & BASIC CONTACT & SOCIAL -->
+          <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center border-b border-gray-700 pb-6 mb-8 gap-6">
+            <div class="flex flex-col md:flex-row md:items-center gap-6">
+              <div class="relative">
+                <h1 class="text-4xl font-black italic tracking-tighter flex items-end">
+                  <span class="text-[#7DBE42]">ha</span><span class="text-[#F3A530]">se</span><span class="text-[#7DBE42]">ca</span>
+                </h1>
+                <div class="h-1.5 w-full bg-[#F3A530] rounded-full mt-[-4px] opacity-80"></div>
+              </div>
+              <div class="lg:ml-4">
+                <h2 class="text-white text-xl font-medium mb-2">Công ty cổ phần dịch vụ quốc tế Hà Thành</h2>
+                <div class="flex flex-wrap gap-6 text-sm">
+                  <div class="flex items-center gap-2">
+                    <div class="border border-gray-500 rounded-full p-1"><i data-lucide="phone" style="width:12px; height:12px;"></i></div>
+                    <span class="font-semibold">0966 741 866</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <div class="border border-gray-500 rounded-full p-1"><i data-lucide="mail" style="width:12px; height:12px;"></i></div>
+                    <span class="font-semibold">contact@haseca.com</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <i data-lucide="facebook" class="text-white cursor-pointer hover:text-blue-500 transition" style="width:32px; height:32px;"></i>
+              <i data-lucide="youtube" class="text-white cursor-pointer hover:text-red-600 transition" style="width:32px; height:32px;"></i>
+            </div>
+          </div>
+          <!-- BOTTOM SECTION: BRANCHES AND LINKS -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+            <div class="lg:col-span-6">
+              <h3 class="text-white font-bold mb-6 text-base tracking-wider uppercase underline underline-offset-8 decoration-transparent">CHI NHÁNH</h3>
+              <div class="space-y-6 text-sm">
+                <div class="flex gap-3">
+                  <span class="text-white font-bold whitespace-nowrap min-w-[100px]">CHI NHÁNH 1</span>
+                  <div>
+                    <p>Tầng 2, Toà CT4 tổ hợp TMDV The Pride, KĐT mới An Hưng, P. La Khê, Q. Hà Đông, Hà Nội</p>
+                    <p class="mt-1 font-semibold text-gray-200">024 9996 7799 - 0966 741 866</p>
+                  </div>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-white font-bold whitespace-nowrap min-w-[100px]">CHI NHÁNH 2</span>
+                  <div>
+                    <p>Số 24 đường 39 Khu Đô Thị Vạn Phúc, Phường Hiệp Bình Phước, Thành Phố Thủ Đức</p>
+                    <p class="mt-1 font-semibold text-gray-200">028 9996 7799 - 0923 787 787</p>
+                  </div>
+                </div>
+                <div class="flex gap-3">
+                  <span class="text-white font-bold whitespace-nowrap min-w-[100px]">CHI NHÁNH 3</span>
+                  <div>
+                    <p>Khu TĐC Làng Chài (phân khu 3), Cẩm An, Hội An, Quảng Nam</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="lg:col-span-3">
+              <h3 class="text-white font-bold mb-6 text-base tracking-wider">TRUY CẬP NHANH</h3>
+              <ul class="space-y-3 text-sm">
+                <li class="hover:text-white transition cursor-pointer">Giới thiệu Haseca</li>
+                <li class="hover:text-white transition cursor-pointer">Chọn Haseca</li>
+                <li class="hover:text-white transition cursor-pointer">Bản tin Haseca</li>
+                <li class="hover:text-white transition cursor-pointer">Tuyển dụng</li>
+                <li class="hover:text-white transition cursor-pointer">Liên hệ</li>
+              </ul>
+            </div>
+            <div class="lg:col-span-3">
+              <h3 class="text-white font-bold mb-6 text-base tracking-wider">DỊCH VỤ</h3>
+              <ul class="space-y-3 text-sm">
+                <li class="hover:text-white transition cursor-pointer">Suất ăn công nghiệp</li>
+                <li class="hover:text-white transition cursor-pointer">Suất ăn trường học</li>
+                <li class="hover:text-white transition cursor-pointer">Vệ sinh công nghiệp</li>
+                <li class="hover:text-white transition cursor-pointer">Cung ứng thực phẩm sạch</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+    </footer>
+
+    <!-- Init Lucide and Scripts -->
+    <script>
+      lucide.createIcons();
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

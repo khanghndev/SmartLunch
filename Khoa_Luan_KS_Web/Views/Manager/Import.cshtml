@@ -1,0 +1,32 @@
+@{
+    ViewData["Title"] = "Quản lý Nhập hàng";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-green-600">Phiếu Yêu cầu Nhập hàng</h1>
+        <button class="bg-blue-600 text-white px-4 py-2 rounded shadow">+ Tạo Yêu cầu</button>
+    </div>
+
+    <!-- TABS MOCK -->
+    <div class="flex border-b border-gray-300">
+        <button class="px-4 py-2 border-b-2 border-blue-600 text-blue-600 font-bold">Chờ duyệt</button>
+        <button class="px-4 py-2 text-gray-500 hover:text-blue-600">Đã duyệt</button>
+        <button class="px-4 py-2 text-gray-500 hover:text-blue-600">Lịch sử nhập</button>
+    </div>
+
+    <div class="bg-white rounded shadow p-4">
+        <div class="border rounded p-4 flex justify-between items-center mb-4 hover:shadow-md transition">
+            <div>
+                <h3 class="font-bold">Yêu cầu Nhập thịt tươi Tuần 18</h3>
+                <p class="text-sm text-gray-500 mt-1">Người tạo: Nguyễn Bếp Trưởng - 25/04/2026</p>
+                <p class="text-sm border-t mt-2 pt-2 text-gray-700">Gồm: Gà CN (120kg), Heo (50kg)</p>
+            </div>
+            <div class="flex gap-2">
+                 <button class="bg-green-100 text-green-700 px-3 py-1 rounded font-bold"><i class="fas fa-check mr-1"></i> Duyệt</button>
+                 <button class="bg-red-100 text-red-700 px-3 py-1 rounded font-bold"><i class="fas fa-times mr-1"></i> Từ chối</button>
+            </div>
+        </div>
+    </div>
+</div>

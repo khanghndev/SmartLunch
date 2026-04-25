@@ -1,0 +1,55 @@
+@{
+    ViewData["Title"] = "Quản lý Nhân Viên";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-green-600">Quản lý Nhân Viên</h1>
+        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition">
+            + Thêm Nhân Viên
+        </button>
+    </div>
+
+    <div class="bg-white rounded shadow p-4 border-t-2 border-green-500">
+        <div class="flex items-center gap-2 mb-4">
+            <input type="text" placeholder="Tìm kiếm nhân viên..." class="border px-3 py-2 rounded focus:ring-green-500 flex-1 max-w-sm" />
+            <button class="bg-gray-100 hover:bg-gray-200 px-4 py-2 border rounded"><i class="fas fa-search text-gray-600"></i></button>
+        </div>
+        
+        <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                <tr>
+                    <th class="p-4">Mã NV</th>
+                    <th class="p-4">Họ và tên</th>
+                    <th class="p-4">Bộ phận</th>
+                    <th class="p-4">Ngày vào làm</th>
+                    <th class="p-4">Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-t hover:bg-gray-50">
+                    <td class="p-4 font-semibold text-gray-700">NV001</td>
+                    <td class="p-4">Nguyễn Văn A</td>
+                    <td class="p-4 text-blue-600">Bếp Trưởng</td>
+                    <td class="p-4">01/01/2026</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded bg-green-100 text-green-700 text-xs">Đang làm việc</span></td>
+                </tr>
+                 <tr class="border-t hover:bg-gray-50">
+                    <td class="p-4 font-semibold text-gray-700">NV002</td>
+                    <td class="p-4">Trần Thị B</td>
+                    <td class="p-4 text-orange-600">Phục Vụ</td>
+                    <td class="p-4">15/02/2026</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded bg-green-100 text-green-700 text-xs">Đang làm việc</span></td>
+                </tr>
+                 <tr class="border-t hover:bg-gray-50">
+                    <td class="p-4 font-semibold text-gray-700">NV003</td>
+                    <td class="p-4">Lê Hoàng C</td>
+                    <td class="p-4 text-gray-600">Kho</td>
+                    <td class="p-4">20/03/2026</td>
+                    <td class="p-4"><span class="px-2 py-1 rounded bg-red-100 text-red-700 text-xs">Đã nghỉ</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,75 @@
+@{
+    ViewData["Title"] = "Chi tiết Hợp đồng";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <div class="flex items-center gap-4 mb-4">
+        <a href="/Manager/Contracts" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded text-gray-700 font-medium">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+        <h1 class="text-2xl font-bold text-green-600">Chi tiết Hợp đồng HD-2026-SEV</h1>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-6">
+            <div class="bg-white rounded-xl border shadow-sm p-6">
+                <div class="flex justify-between items-start border-b pb-4 mb-4">
+                    <div>
+                        <h2 class="text-xl font-bold text-gray-800">Cung cấp cơm trưa Samsung Electronics VN</h2>
+                        <p class="text-gray-500 mt-1">Trạng thái: <span class="text-blue-600 font-bold">Đang thực hiện</span></p>
+                    </div>
+                </div>
+                <!-- Bảng suất ăn -->
+                <h3 class="font-bold text-gray-700 mb-3"><i class="fas fa-file-text text-green-600 mr-2"></i>Danh sách suất ăn trong hợp đồng</h3>
+                <div class="overflow-x-auto border rounded">
+                    <table class="w-full text-sm text-left">
+                        <thead class="bg-gray-50 text-gray-600">
+                            <tr>
+                                <th class="p-3">Tên suất ăn</th>
+                                <th class="p-3 text-center">Số lượng</th>
+                                <th class="p-3 text-right">Đơn giá</th>
+                                <th class="p-3 text-right">Thành tiền</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-t">
+                                <td class="p-3 font-medium">Ca sáng - Phở bò</td>
+                                <td class="p-3 text-center">500</td>
+                                <td class="p-3 text-right">25,000</td>
+                                <td class="p-3 text-right text-green-600 font-medium">12,500,000</td>
+                            </tr>
+                            <tr class="border-t">
+                                <td class="p-3 font-medium">Ca trưa - Cơm phần A</td>
+                                <td class="p-3 text-center">1200</td>
+                                <td class="p-3 text-right">35,000</td>
+                                <td class="p-3 text-right text-green-600 font-medium">42,000,000</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="mt-4 text-right">
+                    <span class="inline-block bg-green-100 text-green-800 px-4 py-2 font-bold rounded">Tổng cộng: 54,500,000 VND / ngày</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="space-y-6">
+            <div class="bg-white rounded-xl border shadow-sm p-6">
+                <h3 class="font-bold text-gray-700 mb-4 border-b pb-2"><i class="fas fa-info-circle text-blue-500 mr-2"></i>Thông tin chung</h3>
+                <ul class="space-y-3 text-sm">
+                    <li><span class="text-gray-500 block">Khách hàng</span><span class="font-medium">Samsung Electronics VN</span></li>
+                    <li><span class="text-gray-500 block">Thời hạn</span><span class="font-medium">01/01/2026 - 31/12/2026</span></li>
+                    <li><span class="text-gray-500 block">Phụ trách</span><span class="font-medium">Nguyễn Phụ Trách</span></li>
+                </ul>
+            </div>
+            <div class="bg-white rounded-xl border shadow-sm p-6">
+                <h3 class="font-bold text-gray-700 mb-4 border-b pb-2"><i class="fas fa-cog text-orange-500 mr-2"></i>Thao tác</h3>
+                <div class="flex flex-col gap-2">
+                    <a href="/Manager/ContractEdit" class="w-full text-center bg-blue-600 text-white py-2 rounded hover:bg-blue-700">Chỉnh sửa hợp đồng</a>
+                    <button class="w-full text-center bg-red-100 text-red-600 py-2 rounded hover:bg-red-200">Huỷ hợp đồng</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

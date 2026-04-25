@@ -1,0 +1,237 @@
+@{
+    ViewData["Title"] = "Tại sao chọn Haseca";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="w-full bg-white text-[#1f2a37]">
+    <!-- ===== BANNER TOP ===== -->
+    <div class="relative h-[300px] md:h-[450px] lg:h-[600px]">
+        <img src="/assets/images/b8.jpg" class="absolute inset-0 w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-black/30"></div>
+        <div class="relative z-10 h-full flex items-center justify-center">
+            <h1 class="text-3xl md:text-5xl font-bold text-white">
+                <span class="bg-yellow-400 text-black px-6 py-2">Tại sao chọn Haseca</span>
+            </h1>
+        </div>
+    </div>
+
+    <!-- ===== ACCORDION ===== -->
+    <div class="max-w-6xl mx-auto px-6 py-14 space-y-6" x-data="{ openIndex: null }">
+        <!-- Item 1 -->
+        <div>
+            <div x-on:click="openIndex = openIndex === 0 ? null : 0" :class="openIndex === 0 ? 'bg-yellow-400' : 'bg-[#ece8dc]'" class="cursor-pointer flex justify-between items-center px-6 py-5 text-lg font-semibold border transition-all duration-300">
+                Hơn 15 năm kinh nghiệm trong ngành suất ăn công nghiệp
+                <span class="text-3xl" x-text="openIndex === 0 ? '−' : '+'"></span>
+            </div>
+            <div x-show="openIndex === 0" style="display: none;">
+                <div class="bg-[#efefef] py-14 px-10 text-center text-gray-700 leading-8 text-lg">
+                    Với kinh nghiệm dày dặn, cùng sự nỗ lực cải tiến mỗi ngày, HASECA từng bước trở thành doanh nghiệp hàng đầu Việt Nam trong việc cung ứng suất ăn công nghiệp. Hiện nay, HASECA đã đồng hành cùng hơn 80 doanh nghiệp, tập đoàn lớn khắp cả nước; cung cấp hơn 200.000 bữa ăn mỗi ngày.
+                </div>
+                <div class="relative py-24 min-h-[600px]">
+                    <img src="/assets/images/b1.jpg" class="absolute inset-0 w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-black/70"></div>
+                    <div class="relative z-10 max-w-6xl mx-auto px-6 text-white">
+                        <h2 class="text-3xl md:text-4xl text-yellow-400 font-bold text-center mb-16">Giá trị đúc kết sau hành trình hoạt động</h2>
+                        <div class="grid md:grid-cols-2 gap-12">
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Thấu hiểu khẩu vị</h3>
+                                <p>Kỹ năng chuyên môn cao và kinh nghiệm đúc kết được sau hơn 10 năm thăng trầm chính là chìa khóa giúp chúng tôi có được những thực đơn phù hợp với người lao động nhất về cả khẩu vị và dinh dưỡng, đáp ứng quá trình tái tạo sức lao động hiệu quả.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Thực đơn 40 ngày không trùng lặp</h3>
+                                <p>Đầu bếp chuyên nghiệp của HASECA luôn thay đổi thực đơn thường xuyên dựa trên kinh nghiệm của mình, cũng như phối hợp với nhà thầu để khảo sát ý kiến của cán bộ công nhân viên và không ngừng cải thiện chất lượng, thay đổi phù hợp với khẩu vị của khách hàng.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Cân đối chế độ dinh dưỡng phù hợp với công việc</h3>
+                                <p>Thực đơn HASECA được xây dựng bởi đội ngũ dinh dưỡng viên được đào tạo bài bản và giàu kinh nghiệm, có sự tính toán về hàm lượng calories trong khẩu phần ăn phù hợp với từng ngành nghề và tính chất công việc.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Chi phí phù hợp với ngân sách</h3>
+                                <p>Nhờ việc lựa chọn được những nguồn nguyên liệu sạch có giá thành hợp lý và cùng với việc tối ưu hiệu suất của nhân viên, HASECA có thể mang đến những bữa ăn đầy dinh dưỡng mà vẫn đáp ứng ngân sách chi tiêu phù hợp cho khách hàng.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item 2 -->
+        <div>
+            <div x-on:click="openIndex = openIndex === 1 ? null : 1" :class="openIndex === 1 ? 'bg-yellow-400' : 'bg-[#ece8dc]'" class="cursor-pointer flex justify-between items-center px-6 py-5 text-lg font-semibold border transition-all duration-300">
+                Cơ cấu quản lý toàn diện
+                <span class="text-3xl" x-text="openIndex === 1 ? '−' : '+'"></span>
+            </div>
+            <div x-show="openIndex === 1" style="display: none;">
+                <div class="bg-[#efefef] py-14 px-10 text-center text-gray-700 leading-8 text-lg">
+                    HASECA xây dựng bộ máy nhân sự rõ ràng, phân công nhiệm vụ cụ thể giữa các phòng ban để dễ dàng tác nghiệp và tạo ra chất lượng tốt nhất.
+                </div>
+                <div class="relative py-24 min-h-[600px]">
+                    <img src="/assets/images/b2.jpg" class="absolute inset-0 w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-black/70"></div>
+                    <div class="relative z-10 max-w-6xl mx-auto px-6 text-white">
+                        <h2 class="text-3xl md:text-4xl text-yellow-400 font-bold text-center mb-16">Mục tiêu xây dựng hệ thống quản lý</h2>
+                        <div class="grid md:grid-cols-2 gap-12">
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Phục vụ nhanh chóng</h3>
+                                <p>Một bộ phận vận hành nhiều hạng mục khác nhau sẽ khó tối ưu thời gian. HASECA luôn hướng đến sự tiện lợi cho khách hàng nên mọi quy trình đều được vận hành tinh gọn, nhanh chóng, hiệu quả, đảm bảo xử lý yêu cầu của quý khách trong thời gian ngắn nhất.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Nhân sự chất lượng</h3>
+                                <p>Đội ngũ nhân viên của HASECA vốn đã chuyên nghiệp, giàu kinh nghiệm do làm việc tại các nhà hàng, khách sạn được đào tạo chuyên môn bài bản. Với việc quản lý tốt, HASECA có thể phát huy được thế mạnh mỗi cá nhân và tối ưu hiệu suất làm việc của nhân sự.</p>
+                            </div>
+                            <div class="md:col-span-2 border-t border-white/20"></div>
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Tạo sự hài lòng tuyệt đối</h3>
+                                <p>Mỗi bộ phận sẽ có một vai trò khác nhau. Nhờ đó, HASECA đảm bảo có thể chuyên môn hóa tạo ra những sản phẩm chất lượng nhất, đồng thời có thể kịp thời giải đáp và xử lý vấn đề hiệu quả nhất nhằm mục đích cung cấp chất lượng dịch vụ tốt nhất.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item 3 -->
+        <div>
+            <div x-on:click="openIndex = openIndex === 2 ? null : 2" :class="openIndex === 2 ? 'bg-yellow-400' : 'bg-[#ece8dc]'" class="cursor-pointer flex justify-between items-center px-6 py-5 text-lg font-semibold border transition-all duration-300">
+                Phục vụ nhiều doanh nghiệp nước ngoài
+                <span class="text-3xl" x-text="openIndex === 2 ? '−' : '+'"></span>
+            </div>
+            <div x-show="openIndex === 2" style="display: none;">
+                <div class="bg-[#efefef] py-12 px-8 text-center text-gray-700">
+                    Các doanh nghiệp nước ngoài thường có tiêu chuẩn rất cao trong các bữa ăn cho nhân viên - bộ máy vận hành của doanh nghiệp. Với hơn 10 năm kinh nghiệm làm việc cùng các đối tác lớn, HASECA đã xây dựng được những tiêu chuẩn, thực đơn riêng cho từng khách hàng Mỹ, Châu Âu, Hàn Quốc, Đài Loan, Trung Quốc,...
+                </div>
+            </div>
+        </div>
+
+        <!-- Item 4 -->
+         <div>
+            <div x-on:click="openIndex = openIndex === 3 ? null : 3" :class="openIndex === 3 ? 'bg-yellow-400' : 'bg-[#ece8dc]'" class="cursor-pointer flex justify-between items-center px-6 py-5 text-lg font-semibold border transition-all duration-300">
+                Haseca luôn cầu thị và lấy khách hàng làm trung tâm của dịch vụ
+                <span class="text-3xl" x-text="openIndex === 3 ? '−' : '+'"></span>
+            </div>
+            <div x-show="openIndex === 3" style="display: none;">
+                <div class="relative py-24 min-h-[600px]">
+                    <img src="/assets/images/b4.jpg" class="absolute inset-0 w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-black/70"></div>
+                    <div class="relative z-10 max-w-6xl mx-auto px-6 text-white">
+                        <h2 class="text-3xl md:text-4xl text-yellow-400 font-bold text-center mb-16">Khát vọng của người sáng lập nền tảng giá trị</h2>
+                        <div class="grid md:grid-cols-2 gap-12">
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Ngon</h3>
+                                <p>Một bữa ăn ngon phụ thuộc vào rất nhiều yếu tố: nguyên liệu, kỹ thuật sơ chế, gia vị, lửa,... và còn phụ thuộc vào người thưởng thức. Chính vì vậy, ngoài chuyên môn, đầu bếp chuyên nghiệp của HASECA còn dựa vào cảm nhận của người lao động thông qua hòm thư điều hành, hòm thư thực đơn mong muốn, hòm thư phản ánh để cải tiến suất ăn phù hợp.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">An toàn</h3>
+                                <p>Ngành nghề của HASECA liên quan trực tiếp đến sức khỏe của người lao động. Chính vì vậy, chúng tôi không cho phép mình được lơ là bỏ qua vấn đề ATTP, thậm chí đây còn là vấn đề được đặt lên ưu tiên hàng đầu. Chúng tôi xây dựng quy trình quản lý nghiêm ngặt trong tất cả các khâu: chọn nguyên liệu đầu vào, sơ chế, chế biến, vệ sinh khu bếp.</p>
+                            </div>
+                            <div class="md:col-span-2 border-t border-white/20"></div>
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Chất lượng</h3>
+                                <p>Một bữa ăn ngon phụ thuộc vào rất nhiều yếu tố: nguyên liệu, kỹ thuật sơ chế, gia vị, lửa,... và còn phụ thuộc vào người thưởng thức. Chính vì vậy, ngoài chuyên môn, đầu bếp chuyên nghiệp của HASECA còn dựa vào cảm nhận của người lao động thông qua hòm thư điều hành, hòm thư thực đơn mong muốn, hòm thư phản ánh để cải tiến suất ăn phù hợp.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item 5 -->
+         <div>
+            <div x-on:click="openIndex = openIndex === 4 ? null : 4" :class="openIndex === 4 ? 'bg-yellow-400' : 'bg-[#ece8dc]'" class="cursor-pointer flex justify-between items-center px-6 py-5 text-lg font-semibold border transition-all duration-300">
+                Tiên phong trong ứng dụng công nghệ số
+                <span class="text-3xl" x-text="openIndex === 4 ? '−' : '+'"></span>
+            </div>
+            <div x-show="openIndex === 4" style="display: none;">
+                <div class="bg-[#efefef] py-14 px-10 text-center text-gray-700 leading-8 text-lg">
+                    HASECA đề cao sự sáng tạo, không ngừng cải tiến để mang lại hiệu quả công việc tốt hơn. Chúng tôi đã tìm ra những giải pháp phù hợp cho việc quản lý của doanh nghiệp, đặc biệt là khi quy mô HASECA đã và đang dần tăng lên.
+                </div>
+                <div class="relative py-24 min-h-[600px]">
+                    <img src="/assets/images/b5.png" class="absolute inset-0 w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-black/70"></div>
+                    <div class="relative z-10 max-w-6xl mx-auto px-6 text-white">
+                        <h2 class="text-3xl md:text-4xl text-yellow-400 font-bold text-center mb-16">Khác biệt đến từ công nghệ</h2>
+                        <div class="grid md:grid-cols-2 gap-12">
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Trí tuệ nhân tạo AI</h3>
+                                <p>Haseca bắt tay hợp tác với Beet Innovators ứng dụng AI nhận diện khuôn mặt vào công tác chấm công, kiểm soát công việc, suất ăn và hoạt động của các bếp ăn công nghiệp nhằm nâng cao hiệu quả quản trị doanh nghiệp, quản trị nhân sự và đảm bảo tốt vấn đề vệ sinh ATTP.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">CRM, ERP</h3>
+                                <p>Nhờ ứng dụng công nghệ, HASECA có thể quản lý khách hàng hiệu quả hơn, dễ dàng tổng hợp góp ý, yêu cầu của khách hàng, từ đó đưa ra những phương án giải quyết phù hợp. Đồng thời, HASECA còn có thể dễ dàng kiểm soát nguồn tài nguyên của mình bằng công cụ hoạch định và lên kế hoạch.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item 6 -->
+         <div>
+            <div x-on:click="openIndex = openIndex === 5 ? null : 5" :class="openIndex === 5 ? 'bg-yellow-400' : 'bg-[#ece8dc]'" class="cursor-pointer flex justify-between items-center px-6 py-5 text-lg font-semibold border transition-all duration-300">
+                Tuyệt đối đảm bảo vệ sinh ATTP
+                <span class="text-3xl" x-text="openIndex === 5 ? '−' : '+'"></span>
+            </div>
+            <div x-show="openIndex === 5" style="display: none;">
+                <div class="bg-[#efefef] py-14 px-10 text-center text-gray-700 leading-8 text-lg">
+                    Nguyên liệu HASECA được cung ứng bởi các nhà cung cấp thực phẩm uy tín hàng đầu Việt Nam như METRO, BIG C và nhiều nguồn uy tín khác do HASECA lựa chọn thông qua các tiêu chuẩn khắt khe. Ngoài ra, HASECA đã được cấp nhiều chứng nhận ISO 22000, VSATTP 5S.
+                </div>
+                <div class="relative py-24 min-h-[650px]">
+                    <img src="/assets/images/b6.jpg" class="absolute inset-0 w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-black/70"></div>
+                    <div class="relative z-10 max-w-6xl mx-auto px-6 text-white">
+                        <h2 class="text-3xl md:text-4xl text-yellow-400 font-bold text-center mb-16">Quy trình kiểm duyệt nghiêm ngặt</h2>
+                        <div class="grid md:grid-cols-2 gap-10">
+                            <div class="space-y-6">
+                                <p>1. Kiểm chứng hồ sơ năng lực như lò mổ, giấy kiểm dịch</p>
+                                <p>2. Kiểm tra định kỳ tại cơ sở sản xuất</p>
+                                <p>3. Kiểm tra nhiệt độ xe đông lạnh bằng nhiệt kế hồng ngoại</p>
+                                <p>4. Xét nghiệm 1 lần/tháng với thịt, rau, sản phẩm công nghiệp</p>
+                                <p>5. Họp 1 lần/tháng với nhà cung cấp</p>
+                            </div>
+                            <div class="space-y-6">
+                                <p>6. Sử dụng xe đẩy tay để rút ngắn thời gian di chuyển khi kiểm hàng</p>
+                                <p>7. Sử dụng nhật ký khiếu nại và kiểm tra số lượng bằng cân điện tử</p>
+                                <p>8. Ngừng giao dịch khi vi phạm quy định giao hàng</p>
+                                <p>9. Sử dụng mô hình <span class="text-yellow-400">bếp ăn 1 chiều</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Item 7 -->
+         <div>
+            <div x-on:click="openIndex = openIndex === 6 ? null : 6" :class="openIndex === 6 ? 'bg-yellow-400' : 'bg-[#ece8dc]'" class="cursor-pointer flex justify-between items-center px-6 py-5 text-lg font-semibold border transition-all duration-300">
+                Lấy người lao động là cốt lõi của dịch vụ
+                <span class="text-3xl" x-text="openIndex === 6 ? '−' : '+'"></span>
+            </div>
+            <div x-show="openIndex === 6" style="display: none;">
+                <div class="bg-[#efefef] py-14 px-10 text-center text-gray-700 leading-8 text-lg">
+                    Muốn nâng cao chất lượng dịch vụ, đưa ra hướng giải quyết tốt nhất cho bài toán về suất ăn công nghiệp, cần dựa vào cảm nhận của người lao động và HASECA không bỏ qua bất kỳ một góp ý nào. Bên cạnh đó, chúng tôi cũng luôn chú tâm đến việc tạo điều kiện phát triển cho nhân sự của chính mình.
+                </div>
+                <div class="relative py-24 min-h-[650px]">
+                    <img src="/assets/images/b7.jpg" class="absolute inset-0 w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-black/70"></div>
+                    <div class="relative z-10 max-w-6xl mx-auto px-6 text-white text-center">
+                        <h2 class="text-3xl md:text-4xl text-yellow-400 font-bold mb-6">Chất lượng phục vụ phụ thuộc vào người lao động</h2>
+                        <div class="mb-16 text-center">
+                            <a href="/Customer/Recruitment" class="inline-block bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-3 rounded-full transition">THAM GIA ĐỘI NGŨ</a>
+                        </div>
+                        <div class="grid md:grid-cols-2 gap-12 text-left">
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Với khách hàng</h3>
+                                <p>Sự hài lòng của người lao động cũng chính là sự hài lòng của doanh nghiệp. Đó là kim chỉ nam cho hoạt động sản xuất, kinh doanh của HASECA. Vì vậy, chúng tôi luôn cố gắng thấu hiểu người lao động để đưa ra những giải pháp hợp lý nhất.</p>
+                            </div>
+                            <div>
+                                <h3 class="text-yellow-400 text-xl mb-3">Với HASECA</h3>
+                                <p>Chúng tôi tin rằng nhân sự của mình xứng đáng với những điều tốt nhất. Chúng tôi trân trọng tất cả những đóng góp, kể cả những điều nhỏ nhất. Mục tiêu của chúng tôi là phát huy giá trị mỗi cá nhân, tạo điều kiện thăng tiến cho những nhân tài.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

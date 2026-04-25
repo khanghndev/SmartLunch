@@ -1,0 +1,33 @@
+@{
+    ViewData["Title"] = "Quản lý Giao hàng";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <h1 class="text-2xl font-bold text-green-600">Lộ trình Giao hàng (Delivery)</h1>
+
+    <div class="bg-gray-50 border rounded-xl overflow-hidden p-6 text-center">
+        <i class="fas fa-map-marked-alt text-5xl text-blue-400 mb-4"></i>
+        <h3 class="text-lg font-bold text-gray-800">Bản đồ điều phối chuyến xe</h3>
+        <p class="text-gray-500 text-sm mt-2">Dữ liệu GPS thời gian thực sẽ được tích hợp tại đây</p>
+    </div>
+
+    <div class="bg-white rounded shadow overflow-x-auto">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+             <thead class="bg-gray-100 text-gray-600">
+                <tr>
+                    <th class="p-4">Chuyến xe</th>
+                    <th class="p-4">Tuyển đường</th>
+                    <th class="p-4">Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b">
+                    <td class="p-4 font-bold">Xe Tải 29A-12345</td>
+                    <td class="p-4 text-gray-600">Bếp Trung Tâm -> KCN Yên Phong</td>
+                    <td class="p-4"><span class="px-2 py-1 bg-blue-100 text-blue-600 rounded text-xs">Đang đi (ETA: 30p)</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

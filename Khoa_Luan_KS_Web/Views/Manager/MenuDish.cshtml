@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Quản lý dữ liệu Món Ăn";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-green-600">Dữ liệu Món Ăn</h1>
+        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition">
+            + Thêm Món Mới
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+        <!-- Dish item -->
+        <div class="bg-white rounded overflow-hidden shadow">
+            <div class="p-4">
+                <h3 class="font-bold text-gray-800">Thịt kho tàu</h3>
+                <div class="mt-2 text-xs text-gray-500">Nhóm: Món Chính</div>
+            </div>
+            <div class="bg-gray-50 p-3 border-t flex justify-end gap-2">
+                <button class="text-blue-600"><i class="fas fa-edit"></i></button>
+                <button class="text-red-500"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+        
+        <div class="bg-white rounded overflow-hidden shadow">
+            <div class="p-4">
+                <h3 class="font-bold text-gray-800">Gà xào sả ớt</h3>
+                <div class="mt-2 text-xs text-gray-500">Nhóm: Món Chính</div>
+            </div>
+             <div class="bg-gray-50 p-3 border-t flex justify-end gap-2">
+                <button class="text-blue-600"><i class="fas fa-edit"></i></button>
+                <button class="text-red-500"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    </div>
+</div>

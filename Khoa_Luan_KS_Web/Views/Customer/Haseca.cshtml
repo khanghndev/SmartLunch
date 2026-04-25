@@ -1,0 +1,110 @@
+@{
+    ViewData["Title"] = "Tin tức Haseca";
+    Layout = "_LayoutCustomer";
+
+    var posts = new[] {
+        new { Id = 1, Title = "ĐẠI TIỆC ÂM NHẠC – HASECA MUSIC FESTIVAL 2024", Date = "10/01/2024", Category = "Hoạt động nội bộ", Image = "/assets/images/t1.jpg", Excerpt = "Chương trình ca nhạc nội bộ để chúc mừng thành công của tập đoàn..." },
+        new { Id = 2, Title = "LỄ KÝ KẾT HỢP TÁC CHIẾN LƯỢC TOÀN DIỆN", Date = "15/02/2024", Category = "Hợp tác phát triển", Image = "/assets/images/t2.jpg", Excerpt = "Haseca chính thức bắt tay cùng đối tác chiến lược để mở rộng thị trường..." },
+        new { Id = 3, Title = "BỮA ĂN YÊU THƯƠNG – HASECA GẮN KẾT CỘNG ĐỒNG", Date = "05/03/2024", Category = "Tin tức 24h Haseca", Image = "/assets/images/t3.jpg", Excerpt = "Dự án từ thiện chia sẻ khó khăn cùng đồng bào vùng sâu vùng xa..." },
+        new { Id = 4, Title = "HỘI NGHỊ TỔNG KẾT KINH DOANH QUÝ I", Date = "20/04/2024", Category = "Hoạt động nội bộ", Image = "/assets/images/t4.jpg", Excerpt = "Nhằm đánh giá hoạt động quý đầu năm, Haseca tổ chức hội nghị..." },
+    };
+}
+
+<div class="w-full">
+    <!-- ================= BANNER ================= -->
+    <section class="relative w-full h-[550px] md:h-[650px] lg:h-[750px] overflow-hidden">
+        <img src="/assets/images/bannerbantinhaseca.jpg" alt="haseca" class="absolute inset-0 w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-r from-black/30 via-black/10 to-transparent"></div>
+
+        <div class="absolute top-6 left-6 md:left-20 lg:left-32 z-20">
+            <a href="/Customer" class="text-white/80 text-sm hover:text-yellow-300 transition">Trang chủ</a>
+            <span class="text-white/40 mx-2">/</span>
+            <span class="text-white/90 text-sm font-medium">Bản tin</span>
+        </div>
+
+        <div class="absolute inset-0 flex items-center px-6 md:px-20 lg:px-32 z-10">
+            <div class="max-w-2xl text-white space-y-6">
+                <div class="inline-flex items-center gap-2 bg-yellow-400 px-5 py-2 rounded-full text-black font-semibold text-sm">
+                    Tin tức Haseca
+                </div>
+                <h1 class="text-4xl md:text-6xl font-extrabold leading-tight">
+                    BẢN TIN
+                    <span class="block text-yellow-400 mt-1">HASECA</span>
+                </h1>
+                <div class="w-20 h-[4px] bg-yellow-400 rounded-full"></div>
+                <p class="text-white/90 text-lg max-w-xl">
+                    "Doanh nghiệp chỉ có thể phát triển nếu xã hội xung quanh phát triển".
+                    HASECA luôn nỗ lực mang đến giá trị bền vững cho đối tác, nhân viên và cộng đồng.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================= CONTENT ================= -->
+    <section class="bg-gray-100 py-16">
+        <div class="max-w-7xl mx-auto px-6 md:px-20 flex flex-col lg:flex-row gap-12 items-start">
+            
+            <!-- LEFT -->
+            <div class="flex-1 bg-white rounded-2xl shadow-sm p-6 md:p-8">
+                <!-- GRID -->
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-8">
+                    @foreach (var post in posts)
+                    {
+                        <a href="/Customer/PostDetail/@post.Id" class="block group">
+                            <article class="h-full flex flex-col bg-white border border-gray-200 rounded-xl overflow-hidden hover:shadow-lg hover:-translate-y-1 transition duration-300">
+                                <img src="@post.Image" class="w-full h-56 object-cover group-hover:scale-105 transition" />
+                                <div class="p-5 flex flex-col flex-1 justify-between">
+                                    <div class="space-y-3">
+                                        <div class="flex justify-between text-xs text-orange-400 font-semibold">
+                                            <span>@post.Category</span>
+                                            <span class="text-gray-400">@post.Date</span>
+                                        </div>
+                                        <h3 class="font-semibold text-lg line-clamp-2 group-hover:text-orange-500">@post.Title</h3>
+                                        <p class="text-gray-600 text-sm line-clamp-3">@post.Excerpt</p>
+                                    </div>
+                                </div>
+                            </article>
+                        </a>
+                    }
+                </div>
+
+                <!-- PAGINATION (Static for Demo) -->
+                <div class="flex justify-center mt-12 gap-2 items-center">
+                    <button class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded hover:bg-gray-200">‹</button>
+                    <button class="w-10 h-10 rounded flex items-center justify-center bg-yellow-400 text-white font-semibold">1</button>
+                    <button class="w-10 h-10 flex items-center justify-center bg-gray-100 rounded hover:bg-gray-200">›</button>
+                </div>
+            </div> 
+
+            <!-- RIGHT -->
+            <aside class="w-full max-w-xs bg-white rounded-2xl shadow-sm p-6 md:p-8 space-y-12">
+                <!-- DANH MỤC -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-5">Danh mục bài viết</h3>
+                    <ul class="space-y-6">
+                        <li class="cursor-pointer text-orange-500 font-semibold">Tất cả</li>
+                        <li class="cursor-pointer hover:text-orange-500">Hoạt động nội bộ</li>
+                        <li class="cursor-pointer hover:text-orange-500">Hợp tác phát triển</li>
+                        <li class="cursor-pointer hover:text-orange-500">Tin tức 24h Haseca</li>
+                    </ul>
+                </div>
+                
+                <!-- BÀI VIẾT NỔI BẬT -->
+                <div>
+                    <h3 class="text-2xl font-bold mb-5">Bài viết nổi bật</h3>
+                    <ul class="space-y-6">
+                        @foreach (var post in posts.Take(3))
+                        {
+                            <li>
+                                <a href="/Customer/PostDetail/@post.Id" class="group">
+                                    <h4 class="group-hover:text-orange-500 line-clamp-2" title="@post.Title">@post.Title</h4>
+                                    <p class="text-sm text-gray-400">@post.Category</p>
+                                </a>
+                            </li>
+                        }
+                    </ul>
+                </div>
+            </aside>
+        </div>
+    </section>
+</div>

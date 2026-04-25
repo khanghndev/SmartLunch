@@ -1,0 +1,43 @@
+@{
+    ViewData["Title"] = "Dự tính Nguyên liệu";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-green-600">Bảng tính & Dự trù Nguyên liệu</h1>
+        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded shadow transition">
+            <i class="fas fa-file-export mr-2"></i> Xuất Excel
+        </button>
+    </div>
+
+    <div class="bg-white rounded shadow overflow-x-auto border-t-4 border-blue-500">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-gray-50 text-gray-500 uppercase text-xs">
+                <tr>
+                    <th class="p-4">Tên nguyên liệu</th>
+                    <th class="p-4">ĐVT</th>
+                    <th class="p-4 text-right">Lượng dự kiến (Tuần 18)</th>
+                    <th class="p-4 text-right">Tồn kho hiện tại</th>
+                    <th class="p-4 text-center">Trạng thái mua</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-t">
+                    <td class="p-4 font-bold text-gray-700">Thịt Gà CN</td>
+                    <td class="p-4">KG</td>
+                    <td class="p-4 text-right font-bold text-gray-800">120</td>
+                    <td class="p-4 text-right">50</td>
+                    <td class="p-4 text-center"><span class="px-2 py-1 bg-red-100 text-red-700 text-xs rounded">Cần nhập thêm</span></td>
+                </tr>
+                 <tr class="border-t">
+                    <td class="p-4 font-bold text-gray-700">Gạo tẻ ST25</td>
+                    <td class="p-4">KG</td>
+                    <td class="p-4 text-right font-bold text-gray-800">500</td>
+                    <td class="p-4 text-right">600</td>
+                    <td class="p-4 text-center"><span class="px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Đủ dùng</span></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

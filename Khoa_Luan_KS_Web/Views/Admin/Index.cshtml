@@ -1,0 +1,96 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "_LayoutAdmin";
+}
+
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold text-gray-800">Tổng quan hệ thống</h2>
+        <button class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition shadow-sm">
+            Tải báo cáo
+        </button>
+    </div>
+
+    <!-- STATS GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">Tổng Đơn Hàng</p>
+                <h3 class="text-3xl font-bold mt-1">1,245</h3>
+                <p class="text-green-500 text-xs mt-2 font-medium">+12% so với tháng trước</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
+                <i data-lucide="shopping-cart" class="text-blue-500" style="width:24px;height:24px"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">Khách Hàng Mới</p>
+                <h3 class="text-3xl font-bold mt-1">456</h3>
+                <p class="text-green-500 text-xs mt-2 font-medium">+5% so với tháng trước</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center">
+                <i data-lucide="users" class="text-green-500" style="width:24px;height:24px"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">Doanh Thu</p>
+                <h3 class="text-3xl font-bold mt-1">1.2B ₫</h3>
+                <p class="text-green-500 text-xs mt-2 font-medium">+22% so với tháng trước</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-yellow-50 flex items-center justify-center">
+                <i data-lucide="dollar-sign" class="text-yellow-500" style="width:24px;height:24px"></i>
+            </div>
+        </div>
+
+         <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-gray-500 text-sm font-medium">Hợp Đồng Chờ YD</p>
+                <h3 class="text-3xl font-bold mt-1">12</h3>
+                <p class="text-red-500 text-xs mt-2 font-medium">Cần xử lý ngay</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
+                <i data-lucide="file-text" class="text-red-500" style="width:24px;height:24px"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- TABLES AREA -->
+    <div class="bg-white rounded-xl border border-gray-100 shadow-sm mt-8">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="font-bold text-lg">Đơn hàng mới nhất</h3>
+        </div>
+        <div class="p-4 overflow-x-auto">
+            <table class="w-full text-left text-sm text-gray-600">
+                <thead class="text-xs uppercase bg-gray-50 text-gray-500">
+                    <tr>
+                        <th class="px-4 py-3 rounded-tl-lg">Mã Đơn</th>
+                        <th class="px-4 py-3">Khách Hàng</th>
+                        <th class="px-4 py-3">Ngày Đặt</th>
+                        <th class="px-4 py-3">Tổng Tiền</th>
+                        <th class="px-4 py-3 rounded-tr-lg">Trạng Thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="border-b">
+                        <td class="px-4 py-3 font-semibold text-gray-800">#ORD-001</td>
+                        <td class="px-4 py-3">Công ty TNHH ABC</td>
+                        <td class="px-4 py-3">25/04/2026</td>
+                        <td class="px-4 py-3 font-medium">12,500,000đ</td>
+                        <td class="px-4 py-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">Đang xử lý</span></td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-3 font-semibold text-gray-800">#ORD-002</td>
+                        <td class="px-4 py-3">Nguyễn Văn A</td>
+                        <td class="px-4 py-3">25/04/2026</td>
+                        <td class="px-4 py-3 font-medium">500,000đ</td>
+                        <td class="px-4 py-3"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">Hoàn thành</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

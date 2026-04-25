@@ -1,0 +1,125 @@
+@{
+    ViewData["Title"] = "Vệ sinh an toàn thực phẩm";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="w-full">
+    <!-- ===== HERO ===== -->
+    <section class="relative h-[400px] md:h-[500px] lg:h-[600px]">
+        <img src="/assets/images/banner-service.jpg" class="absolute inset-0 w-full h-full object-contain md:object-cover object-center" />
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 md:px-20 text-white">
+            <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                <span class="bg-yellow-400 text-black px-3 py-1 mr-2 inline-block">Vệ sinh</span>
+                <br class="md:hidden" /> an toàn thực phẩm
+            </h1>
+        </div>
+    </section>
+
+    <!-- ===== SECTION 1 ===== -->
+    <section class="bg-white py-16">
+        <div class="max-w-7xl mx-auto px-6 md:px-20 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- ===== LEFT ===== -->
+            <div class="grid grid-rows-2 gap-6 h-[520px]">
+                <div class="bg-[#f5f1e8] p-10 flex items-center">
+                    <h2 class="text-4xl font-bold leading-tight">
+                        <span class="bg-yellow-400 px-2">Cung ứng</span> thực phẩm <br /> sạch toàn quốc
+                    </h2>
+                </div>
+                <img src="/assets/images/s1.jpg" class="w-full h-full object-cover" />
+            </div>
+            <!-- ===== RIGHT ===== -->
+            <div class="relative h-[520px]">
+                <img src="/assets/images/s2.jpg" class="w-full h-full object-cover" />
+                <div class="absolute bottom-0 left-0 right-0 bg-black/40 text-white p-6">
+                    <p class="leading-relaxed">Từ khi ra đời, dịch vụ cung ứng nông sản, thực phẩm sạch của HASECA đã giải quyết bài toán về nguồn cung ứng nguyên liệu cho cả những khách hàng nhỏ lẻ, và khách chuyên sỉ, nhà hàng, khách sạn,...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SECTION 2 ===== -->
+    <section class="relative bg-[#2b2b2b] py-12 overflow-hidden text-white">
+        <div class="max-w-7xl mx-auto px-6 md:px-20 grid md:grid-cols-2 gap-10 items-center">
+            <!-- LEFT -->
+            <div class="max-w-xl">
+                <h2 class="text-3xl md:text-4xl font-bold mb-6 leading-tight">
+                    <span class="bg-yellow-400 text-black px-3 py-1 inline-block">Nguồn nguyên liệu</span><br />
+                    <span class="text-gray-200">sạch, uy tín, chất lượng</span>
+                </h2>
+                <p class="text-gray-300 mb-6 leading-relaxed">Xuất phát từ thế mạnh trong việc cung cấp suất ăn văn phòng, suất ăn công nghiệp; HASECA đã nỗ lực phát triển dịch vụ phân phối nguyên liệu nông sản, thực phẩm sạch. Tùy theo từng yêu cầu cụ thể, chúng tôi sẽ lựa chọn những nguyên liệu tốt nhất, đóng gói, bảo quản và vận chuyển tới tận nơi.</p>
+                <p class="text-gray-300 mb-8 leading-relaxed">Khách hàng nhận và thanh toán đơn hàng cho nhân viên vận chuyển. Trong trường hợp khách hàng không hài lòng và quan ngại về an toàn thực phẩm, vui lòng liên hệ ngay với HASECA để được xử lý ngay</p>
+                <a href="/Customer/ChooseHaseca">
+                    <button class="bg-orange-500 hover:bg-orange-600 transition px-6 py-3 rounded-full font-semibold">CHỌN HASECA</button>
+                </a>
+            </div>
+            <!-- RIGHT -->
+            <div class="relative flex justify-end items-center">
+                <div class="absolute right-[-120px] bottom-[-120px] w-[500px] h-[320px] bg-yellow-400 rounded-[50%] z-0"></div>
+                <img src="/assets/images/s3.png" alt="raw vegetables" class="relative z-10 w-[420px] md:w-[520px] object-contain" />
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== ƯU ĐIỂM ===== -->
+    <section class="bg-gray-100 px-10 md:px-20 py-16" x-data="{ active: null }">
+        <h2 class="text-4xl font-bold mb-10 text-center">
+            <span class="bg-yellow-400 px-2">Ưu điểm</span> HASECA
+        </h2>
+        <div class="space-y-4 max-w-4xl mx-auto">
+             <!-- Item 1 -->
+            <div class="rounded overflow-hidden shadow">
+                <div x-on:click="active = active === 0 ? null : 0" :class="active === 0 ? 'bg-yellow-400 text-black' : 'bg-[#e9e4d8]'" class="flex justify-between items-center px-6 py-5 cursor-pointer transition">
+                    <span class="font-semibold text-lg">An toàn tuyệt đối</span>
+                    <span class="text-2xl font-bold" x-text="active === 0 ? '−' : '+'"></span>
+                </div>
+                <div x-show="active === 0" style="display: none;" class="bg-white px-6 py-6 border border-yellow-400">
+                    <p class="text-gray-700 leading-relaxed">Các nguồn nông sản, thực phẩm do HASECA lựa chọn đều phải đảm bảo những tiêu chuẩn nghiêm ngặt về ATTP và trải qua các khâu kiểm soát chất lượng chặt chẽ. Trong trường hợp khách hàng phát hiện nông sản, thực phẩm bẩn, không đảm bảo chất lượng,... HASECA cam kết chịu trách nhiệm và đổi trả theo yêu cầu.</p>
+                </div>
+            </div>
+            <!-- Item 2 -->
+            <div class="rounded overflow-hidden shadow">
+                <div x-on:click="active = active === 1 ? null : 1" :class="active === 1 ? 'bg-yellow-400 text-black' : 'bg-[#e9e4d8]'" class="flex justify-between items-center px-6 py-5 cursor-pointer transition">
+                    <span class="font-semibold text-lg">Giao hàng tận nơi nhanh chóng</span>
+                    <span class="text-2xl font-bold" x-text="active === 1 ? '−' : '+'"></span>
+                </div>
+                <div x-show="active === 1" style="display: none;" class="bg-white px-6 py-6 border border-yellow-400">
+                    <p class="text-gray-700 leading-relaxed">HASECA sở hữu mạng lưới phân phối nguyên liệu toàn quốc, nhờ đó có thể tiết kiệm thời gian cho khách hàng. Khách hàng chỉ cần cung cấp địa chỉ, nhân viên của chúng tôi sẽ vận chuyển đơn hàng đến tận nơi trong thời gian ngắn nhất.</p>
+                </div>
+            </div>
+            <!-- Item 3 -->
+            <div class="rounded overflow-hidden shadow">
+                <div x-on:click="active = active === 2 ? null : 2" :class="active === 2 ? 'bg-yellow-400 text-black' : 'bg-[#e9e4d8]'" class="flex justify-between items-center px-6 py-5 cursor-pointer transition">
+                    <span class="font-semibold text-lg">Tu vấn, hỗ trợ tối đa</span>
+                    <span class="text-2xl font-bold" x-text="active === 2 ? '−' : '+'"></span>
+                </div>
+                <div x-show="active === 2" style="display: none;" class="bg-white px-6 py-6 border border-yellow-400">
+                    <p class="text-gray-700 leading-relaxed">Đội ngũ nhân viên của chúng tôi không những giàu kinh nghiệm, mà còn luôn được đào tạo bài bản về kiến thức chuyên môn. Chúng tôi sẵn sàng giải đáp các thắc mắc và tư vấn tận tình cho khách hàng.</p>
+                </div>
+            </div>
+             <!-- Item 4 -->
+            <div class="rounded overflow-hidden shadow">
+                <div x-on:click="active = active === 3 ? null : 3" :class="active === 3 ? 'bg-yellow-400 text-black' : 'bg-[#e9e4d8]'" class="flex justify-between items-center px-6 py-5 cursor-pointer transition">
+                    <span class="font-semibold text-lg">Giá thành dịch vụ hợp lý</span>
+                    <span class="text-2xl font-bold" x-text="active === 3 ? '−' : '+'"></span>
+                </div>
+                <div x-show="active === 3" style="display: none;" class="bg-white px-6 py-6 border border-yellow-400">
+                    <p class="text-gray-700 leading-relaxed">Với nhiều năm kinh nghiệm trong ngành, chúng tôi đã lựa chọn được nhiều đối tác đảm bảo chất lượng nguyên liệu với chi phí vô cùng phải chăng. Ngoài ra, so với việc tự mình tìm kiếm, mua và vận chuyển nguyên liệu như trước đây, khách hàng có thể sở hữu những nông sản, thực phẩm ngay tại nhà với mức giá rẻ hơn, hoặc ít nhất là không đổi. Từ đó, khách hàng có thể tiết kiệm được một chi phí đáng kể.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="relative h-[320px] overflow-hidden">
+        <img src="/assets/images/s4.jpg" class="absolute inset-0 w-full h-full object-cover object-center scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+        <div class="relative z-10 h-full flex flex-col justify-center px-10 md:px-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-2">Bạn vẫn băn khoăn về dịch vụ?</h2>
+            <p class="text-gray-200 mb-6">HASECA có thể giúp bạn.</p>
+            <a href="/Customer/Contact" class="w-fit">
+                <button class="bg-orange-500 hover:bg-orange-600 transition text-white px-6 py-3 rounded-full font-semibold">TƯ VẤN 1-1 MIỄN PHÍ</button>
+            </a>
+        </div>
+    </section>
+</div>

@@ -1,0 +1,749 @@
+{
+  "Files": [
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\obj\\Debug\\net8.0\\scopedcss\\projectbundle\\Khoa_Luan_KS_Web.bundle.scp.css",
+      "PackagePath": "staticwebassets\\Khoa_Luan_KS_Web.cbg7qvl39c.bundle.scp.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\HACCP.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\HACCP.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Logo.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\Logo.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 131006.png",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 131006.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 131037.png",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 131037.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 132101.png",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 132101.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 134732.png",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 134732.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 140515.png",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 140515.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 140924.png",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 140924.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 140958.png",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 140958.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 142134.png",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 142134.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 145428.png",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 145428.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 151113.png",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\Screenshot 2018-04-09 151113.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\Screenshots\\desktop.ini",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\Screenshots\\desktop.ini"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\Pictures\\desktop.ini",
+      "PackagePath": "staticwebassets\\assets\\images\\Pictures\\desktop.ini"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\THCS.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\THCS.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\THPT.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\THPT.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a1.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a10.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a10.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a11.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a11.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a12.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a12.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a13.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a13.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a14.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a14.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a15.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a15.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a16.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a16.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a17.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a17.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a18.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a18.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a19.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a19.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a2.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a20.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a20.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a21.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a21.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a22.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a22.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a23.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a23.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a24.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a24.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a3.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a4.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a5.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a5.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a6.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a6.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a7.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a7.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a8.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a8.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\a9.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\a9.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\about.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\about.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\about1.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\about1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\about2.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\about2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\about3.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\about3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh1.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\anh1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh2.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\anh2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh3.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\anh3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh4.png",
+      "PackagePath": "staticwebassets\\assets\\images\\anh4.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh5.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\anh5.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh6.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\anh6.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh7.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\anh7.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh8.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\anh8.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\anh9.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\anh9.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\b1.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\b1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\b2.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\b2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\b4.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\b4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\b5.png",
+      "PackagePath": "staticwebassets\\assets\\images\\b5.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\b6.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\b6.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\b7.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\b7.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\b8.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\b8.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\banner-service.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\banner-service.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\banner1.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\banner1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\banner2.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\banner2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\banner3.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\banner3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\banner4.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\banner4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\banner5.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\banner5.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerbantinhaseca.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\bannerbantinhaseca.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannerlienhe.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\bannerlienhe.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\bannervechungtoi.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\bannervechungtoi.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\cn1.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\cn1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\cn2.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\cn2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\cn3.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\cn3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\cn4.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\cn4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\daihoc.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\daihoc.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\fact1.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\fact1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\fact2.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\fact2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\fact3.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\fact3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\guiyeucaulienhe.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\guiyeucaulienhe.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\header.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\header.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\hieu.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\hieu.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\hop.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\hop.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\ht1.png",
+      "PackagePath": "staticwebassets\\assets\\images\\ht1.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\ht2.png",
+      "PackagePath": "staticwebassets\\assets\\images\\ht2.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\ht3.png",
+      "PackagePath": "staticwebassets\\assets\\images\\ht3.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\ht4.png",
+      "PackagePath": "staticwebassets\\assets\\images\\ht4.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\ht5.png",
+      "PackagePath": "staticwebassets\\assets\\images\\ht5.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\ht6.png",
+      "PackagePath": "staticwebassets\\assets\\images\\ht6.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\image3.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\image3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\kitchen-bg.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\kitchen-bg.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\mamnon.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\mamnon.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\mamnon.webp",
+      "PackagePath": "staticwebassets\\assets\\images\\mamnon.webp"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\map.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\map.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\nhan.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\nhan.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\nhiem.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\nhiem.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\phat.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\phat.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\recruitment_banner.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\recruitment_banner.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\s1.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\s1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\s2.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\s2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\s3.png",
+      "PackagePath": "staticwebassets\\assets\\images\\s3.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\s4.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\s4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\service1.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\service1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\service2.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\service2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\service3.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\service3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\service4.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\service4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\studentbottom.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\studentbottom.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\students.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\students.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\students1.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\students1.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\students2.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\students2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\students3.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\students3.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\students4.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\students4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\studenttop.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\studenttop.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\supcua.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\supcua.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\tam.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\tam.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\thanhtuu.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\thanhtuu.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\tieuhoc.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\tieuhoc.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\truonghuit.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\truonghuit.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\vanphong.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\vanphong.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\vechungtoi2.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\vechungtoi2.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\xinghiep.jpg",
+      "PackagePath": "staticwebassets\\assets\\images\\xinghiep.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\css\\site.css",
+      "PackagePath": "staticwebassets\\css\\site.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\css\\tailwind_src.css",
+      "PackagePath": "staticwebassets\\css\\tailwind_src.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\favicon.ico",
+      "PackagePath": "staticwebassets\\favicon.ico"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\js\\site.js",
+      "PackagePath": "staticwebassets\\js\\site.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\LICENSE",
+      "PackagePath": "staticwebassets\\lib\\bootstrap"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-grid.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-reboot.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap-utilities.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\css\\bootstrap.rtl.min.css.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.js.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.bundle.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.js.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.esm.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.js.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map",
+      "PackagePath": "staticwebassets\\lib\\bootstrap\\dist\\js\\bootstrap.min.js.map"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery-validation-unobtrusive\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\LICENSE.txt"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation-unobtrusive\\jquery.validate.unobtrusive.min.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery-validation\\LICENSE.md",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\LICENSE.md"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery-validation\\dist\\additional-methods.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\additional-methods.min.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery-validation\\dist\\jquery.validate.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery-validation\\dist\\jquery.validate.min.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery\\LICENSE.txt",
+      "PackagePath": "staticwebassets\\lib\\jquery\\LICENSE.txt"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery\\dist\\jquery.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery\\dist\\jquery.min.js",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.js"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\lib\\jquery\\dist\\jquery.min.map",
+      "PackagePath": "staticwebassets\\lib\\jquery\\dist\\jquery.min.map"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.Khoa_Luan_KS_Web.Microsoft.AspNetCore.StaticWebAssetEndpoints.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssetEndpoints.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.Khoa_Luan_KS_Web.Microsoft.AspNetCore.StaticWebAssets.props",
+      "PackagePath": "build\\Microsoft.AspNetCore.StaticWebAssets.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.build.Khoa_Luan_KS_Web.props",
+      "PackagePath": "build\\Khoa_Luan_KS_Web.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildMultiTargeting.Khoa_Luan_KS_Web.props",
+      "PackagePath": "buildMultiTargeting\\Khoa_Luan_KS_Web.props"
+    },
+    {
+      "Id": "obj\\Debug\\net8.0\\staticwebassets\\msbuild.buildTransitive.Khoa_Luan_KS_Web.props",
+      "PackagePath": "buildTransitive\\Khoa_Luan_KS_Web.props"
+    }
+  ],
+  "ElementsToRemove": []
+}

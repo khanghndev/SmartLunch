@@ -1,0 +1,3 @@
+﻿<Project>
+  <Import Project="..\buildMultiTargeting\Khoa_Luan_KS_Web.props" />
+</Project>

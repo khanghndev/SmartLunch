@@ -1,0 +1,36 @@
+@{
+    ViewData["Title"] = "Quản lý Hợp Đồng";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-green-600">Quản lý Hợp Đồng Doanh Nghiệp</h1>
+        <button class="bg-green-600 text-white px-4 py-2 rounded shadow"><i class="fas fa-plus"></i> Tạo hợp đồng</button>
+    </div>
+
+    <div class="bg-white rounded shadow p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Contract Card -->
+        <div class="border rounded-lg p-5 border-l-4 border-green-500 hover:shadow-lg transition">
+             <div class="flex justify-between items-start">
+                  <div>
+                      <h3 class="font-bold text-lg text-gray-800">HD-2026-SEV</h3>
+                      <p class="text-sm text-gray-500 mt-1">Đối tác: Samsung Electronics VN</p>
+                  </div>
+                  <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Đang hiệu lực</span>
+             </div>
+             <p class="text-xs text-gray-400 mt-4"><i class="fas fa-calendar-alt"></i> Hết hạn: 31/12/2026</p>
+        </div>
+         <!-- Contract Card -->
+        <div class="border rounded-lg p-5 border-l-4 border-yellow-500 hover:shadow-lg transition">
+             <div class="flex justify-between items-start">
+                  <div>
+                      <h3 class="font-bold text-lg text-gray-800">HD-2026-FPT</h3>
+                      <p class="text-sm text-gray-500 mt-1">Đối tác: FPT Software</p>
+                  </div>
+                  <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-bold">Sắp hết hạn</span>
+             </div>
+             <p class="text-xs text-gray-400 mt-4"><i class="fas fa-calendar-alt"></i> Hết hạn: 15/05/2026</p>
+        </div>
+    </div>
+</div>

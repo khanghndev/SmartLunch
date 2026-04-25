@@ -1,0 +1,204 @@
+@{
+    ViewData["Title"] = "Đối tác & Doanh nghiệp";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="w-full">
+    <!-- SUPPLIER -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 lg:py-24">
+        <div class="text-center mb-14">
+            <div class="flex items-center justify-center gap-3 mb-4">
+                <div class="bg-red-100 p-3 rounded-full">
+                    <i data-lucide="truck" class="text-red-600 w-6 h-6"></i>
+                </div>
+                <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800">
+                    Đối tác cung cấp nguyên liệu
+                </h2>
+            </div>
+            <div class="w-16 h-1 bg-red-500 mx-auto mb-6 rounded-full"></div>
+            <p class="text-gray-500 max-w-xl mx-auto text-sm md:text-base">
+                Các nhà cung cấp thực phẩm đạt chuẩn chất lượng, đảm bảo nguồn nguyên liệu tươi sạch cho hệ thống bếp.
+            </p>
+        </div>
+
+        <!-- GRID SUPPLIER -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 lg:gap-8">
+            <!-- Supplier 1 -->
+            <div class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 overflow-hidden group">
+                <div class="h-40 sm:h-44 lg:h-48 flex items-center justify-center bg-gray-100 p-4">
+                    <img src="https://tse1.mm.bing.net/th/id/OIP.OE3b2cCCT9gMIrclJ_c3VQHaD4?pid=Api" alt="Rau sạch Đà Lạt" class="max-h-full max-w-full object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
+                </div>
+                <div class="p-5">
+                    <h3 class="text-base lg:text-lg font-semibold text-gray-800 mb-2">Rau sạch Đà Lạt DL Fresh</h3>
+                    <p class="text-gray-500 text-sm mb-4">Cung cấp rau củ đạt chuẩn VietGAP từ trang trại công nghệ cao tại Đà Lạt.</p>
+                    <div class="flex items-center gap-2 text-xs font-medium text-red-700 bg-red-50 px-3 py-1 rounded-full w-fit">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> Chứng nhận VietGAP
+                    </div>
+                </div>
+            </div>
+             <!-- Supplier 2 -->
+             <div class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 overflow-hidden group">
+                <div class="h-40 sm:h-44 lg:h-48 flex items-center justify-center bg-gray-100 p-4">
+                    <img src="https://tafaviet.com.vn/sites/default/files/inline-images/trang-trai-cung-cap-trung-ga.png" alt="Tafa Việt" class="max-h-full max-w-full object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
+                </div>
+                <div class="p-5">
+                    <h3 class="text-base lg:text-lg font-semibold text-gray-800 mb-2">Hệ thống chăn nuôi Tafa Việt</h3>
+                    <p class="text-gray-500 text-sm mb-4">Cung cấp thịt gà hữu cơ, không kháng sinh và được kiểm định định kỳ.</p>
+                    <div class="flex items-center gap-2 text-xs font-medium text-red-700 bg-red-50 px-3 py-1 rounded-full w-fit">
+                        <i data-lucide="award" class="w-4 h-4"></i> Kiểm định ISO
+                    </div>
+                </div>
+            </div>
+             <!-- Supplier 3 -->
+             <div class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 overflow-hidden group">
+                <div class="h-40 sm:h-44 lg:h-48 flex items-center justify-center bg-gray-100 p-4">
+                    <img src="https://thitbosachminhchanh.com/datafiles/3707/upload/files/M%C3%A0u%20%C4%91%C3%A0o%20v%C3%A0%20%C4%90%E1%BB%8F%20R%E1%BB%B1c%20r%E1%BB%A1%20%C4%90%E1%BB%93%20%C4%83n%20Youtube%20H%C3%ACnh%20thu%20nh%E1%BB%8F.png" alt="Bò sạch Minh Chánh" class="max-h-full max-w-full object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
+                </div>
+                <div class="p-5">
+                    <h3 class="text-base lg:text-lg font-semibold text-gray-800 mb-2">Thịt bò sạch Minh Chánh</h3>
+                    <p class="text-gray-500 text-sm mb-4">Nhà cung cấp thịt bò sạch đạt tiêu chuẩn kiểm định an toàn thực phẩm.</p>
+                    <div class="flex items-center gap-2 text-xs font-medium text-red-700 bg-red-50 px-3 py-1 rounded-full w-fit">
+                        <i data-lucide="truck" class="w-4 h-4"></i> 100% bò sạch
+                    </div>
+                </div>
+            </div>
+             <!-- Supplier 4 -->
+             <div class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 overflow-hidden group">
+                <div class="h-40 sm:h-44 lg:h-48 flex items-center justify-center bg-gray-100 p-4">
+                    <img src="https://tse1.mm.bing.net/th/id/OIP.JRsUI6kTT8YMPWSGJ8cHwQHaHa?pid=Api" alt="Hải sản biển xanh" class="max-h-full max-w-full object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
+                </div>
+                <div class="p-5">
+                    <h3 class="text-base lg:text-lg font-semibold text-gray-800 mb-2">Hải sản Biển Xanh</h3>
+                    <p class="text-gray-500 text-sm mb-4">Chuyên cung cấp cá và hải sản tươi sống được đánh bắt và kiểm định mỗi ngày.</p>
+                    <div class="flex items-center gap-2 text-xs font-medium text-red-700 bg-red-50 px-3 py-1 rounded-full w-fit">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> Hải sản tươi mỗi ngày
+                    </div>
+                </div>
+            </div>
+              <!-- Supplier 5 -->
+             <div class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 overflow-hidden group">
+                <div class="h-40 sm:h-44 lg:h-48 flex items-center justify-center bg-gray-100 p-4">
+                    <img src="https://tse1.mm.bing.net/th/id/OIP.ZCwXhH15PI9XczP1vhA8JAHaHa?pid=Api" alt="Hiền Organic" class="max-h-full max-w-full object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
+                </div>
+                <div class="p-5">
+                    <h3 class="text-base lg:text-lg font-semibold text-gray-800 mb-2">Hiền Organic</h3>
+                    <p class="text-gray-500 text-sm mb-4">Trang trại rau củ hữu cơ cung cấp nguồn thực phẩm sạch cho hệ thống bếp.</p>
+                    <div class="flex items-center gap-2 text-xs font-medium text-red-700 bg-red-50 px-3 py-1 rounded-full w-fit">
+                        <i data-lucide="award" class="w-4 h-4"></i> Rau củ hữu cơ
+                    </div>
+                </div>
+            </div>
+             <!-- Supplier 6 -->
+             <div class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 overflow-hidden group">
+                <div class="h-40 sm:h-44 lg:h-48 flex items-center justify-center bg-gray-100 p-4">
+                    <img src="https://www.trongtamrice.com/files/system/img/general/anh-mang-xa-hoi.jpg" alt="Lương thực trọng tâm" class="max-h-full max-w-full object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
+                </div>
+                <div class="p-5">
+                    <h3 class="text-base lg:text-lg font-semibold text-gray-800 mb-2">Lương thực Trọng Tâm</h3>
+                    <p class="text-gray-500 text-sm mb-4">Cung cấp gạo sạch từ vùng đồng bằng sông Cửu Long đạt chuẩn thực phẩm.</p>
+                    <div class="flex items-center gap-2 text-xs font-medium text-red-700 bg-red-50 px-3 py-1 rounded-full w-fit">
+                        <i data-lucide="award" class="w-4 h-4"></i> Gạo chất lượng cao
+                    </div>
+                </div>
+            </div>
+             <!-- Supplier 7 -->
+             <div class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 overflow-hidden group">
+                <div class="h-40 sm:h-44 lg:h-48 flex items-center justify-center bg-gray-100 p-4">
+                    <img src="https://citifruit.com/uploads/images/cua-hang-trai-cay-nhap-khau-chat-luong.jpg" alt="Citi fruit" class="max-h-full max-w-full object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
+                </div>
+                <div class="p-5">
+                    <h3 class="text-base lg:text-lg font-semibold text-gray-800 mb-2">Citi Fruit</h3>
+                    <p class="text-gray-500 text-sm mb-4">Trang trại cung cấp trái cây tươi sạch mỗi ngày, có nguồn gốc rõ ràng.</p>
+                    <div class="flex items-center gap-2 text-xs font-medium text-red-700 bg-red-50 px-3 py-1 rounded-full w-fit">
+                        <i data-lucide="shield-check" class="w-4 h-4"></i> Trái cây hữu cơ
+                    </div>
+                </div>
+            </div>
+             <!-- Supplier 8 -->
+             <div class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 overflow-hidden group">
+                <div class="h-40 sm:h-44 lg:h-48 flex items-center justify-center bg-gray-100 p-4">
+                    <img src="http://baovinhlong.com.vn/dataimages/201812/original/images2171539_BVL_a__4_.JPG" alt="Pork Shop" class="max-h-full max-w-full object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
+                </div>
+                <div class="p-5">
+                    <h3 class="text-base lg:text-lg font-semibold text-gray-800 mb-2">Pork Shop</h3>
+                    <p class="text-gray-500 text-sm mb-4">Cung cấp thịt heo sạch đạt chuẩn chăn nuôi an toàn.</p>
+                    <div class="flex items-center gap-2 text-xs font-medium text-red-700 bg-red-50 px-3 py-1 rounded-full w-fit">
+                        <i data-lucide="truck" class="w-4 h-4"></i> Thịt heo tươi mỗi ngày
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BUSINESS -->
+    <section class="bg-gray-50 py-20 lg:py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-14">
+                <div class="flex items-center justify-center gap-3 mb-4">
+                    <div class="bg-red-100 p-3 rounded-full">
+                        <i data-lucide="building-2" class="text-red-600 w-6 h-6"></i>
+                    </div>
+                    <h2 class="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-800">Doanh nghiệp sử dụng dịch vụ</h2>
+                </div>
+                <div class="w-16 h-1 bg-red-500 mx-auto mb-6 rounded-full"></div>
+                <p class="text-gray-500 max-w-xl mx-auto text-sm md:text-base">Các doanh nghiệp tin tưởng sử dụng dịch vụ suất ăn công nghiệp.</p>
+            </div>
+
+            <!-- GRID BUSINESS -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
+                 <!-- B1 -->
+                <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 overflow-hidden group">
+                    <div class="h-40 sm:h-44 lg:h-48 flex items-center justify-center bg-gray-100 p-4">
+                        <img src="https://tranhuynhmec.com/thumbs/300x200x2/upload/news/cty-cp-may-sai-gon-3-6372-8253.jpg" alt="Sài gòn 3" class="max-h-full max-w-full object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i data-lucide="building-2" class="text-red-600 w-4 h-4"></i>
+                            <h3 class="text-base lg:text-lg font-semibold text-gray-800">Công ty cổ phần may Sài Gòn 3</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">Cung cấp hơn 1.200 suất ăn mỗi ngày cho công nhân tại khu công nghiệp Bình Dương.</p>
+                    </div>
+                </div>
+                 <!-- B2 -->
+                 <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 overflow-hidden group">
+                    <div class="h-40 sm:h-44 lg:h-48 flex items-center justify-center bg-gray-100 p-4">
+                        <img src="https://saigonlandvn.com.vn/wp-content/uploads/2022/09/LOGSGL.png" alt="Sài gòn land" class="max-h-full max-w-full object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i data-lucide="building-2" class="text-red-600 w-4 h-4"></i>
+                            <h3 class="text-base lg:text-lg font-semibold text-gray-800">Bất động sản Sài Gòn Land</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">Suất ăn văn phòng cho hơn 800 nhân viên mỗi ngày.</p>
+                    </div>
+                </div>
+                 <!-- B3 -->
+                 <div class="bg-white rounded-2xl shadow-sm hover:shadow-xl transition hover:-translate-y-2 overflow-hidden group">
+                    <div class="h-40 sm:h-44 lg:h-48 flex items-center justify-center bg-gray-100 p-4">
+                        <img src="https://hrchannels.com/Upload/avatar/20230405/151852605_Logo-2022.jpg" alt="Cao đẳng DL" class="max-h-full max-w-full object-contain transition duration-500 group-hover:scale-105" loading="lazy" />
+                    </div>
+                    <div class="p-6">
+                        <div class="flex items-center gap-3 mb-3">
+                            <i data-lucide="building-2" class="text-red-600 w-4 h-4"></i>
+                            <h3 class="text-base lg:text-lg font-semibold text-gray-800">Trường Cao đẳng Du lịch Sài Gòn</h3>
+                        </div>
+                        <p class="text-gray-500 text-sm">Suất ăn dinh dưỡng cho sinh viên mỗi ngày.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- COMMITMENT -->
+    <section class="py-20 lg:py-28 relative overflow-hidden">
+        <div class="absolute inset-0 flex justify-center items-center">
+            <div class="w-[600px] md:w-[700px] h-[250px] md:h-[300px] bg-red-100 rounded-full blur-2xl opacity-70"></div>
+        </div>
+        <div class="relative max-w-3xl mx-auto px-6 text-center">
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-6">Cam kết hợp tác lâu dài</h2>
+            <p class="text-gray-600 leading-relaxed text-base md:text-lg">
+                Chúng tôi xây dựng hệ sinh thái đối tác bền vững từ nhà cung cấp nguyên liệu đến doanh nghiệp khách hàng, đảm bảo nguồn thực phẩm an toàn và dịch vụ chất lượng cao.
+            </p>
+        </div>
+    </section>
+</div>

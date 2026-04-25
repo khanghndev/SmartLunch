@@ -1,0 +1,38 @@
+@{
+    ViewData["Title"] = "Quản lý Khách hàng";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <h1 class="text-2xl font-bold text-green-600">Quản lý Khách hàng (Doanh nghiệp & Cá nhân)</h1>
+    
+    <div class="bg-white rounded shadow overflow-x-auto">
+        <table class="w-full text-left text-sm whitespace-nowrap">
+            <thead class="bg-blue-50 text-blue-800 uppercase text-xs">
+                <tr>
+                    <th class="p-4">Tên khách hàng</th>
+                    <th class="p-4">Loại hình</th>
+                    <th class="p-4">Địa chỉ / Khu vực</th>
+                    <th class="p-4">Liên hệ chính</th>
+                    <th class="p-4">Trạng thái</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr class="border-b">
+                    <td class="p-4 font-bold text-gray-700">Trường THPT Amsterdam</td>
+                    <td class="p-4"><span class="bg-indigo-100 text-indigo-700 px-2 py-1 rounded text-xs">Trường học</span></td>
+                    <td class="p-4 text-gray-500">Cầu Giấy, Hà Nội</td>
+                    <td class="p-4">Cô Lan - 098x xxx xxx</td>
+                    <td class="p-4 text-green-600 font-medium">Đang phục vụ</td>
+                </tr>
+                <tr class="border-b">
+                    <td class="p-4 font-bold text-gray-700">Nhà máy Samsung SEV</td>
+                    <td class="p-4"><span class="bg-orange-100 text-orange-700 px-2 py-1 rounded text-xs">Khu Công nghiệp</span></td>
+                    <td class="p-4 text-gray-500">Yên Phong, Bắc Ninh</td>
+                    <td class="p-4">Mr. Kim - 091x xxx xxx</td>
+                    <td class="p-4 text-green-600 font-medium">Đang phục vụ</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

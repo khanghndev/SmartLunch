@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Quản lý Nhà cung cấp";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-green-600">Nhà cung cấp nguyên liệu</h1>
+        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition">
+            + Thêm NCC
+        </button>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+        <div class="bg-white border rounded shadow-sm p-4">
+            <div class="flex items-center justify-between mb-4">
+                <i class="fas fa-truck text-3xl text-green-600"></i>
+                <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">Hợp Tác</span>
+            </div>
+            <h3 class="font-bold text-lg">CP Foods Việt Nam</h3>
+            <p class="text-gray-500 text-sm mt-1">Cung cấp: Thực phẩm tươi sống, Thịt gà, Heo</p>
+            <div class="mt-4 pt-4 border-t flex justify-between">
+                <button class="text-blue-500 hover:underline text-sm">Xem chi tiết</button>
+                <div class="text-yellow-500 text-sm"><i class="fas fa-star"></i> 5.0</div>
+            </div>
+        </div>
+
+        <div class="bg-white border rounded shadow-sm p-4">
+            <div class="flex items-center justify-between mb-4">
+                <i class="fas fa-truck text-3xl text-green-600"></i>
+                <span class="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-bold">Hợp Tác</span>
+            </div>
+            <h3 class="font-bold text-lg">Metro Cash & Carry</h3>
+            <p class="text-gray-500 text-sm mt-1">Cung cấp: Gia vị, Hàng khô, Đồ uống</p>
+            <div class="mt-4 pt-4 border-t flex justify-between">
+                <button class="text-blue-500 hover:underline text-sm">Xem chi tiết</button>
+                <div class="text-yellow-500 text-sm"><i class="fas fa-star"></i> 4.8</div>
+            </div>
+        </div>
+    </div>
+</div>

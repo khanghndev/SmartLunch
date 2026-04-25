@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Chi tiết Lịch sử Thực đơn";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <div class="flex items-center gap-4 mb-4">
+        <a href="/Manager/MenuHistory" class="bg-gray-100 hover:bg-gray-200 px-4 py-2 rounded text-gray-700 font-medium">
+            <i class="fas fa-arrow-left"></i> Quay lại
+        </a>
+        <h1 class="text-2xl font-bold text-green-600">Chi tiết Thực đơn Tuần 17 (19/04 - 25/04)</h1>
+    </div>
+
+    <!-- Calendar View Placeholder -->
+    <div class="bg-white border rounded shadow p-4 overflow-x-auto opacity-70 cursor-not-allowed">
+        <div class="mb-4 text-center text-sm font-bold text-red-500 border border-red-500 bg-red-50 p-2 rounded">
+            Thực đơn trong quá khứ chỉ hỗ trợ Xem, không thể chỉnh sửa.
+        </div>
+        <table class="w-full text-center border-collapse">
+            <thead>
+                <tr>
+                    <th class="border p-2 bg-gray-50">Thứ 2 (19/04)</th>
+                    <th class="border p-2 bg-gray-50">Thứ 3 (20/04)</th>
+                    <th class="border p-2 bg-gray-50">Thứ 4 (21/04)</th>
+                    <th class="border p-2 bg-gray-50">Thứ 5 (22/04)</th>
+                    <th class="border p-2 bg-gray-50 whitespace-nowrap">Thứ 6 (23/04)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="border p-4 align-top">
+                        <div class="bg-gray-100 p-2 rounded text-sm mb-2 text-left">
+                            <span class="font-bold text-gray-800">Món chính:</span><br/> Cá kho tộ
+                        </div>
+                    </td>
+                    <td class="border p-4 align-top">
+                        <div class="bg-gray-100 p-2 rounded text-sm mb-2 text-left">
+                            <span class="font-bold text-gray-800">Món chính:</span><br/> Đậu hũ nhồi thịt
+                        </div>
+                    </td>
+                    <td class="border p-4 align-top"></td>
+                    <td class="border p-4 align-top"></td>
+                    <td class="border p-4 align-top"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

@@ -1,0 +1,220 @@
+@{
+    ViewData["Title"] = "Suất ăn trường học";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="w-full">
+    <!-- ===== HERO ===== -->
+    <section class="relative h-[400px] md:h-[500px] lg:h-[600px]">
+        <img src="/assets/images/banner-service.jpg" class="absolute inset-0 w-full h-full object-contain md:object-cover object-center" />
+        <div class="absolute inset-0 bg-black/40"></div>
+        <div class="absolute inset-0 flex flex-col items-center justify-center text-center px-6 md:px-20 text-white">
+            <h1 class="text-3xl md:text-5xl lg:text-6xl font-bold leading-tight">
+                <span class="bg-yellow-400 text-black px-3 py-1 mr-2 inline-block">Dịch vụ</span>
+                <br class="md:hidden" /> Suất ăn trường học
+            </h1>
+        </div>
+    </section>
+
+    <!-- ===== VIDEO ===== -->
+    <section class="bg-gray-100 py-10 md:py-20">
+        <div class="max-w-7xl mx-auto px-4 md:px-6">
+            <div class="flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-6 mb-8 md:mb-10">
+                <h2 class="text-xl sm:text-2xl md:text-5xl font-bold leading-tight">
+                    <span class="bg-[#ffc107] px-2 mr-2 inline-block">Video</span> Thực Tế Của Chúng Tôi
+                </h2>
+                <a href="https://www.tiktok.com/@@happyspoonforschools" target="_blank" class="w-full md:w-auto text-center bg-orange-500 hover:bg-orange-600 text-white px-6 md:px-8 py-3 rounded-full font-semibold shadow-md text-sm md:text-base">
+                    XEM THÊM VIDEO
+                </a>
+            </div>
+            <div class="flex gap-4 md:gap-6 overflow-x-auto pb-4 snap-x snap-mandatory scroll-smooth scrollbar-hide">
+                @foreach (var id in new[] { "7615937219827682578", "7613727447028206866", "7613389499795623175" })
+                {
+                    <div class="snap-start flex-shrink-0 w-[85%] sm:w-[60%] md:w-[45%] lg:w-[30%] xl:w-[25%] rounded-xl overflow-hidden shadow-md bg-black">
+                        <iframe src="https://www.tiktok.com/embed/v2/@id" class="w-full h-[360px] sm:h-[420px] md:h-[450px]" allow="autoplay; encrypted-media" allowfullscreen></iframe>
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== INTRO ===== -->
+    <section class="bg-white py-10 md:py-16">
+        <div class="max-w-7xl mx-auto px-4 md:px-6">
+            <div class="bg-[#f3efe4] rounded-2xl overflow-hidden grid md:grid-cols-2">
+                <div class="flex flex-col">
+                    <div class="flex items-center p-6 md:p-12">
+                        <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold leading-tight">
+                            <span class="bg-[#ffc107] px-2 inline-block mb-2">Suất ăn trường học</span>
+                            <br /> dinh dưỡng <br /> và an toàn tuyệt đối
+                        </h2>
+                    </div>
+                    <div class="h-[180px] sm:h-[220px] md:flex-1">
+                        <img src="/assets/images/studentbottom.jpg" class="w-full h-full object-cover" />
+                    </div>
+                </div>
+                <div class="relative h-[250px] sm:h-[350px] md:h-auto">
+                    <img src="/assets/images/studenttop.jpg" class="w-full h-full object-cover" />
+                    <div class="absolute bottom-0 left-0 p-4 md:p-6 w-full md:max-w-md bg-gradient-to-t from-black/80 via-black/40 to-transparent">
+                        <p class="text-white text-sm md:text-base leading-relaxed">
+                            Dịch vụ suất ăn trường học của HAPPYSPOON mang đến những bữa ăn ngon miệng, đầy đủ dưỡng chất, giúp các em học sinh phát triển toàn diện cả về thể chất lẫn trí tuệ trong từng giai đoạn trưởng thành.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== LEVEL ===== -->
+    <section class="bg-[#f3efe4] py-20">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="text-center text-3xl md:text-5xl font-bold mb-16">
+                <span class="relative inline-block">SUẤT ĂN TRƯỜNG HỌC THEO CẤP HỌC<span class="absolute left-0 bottom-2 w-full h-3 bg-yellow-300 -z-10"></span></span>
+            </h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+                <!-- Mầm non -->
+                <a href="/Customer/School/MamNon">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-md group hover:shadow-xl transition cursor-pointer hover:-translate-y-1">
+                        <div class="relative">
+                            <img src="/assets/images/mamnon.jpg" class="w-full h-[180px] object-cover group-hover:scale-105 transition" />
+                            <div class="absolute top-3 right-3 bg-black text-yellow-400 px-4 py-1 text-xs rounded-full font-semibold">3-5 TUỔI</div>
+                        </div>
+                        <div class="flex justify-center -mt-6 relative z-10">
+                            <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg border">
+                                <i data-lucide="sprout" class="text-gray-700 group-hover:text-yellow-500 transition"></i>
+                            </div>
+                        </div>
+                        <div class="py-6 text-center">
+                            <h3 class="text-xl font-bold group-hover:text-orange-500 transition">Mầm non</h3>
+                            <div class="w-10 h-[3px] bg-yellow-400 mx-auto mt-3"></div>
+                        </div>
+                    </div>
+                </a>
+                <!-- Tiểu học -->
+                <a href="/Customer/School/TieuHoc">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-md group hover:shadow-xl transition cursor-pointer hover:-translate-y-1">
+                        <div class="relative">
+                            <img src="/assets/images/tieuhoc.jpg" class="w-full h-[180px] object-cover group-hover:scale-105 transition" />
+                            <div class="absolute top-3 right-3 bg-black text-yellow-400 px-4 py-1 text-xs rounded-full font-semibold">6-11 TUỔI</div>
+                        </div>
+                        <div class="flex justify-center -mt-6 relative z-10">
+                            <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg border">
+                                <i data-lucide="book-open" class="text-gray-700 group-hover:text-yellow-500 transition"></i>
+                            </div>
+                        </div>
+                        <div class="py-6 text-center">
+                            <h3 class="text-xl font-bold group-hover:text-orange-500 transition">Tiểu học</h3>
+                            <div class="w-10 h-[3px] bg-yellow-400 mx-auto mt-3"></div>
+                        </div>
+                    </div>
+                </a>
+                 <!-- THCS -->
+                <a href="/Customer/School/THCS">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-md group hover:shadow-xl transition cursor-pointer hover:-translate-y-1">
+                        <div class="relative">
+                            <img src="/assets/images/THCS.jpg" class="w-full h-[180px] object-cover group-hover:scale-105 transition" />
+                            <div class="absolute top-3 right-3 bg-black text-yellow-400 px-4 py-1 text-xs rounded-full font-semibold">12-15 TUỔI</div>
+                        </div>
+                        <div class="flex justify-center -mt-6 relative z-10">
+                            <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg border">
+                                <i data-lucide="compass" class="text-gray-700 group-hover:text-yellow-500 transition"></i>
+                            </div>
+                        </div>
+                        <div class="py-6 text-center">
+                            <h3 class="text-xl font-bold group-hover:text-orange-500 transition">THCS</h3>
+                            <div class="w-10 h-[3px] bg-yellow-400 mx-auto mt-3"></div>
+                        </div>
+                    </div>
+                </a>
+                 <!-- THPT -->
+                <a href="/Customer/School/THPT">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-md group hover:shadow-xl transition cursor-pointer hover:-translate-y-1">
+                        <div class="relative">
+                            <img src="/assets/images/THPT.jpg" class="w-full h-[180px] object-cover group-hover:scale-105 transition" />
+                            <div class="absolute top-3 right-3 bg-black text-yellow-400 px-4 py-1 text-xs rounded-full font-semibold">16-18 TUỔI</div>
+                        </div>
+                        <div class="flex justify-center -mt-6 relative z-10">
+                            <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg border">
+                                <i data-lucide="lightbulb" class="text-gray-700 group-hover:text-yellow-500 transition"></i>
+                            </div>
+                        </div>
+                        <div class="py-6 text-center">
+                            <h3 class="text-xl font-bold group-hover:text-orange-500 transition">THPT</h3>
+                            <div class="w-10 h-[3px] bg-yellow-400 mx-auto mt-3"></div>
+                        </div>
+                    </div>
+                </a>
+                 <!-- ĐẠI HỌC -->
+                <a href="/Customer/School/DaiHoc">
+                    <div class="bg-white rounded-2xl overflow-hidden shadow-md group hover:shadow-xl transition cursor-pointer hover:-translate-y-1">
+                        <div class="relative">
+                            <img src="/assets/images/daihoc.jpg" class="w-full h-[180px] object-cover group-hover:scale-105 transition" />
+                            <div class="absolute top-3 right-3 bg-black text-yellow-400 px-4 py-1 text-xs rounded-full font-semibold">18+ TUỔI</div>
+                        </div>
+                        <div class="flex justify-center -mt-6 relative z-10">
+                            <div class="w-14 h-14 rounded-full bg-white flex items-center justify-center shadow-lg border">
+                                <i data-lucide="graduation-cap" class="text-gray-700 group-hover:text-yellow-500 transition"></i>
+                            </div>
+                        </div>
+                        <div class="py-6 text-center">
+                            <h3 class="text-xl font-bold group-hover:text-orange-500 transition">Đại học</h3>
+                            <div class="w-10 h-[3px] bg-yellow-400 mx-auto mt-3"></div>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== WHY ===== -->
+    <section class="relative py-16 md:py-24" x-data="{ active: null }">
+        <img src="/assets/images/service1.jpg" class="absolute inset-0 w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-black/60 md:bg-black/50"></div>
+        <div class="relative z-10 max-w-7xl mx-auto px-4 md:px-6 grid md:grid-cols-2 gap-10 md:gap-16 items-center">
+            <div class="bg-white p-4 md:p-6 rounded-xl shadow-xl order-2 md:order-1">
+                <img src="/assets/images/map.jpg" class="w-full h-[220px] md:h-auto object-cover rounded-lg" />
+            </div>
+            <div class="text-white order-1 md:order-2">
+                <h2 class="text-2xl sm:text-3xl md:text-5xl font-bold mb-6 md:mb-10 leading-tight whitespace-nowrap">
+                    Tại sao chọn <span class="text-yellow-400">HAPPYSPOON</span>
+                </h2>
+                <div class="space-y-3 md:space-y-4">
+                    <!-- Item 1 -->
+                    <div class="rounded-xl md:rounded-2xl overflow-hidden border border-white/20">
+                        <div x-on:click="active = active === 0 ? null : 0" :class="active === 0 ? 'bg-gradient-to-r from-red-700/80 to-white/10 backdrop-blur-xl' : 'bg-white/20 backdrop-blur-md hover:bg-white/30'" class="cursor-pointer px-4 md:px-6 py-4 md:py-5 flex justify-between items-center transition">
+                            <span :class="active === 0 ? 'text-yellow-400' : 'text-white'" class="font-semibold text-sm md:text-lg transition">Bếp ăn mẫu an toàn, hiện đại</span>
+                            <i data-lucide="chevron-down" :class="active === 0 ? 'rotate-180 text-yellow-400' : 'text-white'" class="w-5 h-5 transition-transform"></i>
+                        </div>
+                        <div :class="active === 0 ? 'max-h-[300px] p-4 md:p-6' : 'max-h-0 px-4 md:px-6'" class="transition-all duration-300 overflow-hidden bg-white/10 backdrop-blur-md">
+                            <p class="text-white/90 text-sm md:text-base leading-relaxed">HAPPYSPOON tiên phong xây dựng không gian bếp ăn hiện đại, đạt chuẩn vệ sinh an toàn thực phẩm. Chúng tôi mang đến môi trường chế biến sạch sẽ, chuyên nghiệp, đảm bảo mỗi bữa ăn đều được chuẩn bị trong điều kiện tốt nhất, mang lại sự an tâm tuyệt đối cho nhà trường và phụ huynh.</p>
+                        </div>
+                    </div>
+                     <!-- Item 2 -->
+                    <div class="rounded-xl md:rounded-2xl overflow-hidden border border-white/20">
+                        <div x-on:click="active = active === 1 ? null : 1" :class="active === 1 ? 'bg-gradient-to-r from-red-700/80 to-white/10 backdrop-blur-xl' : 'bg-white/20 backdrop-blur-md hover:bg-white/30'" class="cursor-pointer px-4 md:px-6 py-4 md:py-5 flex justify-between items-center transition">
+                            <span :class="active === 1 ? 'text-yellow-400' : 'text-white'" class="font-semibold text-sm md:text-lg transition">Xây dựng thực đơn theo yêu cầu</span>
+                            <i data-lucide="chevron-down" :class="active === 1 ? 'rotate-180 text-yellow-400' : 'text-white'" class="w-5 h-5 transition-transform"></i>
+                        </div>
+                        <div :class="active === 1 ? 'max-h-[300px] p-4 md:p-6' : 'max-h-0 px-4 md:px-6'" class="transition-all duration-300 overflow-hidden bg-white/10 backdrop-blur-md">
+                            <p class="text-white/90 text-sm md:text-base leading-relaxed">Thực đơn và chế độ dinh dưỡng luôn được HAPPYSPOON chú trọng hàng đầu. Chúng tôi cá nhân hóa thực đơn theo từng độ tuổi, kết hợp các món ăn theo khẩu vị đặc trưng của từng vùng miền, đảm bảo cung cấp đầy đủ dưỡng chất giúp học sinh phát triển toàn diện.</p>
+                        </div>
+                    </div>
+                </div>
+                <a href="https://happyspoon.vn/" target="_blank" class="inline-block mt-6 md:mt-8 bg-[#ffc107] text-black px-6 md:px-8 py-3 rounded-full font-bold text-sm md:text-base">TÌM HIỂU THÊM</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA ===== -->
+    <section class="relative h-[320px] overflow-hidden">
+        <img src="/assets/images/s4.jpg" class="absolute inset-0 w-full h-full object-cover object-center scale-105" />
+        <div class="absolute inset-0 bg-gradient-to-r from-black/60 via-black/30 to-transparent"></div>
+        <div class="relative z-10 h-full flex flex-col justify-center px-10 md:px-20">
+            <h2 class="text-3xl md:text-4xl font-bold text-white mb-2">Bạn cần tư vấn về suất ăn cho trường học?</h2>
+            <p class="text-gray-200 mb-6">HAPPYSPOON luôn sẵn sàng đồng hành.</p>
+            <a href="/Customer/Contact" class="w-fit">
+                <button class="bg-orange-500 hover:bg-orange-600 transition text-white px-6 py-3 rounded-full font-semibold">TƯ VẤN 1-1 MIỄN PHÍ</button>
+            </a>
+        </div>
+    </section>
+</div>

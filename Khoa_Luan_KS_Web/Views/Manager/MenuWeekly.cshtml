@@ -1,0 +1,48 @@
+@{
+    ViewData["Title"] = "Thực Đơn Tuần";
+    Layout = "_LayoutManager";
+}
+
+<div class="p-2 sm:p-6 space-y-6">
+    <div class="flex justify-between items-center">
+        <h1 class="text-2xl font-bold text-green-600">Thực đơn Tuần 18 (26/04 - 02/05)</h1>
+        <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded shadow transition">
+            Áp dụng Template
+        </button>
+    </div>
+
+    <!-- Calendar View Placeholder -->
+    <div class="bg-white border rounded shadow p-4 overflow-x-auto">
+        <table class="w-full text-center border-collapse">
+            <thead>
+                <tr>
+                    <th class="border p-2 bg-gray-50">Thứ 2 (26/04)</th>
+                    <th class="border p-2 bg-gray-50">Thứ 3 (27/04)</th>
+                    <th class="border p-2 bg-gray-50">Thứ 4 (28/04)</th>
+                    <th class="border p-2 bg-gray-50">Thứ 5 (29/04)</th>
+                    <th class="border p-2 bg-gray-50 whitespace-nowrap">Thứ 6 (30/04)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="border p-4 align-top">
+                        <div class="bg-green-50 p-2 rounded text-sm mb-2 text-left">
+                            <span class="font-bold text-green-800 tracking-wide">Món chính:</span><br/> Gà kho gừng
+                        </div>
+                        <div class="bg-orange-50 p-2 rounded text-sm text-left">
+                            <span class="font-bold text-orange-800 tracking-wide">Món phụ:</span><br/> Canh rau ngót
+                        </div>
+                    </td>
+                    <td class="border p-4 align-top">
+                        <div class="bg-green-50 p-2 rounded text-sm mb-2 text-left">
+                            <span class="font-bold text-green-800 tracking-wide">Món chính:</span><br/> Thịt kho tiêu
+                        </div>
+                    </td>
+                    <td class="border p-4 align-top"></td>
+                    <td class="border p-4 align-top"></td>
+                    <td class="border p-4 align-top bg-red-50 text-red-600 font-bold">Nghỉ Lễ</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

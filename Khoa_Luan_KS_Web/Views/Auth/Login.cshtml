@@ -1,0 +1,183 @@
+@{
+    ViewData["Title"] = "Đăng Nhập";
+    Layout = null;
+    
+    var role = Context.Request.Query["role"].ToString().ToUpper();
+    if (string.IsNullOrEmpty(role)) role = "CUSTOMER";
+
+    var roleLabels = new Dictionary<string, string> {
+        {"CUSTOMER", "Khách hàng"},
+        {"ADMIN", "Quản trị viên"},
+        {"MANAGER", "Quản lý"}
+    };
+
+    var config = new Dictionary<string, dynamic>();
+    
+    // CUSTOMER
+    config["CUSTOMER"] = new {
+        Title = "Đăng nhập Khách hàng",
+        Subtitle = "Đặt suất ăn nhanh chóng và theo dõi đơn hàng dễ dàng",
+        BgImage = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1920",
+        Hero = "Trải nghiệm đặt suất ăn chuẩn doanh nghiệp",
+        InputRing = "focus:ring-green-500 focus:border-green-500",
+        ButtonClass = "bg-green-600 hover:bg-green-700",
+        LinkClass = "text-green-700 hover:text-green-900"
+    };
+    
+    // ADMIN
+    config["ADMIN"] = new {
+        Title = "Đăng nhập Quản trị",
+        Subtitle = "Kiểm soát hệ thống, phân quyền và vận hành dữ liệu",
+        BgImage = "https://images.unsplash.com/photo-1587293852726-694b6302ca2f?q=80&w=1920",
+        Hero = "Bảng điều khiển quản trị",
+        InputRing = "focus:ring-slate-500 focus:border-slate-500",
+        ButtonClass = "bg-slate-900 hover:bg-slate-800",
+        LinkClass = "text-slate-700 hover:text-slate-900"
+    };
+    
+    // MANAGER
+    config["MANAGER"] = new {
+        Title = "Đăng nhập Quản lý",
+        Subtitle = "Điều phối vận hành, theo dõi KPI và báo cáo tổng hợp",
+        BgImage = "https://images.unsplash.com/photo-1578474846511-04ba529f0b88?q=80&w=1920",
+        Hero = "Trung tâm điều hành vận hành",
+        InputRing = "focus:ring-indigo-500 focus:border-indigo-500",
+        ButtonClass = "bg-indigo-600 hover:bg-indigo-700",
+        LinkClass = "text-indigo-700 hover:text-indigo-900"
+    };
+
+    if (!config.ContainsKey(role)) role = "CUSTOMER";
+    var currentConfig = config[role];
+
+    var actionUrl = role == "ADMIN" ? "/Admin/Index" : (role == "MANAGER" ? "/Manager/Dashboard" : "/Customer");
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@currentConfig.Title - SmartLunch</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-50 text-gray-900 font-sans antialiased">
+
+<div class="min-h-screen grid grid-cols-1 lg:grid-cols-2 bg-slate-50">
+    <!-- Left visual -->
+    <div class="relative hidden lg:flex items-end justify-start overflow-hidden">
+        <img
+            src="@currentConfig.BgImage"
+            alt="@currentConfig.Title"
+            class="absolute inset-0 h-full w-full object-cover"
+        />
+        <div class="absolute inset-0 bg-black/60"></div>
+        <div class="relative z-10 p-12 text-white space-y-4">
+            <span class="inline-flex items-center gap-2 rounded-full bg-white/20 px-4 py-1 text-sm font-semibold uppercase tracking-wide backdrop-blur-sm shadow-sm border border-white/20">
+                @roleLabels[role]
+            </span>
+            <h2 class="text-4xl lg:text-5xl font-bold leading-tight drop-shadow-md">
+                @currentConfig.Hero
+            </h2>
+            <p class="text-lg text-white/90 max-w-md drop-shadow">
+                @currentConfig.Subtitle
+            </p>
+        </div>
+    </div>
+
+    <!-- Right form -->
+    <div class="flex items-center justify-center p-6 sm:p-10 relative">
+        <div class="w-full max-w-md bg-white rounded-2xl shadow-xl p-8 sm:p-10 border border-gray-100">
+            <!-- Header Logo & Title -->
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-12 h-12 rounded-lg bg-gray-50 flex items-center justify-center border shadow-sm">
+                    <span class="text-xl font-black italic tracking-tighter flex items-end">
+                        <span class="text-[#7DBE42]">h</span><span class="text-[#F3A530]">s</span><span class="text-[#7DBE42]">c</span>
+                    </span>
+                </div>
+                <div>
+                    <p class="text-[11px] font-bold uppercase tracking-widest text-[#F3A530]">
+                        @roleLabels[role]
+                    </p>
+                    <h1 class="text-2xl font-extrabold text-gray-900 tracking-tight">
+                        @currentConfig.Title
+                    </h1>
+                </div>
+            </div>
+
+            <p class="text-sm text-gray-600 mb-8 font-medium">@currentConfig.Subtitle</p>
+
+            <!-- Login Form -->
+            <form action="@actionUrl" method="get" class="space-y-5">
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Email / Số điện thoại</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="mail" class="text-gray-400 w-5 h-5"></i>
+                        </div>
+                        <input type="text" class="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 @currentConfig.InputRing sm:text-sm bg-gray-50 transition" placeholder="Nhập email...">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 mb-1">Mật khẩu</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <i data-lucide="lock" class="text-gray-400 w-5 h-5"></i>
+                        </div>
+                        <input type="password" class="block w-full pl-10 pr-10 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 @currentConfig.InputRing sm:text-sm bg-gray-50 transition" placeholder="••••••••">
+                        <div class="absolute inset-y-0 right-0 pr-3 flex items-center cursor-pointer">
+                            <i data-lucide="eye" class="text-gray-400 w-5 h-5 hover:text-gray-600 transition"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between pt-1">
+                    <div class="flex items-center">
+                        <input id="remember" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-gray-900 focus:ring-2 @currentConfig.InputRing">
+                        <label for="remember" class="ml-2 block text-sm font-medium text-gray-700"> Ghi nhớ </label>
+                    </div>
+                    <div class="text-sm">
+                        <a href="#" class="font-bold @currentConfig.LinkClass"> Quên điện thoại? </a>
+                    </div>
+                </div>
+
+                <div class="pt-4">
+                    <button type="submit" class="w-full flex justify-center py-3 px-4 rounded-xl shadow-md text-[15px] font-bold text-white @currentConfig.ButtonClass focus:outline-none focus:ring-2 focus:ring-offset-2 transition-all transform active:scale-[0.98]">
+                        ĐĂNG NHẬP
+                    </button>
+                </div>
+            </form>
+            
+            <div class="mt-8 space-y-4 text-sm text-gray-600 border-t pt-6">
+                @if (role == "CUSTOMER") {
+                    <div class="text-center mb-4">
+                        <p class="text-gray-600 font-medium">
+                            Chưa có tài khoản? <a href="/Auth/Register" class="font-bold @currentConfig.LinkClass">Đăng ký ngay</a>
+                        </p>
+                    </div>
+                }
+                
+                <div class="flex flex-wrap items-center gap-2 justify-center font-medium">
+                    <span class="text-gray-500">Đăng nhập với vai trò:</span>
+                    @if(role != "CUSTOMER") { <a href="/Auth/Login?role=Customer" class="@currentConfig.LinkClass underline decoration-gray-300 underline-offset-4">Khách hàng</a> }
+                    @if(role != "ADMIN") { <a href="/Auth/Login?role=Admin" class="@currentConfig.LinkClass underline decoration-gray-300 underline-offset-4">Admin</a> }
+                    @if(role != "MANAGER") { <a href="/Auth/Login?role=Manager" class="@currentConfig.LinkClass underline decoration-gray-300 underline-offset-4">Manager</a> }
+                </div>
+                
+                <div class="text-center mt-2">
+                    <a href="/Customer" class="inline-flex items-center gap-2 @currentConfig.LinkClass font-bold hover:gap-3 transition-all">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i> Quay lại trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    lucide.createIcons();
+</script>
+</body>
+</html>

@@ -1,0 +1,148 @@
+@{
+    ViewData["Title"] = "Về chúng tôi";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="w-full bg-white overflow-hidden" x-data="{ openModal: false, activeTab: 0 }">
+    <!-- ===== BREADCRUMB ===== -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 text-gray-500 text-xs sm:text-sm flex items-center gap-2 flex-wrap">
+        <a href="/Customer" class="hover:text-black transition">Trang chủ</a>
+        <i data-lucide="chevron-right" style="width:16px;height:16px"></i>
+        <span class="text-black font-medium">Về chúng tôi</span>
+    </div>
+
+    <!-- ===== MAIN ABOUT ===== -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 pb-10 sm:pb-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 items-stretch">
+            <div class="overflow-hidden rounded-xl h-[260px] sm:h-[320px] md:h-auto">
+                <img src="/assets/images/bannervechungtoi.jpg" class="w-full h-full object-cover" />
+            </div>
+            <div class="bg-[#2b2b2b] text-white p-6 sm:p-8 md:p-10 rounded-xl flex flex-col justify-center">
+                <h2 class="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 md:mb-6 leading-tight">
+                    Về <span class="bg-yellow-400 text-black px-2">Haseca</span>
+                </h2>
+                <p class="text-yellow-400 text-base sm:text-lg font-semibold mb-4 md:mb-6 leading-relaxed italic">
+                    “...dẫn đầu lĩnh vực cung ứng suất ăn công nghiệp và suất ăn học đường tại Việt Nam...”
+                </p>
+                <p class="text-gray-300 leading-relaxed text-justify tracking-wide text-sm sm:text-base">
+                    Hành trình tạo giá trị của HASECA khởi đầu từ năm 2009. Trải qua hơn 15 năm phát triển, HASECA vươn lên trở thành đơn vị dẫn đầu trong lĩnh vực cung ứng suất ăn công nghiệp và suất ăn học đường tại Việt Nam.
+                    <br /><br />
+                    Tự hào là đơn vị đạt tiêu chuẩn ISO 22000:2005, HASECA ngày càng chuẩn hoá mô hình bếp ăn một chiều và hệ thống quản lý chất lượng nghiêm ngặt. Chúng tôi kiểm soát chặt chẽ từ khâu nguyên liệu đến chế biến nhằm đảm bảo tuyệt đối an toàn vệ sinh thực phẩm.
+                    <br /><br />
+                    Với tinh thần trách nhiệm và chữ “Tâm” đặt lên hàng đầu, HASECA đã và đang chinh phục nhiều đối tác khó tính đến từ Nhật Bản, Hàn Quốc, Mỹ, EU, Đài Loan và Trung Quốc, từng bước khẳng định vị thế thương hiệu trên thị trường.
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== MESSAGE ===== -->
+    <section class="w-full bg-gray-100 py-10 sm:py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 grid grid-cols-1 md:grid-cols-2">
+            <div class="bg-yellow-400 p-6 sm:p-10 md:p-14 flex flex-col justify-center">
+                <h2 class="text-2xl sm:text-4xl md:text-5xl font-bold mb-4 md:mb-6 leading-tight text-black">
+                    <span class="bg-white px-3 py-1 inline-block mb-2">Thông điệp</span><br /> của Haseca
+                </h2>
+                <div class="text-white text-5xl md:text-7xl mb-2">“</div>
+                <p class="text-black leading-relaxed text-justify mb-4 md:mb-6 text-sm sm:text-base">
+                    HASECA là một công ty có đội ngũ nhân viên năng động chuyên môn cao, nhiệt huyết tận tâm...
+                </p>
+                <button x-on:click="openModal = true" class="bg-white text-orange-500 font-bold px-5 sm:px-6 py-2.5 sm:py-3 rounded-full w-fit hover:scale-105 transition">
+                    TÌM HIỂU THÊM
+                </button>
+                <div class="mt-6 md:mt-8 border-t border-white pt-4">
+                    <p class="font-bold text-black">Tổng giám đốc</p>
+                </div>
+            </div>
+            <div class="overflow-hidden h-[260px] md:h-auto">
+                <img src="/assets/images/vechungtoi2.jpg" class="w-full h-full object-cover" />
+            </div>
+        </div>
+    </section>
+
+    <!-- Modal -->
+    <div x-show="openModal" style="display: none;" class="fixed inset-0 z-50 flex items-center justify-center">
+        <div class="absolute inset-0 bg-black/40" x-on:click="openModal = false"></div>
+        <div class="relative bg-white w-[95%] md:w-[900px] max-h-[90vh] overflow-y-auto rounded-xl shadow-xl flex">
+            <div class="w-3 md:w-6 bg-yellow-400"></div>
+            <div class="p-6 md:p-10 flex-1 relative">
+                <button x-on:click="openModal = false" class="absolute top-4 right-4 text-2xl">✕</button>
+                <div class="text-5xl font-bold mb-4">“</div>
+                <p class="mb-4 font-semibold">Thưa quý vị!</p>
+                <ul class="space-y-3 text-sm md:text-base leading-relaxed list-disc pl-5">
+                    <li>Bắt nguồn từ thực tế: Các doanh nghiệp luôn mong muốn đẩy nhanh quá trình...</li>
+                    <li>Chúng tôi tin rằng các sản phẩm, dịch vụ HASECA cung cấp là lựa chọn đúng đắn...</li>
+                    <li>Và trên hết, HASECA rất mong muốn nhận được sự hợp tác, đồng hành của bạn.</li>
+                </ul>
+                <p class="mt-4">Trân trọng cảm ơn!</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== VISION ===== -->
+    <div class="relative mt-10 rounded-xl overflow-hidden max-w-7xl mx-auto px-4 sm:px-6">
+        <img src="/assets/images/about.jpg" class="w-full h-[220px] md:h-[320px] object-cover" />
+        <div class="absolute inset-0 bg-black/60 flex flex-col items-center justify-center text-center px-6">
+            <h3 class="bg-yellow-400 text-black font-bold text-lg md:text-2xl px-4 py-2 mb-4">Tầm nhìn</h3>
+            <p class="text-white text-sm md:text-lg max-w-3xl font-bold">Trở thành công ty hàng đầu về cung ứng suất ăn công nghiệp tại Việt Nam...</p>
+        </div>
+    </div>
+
+    <!-- ===== MISSION ===== -->
+    <section class="bg-gray-100 py-16 mt-12 rounded-xl overflow-hidden">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6">
+            <h2 class="text-center text-2xl md:text-4xl font-bold mb-10">
+                <span class="bg-yellow-400 px-3 py-1">Sứ mệnh</span>
+            </h2>
+            <div class="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+                 <!-- Misson 1 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden group hover:shadow-xl transition">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="text-4xl md:text-5xl font-extrabold text-yellow-400 leading-none">01</div>
+                            <div>
+                                <h3 class="font-bold text-lg md:text-xl mb-2">ĐỐI VỚI KHÁCH HÀNG</h3>
+                                <p class="text-gray-600 text-sm md:text-base leading-relaxed">Cam kết cung cấp sản phẩm chất lượng và dịch vụ cao cấp.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-[220px] md:h-[260px] overflow-hidden relative">
+                        <img src="/assets/images/about1.jpg" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                        <div class="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition"></div>
+                    </div>
+                </div>
+                 <!-- Misson 2 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden group hover:shadow-xl transition">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="text-4xl md:text-5xl font-extrabold text-yellow-400 leading-none">02</div>
+                            <div>
+                                <h3 class="font-bold text-lg md:text-xl mb-2">ĐỐI VỚI NHÂN VIÊN</h3>
+                                <p class="text-gray-600 text-sm md:text-base leading-relaxed">Cung cấp môi trường làm việc năng động, chuyên nghiệp.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-[220px] md:h-[260px] overflow-hidden relative">
+                        <img src="/assets/images/about2.jpg" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                        <div class="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition"></div>
+                    </div>
+                </div>
+                 <!-- Misson 3 -->
+                <div class="bg-white rounded-xl shadow-md overflow-hidden group hover:shadow-xl transition">
+                    <div class="p-6">
+                        <div class="flex items-start gap-4">
+                            <div class="text-4xl md:text-5xl font-extrabold text-yellow-400 leading-none">03</div>
+                            <div>
+                                <h3 class="font-bold text-lg md:text-xl mb-2">ĐỐI VỚI CỘNG ĐỒNG</h3>
+                                <p class="text-gray-600 text-sm md:text-base leading-relaxed">Quan tâm đến bảo vệ môi trường, phát triển cộng đồng.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="h-[220px] md:h-[260px] overflow-hidden relative">
+                        <img src="/assets/images/about3.jpg" class="w-full h-full object-cover group-hover:scale-110 transition duration-500" />
+                        <div class="absolute inset-0 bg-black/10 group-hover:bg-black/20 transition"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
