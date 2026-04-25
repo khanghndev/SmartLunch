@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace Khoa_Luan_KS_Web.Controllers
 {
@@ -26,8 +27,13 @@ namespace Khoa_Luan_KS_Web.Controllers
         public IActionResult MealDetail() => View();
         
         // Private Profile Dashboard Functions
+        [Authorize(Policy = "CustomerArea")]
         public IActionResult Profile() => View();
+        
+        [Authorize(Policy = "CustomerArea")]
         public IActionResult Orders() => View();
+        
+        [Authorize(Policy = "CustomerArea")]
         public IActionResult Contracts() => View();
         public IActionResult SchoolMenu(string level)
         {

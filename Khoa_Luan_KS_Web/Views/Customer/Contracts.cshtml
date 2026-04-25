@@ -57,53 +57,62 @@
     }
 </style>
 
-<div x-data="eSignFlow()" class="max-w-7xl mx-auto px-6 pt-24 pb-20">
+<div x-data="eSignFlow()" class="max-w-7xl mx-auto px-6 pt-10 pb-20">
     <!-- Breadcrumb (Synced) -->
-    <nav class="flex text-sm text-gray-400 mb-6" aria-label="Breadcrumb">
-        <ol class="inline-flex items-center space-x-2">
-            <li><a href="/Customer" class="hover:text-orange-500 transition">Trang chủ</a></li>
-            <li><i data-lucide="chevron-right" class="w-4 h-4 opacity-30"></i></li>
-            <li class="font-medium text-gray-900">Hợp đồng điện tử</li>
+    <nav class="flex text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="/Customer" class="hover:text-orange-500 font-medium transition flex items-center gap-1">
+                    <i data-lucide="home" class="w-4 h-4"></i> Trang chủ
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
+                    <span class="ml-1 md:ml-2 font-medium text-gray-700">Hợp đồng điện tử</span>
+                </div>
+            </li>
         </ol>
     </nav>
 
-    <div class="flex flex-col md:flex-row gap-8">
+    <div class="flex items-center justify-between mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Hợp đồng & Văn bản</h1>
+        <div x-show="!isSigned" class="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
+            <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
+            <span class="text-[10px] font-bold text-blue-700 uppercase">01 Văn bản mới</span>
+        </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-8 items-stretch">
         <!-- Sidebar Navigation -->
         <div class="w-full md:w-64 flex-shrink-0">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sticky top-28">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-full">
                 <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
-                    <div class="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center font-bold text-lg">
+                    <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xl shadow-sm">
                         K
                     </div>
                     <div>
                         <h3 class="font-bold text-gray-900">TRƯỜNG THPT HOÀNG VĂN THỤ</h3>
-                        <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Enterprise</p>
+                        <p class="text-xs text-gray-500">Khách hàng Doanh nghiệp</p>
                     </div>
                 </div>
 
                 <nav class="space-y-1 text-sm font-medium">
-                    <a href="/Customer/Profile" class="flex items-center gap-3 px-3 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
-                        <i data-lucide="user" class="w-4 h-4"></i> Hồ sơ
+                    <a href="/Customer/Profile" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+                        <i data-lucide="user" class="w-4 h-4 text-gray-400"></i> Hồ sơ doanh nghiệp
                     </a>
-                    <a href="/Customer/Orders" class="flex items-center gap-3 px-3 py-2.5 text-gray-500 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
-                        <i data-lucide="package" class="w-4 h-4"></i> Đơn hàng
+                    <a href="/Customer/Orders" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
+                        <i data-lucide="shopping-bag" class="w-4 h-4 text-gray-400"></i> Lịch sử đơn hàng
                     </a>
-                    <a href="/Customer/Contracts" class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-600 rounded-lg transition-colors">
-                        <i data-lucide="file-signature" class="w-4 h-4"></i> Hợp đồng
+                    <a href="/Customer/Contracts" class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg transition-colors">
+                        <i data-lucide="file-signature" class="w-4 h-4"></i> Hợp đồng điện tử
                     </a>
                 </nav>
             </div>
         </div>
 
-        <!-- Main Content -->
+
         <div class="flex-1">
-            <div class="flex items-center justify-between mb-8">
-                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Hợp đồng & Văn bản</h1>
-                <div x-show="!isSigned" class="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-                    <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
-                    <span class="text-[10px] font-bold text-blue-700 uppercase">01 Văn bản mới</span>
-                </div>
-            </div>
 
             <div class="space-y-4">
                 <!-- PENDING ITEM -->

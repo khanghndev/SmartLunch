@@ -21,10 +21,29 @@
         </ol>
     </nav>
 
-    <div class="flex flex-col md:flex-row gap-8">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Lịch sử Báo suất (Đơn hàng)</h1>
+        
+        <!-- Filters -->
+        <div class="flex gap-2">
+            <select class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white font-medium text-gray-700">
+                <option>Tháng này (04/2026)</option>
+                <option>Tháng trước</option>
+                <option>Tất cả thời gian</option>
+            </select>
+            <select class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white font-medium text-gray-700">
+                <option>Tất cả trạng thái</option>
+                <option>Đã giao đủ</option>
+                <option>Đang duyệt</option>
+                <option>Đã hủy</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="flex flex-col md:flex-row gap-8 items-stretch">
         <!-- Sidebar Navigation -->
         <div class="w-full md:w-64 flex-shrink-0">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sticky top-24">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-full">
                 <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
                     <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xl shadow-sm">
                         K
@@ -49,28 +68,8 @@
             </div>
         </div>
 
-        <!-- Main Content -->
-        <div class="flex-1">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
-                <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Lịch sử Báo suất (Đơn hàng)</h1>
-                
-                <!-- Filters -->
-                <div class="flex gap-2">
-                    <select class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white font-medium text-gray-700">
-                        <option>Tháng này (04/2026)</option>
-                        <option>Tháng trước</option>
-                        <option>Tất cả thời gian</option>
-                    </select>
-                    <select class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white font-medium text-gray-700">
-                        <option>Tất cả trạng thái</option>
-                        <option>Đã giao đủ</option>
-                        <option>Đang duyệt</option>
-                        <option>Đã hủy</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="flex-1 flex flex-col">
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse whitespace-nowrap">
                         <thead>

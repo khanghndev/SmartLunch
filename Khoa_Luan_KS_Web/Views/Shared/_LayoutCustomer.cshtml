@@ -1,7 +1,21 @@
 @{
-    var role = Context.Request.Cookies["user_role"];
-    var userName = Context.Request.Cookies["user_name"];
-    bool isLoggedIn = !string.IsNullOrEmpty(role);
+    var user = Context.User;
+    bool isLoggedIn = user?.Identity?.IsAuthenticated == true;
+
+    var userName =
+        user?.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
+        ?? user?.FindFirst("unique_name")?.Value
+        ?? user?.FindFirst("name")?.Value
+        ?? "";
+
+    var roles = user?.Claims
+        .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role)
+        .Select(c => c.Value)
+        .ToList() ?? new List<string>();
+
+    bool isCustomerRole = roles.Any(r =>
+        string.Equals(r, "Khách hàng doanh nghiệp", StringComparison.OrdinalIgnoreCase) ||
+        string.Equals(r, "Khách hàng cá nhân", StringComparison.OrdinalIgnoreCase));
 }
 <!DOCTYPE html>
 <html lang="en">
@@ -282,7 +296,7 @@
                             </div>
                             <div>
                                 <h4 class="font-bold text-sm text-gray-900">@userName</h4>
-                                <p class="text-[10px] text-gray-500 font-bold uppercase">Khách hàng</p>
+                                <p class="text-[10px] text-gray-500 font-bold uppercase">@(isCustomerRole ? "Khách hàng" : "Tài khoản")</p>
                             </div>
                         </div>
                         <div class="grid grid-cols-2 gap-2">
