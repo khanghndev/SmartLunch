@@ -7,9 +7,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.IngredientIntake.GetInt
 public class GetIntakeProposalReviewHistoryQuery : IRequest<GetIntakeProposalReviewHistoryResponse>
 {
     public GetIntakeProposalReviewHistoryRequest Request { get; }
-    public Guid ActorUserId { get; }
+    public int ActorUserId { get; }
 
-    public GetIntakeProposalReviewHistoryQuery(GetIntakeProposalReviewHistoryRequest request, Guid actorUserId)
+    public GetIntakeProposalReviewHistoryQuery(GetIntakeProposalReviewHistoryRequest request, int actorUserId)
     {
         Request = request;
         ActorUserId = actorUserId;

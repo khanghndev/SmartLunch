@@ -14,7 +14,7 @@ public class SentimentRepository : ISentimentRepository
         _context = context;
     }
 
-    public async Task<Sentiment?> GetByIdAsync(Guid id)
+    public async Task<Sentiment?> GetByIdAsync(int id)
     {
         return await _context.Sentiments
             .FirstOrDefaultAsync(e => e.Id == id);

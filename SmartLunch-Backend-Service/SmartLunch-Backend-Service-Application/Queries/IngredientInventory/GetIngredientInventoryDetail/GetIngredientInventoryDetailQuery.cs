@@ -5,10 +5,10 @@ namespace SmartLunch.Backend.Service.Application.Queries.IngredientInventory.Get
 
 public class GetIngredientInventoryDetailQuery : IRequest<GetIngredientInventoryDetailResponse>
 {
-    public Guid IngredientId { get; }
+    public int IngredientId { get; }
     public int RecentBatchTake { get; }
 
-    public GetIngredientInventoryDetailQuery(Guid ingredientId, int recentBatchTake = 20)
+    public GetIngredientInventoryDetailQuery(int ingredientId, int recentBatchTake = 20)
     {
         IngredientId = ingredientId;
         RecentBatchTake = recentBatchTake;

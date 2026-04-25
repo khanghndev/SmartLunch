@@ -2,6 +2,6 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Ingred
 
 public class DeleteIngredientSourceResponse
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Message { get; set; } = string.Empty;
 }

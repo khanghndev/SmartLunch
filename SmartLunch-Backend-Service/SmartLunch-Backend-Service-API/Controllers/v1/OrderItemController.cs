@@ -59,7 +59,7 @@ public class OrderItemController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:orderitems.read")]
-    public async Task<ActionResult<BaseApiResponse<GetOrderItemResponse>>> GetOrderItem(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetOrderItemResponse>>> GetOrderItem(int id)
     {
         try
         {

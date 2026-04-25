@@ -30,7 +30,7 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
     {
         var req = request.Request;
 
-        if (req.UnitId == Guid.Empty)
+        if (req.UnitId == 0)
             throw new ArgumentException("UnitId is required.");
 
         if (req.Lines == null || req.Lines.Count == 0)
@@ -38,7 +38,7 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
 
         foreach (var line in req.Lines)
         {
-            if (line.DishId == Guid.Empty)
+            if (line.DishId == 0)
                 throw new ArgumentException("Each line must include a valid DishId.");
             if (line.Quantity < 1)
                 throw new ArgumentException("Quantity must be at least 1 for each line.");
@@ -48,7 +48,7 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
         if (unit == null)
             throw new ArgumentException("Unit was not found.");
 
-        if (req.UserId.HasValue && req.UserId.Value != Guid.Empty)
+        if (req.UserId.HasValue && req.UserId.Value != 0)
         {
             var customer = await _userRepository.GetByIdAsync(req.UserId.Value);
             if (customer == null)
@@ -94,11 +94,9 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
 
         var invoiceCode = await AllocateInvoiceCodeAsync(scheduledDate, cancellationToken);
 
-        var orderId = Guid.NewGuid();
         var order = new Order
         {
-            Id = orderId,
-            UserId = req.UserId is { } uid && uid != Guid.Empty ? uid : null,
+            UserId = req.UserId is { } uid && uid != 0 ? uid : null,
             UnitId = req.UnitId,
             OrderDate = DateTime.UtcNow,
             ScheduledDate = scheduledUtc,
@@ -117,8 +115,6 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
             var lineTotal = unitPrice * line.Quantity;
             order.OrderItems.Add(new OrderItem
             {
-                Id = Guid.NewGuid(),
-                OrderId = orderId,
                 DishId = line.DishId,
                 Quantity = line.Quantity,
                 UnitPrice = unitPrice,
@@ -129,7 +125,7 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
         await _orderRepository.AddAsync(order, cancellationToken);
         await _orderRepository.CommitAsync();
 
-        var refreshed = await _orderRepository.GetByIdWithDetailsAsync(orderId);
+        var refreshed = await _orderRepository.GetByIdWithDetailsAsync(order.Id);
         if (refreshed == null)
             return new GetOrderResponse { Order = new OrderDto() };
 

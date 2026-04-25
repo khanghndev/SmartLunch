@@ -4,9 +4,9 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.UserUnits.D
 
 public class DeleteUserUnitCommand : IRequest<bool>
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    public DeleteUserUnitCommand(Guid id)
+    public DeleteUserUnitCommand(int id)
     {
         Id = id;
     }

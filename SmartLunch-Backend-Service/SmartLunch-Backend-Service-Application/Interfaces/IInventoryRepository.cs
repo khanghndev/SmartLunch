@@ -4,7 +4,7 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IInventoryRepository
 {
-    Task<Inventory?> GetByIdAsync(Guid id);
+    Task<Inventory?> GetByIdAsync(int id);
     Task<(List<Inventory> Inventories, int TotalCount)> GetInventoriesAsync(int page, int pageSize, string? searchTerm = null);
 
     /// <summary>
@@ -15,5 +15,5 @@ public interface IInventoryRepository
     /// <summary>
     /// Tồn kho kèm nguyên liệu và NCC mặc định (đọc chi tiết).
     /// </summary>
-    Task<Inventory?> GetByIngredientIdWithIngredientAsync(Guid ingredientId, CancellationToken cancellationToken = default);
+    Task<Inventory?> GetByIngredientIdWithIngredientAsync(int ingredientId, CancellationToken cancellationToken = default);
 }

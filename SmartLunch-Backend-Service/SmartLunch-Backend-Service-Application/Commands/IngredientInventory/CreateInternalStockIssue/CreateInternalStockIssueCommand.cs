@@ -7,9 +7,9 @@ namespace SmartLunch.Backend.Service.Application.Commands.IngredientInventory.Cr
 public class CreateInternalStockIssueCommand : IRequest<CreateInternalStockIssueResponse>
 {
     public CreateInternalStockIssueRequest Request { get; }
-    public Guid? CreatedByUserId { get; }
+    public int? CreatedByUserId { get; }
 
-    public CreateInternalStockIssueCommand(CreateInternalStockIssueRequest request, Guid? createdByUserId)
+    public CreateInternalStockIssueCommand(CreateInternalStockIssueRequest request, int? createdByUserId)
     {
         Request = request;
         CreatedByUserId = createdByUserId;

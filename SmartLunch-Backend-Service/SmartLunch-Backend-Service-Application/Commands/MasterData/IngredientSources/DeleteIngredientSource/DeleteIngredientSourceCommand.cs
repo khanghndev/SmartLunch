@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.IngredientS
 
 public class DeleteIngredientSourceCommand : IRequest<DeleteIngredientSourceResponse>
 {
-    public Guid IngredientSourceId { get; }
+    public int IngredientSourceId { get; }
 
-    public DeleteIngredientSourceCommand(Guid ingredientSourceId)
+    public DeleteIngredientSourceCommand(int ingredientSourceId)
     {
         IngredientSourceId = ingredientSourceId;
     }

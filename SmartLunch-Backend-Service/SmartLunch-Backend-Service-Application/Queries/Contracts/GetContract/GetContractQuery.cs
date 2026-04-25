@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Contracts.GetContract;
 
 public class GetContractQuery : IRequest<GetContractResponse>
 {
-    public Guid ContractId { get; set; }
+    public int ContractId { get; set; }
 
-    public GetContractQuery(Guid contractId)
+    public GetContractQuery(int contractId)
     {
         ContractId = contractId;
     }

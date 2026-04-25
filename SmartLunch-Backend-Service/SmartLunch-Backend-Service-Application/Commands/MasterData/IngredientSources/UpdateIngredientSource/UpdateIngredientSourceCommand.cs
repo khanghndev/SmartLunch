@@ -6,10 +6,10 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.IngredientS
 
 public class UpdateIngredientSourceCommand : IRequest<GetIngredientSourceResponse>
 {
-    public Guid IngredientSourceId { get; }
+    public int IngredientSourceId { get; }
     public UpdateIngredientSourceRequest Request { get; }
 
-    public UpdateIngredientSourceCommand(Guid ingredientSourceId, UpdateIngredientSourceRequest request)
+    public UpdateIngredientSourceCommand(int ingredientSourceId, UpdateIngredientSourceRequest request)
     {
         IngredientSourceId = ingredientSourceId;
         Request = request;

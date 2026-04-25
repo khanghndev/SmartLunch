@@ -14,7 +14,7 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
         _context = context;
     }
 
-    public async Task<WeeklyMenu?> GetByIdAsync(Guid id)
+    public async Task<WeeklyMenu?> GetByIdAsync(int id)
     {
         return await _context.WeeklyMenus
             .FirstOrDefaultAsync(e => e.Id == id);

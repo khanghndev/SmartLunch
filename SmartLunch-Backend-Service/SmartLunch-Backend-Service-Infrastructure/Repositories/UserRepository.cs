@@ -14,7 +14,7 @@ public class UserRepository : IUserRepository
         _context = context;
     }
 
-    public async Task<User?> GetByIdAsync(Guid id)
+    public async Task<User?> GetByIdAsync(int id)
     {
         return await _context.Users
             .Include(u => u.UserRoles)
@@ -52,7 +52,7 @@ public class UserRepository : IUserRepository
         return user;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var user = await _context.Users.FindAsync(id);
         if (user == null) return false;
@@ -72,7 +72,7 @@ public class UserRepository : IUserRepository
         return await _context.Users.AnyAsync(u => u.Email == email);
     }
 
-    public async Task<bool> IsEmailTakenByAnotherUserAsync(string email, Guid excludeUserId)
+    public async Task<bool> IsEmailTakenByAnotherUserAsync(string email, int excludeUserId)
     {
         return await _context.Users.AnyAsync(u => u.Email == email && u.Id != excludeUserId);
     }

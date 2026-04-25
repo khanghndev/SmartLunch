@@ -2,10 +2,10 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.MenuSc
 
 public class MenuScheduleDto
 {
-    public Guid Id { get; set; }
-    public Guid MenuId { get; set; }
+    public int Id { get; set; }
+    public int MenuId { get; set; }
     public DateTime Date { get; set; }
     public string MealSlot { get; set; } = string.Empty;
-    public Guid DishId { get; set; }
+    public int DishId { get; set; }
     public DateTime CreatedAt { get; set; }
 }

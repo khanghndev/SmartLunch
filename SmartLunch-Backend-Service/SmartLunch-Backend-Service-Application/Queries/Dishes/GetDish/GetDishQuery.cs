@@ -8,12 +8,12 @@ namespace SmartLunch.Backend.Service.Application.Queries.Dishes.GetDish;
 /// </summary>
 public class GetDishQuery : IRequest<GetDishResponse>
 {
-    public Guid DishId { get; set; }
+    public int DishId { get; set; }
 
     /// <summary>Kèm định mức nguyên liệu (DishIngredient).</summary>
     public bool IncludeIngredientQuotas { get; set; }
 
-    public GetDishQuery(Guid dishId, bool includeIngredientQuotas = false)
+    public GetDishQuery(int dishId, bool includeIngredientQuotas = false)
     {
         DishId = dishId;
         IncludeIngredientQuotas = includeIngredientQuotas;

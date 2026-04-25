@@ -59,7 +59,7 @@ public class MenuSuggestionController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:menusuggestions.read")]
-    public async Task<ActionResult<BaseApiResponse<GetMenuSuggestionResponse>>> GetMenuSuggestion(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetMenuSuggestionResponse>>> GetMenuSuggestion(int id)
     {
         try
         {

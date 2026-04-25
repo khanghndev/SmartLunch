@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.IngredientInventory.Get
 
 public class GetInternalStockIssueQuery : IRequest<InternalStockIssueDetailDto?>
 {
-    public Guid IssueId { get; }
+    public int IssueId { get; }
 
-    public GetInternalStockIssueQuery(Guid issueId)
+    public GetInternalStockIssueQuery(int issueId)
     {
         IssueId = issueId;
     }

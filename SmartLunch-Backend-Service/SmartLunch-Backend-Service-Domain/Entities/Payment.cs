@@ -5,9 +5,10 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class Payment
 {
-    public Guid Id { get; set; }
-    public Guid OrderId { get; set; }
-    public Guid? PayerId { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int OrderId { get; set; }
+    public int? PayerId { get; set; }
     public DateTime PaymentDate { get; set; } = DateTime.UtcNow;
     public decimal Amount { get; set; }
     public string Method { get; set; } = "cash"; // cash|card|bank_transfer|e_wallet

@@ -14,7 +14,7 @@ public class RoleRepository : IRoleRepository
         _context = context;
     }
 
-    public async Task<Role?> GetByIdAsync(Guid id)
+    public async Task<Role?> GetByIdAsync(int id)
     {
         return await _context.Roles
             .Include(r => r.RolePermissions)
@@ -61,7 +61,7 @@ public class RoleRepository : IRoleRepository
         return role;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var role = await _context.Roles.FindAsync(id);
         if (role == null) return false;
@@ -82,7 +82,7 @@ public class RoleRepository : IRoleRepository
         return await _context.Roles.AnyAsync(r => r.Name == name);
     }
 
-    public async Task<bool> ExistsByIdAsync(Guid id)
+    public async Task<bool> ExistsByIdAsync(int id)
     {
         return await _context.Roles.AnyAsync(r => r.Id == id);
     }

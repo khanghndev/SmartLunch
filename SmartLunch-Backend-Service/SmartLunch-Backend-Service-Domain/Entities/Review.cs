@@ -5,10 +5,11 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class Review
 {
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public Guid? DishId { get; set; }
-    public Guid? OrderId { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int UserId { get; set; }
+    public int? DishId { get; set; }
+    public int? OrderId { get; set; }
     public int Rating { get; set; } // 1-5
     public string? Comment { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

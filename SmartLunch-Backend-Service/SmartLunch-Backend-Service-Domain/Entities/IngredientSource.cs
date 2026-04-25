@@ -5,9 +5,10 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class IngredientSource
 {
-    public Guid Id { get; set; }
-    public Guid IngredientId { get; set; }
-    public Guid? PartnerId { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int IngredientId { get; set; }
+    public int? PartnerId { get; set; }
     public string? BatchNumber { get; set; }
     public string? OriginDetails { get; set; }
     public DateTime? ProductionDate { get; set; }

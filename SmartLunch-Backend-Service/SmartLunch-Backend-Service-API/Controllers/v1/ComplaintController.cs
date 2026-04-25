@@ -59,7 +59,7 @@ public class ComplaintController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:complaints.read")]
-    public async Task<ActionResult<BaseApiResponse<GetComplaintResponse>>> GetComplaint(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetComplaintResponse>>> GetComplaint(int id)
     {
         try
         {

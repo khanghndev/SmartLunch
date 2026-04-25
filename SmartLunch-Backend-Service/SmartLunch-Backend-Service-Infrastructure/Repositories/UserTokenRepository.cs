@@ -14,7 +14,7 @@ public class UserTokenRepository : IUserTokenRepository
         _context = context;
     }
 
-    public async Task<UserToken?> GetByIdAsync(Guid id)
+    public async Task<UserToken?> GetByIdAsync(int id)
     {
         return await _context.UserTokens
             .Include(ut => ut.User)
@@ -35,7 +35,7 @@ public class UserTokenRepository : IUserTokenRepository
             .FirstOrDefaultAsync(ut => ut.RefreshToken == refreshToken && ut.IsActive);
     }
 
-    public async Task<IEnumerable<UserToken>> GetByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<UserToken>> GetByUserIdAsync(int userId)
     {
         return await _context.UserTokens
             .Include(ut => ut.User)
@@ -43,7 +43,7 @@ public class UserTokenRepository : IUserTokenRepository
             .ToListAsync();
     }
 
-    public async Task<IEnumerable<UserToken>> GetActiveByUserIdAsync(Guid userId)
+    public async Task<IEnumerable<UserToken>> GetActiveByUserIdAsync(int userId)
     {
         return await _context.UserTokens
             .Include(ut => ut.User)
@@ -85,7 +85,7 @@ public class UserTokenRepository : IUserTokenRepository
         return userToken;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var userToken = await _context.UserTokens.FindAsync(id);
         if (userToken == null) return false;
@@ -106,7 +106,7 @@ public class UserTokenRepository : IUserTokenRepository
         return true;
     }
 
-    public async Task<bool> RevokeAllUserTokensAsync(Guid userId)
+    public async Task<bool> RevokeAllUserTokensAsync(int userId)
     {
         var tokens = await GetActiveByUserIdAsync(userId);
         foreach (var token in tokens)

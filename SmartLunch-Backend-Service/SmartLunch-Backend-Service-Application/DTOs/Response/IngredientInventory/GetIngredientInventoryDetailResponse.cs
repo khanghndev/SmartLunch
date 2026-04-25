@@ -2,13 +2,13 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.IngredientInvento
 
 public class GetIngredientInventoryDetailResponse
 {
-    public Guid IngredientId { get; set; }
+    public int IngredientId { get; set; }
     public string IngredientName { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty;
     public string? Description { get; set; }
     public bool IsActive { get; set; }
     public decimal? CostPerUnit { get; set; }
-    public Guid? DefaultSupplierId { get; set; }
+    public int? DefaultSupplierId { get; set; }
     public string? DefaultSupplierLegalName { get; set; }
 
     public decimal QuantityAvailable { get; set; }

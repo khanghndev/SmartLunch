@@ -14,7 +14,7 @@ public class DeliveryRepository : IDeliveryRepository
         _context = context;
     }
 
-    public async Task<Delivery?> GetByIdAsync(Guid id)
+    public async Task<Delivery?> GetByIdAsync(int id)
     {
         return await _context.Deliveries
             .FirstOrDefaultAsync(e => e.Id == id);

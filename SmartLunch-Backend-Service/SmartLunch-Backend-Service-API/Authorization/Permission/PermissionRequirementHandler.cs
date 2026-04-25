@@ -1,4 +1,4 @@
-﻿using System.Security.Claims;
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
@@ -32,7 +32,7 @@ public class PermissionRequirementHandler : AuthorizationHandler<PermissionRequi
         }
 
         // Parse UserId
-        if (!Guid.TryParse(userIdClaim, out var userId))
+        if (!int.TryParse(userIdClaim, out var userId))
         {
             _logger.LogWarning("Invalid user ID format: {UserId}", userIdClaim);
             return;

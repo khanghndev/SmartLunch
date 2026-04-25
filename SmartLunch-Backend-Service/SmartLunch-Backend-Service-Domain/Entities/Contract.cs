@@ -5,8 +5,9 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class Contract
 {
-    public Guid Id { get; set; }
-    public Guid PartnerId { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int PartnerId { get; set; }
     /// <summary>Số hợp đồng (ký hiệu nội bộ hoặc theo văn bản pháp lý).</summary>
     public string? ContractNumber { get; set; }
     public string? Description { get; set; }

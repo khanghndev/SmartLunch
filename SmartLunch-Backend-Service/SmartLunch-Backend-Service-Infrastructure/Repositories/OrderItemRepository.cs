@@ -14,7 +14,7 @@ public class OrderItemRepository : IOrderItemRepository
         _context = context;
     }
 
-    public async Task<OrderItem?> GetByIdAsync(Guid id)
+    public async Task<OrderItem?> GetByIdAsync(int id)
     {
         return await _context.OrderItems
             .FirstOrDefaultAsync(e => e.Id == id);

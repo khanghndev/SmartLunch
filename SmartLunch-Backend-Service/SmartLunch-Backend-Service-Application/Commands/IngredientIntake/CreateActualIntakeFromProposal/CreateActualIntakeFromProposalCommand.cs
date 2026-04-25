@@ -6,14 +6,14 @@ namespace SmartLunch.Backend.Service.Application.Commands.IngredientIntake.Creat
 
 public class CreateActualIntakeFromProposalCommand : IRequest<CreateActualIntakeFromProposalResponse>
 {
-    public Guid ProposalId { get; }
+    public int ProposalId { get; }
     public CreateActualIntakeFromProposalRequest Request { get; }
-    public Guid ActorUserId { get; }
+    public int ActorUserId { get; }
 
     public CreateActualIntakeFromProposalCommand(
-        Guid proposalId,
+        int proposalId,
         CreateActualIntakeFromProposalRequest request,
-        Guid actorUserId)
+        int actorUserId)
     {
         ProposalId = proposalId;
         Request = request;

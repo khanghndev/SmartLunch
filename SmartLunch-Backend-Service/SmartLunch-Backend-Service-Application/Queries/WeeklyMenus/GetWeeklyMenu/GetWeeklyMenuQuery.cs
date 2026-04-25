@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.WeeklyMenus.GetWeeklyMe
 
 public class GetWeeklyMenuQuery : IRequest<GetWeeklyMenuResponse>
 {
-    public Guid WeeklyMenuId { get; set; }
+    public int WeeklyMenuId { get; set; }
 
-    public GetWeeklyMenuQuery(Guid weeklyMenuId)
+    public GetWeeklyMenuQuery(int weeklyMenuId)
     {
         WeeklyMenuId = weeklyMenuId;
     }

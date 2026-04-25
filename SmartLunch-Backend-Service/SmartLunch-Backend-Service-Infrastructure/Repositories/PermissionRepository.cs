@@ -14,7 +14,7 @@ public class PermissionRepository : IPermissionRepository
         _context = context;
     }
 
-    public async Task<Permission?> GetByIdAsync(Guid id)
+    public async Task<Permission?> GetByIdAsync(int id)
     {
         return await _context.Permissions
             .Include(p => p.RolePermissions)
@@ -79,7 +79,7 @@ public class PermissionRepository : IPermissionRepository
         return permission;
     }
 
-    public async Task<bool> DeleteAsync(Guid id)
+    public async Task<bool> DeleteAsync(int id)
     {
         var permission = await _context.Permissions.FindAsync(id);
         if (permission == null) return false;
@@ -94,7 +94,7 @@ public class PermissionRepository : IPermissionRepository
         return await _context.Permissions.AnyAsync(p => p.Name == name);
     }
 
-    public async Task<bool> ExistsByIdAsync(Guid id)
+    public async Task<bool> ExistsByIdAsync(int id)
     {
         return await _context.Permissions.AnyAsync(p => p.Id == id);
     }

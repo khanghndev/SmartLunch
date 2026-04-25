@@ -2,7 +2,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.Auth;
 
 public class LoginResponse
 {
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string AccessToken { get; set; } = string.Empty;

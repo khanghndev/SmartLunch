@@ -4,15 +4,15 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IRolePermissionRepository
 {
-    Task<RolePermission?> GetByIdAsync(Guid id);
-    Task<RolePermission?> GetByRoleAndPermissionAsync(Guid roleId, Guid permissionId);
-    Task<IEnumerable<RolePermission>> GetByRoleIdAsync(Guid roleId);
-    Task<IEnumerable<RolePermission>> GetActiveByRoleIdAsync(Guid roleId);
-    Task<IEnumerable<RolePermission>> GetByPermissionIdAsync(Guid permissionId);
+    Task<RolePermission?> GetByIdAsync(int id);
+    Task<RolePermission?> GetByRoleAndPermissionAsync(int roleId, int permissionId);
+    Task<IEnumerable<RolePermission>> GetByRoleIdAsync(int roleId);
+    Task<IEnumerable<RolePermission>> GetActiveByRoleIdAsync(int roleId);
+    Task<IEnumerable<RolePermission>> GetByPermissionIdAsync(int permissionId);
     Task<RolePermission> CreateAsync(RolePermission rolePermission);
     Task<RolePermission> UpdateAsync(RolePermission rolePermission);
-    Task<bool> DeleteAsync(Guid id);
-    Task<bool> DeleteByRoleAndPermissionAsync(Guid roleId, Guid permissionId);
-    Task<bool> ExistsByRoleAndPermissionAsync(Guid roleId, Guid permissionId);
-    Task<(List<RolePermission> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, Guid? roleId = null, Guid? permissionId = null, bool? isActive = null);
+    Task<bool> DeleteAsync(int id);
+    Task<bool> DeleteByRoleAndPermissionAsync(int roleId, int permissionId);
+    Task<bool> ExistsByRoleAndPermissionAsync(int roleId, int permissionId);
+    Task<(List<RolePermission> Items, int TotalCount)> GetPagedAsync(int page, int pageSize, int? roleId = null, int? permissionId = null, bool? isActive = null);
 }

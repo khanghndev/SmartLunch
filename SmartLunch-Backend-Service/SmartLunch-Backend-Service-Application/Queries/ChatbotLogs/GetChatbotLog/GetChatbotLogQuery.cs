@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.ChatbotLogs.GetChatbotL
 
 public class GetChatbotLogQuery : IRequest<GetChatbotLogResponse>
 {
-    public Guid ChatbotLogId { get; set; }
+    public int ChatbotLogId { get; set; }
 
-    public GetChatbotLogQuery(Guid chatbotLogId)
+    public GetChatbotLogQuery(int chatbotLogId)
     {
         ChatbotLogId = chatbotLogId;
     }

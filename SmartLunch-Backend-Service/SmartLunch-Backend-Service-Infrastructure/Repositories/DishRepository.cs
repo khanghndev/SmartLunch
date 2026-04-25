@@ -14,7 +14,7 @@ public class DishRepository : IDishRepository
         _context = context;
     }
 
-    public async Task<List<Dish>> GetByIdsAsync(IEnumerable<Guid> ids, CancellationToken cancellationToken = default)
+    public async Task<List<Dish>> GetByIdsAsync(IEnumerable<int> ids, CancellationToken cancellationToken = default)
     {
         var idList = ids.Distinct().ToList();
         if (idList.Count == 0)
@@ -25,13 +25,13 @@ public class DishRepository : IDishRepository
             .ToListAsync(cancellationToken);
     }
 
-    public async Task<Dish?> GetByIdAsync(Guid id)
+    public async Task<Dish?> GetByIdAsync(int id)
     {
         return await _context.Dishes
             .FirstOrDefaultAsync(d => d.Id == id);
     }
 
-    public async Task<Dish?> GetByIdWithIngredientsAsync(Guid id)
+    public async Task<Dish?> GetByIdWithIngredientsAsync(int id)
     {
         return await _context.Dishes
             .Include(d => d.DishIngredients)

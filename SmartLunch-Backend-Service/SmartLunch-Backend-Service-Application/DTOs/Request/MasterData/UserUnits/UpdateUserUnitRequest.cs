@@ -2,6 +2,6 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.UserUni
 
 public class UpdateUserUnitRequest
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public bool IsActive { get; set; }
 }

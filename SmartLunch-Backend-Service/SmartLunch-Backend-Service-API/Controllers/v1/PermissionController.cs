@@ -63,7 +63,7 @@ public class PermissionController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:permissions.read")]
-    public async Task<ActionResult<BaseApiResponse<GetPermissionResponse>>> GetPermission(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetPermissionResponse>>> GetPermission(int id)
     {
         try
         {

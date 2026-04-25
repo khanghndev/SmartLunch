@@ -2,9 +2,10 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 
 public class IngredientIntakeProposalLine
 {
-    public Guid Id { get; set; }
-    public Guid ProposalId { get; set; }
-    public Guid IngredientId { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int ProposalId { get; set; }
+    public int IngredientId { get; set; }
     public decimal Quantity { get; set; }
     public string? LineNote { get; set; }
 

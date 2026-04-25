@@ -4,9 +4,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Auth;
 
 public class GetUserRolesQuery : IRequest<List<string>>
 {
-    public Guid UserId { get; set; }
+    public int UserId { get; set; }
 
-    public GetUserRolesQuery(Guid userId)
+    public GetUserRolesQuery(int userId)
     {
         UserId = userId;
     }

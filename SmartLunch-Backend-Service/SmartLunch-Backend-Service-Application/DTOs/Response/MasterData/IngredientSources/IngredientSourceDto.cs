@@ -2,10 +2,10 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Ingred
 
 public class IngredientSourceDto
 {
-    public Guid Id { get; set; }
-    public Guid IngredientId { get; set; }
+    public int Id { get; set; }
+    public int IngredientId { get; set; }
     public string? IngredientName { get; set; }
-    public Guid? PartnerId { get; set; }
+    public int? PartnerId { get; set; }
     public string? PartnerLegalName { get; set; }
     public string? BatchNumber { get; set; }
     public string? OriginDetails { get; set; }

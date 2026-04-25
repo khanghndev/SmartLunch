@@ -59,7 +59,7 @@ public class SentimentController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:sentiments.read")]
-    public async Task<ActionResult<BaseApiResponse<GetSentimentResponse>>> GetSentiment(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetSentimentResponse>>> GetSentiment(int id)
     {
         try
         {

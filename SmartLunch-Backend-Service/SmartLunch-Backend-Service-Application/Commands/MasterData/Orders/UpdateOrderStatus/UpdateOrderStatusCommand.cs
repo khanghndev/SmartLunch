@@ -6,10 +6,10 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.Upda
 
 public class UpdateOrderStatusCommand : IRequest<GetOrderResponse>
 {
-    public Guid OrderId { get; }
+    public int OrderId { get; }
     public UpdateOrderStatusRequest Request { get; }
 
-    public UpdateOrderStatusCommand(Guid orderId, UpdateOrderStatusRequest request)
+    public UpdateOrderStatusCommand(int orderId, UpdateOrderStatusRequest request)
     {
         OrderId = orderId;
         Request = request;

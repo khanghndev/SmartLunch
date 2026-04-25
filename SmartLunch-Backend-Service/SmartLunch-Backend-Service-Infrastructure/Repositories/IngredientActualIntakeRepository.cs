@@ -16,8 +16,8 @@ public class IngredientActualIntakeRepository : IIngredientActualIntakeRepositor
     }
 
     public async Task<IngredientActualIntake> CreateFromApprovedProposalAsync(
-        Guid proposalId,
-        Guid actorUserId,
+        int proposalId,
+        int actorUserId,
         bool actorIsElevated,
         DateTime receivedAtUtc,
         string? note,
@@ -65,13 +65,11 @@ public class IngredientActualIntakeRepository : IIngredientActualIntakeRepositor
                     throw new InvalidOperationException($"Ingredient '{ing.Name}' is inactive; cannot receive stock.");
             }
 
-            var intakeId = Guid.NewGuid();
             var receiptCode =
                 $"PNK-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
 
             var intake = new IngredientActualIntake
             {
-                Id = intakeId,
                 ReceiptCode = receiptCode,
                 ProposalId = proposalId,
                 CreatedByUserId = actorUserId,
@@ -84,8 +82,6 @@ public class IngredientActualIntakeRepository : IIngredientActualIntakeRepositor
             {
                 intake.Lines.Add(new IngredientActualIntakeLine
                 {
-                    Id = Guid.NewGuid(),
-                    IntakeId = intakeId,
                     IngredientId = pl.IngredientId,
                     Quantity = pl.Quantity
                 });

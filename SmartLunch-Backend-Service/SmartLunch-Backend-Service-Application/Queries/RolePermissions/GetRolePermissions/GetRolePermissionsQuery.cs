@@ -7,11 +7,11 @@ public class GetRolePermissionsQuery : IRequest<GetRolePermissionsResponse>
 {
     public int Page { get; set; } = 1;
     public int PageSize { get; set; } = 10;
-    public Guid? RoleId { get; set; }
-    public Guid? PermissionId { get; set; }
+    public int? RoleId { get; set; }
+    public int? PermissionId { get; set; }
     public bool? IsActive { get; set; }
 
-    public GetRolePermissionsQuery(int page, int pageSize, Guid? roleId, Guid? permissionId, bool? isActive)
+    public GetRolePermissionsQuery(int page, int pageSize, int? roleId, int? permissionId, bool? isActive)
     {
         Page = page;
         PageSize = pageSize;

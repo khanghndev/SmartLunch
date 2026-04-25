@@ -52,7 +52,7 @@ public class UserUnitController : ControllerBase
 
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:units.read")]
-    public async Task<ActionResult<BaseApiResponse<GetUserUnitResponse>>> GetUserUnit(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetUserUnitResponse>>> GetUserUnit(int id)
     {
         try
         {
@@ -96,7 +96,7 @@ public class UserUnitController : ControllerBase
 
     [HttpPut("{id}")]
     [Authorize(Policy = "permission:units.update")]
-    public async Task<ActionResult<BaseApiResponse<GetUserUnitResponse>>> Update(Guid id, [FromBody] UpdateUserUnitRequest request)
+    public async Task<ActionResult<BaseApiResponse<GetUserUnitResponse>>> Update(int id, [FromBody] UpdateUserUnitRequest request)
     {
         if (id != request.Id)
             return BadRequest(BaseApiResponse<GetUserUnitResponse>.ErrorResult("Id mismatch", new[] { "Id in URL and body must match" }));
@@ -120,7 +120,7 @@ public class UserUnitController : ControllerBase
 
     [HttpDelete("{id}")]
     [Authorize(Policy = "permission:units.update")]
-    public async Task<ActionResult<BaseApiResponse<bool>>> Delete(Guid id)
+    public async Task<ActionResult<BaseApiResponse<bool>>> Delete(int id)
     {
         try
         {

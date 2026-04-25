@@ -4,7 +4,7 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IPermissionRepository
 {
-    Task<Permission?> GetByIdAsync(Guid id);
+    Task<Permission?> GetByIdAsync(int id);
     Task<Permission?> GetByNameAsync(string name);
     Task<IEnumerable<Permission>> GetAllAsync();
     Task<IEnumerable<Permission>> GetActivePermissionsAsync();
@@ -12,7 +12,7 @@ public interface IPermissionRepository
     Task<IEnumerable<Permission>> GetByActionAsync(string action);
     Task<Permission> CreateAsync(Permission permission);
     Task<Permission> UpdateAsync(Permission permission);
-    Task<bool> DeleteAsync(Guid id);
+    Task<bool> DeleteAsync(int id);
     Task<bool> ExistsByNameAsync(string name);
-    Task<bool> ExistsByIdAsync(Guid id);
+    Task<bool> ExistsByIdAsync(int id);
 }

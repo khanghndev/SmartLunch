@@ -59,7 +59,7 @@ public class TransactionController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:transactions.read")]
-    public async Task<ActionResult<BaseApiResponse<GetTransactionResponse>>> GetTransaction(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetTransactionResponse>>> GetTransaction(int id)
     {
         try
         {

@@ -14,7 +14,7 @@ public class UnitRepository : IUnitRepository
         _context = context;
     }
 
-    public async Task<Unit?> GetByIdAsync(Guid id)
+    public async Task<Unit?> GetByIdAsync(int id)
     {
         return await _context.Units
             .FirstOrDefaultAsync(u => u.Id == id);
@@ -49,13 +49,13 @@ public class UnitRepository : IUnitRepository
         return (units, totalCount);
     }
 
-    public async Task<Dictionary<Guid, string>> GetNamesByIdsAsync(
-        IEnumerable<Guid> unitIds,
+    public async Task<Dictionary<int, string>> GetNamesByIdsAsync(
+        IEnumerable<int> unitIds,
         CancellationToken cancellationToken = default)
     {
         var idList = unitIds.Distinct().ToList();
         if (idList.Count == 0)
-            return new Dictionary<Guid, string>();
+            return new Dictionary<int, string>();
 
         return await _context.Units
             .AsNoTracking()

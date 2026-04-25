@@ -2,9 +2,9 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Delive
 
 public class DeliveryDto
 {
-    public Guid Id { get; set; }
-    public Guid OrderId { get; set; }
-    public Guid? AssignedStaffId { get; set; }
+    public int Id { get; set; }
+    public int OrderId { get; set; }
+    public int? AssignedStaffId { get; set; }
     public string DeliveryAddress { get; set; } = string.Empty;
     public string DeliveryStatus { get; set; } = string.Empty;
     public DateTime? DeliveredAt { get; set; }
