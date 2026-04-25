@@ -47,10 +47,8 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
         var scheduledDate = command.Request.ScheduledDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var scheduledUtc = DateTime.SpecifyKind(scheduledDate.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
 
-        var orderId = Guid.NewGuid();
         var order = new Order
         {
-            Id = orderId,
             UserId = command.UserId,
             UnitId = cart.UnitId,
             OrderDate = DateTime.UtcNow,
@@ -70,8 +68,6 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
 
             order.OrderItems.Add(new OrderItem
             {
-                Id = Guid.NewGuid(),
-                OrderId = orderId,
                 DishId = line.DishId,
                 Quantity = line.Quantity,
                 UnitPrice = unitPrice,
@@ -85,7 +81,7 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
         await _orderRepository.CommitAsync();
         await _cartCache.RemoveAsync(command.UserId, cancellationToken);
 
-        var reloaded = await _orderRepository.GetByIdWithDetailsAsync(orderId)
+        var reloaded = await _orderRepository.GetByIdWithDetailsAsync(order.Id)
             ?? throw new InvalidOperationException("Order created but failed to reload.");
 
         return new GetOrderResponse { Order = OrderDtoMapping.ToDto(reloaded) };

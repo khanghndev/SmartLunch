@@ -62,7 +62,7 @@ public class DishController : ControllerBase
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:dishes.read")]
     public async Task<ActionResult<BaseApiResponse<GetDishResponse>>> GetDish(
-        Guid id,
+        int id,
         [FromQuery] bool includeIngredientQuotas = false)
     {
         try
@@ -113,9 +113,9 @@ public class DishController : ControllerBase
     /// <summary>
     /// Sửa món; ẩn món bằng IsActive = false.
     /// </summary>
-    [HttpPut("{id:guid}")]
+    [HttpPut("{id:int}")]
     [Authorize(Policy = "permission:dishes.update")]
-    public async Task<ActionResult<BaseApiResponse<GetDishResponse>>> UpdateDish(Guid id, [FromBody] UpdateDishRequest request)
+    public async Task<ActionResult<BaseApiResponse<GetDishResponse>>> UpdateDish(int id, [FromBody] UpdateDishRequest request)
     {
         try
         {

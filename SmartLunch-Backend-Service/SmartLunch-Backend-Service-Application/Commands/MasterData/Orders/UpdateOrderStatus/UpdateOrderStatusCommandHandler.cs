@@ -116,7 +116,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
 
         order.Deliveries.Add(new Delivery
         {
-            Id = Guid.NewGuid(),
+
             OrderId = order.Id,
             DeliveryAddress = address,
             DeliveryStatus = DeliveryCompleted,

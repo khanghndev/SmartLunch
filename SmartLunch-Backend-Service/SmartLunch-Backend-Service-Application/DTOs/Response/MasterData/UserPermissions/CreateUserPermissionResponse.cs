@@ -2,8 +2,8 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.UserPe
 
 public class CreateUserPermissionResponse
 {
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public Guid PermissionId { get; set; }
+    public int Id { get; set; }
+    public int UserId { get; set; }
+    public int PermissionId { get; set; }
     public string Message { get; set; } = "User permission created successfully";
 }

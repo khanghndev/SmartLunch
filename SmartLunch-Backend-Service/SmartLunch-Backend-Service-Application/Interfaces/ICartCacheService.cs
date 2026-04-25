@@ -7,9 +7,9 @@ public interface ICartCacheService
 {
     TimeSpan CacheTtl { get; }
 
-    Task<ShoppingCartDto?> GetAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task<ShoppingCartDto?> GetAsync(int userId, CancellationToken cancellationToken = default);
 
     Task SaveAsync(ShoppingCartDto cart, CancellationToken cancellationToken = default);
 
-    Task RemoveAsync(Guid userId, CancellationToken cancellationToken = default);
+    Task RemoveAsync(int userId, CancellationToken cancellationToken = default);
 }

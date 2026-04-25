@@ -6,4 +6,4 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.Crea
 
 public record CreateSalesInvoiceCommand(
     CreateSalesInvoiceRequest Request,
-    Guid SalesUserId) : IRequest<GetOrderResponse>;
+    int SalesUserId) : IRequest<GetOrderResponse>;

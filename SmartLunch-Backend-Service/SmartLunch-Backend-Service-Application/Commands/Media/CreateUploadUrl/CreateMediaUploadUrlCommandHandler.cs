@@ -132,7 +132,7 @@ public class CreateMediaUploadUrlCommandHandler : IRequestHandler<CreateMediaUpl
         };
     }
 
-    private static string BuildObjectName(Guid userId, string mediaType, string ext)
+    private static string BuildObjectName(int userId, string mediaType, string ext)
     {
         // Keep objects partitioned by user to simplify authorization checks.
         var now = DateTime.UtcNow;

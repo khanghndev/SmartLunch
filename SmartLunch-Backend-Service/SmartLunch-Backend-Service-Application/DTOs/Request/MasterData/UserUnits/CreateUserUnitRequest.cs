@@ -2,6 +2,6 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.UserUni
 
 public class CreateUserUnitRequest
 {
-    public Guid UserId { get; set; }
-    public Guid UnitId { get; set; }
+    public int UserId { get; set; }
+    public int UnitId { get; set; }
 }

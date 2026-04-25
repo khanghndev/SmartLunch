@@ -59,7 +59,7 @@ public class InventoryController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:inventories.read")]
-    public async Task<ActionResult<BaseApiResponse<GetInventoryResponse>>> GetInventory(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetInventoryResponse>>> GetInventory(int id)
     {
         try
         {

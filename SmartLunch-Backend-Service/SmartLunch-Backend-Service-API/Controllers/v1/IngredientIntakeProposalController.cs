@@ -109,11 +109,11 @@ public class IngredientIntakeProposalController : ControllerBase
     /// <summary>
     /// Quản lý duyệt / từ chối phiếu đề xuất (trạng thái submitted).
     /// </summary>
-    [HttpPost("{proposalId:guid}/review")]
+    [HttpPost("{proposalId:int}/review")]
     [Authorize(Policy = "roles:Admin,SuperAdmin")]
     [Authorize(Policy = "permission:intakeproposals.review")]
     public async Task<ActionResult<BaseApiResponse<ReviewIngredientIntakeProposalResponse>>> ReviewProposal(
-        Guid proposalId,
+        int proposalId,
         [FromBody] ReviewIngredientIntakeProposalRequest request)
     {
         try
@@ -150,10 +150,10 @@ public class IngredientIntakeProposalController : ControllerBase
     /// <summary>
     /// Phiếu nhập kho thực tế từ phiếu đã duyệt: xác nhận đạt chuẩn, cộng tồn kho, đánh dấu fulfilled.
     /// </summary>
-    [HttpPost("{proposalId:guid}/actual-receipt")]
+    [HttpPost("{proposalId:int}/actual-receipt")]
     [Authorize(Policy = "permission:intakeproposals.fulfill")]
     public async Task<ActionResult<BaseApiResponse<CreateActualIntakeFromProposalResponse>>> CreateActualReceipt(
-        Guid proposalId,
+        int proposalId,
         [FromBody] CreateActualIntakeFromProposalRequest request)
     {
         try
@@ -194,9 +194,9 @@ public class IngredientIntakeProposalController : ControllerBase
     /// <summary>
     /// Chi tiết một phiếu (nhân viên chỉ xem được phiếu của chính mình).
     /// </summary>
-    [HttpGet("{id:guid}")]
+    [HttpGet("{id:int}")]
     [Authorize(Policy = "permission:intakeproposals.read")]
-    public async Task<ActionResult<BaseApiResponse<IngredientIntakeProposalDetailDto>>> GetProposal(Guid id)
+    public async Task<ActionResult<BaseApiResponse<IngredientIntakeProposalDetailDto>>> GetProposal(int id)
     {
         try
         {
@@ -270,10 +270,10 @@ public class IngredientIntakeProposalController : ControllerBase
         }
     }
 
-    private Guid RequireUserId()
+    private int RequireUserId()
     {
         var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(raw) || !Guid.TryParse(raw, out var userId))
+        if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
             throw new UnauthorizedAccessException("Invalid user context.");
         return userId;
     }

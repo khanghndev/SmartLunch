@@ -2,8 +2,8 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.RolePe
 
 public class CreateRolePermissionResponse
 {
-    public Guid Id { get; set; }
-    public Guid RoleId { get; set; }
-    public Guid PermissionId { get; set; }
+    public int Id { get; set; }
+    public int RoleId { get; set; }
+    public int PermissionId { get; set; }
     public string Message { get; set; } = "Role permission created successfully";
 }

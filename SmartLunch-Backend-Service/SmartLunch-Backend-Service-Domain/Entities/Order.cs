@@ -5,9 +5,10 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class Order
 {
-    public Guid Id { get; set; }
-    public Guid? UserId { get; set; }
-    public Guid? UnitId { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int? UserId { get; set; }
+    public int? UnitId { get; set; }
     public DateTime OrderDate { get; set; } = DateTime.UtcNow;
     public DateTime ScheduledDate { get; set; }
     public string Status { get; set; } = "pending"; // pending|confirmed|preparing|delivered|cancelled
@@ -20,7 +21,7 @@ public class Order
     public string? InvoiceCode { get; set; }
 
     /// <summary>Nhân viên bán tạo hóa đơn (POS).</summary>
-    public Guid? CreatedBySalesUserId { get; set; }
+    public int? CreatedBySalesUserId { get; set; }
 
     public virtual User? User { get; set; }
     public virtual Unit? Unit { get; set; }

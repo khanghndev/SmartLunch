@@ -2,8 +2,8 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.DishIng
 
 public class CreateDishIngredientRequest
 {
-    public Guid DishId { get; set; }
-    public Guid IngredientId { get; set; }
+    public int DishId { get; set; }
+    public int IngredientId { get; set; }
     public decimal Quantity { get; set; }
     public string? Unit { get; set; }
 }

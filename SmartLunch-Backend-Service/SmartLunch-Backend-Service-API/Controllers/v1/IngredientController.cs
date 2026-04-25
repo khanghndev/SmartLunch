@@ -59,7 +59,7 @@ public class IngredientController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:ingredients.read")]
-    public async Task<ActionResult<BaseApiResponse<GetIngredientResponse>>> GetIngredient(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetIngredientResponse>>> GetIngredient(int id)
     {
         try
         {

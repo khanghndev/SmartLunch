@@ -4,7 +4,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Contrac
 
 public class CreateContractRequest
 {
-    public Guid PartnerId { get; set; }
+    public int PartnerId { get; set; }
     public string? ContractNumber { get; set; }
     public string? Description { get; set; }
 

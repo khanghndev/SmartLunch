@@ -7,5 +7,5 @@ public class GetContractsRequest
     public string? SearchTerm { get; set; }
 
     /// <summary>Lọc hợp đồng theo đối tác cung cấp.</summary>
-    public Guid? PartnerId { get; set; }
+    public int? PartnerId { get; set; }
 }

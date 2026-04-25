@@ -5,9 +5,10 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class UserUnit
 {
-    public Guid Id { get; set; }
-    public Guid UserId { get; set; }
-    public Guid UnitId { get; set; }
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int UserId { get; set; }
+    public int UnitId { get; set; }
     public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;
 

@@ -38,7 +38,7 @@ public class CreateDishIngredientCommandHandler : IRequestHandler<CreateDishIngr
 
         var entity = new DishIngredient
         {
-            Id = Guid.NewGuid(),
+
             DishId = req.DishId,
             IngredientId = req.IngredientId,
             Quantity = req.Quantity,

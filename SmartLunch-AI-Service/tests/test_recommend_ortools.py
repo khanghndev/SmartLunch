@@ -90,7 +90,7 @@ def test_ortools_week_all_different_main():
 
     assert plans
     week = plans[0]
-    assert [d.main.name for d in week.day_plans] == ["m0", "m1", "m2"] or len(
-        {d.main.name for d in week.day_plans}
+    assert [d.main.name for d in week.days] == ["m0", "m1", "m2"] or len(
+        {d.main.name for d in week.days}
     ) == 3
 

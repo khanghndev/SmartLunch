@@ -59,7 +59,7 @@ public class MediaFileController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:mediafiles.read")]
-    public async Task<ActionResult<BaseApiResponse<GetMediaFileResponse>>> GetMediaFile(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetMediaFileResponse>>> GetMediaFile(int id)
     {
         try
         {

@@ -8,7 +8,7 @@ public class CreateIngredientIntakeProposalRequest
 
 public class CreateIngredientIntakeProposalLineRequest
 {
-    public Guid IngredientId { get; set; }
+    public int IngredientId { get; set; }
     public decimal Quantity { get; set; }
     public string? LineNote { get; set; }
 }

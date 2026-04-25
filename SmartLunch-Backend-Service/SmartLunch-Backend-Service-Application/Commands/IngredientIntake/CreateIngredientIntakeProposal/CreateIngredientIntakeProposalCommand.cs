@@ -7,9 +7,9 @@ namespace SmartLunch.Backend.Service.Application.Commands.IngredientIntake.Creat
 public class CreateIngredientIntakeProposalCommand : IRequest<CreateIngredientIntakeProposalResponse>
 {
     public CreateIngredientIntakeProposalRequest Request { get; }
-    public Guid ActorUserId { get; }
+    public int ActorUserId { get; }
 
-    public CreateIngredientIntakeProposalCommand(CreateIngredientIntakeProposalRequest request, Guid actorUserId)
+    public CreateIngredientIntakeProposalCommand(CreateIngredientIntakeProposalRequest request, int actorUserId)
     {
         Request = request;
         ActorUserId = actorUserId;

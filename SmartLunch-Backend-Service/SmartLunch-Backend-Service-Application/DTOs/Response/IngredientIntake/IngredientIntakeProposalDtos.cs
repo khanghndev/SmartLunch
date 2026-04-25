@@ -2,8 +2,8 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.IngredientIntake;
 
 public class IngredientIntakeProposalLineDto
 {
-    public Guid Id { get; set; }
-    public Guid IngredientId { get; set; }
+    public int Id { get; set; }
+    public int IngredientId { get; set; }
     public string IngredientName { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty;
     public decimal Quantity { get; set; }
@@ -12,11 +12,11 @@ public class IngredientIntakeProposalLineDto
 
 public class IngredientIntakeProposalSummaryDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string ProposalCode { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string? HeaderNote { get; set; }
-    public Guid CreatedByUserId { get; set; }
+    public int CreatedByUserId { get; set; }
     public string? CreatedByDisplayName { get; set; }
     public DateTime CreatedAt { get; set; }
     /// <summary>Đã có phiếu nhập kho thực tế (tồn đã cập nhật).</summary>
@@ -25,14 +25,14 @@ public class IngredientIntakeProposalSummaryDto
 
 public class IngredientIntakeProposalDetailDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string ProposalCode { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string? HeaderNote { get; set; }
-    public Guid CreatedByUserId { get; set; }
+    public int CreatedByUserId { get; set; }
     public string? CreatedByDisplayName { get; set; }
     public DateTime CreatedAt { get; set; }
-    public Guid? ReviewedByUserId { get; set; }
+    public int? ReviewedByUserId { get; set; }
     public string? ReviewedByDisplayName { get; set; }
     public DateTime? ReviewedAt { get; set; }
     public string? ReviewNote { get; set; }
@@ -59,15 +59,15 @@ public class CreateIngredientIntakeProposalResponse
 /// </summary>
 public class IntakeProposalReviewHistoryEntryDto
 {
-    public Guid ProposalId { get; set; }
+    public int ProposalId { get; set; }
     public string ProposalCode { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public string? HeaderNote { get; set; }
     public DateTime CreatedAt { get; set; }
-    public Guid CreatedByUserId { get; set; }
+    public int CreatedByUserId { get; set; }
     public string? CreatedByDisplayName { get; set; }
     public DateTime? ReviewedAt { get; set; }
-    public Guid? ReviewedByUserId { get; set; }
+    public int? ReviewedByUserId { get; set; }
     public string? ReviewedByDisplayName { get; set; }
     public string? ReviewNote { get; set; }
 }
@@ -82,8 +82,8 @@ public class GetIntakeProposalReviewHistoryResponse
 
 public class IngredientActualIntakeLineDto
 {
-    public Guid Id { get; set; }
-    public Guid IngredientId { get; set; }
+    public int Id { get; set; }
+    public int IngredientId { get; set; }
     public string IngredientName { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty;
     public decimal Quantity { get; set; }
@@ -91,11 +91,11 @@ public class IngredientActualIntakeLineDto
 
 public class IngredientActualIntakeDetailDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string ReceiptCode { get; set; } = string.Empty;
-    public Guid ProposalId { get; set; }
+    public int ProposalId { get; set; }
     public string ProposalCode { get; set; } = string.Empty;
-    public Guid CreatedByUserId { get; set; }
+    public int CreatedByUserId { get; set; }
     public string? CreatedByDisplayName { get; set; }
     public DateTime ReceivedAt { get; set; }
     public string? Note { get; set; }

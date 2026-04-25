@@ -8,9 +8,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.Permissions.GetPermissi
 /// </summary>
 public class GetPermissionQuery : IRequest<GetPermissionResponse>
 {
-    public Guid PermissionId { get; set; }
+    public int PermissionId { get; set; }
 
-    public GetPermissionQuery(Guid permissionId)
+    public GetPermissionQuery(int permissionId)
     {
         PermissionId = permissionId;
     }

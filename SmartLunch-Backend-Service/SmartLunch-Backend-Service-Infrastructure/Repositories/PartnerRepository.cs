@@ -14,13 +14,13 @@ public class PartnerRepository : IPartnerRepository
         _context = context;
     }
 
-    public async Task<Partner?> GetByIdAsync(Guid id)
+    public async Task<Partner?> GetByIdAsync(int id)
     {
         return await _context.Partners
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
-    public async Task<Partner?> GetByIdWithContractsAsync(Guid id)
+    public async Task<Partner?> GetByIdWithContractsAsync(int id)
     {
         return await _context.Partners
             .Include(p => p.Contracts)
@@ -57,7 +57,7 @@ public class PartnerRepository : IPartnerRepository
         return (partners, totalCount);
     }
 
-    public async Task<bool> ExistsByTaxIdAsync(string taxId, Guid? excludePartnerId = null)
+    public async Task<bool> ExistsByTaxIdAsync(string taxId, int? excludePartnerId = null)
     {
         var normalized = taxId.Trim();
         var q = _context.Partners.Where(p => p.TaxId != null && p.TaxId == normalized);
@@ -80,13 +80,13 @@ public class PartnerRepository : IPartnerRepository
         return partner;
     }
 
-    public async Task<Dictionary<Guid, string>> GetLegalNamesByIdsAsync(
-        IEnumerable<Guid> partnerIds,
+    public async Task<Dictionary<int, string>> GetLegalNamesByIdsAsync(
+        IEnumerable<int> partnerIds,
         CancellationToken cancellationToken = default)
     {
         var idList = partnerIds.Distinct().ToList();
         if (idList.Count == 0)
-            return new Dictionary<Guid, string>();
+            return new Dictionary<int, string>();
 
         return await _context.Partners
             .AsNoTracking()

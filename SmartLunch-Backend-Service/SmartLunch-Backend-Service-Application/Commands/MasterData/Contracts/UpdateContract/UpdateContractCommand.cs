@@ -6,10 +6,10 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Contracts.U
 
 public class UpdateContractCommand : IRequest<GetContractResponse>
 {
-    public Guid ContractId { get; }
+    public int ContractId { get; }
     public UpdateContractRequest Request { get; }
 
-    public UpdateContractCommand(Guid contractId, UpdateContractRequest request)
+    public UpdateContractCommand(int contractId, UpdateContractRequest request)
     {
         ContractId = contractId;
         Request = request;

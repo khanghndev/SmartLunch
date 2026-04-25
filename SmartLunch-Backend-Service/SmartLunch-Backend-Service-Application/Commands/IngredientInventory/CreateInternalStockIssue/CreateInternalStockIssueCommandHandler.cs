@@ -48,7 +48,7 @@ public class CreateInternalStockIssueCommandHandler
 
         var issue = new InternalStockIssue
         {
-            Id = Guid.NewGuid(),
+
             IssueCode = BuildIssueCode(),
             IssuedAt = issuedAt,
             Reason = reason,

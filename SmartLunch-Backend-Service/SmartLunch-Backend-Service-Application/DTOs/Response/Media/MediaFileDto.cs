@@ -2,7 +2,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.Media;
 
 public class MediaFileDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string Bucket { get; set; } = string.Empty;
     public string ObjectName { get; set; } = string.Empty;
 

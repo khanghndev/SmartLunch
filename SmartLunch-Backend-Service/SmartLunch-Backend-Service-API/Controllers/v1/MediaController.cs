@@ -92,8 +92,8 @@ public class MediaController : ControllerBase
         }
     }
 
-    [HttpGet("{id:guid}/download-url")]
-    public async Task<ActionResult<BaseApiResponse<GetMediaDownloadUrlResponse>>> GetDownloadUrl(Guid id, [FromQuery] int? expiresMinutes = null)
+    [HttpGet("{id:int}/download-url")]
+    public async Task<ActionResult<BaseApiResponse<GetMediaDownloadUrlResponse>>> GetDownloadUrl(int id, [FromQuery] int? expiresMinutes = null)
     {
         try
         {
@@ -156,10 +156,10 @@ public class MediaController : ControllerBase
         }
     }
 
-    private Guid GetUserIdOrThrow()
+    private int GetUserIdOrThrow()
     {
         var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(raw) || !Guid.TryParse(raw, out var userId))
+        if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
         {
             throw new UnauthorizedAccessException("Invalid user context");
         }

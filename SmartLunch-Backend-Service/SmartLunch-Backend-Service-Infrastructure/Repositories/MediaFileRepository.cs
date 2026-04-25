@@ -14,12 +14,12 @@ public class MediaFileRepository : IMediaFileRepository
         _context = context;
     }
 
-    public async Task<MediaFile?> GetByIdAsync(Guid id)
+    public async Task<MediaFile?> GetByIdAsync(int id)
     {
         return await _context.MediaFiles.FirstOrDefaultAsync(x => x.Id == id);
     }
 
-    public async Task<MediaFile?> GetByIdForOwnerAsync(Guid id, Guid ownerUserId)
+    public async Task<MediaFile?> GetByIdForOwnerAsync(int id, int ownerUserId)
     {
         return await _context.MediaFiles.FirstOrDefaultAsync(x => x.Id == id && x.OwnerUserId == ownerUserId);
     }

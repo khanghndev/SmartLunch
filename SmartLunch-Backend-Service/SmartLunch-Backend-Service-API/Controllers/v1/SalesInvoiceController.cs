@@ -65,10 +65,10 @@ public class SalesInvoiceController : ControllerBase
         }
     }
 
-    private Guid RequireUserId()
+    private int RequireUserId()
     {
         var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
-        if (string.IsNullOrWhiteSpace(raw) || !Guid.TryParse(raw, out var userId))
+        if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
             throw new UnauthorizedAccessException("Invalid user context.");
         return userId;
     }

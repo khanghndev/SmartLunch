@@ -4,6 +4,6 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface ITransactionRepository
 {
-    Task<Transaction?> GetByIdAsync(Guid id);
+    Task<Transaction?> GetByIdAsync(int id);
     Task<(List<Transaction> Transactions, int TotalCount)> GetTransactionsAsync(int page, int pageSize, string? searchTerm = null);
 }

@@ -2,7 +2,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Invent
 
 public class InventoryDto
 {
-    public Guid IngredientId { get; set; }
+    public int IngredientId { get; set; }
     public decimal QuantityAvailable { get; set; }
     public decimal? ReorderLevel { get; set; }
     public DateTime LastUpdated { get; set; }

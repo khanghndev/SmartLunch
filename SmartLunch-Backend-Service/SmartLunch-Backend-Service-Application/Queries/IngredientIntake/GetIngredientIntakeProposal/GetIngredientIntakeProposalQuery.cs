@@ -5,10 +5,10 @@ namespace SmartLunch.Backend.Service.Application.Queries.IngredientIntake.GetIng
 
 public class GetIngredientIntakeProposalQuery : IRequest<IngredientIntakeProposalDetailDto?>
 {
-    public Guid ProposalId { get; }
-    public Guid ActorUserId { get; }
+    public int ProposalId { get; }
+    public int ActorUserId { get; }
 
-    public GetIngredientIntakeProposalQuery(Guid proposalId, Guid actorUserId)
+    public GetIngredientIntakeProposalQuery(int proposalId, int actorUserId)
     {
         ProposalId = proposalId;
         ActorUserId = actorUserId;

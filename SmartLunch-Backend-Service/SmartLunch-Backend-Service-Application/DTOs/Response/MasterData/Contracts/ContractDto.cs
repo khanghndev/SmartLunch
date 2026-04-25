@@ -2,8 +2,8 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Contra
 
 public class ContractDto
 {
-    public Guid Id { get; set; }
-    public Guid PartnerId { get; set; }
+    public int Id { get; set; }
+    public int PartnerId { get; set; }
     public string? PartnerLegalName { get; set; }
     public string? ContractNumber { get; set; }
     public string? Description { get; set; }

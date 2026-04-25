@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.UserUnits.GetUserUnit;
 
 public class GetUserUnitQuery : IRequest<GetUserUnitResponse>
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    public GetUserUnitQuery(Guid id)
+    public GetUserUnitQuery(int id)
     {
         Id = id;
     }

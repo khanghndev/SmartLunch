@@ -66,7 +66,7 @@ public class OrderController : ControllerBase
     /// </summary>
     [HttpGet("{id}")]
     [Authorize(Policy = "permission:orders.read")]
-    public async Task<ActionResult<BaseApiResponse<GetOrderResponse>>> GetOrder(Guid id)
+    public async Task<ActionResult<BaseApiResponse<GetOrderResponse>>> GetOrder(int id)
     {
         try
         {
@@ -91,10 +91,10 @@ public class OrderController : ControllerBase
     /// <summary>
     /// Update meal-order workflow status: pending → confirmed → delivered. Creates or completes a delivery record when status becomes delivered.
     /// </summary>
-    [HttpPatch("{id:guid}/status")]
+    [HttpPatch("{id:int}/status")]
     [Authorize(Policy = "roles:Admin")]
     [Authorize(Policy = "permission:orders.update")]
-    public async Task<ActionResult<BaseApiResponse<GetOrderResponse>>> UpdateStatus(Guid id, [FromBody] UpdateOrderStatusRequest request)
+    public async Task<ActionResult<BaseApiResponse<GetOrderResponse>>> UpdateStatus(int id, [FromBody] UpdateOrderStatusRequest request)
     {
         try
         {

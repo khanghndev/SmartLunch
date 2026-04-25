@@ -46,7 +46,6 @@ public class CreateIngredientIntakeProposalCommandHandler
             .GroupBy(l => l.IngredientId)
             .ToDictionary(g => g.Key, g => g.ToList());
 
-        var proposalId = Guid.NewGuid();
         var lineEntities = new List<IngredientIntakeProposalLine>();
         foreach (var (ingredientId, rows) in merged)
         {
@@ -67,8 +66,8 @@ public class CreateIngredientIntakeProposalCommandHandler
 
             lineEntities.Add(new IngredientIntakeProposalLine
             {
-                Id = Guid.NewGuid(),
-                ProposalId = proposalId,
+
+
                 IngredientId = ingredientId,
                 Quantity = qty,
                 LineNote = lineNote
@@ -81,7 +80,7 @@ public class CreateIngredientIntakeProposalCommandHandler
 
         var proposal = new IngredientIntakeProposal
         {
-            Id = proposalId,
+
             ProposalCode = BuildProposalCode(),
             Status = IntakeProposalStatus.Submitted,
             HeaderNote = headerNote,

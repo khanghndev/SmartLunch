@@ -2,7 +2,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Partne
 
 public class PartnerDto
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
     public string LegalName { get; set; } = string.Empty;
     public string? BusinessRegistrationNumber { get; set; }
     public string? TaxId { get; set; }

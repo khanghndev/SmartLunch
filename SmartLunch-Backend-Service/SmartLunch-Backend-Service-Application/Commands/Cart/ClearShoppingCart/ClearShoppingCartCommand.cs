@@ -3,4 +3,4 @@ using SmartLunch.Backend.Service.Application.DTOs.Response.Cart;
 
 namespace SmartLunch.Backend.Service.Application.Commands.Cart.ClearShoppingCart;
 
-public record ClearShoppingCartCommand(Guid UserId) : IRequest<GetShoppingCartResponse>;
+public record ClearShoppingCartCommand(int UserId) : IRequest<GetShoppingCartResponse>;

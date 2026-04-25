@@ -16,8 +16,8 @@ public class DebtAnalyticsRepository : IDebtAnalyticsRepository
         _context = context;
     }
 
-    public async Task<Dictionary<Guid, (decimal Billed, decimal Paid, int OrderCount)>> GetUnitBilledAndPaidAsync(
-        Guid? unitId,
+    public async Task<Dictionary<int, (decimal Billed, decimal Paid, int OrderCount)>> GetUnitBilledAndPaidAsync(
+        int? unitId,
         CancellationToken cancellationToken = default)
     {
         var ordersQuery = _context.Orders
@@ -56,7 +56,7 @@ public class DebtAnalyticsRepository : IDebtAnalyticsRepository
             .ToDictionaryAsync(x => x.UnitId, x => x.Paid, cancellationToken);
 
         var unitIds = billed.Keys.Union(paid.Keys).ToHashSet();
-        var result = new Dictionary<Guid, (decimal Billed, decimal Paid, int OrderCount)>();
+        var result = new Dictionary<int, (decimal Billed, decimal Paid, int OrderCount)>();
         foreach (var id in unitIds)
         {
             decimal bAmt = 0;
@@ -74,8 +74,8 @@ public class DebtAnalyticsRepository : IDebtAnalyticsRepository
         return result;
     }
 
-    public async Task<Dictionary<Guid, (decimal ContractValue, decimal PaidOut)>> GetPartnerContractAndPaidAsync(
-        Guid? partnerId,
+    public async Task<Dictionary<int, (decimal ContractValue, decimal PaidOut)>> GetPartnerContractAndPaidAsync(
+        int? partnerId,
         CancellationToken cancellationToken = default)
     {
         var contractQuery = _context.Contracts
@@ -107,7 +107,7 @@ public class DebtAnalyticsRepository : IDebtAnalyticsRepository
             .ToDictionaryAsync(x => x.PartnerId, x => x.Paid, cancellationToken);
 
         var ids = contractTotals.Keys.Union(paidOut.Keys).ToHashSet();
-        var result = new Dictionary<Guid, (decimal ContractValue, decimal PaidOut)>();
+        var result = new Dictionary<int, (decimal ContractValue, decimal PaidOut)>();
         foreach (var id in ids)
         {
             contractTotals.TryGetValue(id, out var c);
@@ -121,7 +121,7 @@ public class DebtAnalyticsRepository : IDebtAnalyticsRepository
     public async Task<IReadOnlyList<Payment>> GetCustomerPaymentsInRangeAsync(
         DateTime rangeStart,
         DateTime rangeEndExclusive,
-        Guid? unitId,
+        int? unitId,
         CancellationToken cancellationToken = default)
     {
         var q = _context.Payments
@@ -143,7 +143,7 @@ public class DebtAnalyticsRepository : IDebtAnalyticsRepository
     public async Task<IReadOnlyList<PartnerPayment>> GetSupplierPaymentsInRangeAsync(
         DateTime rangeStart,
         DateTime rangeEndExclusive,
-        Guid? partnerId,
+        int? partnerId,
         CancellationToken cancellationToken = default)
     {
         var q = _context.PartnerPayments

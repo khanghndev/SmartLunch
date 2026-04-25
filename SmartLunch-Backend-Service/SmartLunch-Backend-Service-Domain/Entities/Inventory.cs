@@ -5,7 +5,7 @@ namespace SmartLunch.Backend.Service.Domain.Entities;
 /// </summary>
 public class Inventory
 {
-    public Guid IngredientId { get; set; }
+    public int IngredientId { get; set; }
     public decimal QuantityAvailable { get; set; } = 0;
     public decimal? ReorderLevel { get; set; }
     public DateTime LastUpdated { get; set; } = DateTime.UtcNow;

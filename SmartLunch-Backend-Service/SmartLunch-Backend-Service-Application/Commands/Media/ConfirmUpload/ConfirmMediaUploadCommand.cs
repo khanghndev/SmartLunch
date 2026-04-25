@@ -6,10 +6,10 @@ namespace SmartLunch.Backend.Service.Application.Commands.Media.ConfirmUpload;
 
 public class ConfirmMediaUploadCommand : IRequest<ConfirmMediaUploadResponse>
 {
-    public Guid UserId { get; }
+    public int UserId { get; }
     public ConfirmMediaUploadRequest Request { get; }
 
-    public ConfirmMediaUploadCommand(Guid userId, ConfirmMediaUploadRequest request)
+    public ConfirmMediaUploadCommand(int userId, ConfirmMediaUploadRequest request)
     {
         UserId = userId;
         Request = request;

@@ -38,7 +38,7 @@ public class GetIntakeProposalReviewHistoryQueryHandler
             throw new UnauthorizedAccessException("You are not allowed to view intake proposal review history.");
 
         var seeAll = IntakeProposalAccessHelper.IsElevatedReviewer(roleNames);
-        Guid? filter = seeAll ? null : request.ActorUserId;
+        int? filter = seeAll ? null : request.ActorUserId;
 
         var (items, total) = await _repository.GetReviewHistoryPagedAsync(
             req.Page,

@@ -5,9 +5,9 @@ namespace SmartLunch.Backend.Service.Application.Queries.UserRoles.GetUserRole;
 
 public class GetUserRoleQuery : IRequest<GetUserRoleResponse>
 {
-    public Guid Id { get; set; }
+    public int Id { get; set; }
 
-    public GetUserRoleQuery(Guid id)
+    public GetUserRoleQuery(int id)
     {
         Id = id;
     }

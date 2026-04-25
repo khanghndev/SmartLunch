@@ -14,7 +14,7 @@ public class ChatbotLogRepository : IChatbotLogRepository
         _context = context;
     }
 
-    public async Task<ChatbotLog?> GetByIdAsync(Guid id)
+    public async Task<ChatbotLog?> GetByIdAsync(int id)
     {
         return await _context.ChatbotLogs
             .FirstOrDefaultAsync(e => e.Id == id);
