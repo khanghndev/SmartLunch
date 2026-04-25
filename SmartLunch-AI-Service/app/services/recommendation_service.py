@@ -13,6 +13,26 @@ class ScoredItem:
     reasons: list[str]
 
 
+@dataclass(frozen=True)
+class MealPlanPair:
+    main: ScoredItem
+    soup: ScoredItem
+    plan_score: float
+
+
+@dataclass(frozen=True)
+class DayPlanPair:
+    day: str
+    main: ScoredItem
+    soup: ScoredItem
+
+
+@dataclass(frozen=True)
+class WeekPlan:
+    day_plans: list[DayPlanPair]
+    plan_score: float
+
+
 class RecommendationService:
     """
     Baseline, tag-based recommender.

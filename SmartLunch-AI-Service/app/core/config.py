@@ -16,6 +16,12 @@ class Settings(BaseSettings):
     # - '["http://a","http://b"]' (JSON list)
     cors_origins: list[str] = ["*"]
 
+    # SmartLunch Backend API (for fetching dishes + dish ingredients)
+    backend_base_url: str = "http://localhost:5001"
+    # Bearer token of an Admin user (needs permission: dishes.read, etc.)
+    backend_admin_bearer_token: str = ""
+    backend_page_size: int = 200
+
     @field_validator("cors_origins", mode="before")
     @classmethod
     def _parse_cors_origins(cls, v):
