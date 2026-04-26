@@ -3,36 +3,221 @@
     Layout = "_LayoutManager";
 }
 
-<div class="p-2 sm:p-6 space-y-6">
-    <h1 class="text-2xl font-bold text-green-600">Theo dõi Công Nợ & Thanh Toán</h1>
-
-    <div class="bg-white rounded shadow overflow-x-auto border-t-4 border-red-500">
-        <div class="px-6 py-4 border-b">
-            <h3 class="font-bold">Danh sách đến hạn thanh toán</h3>
+<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="debtManager()">
+    
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Theo dõi Công Nợ</h1>
+            <p class="text-slate-500 mt-1 font-medium text-sm">Quản lý các khoản nợ từ khách hàng B2B và thực hiện nhắc nợ.</p>
         </div>
-        <table class="w-full text-left text-sm whitespace-nowrap">
-            <thead class="bg-gray-50 text-gray-600 uppercase text-xs">
-                 <tr>
-                    <th class="p-4">Khách hàng</th>
-                    <th class="p-4">Số tiền nợ</th>
-                    <th class="p-4">Hạn chót</th>
-                    <th class="p-4">Trạng thái</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-4 font-bold text-gray-700">KCN Quang Châu</td>
-                    <td class="p-4 text-red-600 font-bold">120,500,000 ₫</td>
-                    <td class="p-4 text-red-600 font-bold">Quá hạn 5 ngày</td>
-                    <td class="p-4"><button class="bg-blue-100 text-blue-700 px-3 py-1 rounded text-xs font-bold hover:bg-blue-200">Gửi nhắc nợ</button></td>
-                </tr>
-                <tr class="border-b hover:bg-gray-50">
-                    <td class="p-4 font-bold text-gray-700">Trường Mầm Non ABC</td>
-                    <td class="p-4 text-gray-700 font-bold">25,000,000 ₫</td>
-                    <td class="p-4 text-gray-500">30/04/2026</td>
-                    <td class="p-4"><span class="bg-yellow-100 text-yellow-700 px-3 py-1 rounded text-xs font-bold">Chờ thanh toán</span></td>
-                </tr>
-            </tbody>
-        </table>
+        
+        <div class="flex items-center gap-3">
+            <button class="px-5 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Ghi nhận thanh toán (Thủ công)
+            </button>
+        </div>
+    </div>
+
+    <!-- MAIN TABLE -->
+    <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+        <!-- Toolbar -->
+        <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50/50">
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                <div class="relative w-full sm:w-72">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" x-model="searchQuery" placeholder="Tìm tên khách hàng doanh nghiệp..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm font-medium outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                </div>
+                
+                <select x-model="statusFilter" class="w-full sm:w-auto bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500">
+                    <option value="all">Tất cả trạng thái</option>
+                    <option value="Quá hạn">Đã Quá Hạn</option>
+                    <option value="Chờ thanh toán">Chờ thanh toán (Trong hạn)</option>
+                    <option value="Đã thanh toán">Đã thanh toán xong</option>
+                </select>
+            </div>
+            
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-slate-500 font-medium">Tổng nợ chưa thu:</span>
+                <span class="text-xl font-black text-red-600">315,500,000đ</span>
+            </div>
+        </div>
+        
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-white border-b border-slate-200 text-xs uppercase tracking-wider text-slate-400 font-black">
+                        <th class="p-4 pl-6">Khách hàng / Doanh nghiệp</th>
+                        <th class="p-4 text-right">Tổng số tiền nợ</th>
+                        <th class="p-4">Hạn chót thanh toán</th>
+                        <th class="p-4 text-center">Trạng thái</th>
+                        <th class="p-4 pr-6 text-right">Hành động</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50 text-sm">
+                    <template x-for="debt in filteredDebts" :key="debt.id">
+                        <tr class="hover:bg-slate-50/50 transition-colors group">
+                            <td class="p-4 pl-6">
+                                <div class="font-bold text-slate-800 text-base" x-text="debt.customer"></div>
+                                <div class="text-xs text-slate-500 font-medium mt-1">Liên hệ: <span x-text="debt.contact"></span></div>
+                            </td>
+                            
+                            <td class="p-4 text-right">
+                                <span class="font-black text-lg" :class="debt.status === 'Quá hạn' ? 'text-red-600' : 'text-slate-700'" x-text="debt.amount"></span>
+                            </td>
+                            
+                            <td class="p-4">
+                                <div class="font-bold text-slate-700" x-text="debt.deadline"></div>
+                                <div x-show="debt.status === 'Quá hạn'" class="text-xs font-bold text-red-500 mt-1 flex items-center gap-1">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                    Quá hạn <span x-text="debt.overdueDays"></span> ngày
+                                </div>
+                            </td>
+                            
+                            <td class="p-4 text-center">
+                                <span class="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg border inline-block w-max" 
+                                      :class="getStatusColor(debt.status)" x-text="debt.status"></span>
+                            </td>
+                            
+                            <td class="p-4 pr-6 text-right space-x-2 whitespace-nowrap">
+                                <button x-show="debt.status !== 'Đã thanh toán'" @@click="openUpdateModal(debt)" class="px-3 py-1.5 bg-green-50 text-green-700 hover:bg-green-100 rounded-lg text-xs font-bold transition-colors border border-green-200">
+                                    Ghi nhận thu
+                                </button>
+                                <button x-show="debt.status === 'Quá hạn'" class="px-3 py-1.5 bg-red-50 text-red-700 hover:bg-red-100 rounded-lg text-xs font-bold transition-colors border border-red-200 flex items-center gap-1 inline-flex">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+                                    Gửi Email nhắc nợ
+                                </button>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL: GHI NHẬN THANH TOÁN (CRUD) -->
+    <div x-show="isUpdateModalOpen" style="display: none;" class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div x-show="isUpdateModalOpen" 
+             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
+             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @@click="closeModal()"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div x-show="isUpdateModalOpen" 
+                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg" @@click.stop>
+                    
+                    <template x-if="currentDebt">
+                        <div>
+                            <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                                <h3 class="text-xl font-black text-slate-800">Ghi nhận Thanh toán Công nợ</h3>
+                                <button @@click="closeModal()" class="text-slate-400 hover:text-slate-600 bg-slate-200/50 hover:bg-slate-200 p-1.5 rounded-full transition-colors">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                </button>
+                            </div>
+                            
+                            <div class="p-6 space-y-6">
+                                <div class="bg-blue-50 border border-blue-100 rounded-[16px] p-4 text-center">
+                                    <p class="text-xs font-bold text-blue-600 uppercase tracking-widest mb-1">Khách hàng</p>
+                                    <h4 class="text-xl font-black text-blue-900 mb-2" x-text="currentDebt.customer"></h4>
+                                    <p class="text-xs font-bold text-blue-600 uppercase tracking-widest mb-1">Số tiền nợ</p>
+                                    <div class="text-3xl font-black text-red-600" x-text="currentDebt.amount"></div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Số tiền khách đã thanh toán</label>
+                                    <div class="relative">
+                                        <input type="text" x-model="currentDebt.amount" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-lg font-black text-green-600 focus:border-green-500 focus:ring-1 focus:ring-green-500 shadow-sm" />
+                                        <div class="absolute right-3 top-1/2 -translate-y-1/2 font-bold text-slate-400">VNĐ</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700 mb-2">Hình thức thanh toán</label>
+                                        <select class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 bg-white">
+                                            <option>Chuyển khoản (Bank Transfer)</option>
+                                            <option>Tiền mặt (Cash)</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-slate-700 mb-2">Ngày ghi nhận</label>
+                                        <input type="date" value="2026-04-26" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 bg-white" />
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Mã tham chiếu / Ghi chú</label>
+                                    <input type="text" placeholder="Mã giao dịch ngân hàng..." class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 bg-white shadow-sm" />
+                                </div>
+                            </div>
+                            
+                            <div class="px-6 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px]">
+                                <button @@click="closeModal()" class="px-5 py-2.5 rounded-xl text-slate-600 font-bold hover:bg-white border border-slate-200 transition-colors text-sm">Hủy</button>
+                                <button @@click="submitPayment()" class="px-6 py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-colors text-sm shadow-lg shadow-green-600/30 flex items-center gap-2">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Lưu thanh toán
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('debtManager', () => ({
+                searchQuery: '',
+                statusFilter: 'all',
+                isUpdateModalOpen: false,
+                currentDebt: null,
+                
+                debts: [
+                    { id: 1, customer: 'Công ty May Mặc KCN Quang Châu', contact: '0901.xxx.xxx (Chị Hoa Kế toán)', amount: '120,500,000đ', deadline: '20/04/2026', status: 'Quá hạn', overdueDays: 6 },
+                    { id: 2, customer: 'Trường Mầm Non Họa Mi', contact: '0988.xxx.xxx (Cô Lan)', amount: '25,000,000đ', deadline: '30/04/2026', status: 'Chờ thanh toán', overdueDays: 0 },
+                    { id: 3, customer: 'Nhà máy Phụ tùng Honda', contact: '0912.xxx.xxx (Anh Dũng)', amount: '170,000,000đ', deadline: '15/04/2026', status: 'Quá hạn', overdueDays: 11 },
+                    { id: 4, customer: 'Công ty Công nghệ TMA', contact: '0933.xxx.xxx (Chị Quyên)', amount: '45,200,000đ', deadline: '25/04/2026', status: 'Đã thanh toán', overdueDays: 0 }
+                ],
+                
+                get filteredDebts() {
+                    return this.debts.filter(d => {
+                        const matchSearch = d.customer.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        const matchStatus = this.statusFilter === 'all' || d.status === this.statusFilter;
+                        return matchSearch && matchStatus;
+                    });
+                },
+                
+                getStatusColor(status) {
+                    if(status === 'Quá hạn') return 'bg-red-50 text-red-600 border-red-200';
+                    if(status === 'Chờ thanh toán') return 'bg-yellow-50 text-yellow-600 border-yellow-200';
+                    if(status === 'Đã thanh toán') return 'bg-green-50 text-green-600 border-green-200';
+                    return '';
+                },
+                
+                openUpdateModal(debt) {
+                    this.currentDebt = JSON.parse(JSON.stringify(debt));
+                    this.isUpdateModalOpen = true;
+                    document.body.style.overflow = 'hidden';
+                },
+                
+                closeModal() {
+                    this.isUpdateModalOpen = false;
+                    document.body.style.overflow = '';
+                },
+                
+                submitPayment() {
+                    alert('Đã ghi nhận thanh toán thành công vào hệ thống kế toán!');
+                    this.closeModal();
+                }
+            }));
+        });
+    </script>
+}

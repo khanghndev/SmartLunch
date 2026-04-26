@@ -3,34 +3,220 @@
     Layout = "_LayoutManager";
 }
 
-<div class="p-2 sm:p-6 space-y-6">
-    <div class="flex justify-between items-center">
-        <h1 class="text-2xl font-bold text-green-600">Quản lý Hợp Đồng Doanh Nghiệp</h1>
-        <button class="bg-green-600 text-white px-4 py-2 rounded shadow"><i class="fas fa-plus"></i> Tạo hợp đồng</button>
+<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="contractManager()">
+    
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Hợp Đồng Doanh Nghiệp (B2B)</h1>
+            <p class="text-slate-500 mt-1 font-medium text-sm">Quản lý các hợp đồng cung cấp suất ăn dài hạn, đối tác và thời hạn.</p>
+        </div>
+        
+        <div class="flex items-center gap-3">
+            <button @@click="openContractModal()" class="px-5 py-2 bg-slate-800 text-white font-bold rounded-xl shadow-lg hover:bg-slate-900 transition-all flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Tạo Hợp đồng mới
+            </button>
+        </div>
     </div>
 
-    <div class="bg-white rounded shadow p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
-        <!-- Contract Card -->
-        <div class="border rounded-lg p-5 border-l-4 border-green-500 hover:shadow-lg transition">
-             <div class="flex justify-between items-start">
-                  <div>
-                      <h3 class="font-bold text-lg text-gray-800">HD-2026-SEV</h3>
-                      <p class="text-sm text-gray-500 mt-1">Đối tác: Samsung Electronics VN</p>
-                  </div>
-                  <span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs font-bold">Đang hiệu lực</span>
-             </div>
-             <p class="text-xs text-gray-400 mt-4"><i class="fas fa-calendar-alt"></i> Hết hạn: 31/12/2026</p>
-        </div>
-         <!-- Contract Card -->
-        <div class="border rounded-lg p-5 border-l-4 border-yellow-500 hover:shadow-lg transition">
-             <div class="flex justify-between items-start">
-                  <div>
-                      <h3 class="font-bold text-lg text-gray-800">HD-2026-FPT</h3>
-                      <p class="text-sm text-gray-500 mt-1">Đối tác: FPT Software</p>
-                  </div>
-                  <span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs font-bold">Sắp hết hạn</span>
-             </div>
-             <p class="text-xs text-gray-400 mt-4"><i class="fas fa-calendar-alt"></i> Hết hạn: 15/05/2026</p>
+    <!-- FILTERS -->
+    <div class="flex flex-wrap gap-3">
+        <button class="px-4 py-2 font-bold text-sm rounded-full transition-colors border" 
+                :class="filter === 'all' ? 'bg-slate-800 text-white border-slate-800' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" 
+                @@click="filter = 'all'">Tất cả</button>
+        <button class="px-4 py-2 font-bold text-sm rounded-full transition-colors border" 
+                :class="filter === 'Đang hiệu lực' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" 
+                @@click="filter = 'Đang hiệu lực'">Đang hiệu lực</button>
+        <button class="px-4 py-2 font-bold text-sm rounded-full transition-colors border flex items-center gap-1.5" 
+                :class="filter === 'Sắp hết hạn' ? 'bg-yellow-500 text-white border-yellow-500' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'" 
+                @@click="filter = 'Sắp hết hạn'">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+            Sắp hết hạn
+        </button>
+    </div>
+
+    <!-- CONTRACTS GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <template x-for="contract in filteredContracts" :key="contract.id">
+            <div class="bg-white rounded-[24px] border border-slate-200 shadow-sm hover:shadow-lg hover:border-slate-300 transition-all group overflow-hidden flex flex-col">
+                <!-- Top Color Bar -->
+                <div class="h-2 w-full" :class="getStatusColor(contract.status)"></div>
+                
+                <div class="p-6 flex-1 flex flex-col">
+                    <div class="flex justify-between items-start mb-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-xl flex items-center justify-center font-black text-xl text-white" :class="getStatusColor(contract.status)" x-text="contract.partner.charAt(0)"></div>
+                            <div>
+                                <h3 class="font-black text-slate-800 leading-tight" x-text="contract.code"></h3>
+                                <p class="text-xs font-bold text-slate-500 mt-1" x-text="contract.type"></p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-5">
+                        <p class="text-sm font-bold text-slate-700 truncate" x-text="contract.partner"></p>
+                    </div>
+                    
+                    <div class="bg-slate-50 rounded-xl p-4 border border-slate-100 mb-5 space-y-3">
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500 font-medium">Giá trị HĐ / tháng:</span>
+                            <span class="font-black text-slate-800" x-text="contract.value"></span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500 font-medium">Số lượng suất:</span>
+                            <span class="font-bold text-slate-700" x-text="contract.volume + ' suất/ngày'"></span>
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-slate-500 font-medium">Hạn hợp đồng:</span>
+                            <span class="font-bold" :class="contract.status === 'Sắp hết hạn' ? 'text-yellow-600' : 'text-slate-700'" x-text="contract.endDate"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-auto flex items-center justify-between pt-4 border-t border-slate-100">
+                        <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border" :class="getStatusBadge(contract.status)" x-text="contract.status"></span>
+                        
+                        <div class="flex gap-2">
+                            <button class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-blue-600 hover:bg-blue-50 flex items-center justify-center transition-colors" title="Tải file PDF Hợp đồng">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                            </button>
+                            <button class="w-8 h-8 rounded-full bg-slate-50 text-slate-400 hover:text-green-600 hover:bg-green-50 flex items-center justify-center transition-colors" title="Gia hạn Hợp đồng" x-show="contract.status === 'Sắp hết hạn'">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </template>
+    </div>
+
+    <!-- MODAL: TẠO HỢP ĐỒNG (CRUD) -->
+    <div x-show="isContractModalOpen" style="display: none;" class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div x-show="isContractModalOpen" 
+             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
+             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @@click="closeModal()"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+                <div x-show="isContractModalOpen" 
+                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl" @@click.stop>
+                    
+                    <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                        <h3 class="text-xl font-black text-slate-800">Tạo Hợp Đồng Dịch Vụ Mới</h3>
+                        <button @@click="closeModal()" class="text-slate-400 hover:text-slate-600 bg-slate-200/50 hover:bg-slate-200 p-1.5 rounded-full transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                        </button>
+                    </div>
+                    
+                    <div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Tên Đối tác / Doanh nghiệp</label>
+                                <input type="text" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-slate-800 focus:ring-1 focus:ring-slate-800 shadow-sm" placeholder="Nhập tên đối tác B2B..." />
+                            </div>
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Loại Dịch vụ</label>
+                                <select class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-slate-800 bg-white">
+                                    <option>Cung cấp Suất ăn Công nghiệp</option>
+                                    <option>Cung cấp Suất ăn Trường học</option>
+                                    <option>Dịch vụ Nấu tiệc Buffet</option>
+                                </select>
+                            </div>
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Ngày bắt đầu</label>
+                                    <input type="date" class="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm font-medium focus:border-slate-800 bg-white shadow-sm" />
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-bold text-slate-700 mb-2">Ngày kết thúc</label>
+                                    <input type="date" class="w-full rounded-xl border border-slate-200 px-3 py-3 text-sm font-medium focus:border-slate-800 bg-white shadow-sm" />
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Giá trị ước tính (/tháng)</label>
+                                <div class="relative">
+                                    <input type="text" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-black text-slate-800 focus:border-slate-800 shadow-sm" placeholder="VD: 500.000.000" />
+                                    <div class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">VNĐ</div>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-bold text-slate-700 mb-2">Bản cứng (PDF Scan)</label>
+                                <div class="border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:border-slate-800 hover:bg-slate-50 transition-colors cursor-pointer flex flex-col items-center justify-center">
+                                    <svg class="h-8 w-8 text-slate-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                                    <span class="text-sm font-bold text-slate-700">Tải lên file Hợp đồng</span>
+                                    <span class="text-[10px] text-slate-400 mt-1">.PDF tối đa 10MB</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="px-6 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px]">
+                        <button @@click="closeModal()" class="px-5 py-2.5 rounded-xl text-slate-600 font-bold hover:bg-white border border-slate-200 transition-colors text-sm">Hủy</button>
+                        <button @@click="submitContract()" class="px-6 py-2.5 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-900 transition-colors text-sm shadow-lg flex items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                            Lưu Hợp đồng
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('contractManager', () => ({
+                filter: 'all',
+                isContractModalOpen: false,
+                
+                contracts: [
+                    { id: 1, code: 'HD-2026-SEV', partner: 'Samsung Electronics VN', type: 'Cung cấp Suất ăn CN', value: '1.2 Tỷ', volume: 2000, endDate: '31/12/2026', status: 'Đang hiệu lực' },
+                    { id: 2, code: 'HD-2026-FPT', partner: 'FPT Software HCM', type: 'Cơm trưa VP Cao cấp', value: '450 Triệu', volume: 450, endDate: '15/05/2026', status: 'Sắp hết hạn' },
+                    { id: 3, code: 'HD-2026-VNM', partner: 'Vinamilk (Nhà máy Mega)', type: 'Cung cấp Suất ăn CN', value: '800 Triệu', volume: 1200, endDate: '01/09/2027', status: 'Đang hiệu lực' },
+                    { id: 4, code: 'HD-2025-ABC', partner: 'Trường MN Quốc tế ABC', type: 'Suất ăn Học sinh', value: '200 Triệu', volume: 300, endDate: '20/04/2026', status: 'Sắp hết hạn' },
+                    { id: 5, code: 'HD-2025-XYZ', partner: 'Công ty May Mặc XYZ', type: 'Cung cấp Suất ăn CN', value: '350 Triệu', volume: 500, endDate: '01/01/2026', status: 'Đã thanh lý' }
+                ],
+                
+                get filteredContracts() {
+                    if (this.filter === 'all') return this.contracts;
+                    return this.contracts.filter(c => c.status === this.filter);
+                },
+                
+                getStatusColor(status) {
+                    if (status === 'Đang hiệu lực') return 'bg-green-500';
+                    if (status === 'Sắp hết hạn') return 'bg-yellow-500';
+                    return 'bg-slate-400';
+                },
+                
+                getStatusBadge(status) {
+                    if (status === 'Đang hiệu lực') return 'bg-green-50 text-green-700 border-green-200';
+                    if (status === 'Sắp hết hạn') return 'bg-yellow-50 text-yellow-700 border-yellow-200';
+                    return 'bg-slate-50 text-slate-600 border-slate-200';
+                },
+                
+                openContractModal() {
+                    this.isContractModalOpen = true;
+                    document.body.style.overflow = 'hidden';
+                },
+                
+                closeModal() {
+                    this.isContractModalOpen = false;
+                    document.body.style.overflow = '';
+                },
+                
+                submitContract() {
+                    alert('Đã tạo Hợp đồng B2B mới và đưa vào hệ thống theo dõi!');
+                    this.closeModal();
+                }
+            }));
+        });
+    </script>
+}

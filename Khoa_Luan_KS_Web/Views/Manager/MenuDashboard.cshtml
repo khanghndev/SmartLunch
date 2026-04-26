@@ -3,21 +3,279 @@
     Layout = "_LayoutManager";
 }
 
-<div class="p-2 sm:p-6 space-y-6">
-    <h1 class="text-2xl font-bold text-green-600">Tổng quan Bếp / Thực đơn</h1>
+<!-- Page Wrapper -->
+<div class="p-6 md:p-8 space-y-8 bg-slate-50 min-h-screen font-sans" x-data="{ showModal: false }">
     
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white rounded-xl shadow p-6 border-l-4 border-blue-500">
-            <h3 class="text-gray-500 text-sm">Tổng món đang phục vụ</h3>
-            <p class="text-3xl font-bold mt-2">120 <span class="text-sm font-normal text-gray-400">món</span></p>
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Tổng quan Bếp & Thực đơn</h1>
+            <p class="text-slate-500 mt-1 font-medium">Theo dõi hiệu suất phục vụ và chất lượng món ăn theo thời gian thực.</p>
         </div>
-        <div class="bg-white rounded-xl shadow p-6 border-l-4 border-orange-500">
-            <h3 class="text-gray-500 text-sm">Cảnh báo nguyên liệu</h3>
-            <p class="text-3xl font-bold mt-2 text-orange-600">5 <span class="text-sm font-normal text-gray-400">loại sắp hết</span></p>
+        <div class="flex items-center gap-3">
+            <button class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2">
+                <i data-lucide="download" class="w-4 h-4"></i> Xuất báo cáo
+            </button>
+            <button class="px-4 py-2 bg-green-600 text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:bg-green-700 transition-all flex items-center gap-2">
+                <i data-lucide="plus" class="w-4 h-4"></i> Lên thực đơn mới
+            </button>
         </div>
-        <div class="bg-white rounded-xl shadow p-6 border-l-4 border-green-500">
-            <h3 class="text-gray-500 text-sm">Rating chất lượng (AI)</h3>
-            <p class="text-3xl font-bold mt-2 text-green-600">4.8 <span class="text-sm font-normal text-gray-400">/ 5.0</span></p>
+    </div>
+
+    <!-- KPI CARDS -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Card 1 -->
+        <div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                        <i data-lucide="utensils" class="w-6 h-6"></i>
+                    </div>
+                    <span class="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+                        <i data-lucide="trending-up" class="w-3 h-3"></i> +12%
+                    </span>
+                </div>
+                <h3 class="text-slate-500 text-sm font-semibold mb-1">Tổng món đang phục vụ</h3>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl font-black text-slate-800">120</span>
+                    <span class="text-sm font-medium text-slate-400">món</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 2 -->
+        <div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-green-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+                        <i data-lucide="users" class="w-6 h-6"></i>
+                    </div>
+                    <span class="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+                        <i data-lucide="trending-up" class="w-3 h-3"></i> +5.2%
+                    </span>
+                </div>
+                <h3 class="text-slate-500 text-sm font-semibold mb-1">Suất ăn đã phục vụ (Tháng)</h3>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl font-black text-slate-800">45.2K</span>
+                    <span class="text-sm font-medium text-slate-400">suất</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 3 -->
+        <div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-orange-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center">
+                        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                    </div>
+                    <span class="inline-flex items-center gap-1 text-xs font-bold text-red-600 bg-red-50 px-2 py-1 rounded-lg">
+                        <i data-lucide="trending-down" class="w-3 h-3"></i> Cần nhập
+                    </span>
+                </div>
+                <h3 class="text-slate-500 text-sm font-semibold mb-1">Cảnh báo nguyên liệu</h3>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl font-black text-slate-800">5</span>
+                    <span class="text-sm font-medium text-slate-400">loại sắp hết</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Card 4 -->
+        <div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 hover:shadow-md transition-shadow relative overflow-hidden group">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                        <i data-lucide="sparkles" class="w-6 h-6"></i>
+                    </div>
+                    <span class="inline-flex items-center gap-1 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded-lg">
+                        <i data-lucide="trending-up" class="w-3 h-3"></i> Tốt
+                    </span>
+                </div>
+                <h3 class="text-slate-500 text-sm font-semibold mb-1">Đánh giá chất lượng (AI)</h3>
+                <div class="flex items-baseline gap-2">
+                    <span class="text-3xl font-black text-slate-800">4.8</span>
+                    <span class="text-sm font-medium text-slate-400">/ 5.0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CHARTS & LISTS ROW -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        <!-- MAIN CHART (Mock) -->
+        <div class="lg:col-span-2 bg-white rounded-[32px] p-8 shadow-sm border border-slate-100">
+            <div class="flex items-center justify-between mb-8">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-800">Thống kê suất ăn phục vụ</h3>
+                    <p class="text-sm text-slate-500 mt-1">So sánh số lượng suất ăn thực tế so với kế hoạch 7 ngày qua.</p>
+                </div>
+                <select class="bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2 outline-none focus:border-green-500 focus:ring-2 focus:ring-green-200">
+                    <option>7 Ngày qua</option>
+                    <option>Tháng này</option>
+                    <option>Năm nay</option>
+                </select>
+            </div>
+            
+            <!-- CSS Bar Chart -->
+            <div class="h-64 flex items-end gap-2 md:gap-4 justify-between mt-4 border-b border-slate-100 pb-2 relative">
+                <!-- Y-axis lines -->
+                <div class="absolute w-full h-full flex flex-col justify-between z-0 pointer-events-none">
+                    <div class="border-b border-dashed border-slate-200 flex-1"></div>
+                    <div class="border-b border-dashed border-slate-200 flex-1"></div>
+                    <div class="border-b border-dashed border-slate-200 flex-1"></div>
+                    <div class="border-b border-dashed border-slate-200 flex-1"></div>
+                </div>
+                
+                @foreach(var bar in new[] { 
+                    new { Day = "T2", Val1 = 60, Val2 = 45 },
+                    new { Day = "T3", Val1 = 80, Val2 = 65 },
+                    new { Day = "T4", Val1 = 50, Val2 = 40 },
+                    new { Day = "T5", Val1 = 90, Val2 = 85 },
+                    new { Day = "T6", Val1 = 70, Val2 = 55 },
+                    new { Day = "T7", Val1 = 40, Val2 = 30 },
+                    new { Day = "CN", Val1 = 30, Val2 = 25 }
+                })
+                {
+                    <div class="flex-1 flex flex-col items-center gap-2 z-10 group relative h-full justify-end">
+                        <div class="w-full flex justify-center gap-1 md:gap-2 items-end h-full">
+                            <div class="w-1/2 md:w-8 bg-green-500 rounded-t-md hover:bg-green-600 transition-colors cursor-pointer relative" style="height: @(bar.Val1)%">
+                                <!-- Tooltip -->
+                                <div class="opacity-0 group-hover:opacity-100 absolute -top-8 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold px-2 py-1 rounded shadow pointer-events-none transition-opacity whitespace-nowrap z-20">@bar.Val1% Thực tế</div>
+                            </div>
+                            <div class="w-1/2 md:w-8 bg-slate-200 rounded-t-md hover:bg-slate-300 transition-colors cursor-pointer relative" style="height: @(bar.Val2)%"></div>
+                        </div>
+                        <span class="text-xs font-bold text-slate-500">@bar.Day</span>
+                    </div>
+                }
+            </div>
+            <div class="flex items-center justify-center gap-6 mt-6">
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                    <span class="text-xs font-semibold text-slate-600">Thực tế</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="w-3 h-3 rounded-full bg-slate-200"></span>
+                    <span class="text-xs font-semibold text-slate-600">Kế hoạch</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SIDEBAR WIDGETS -->
+        <div class="space-y-6">
+            <!-- AI Quality Feedback -->
+            <div class="bg-gradient-to-br from-slate-900 to-slate-800 rounded-[32px] p-8 shadow-lg text-white">
+                <div class="flex items-center gap-3 mb-6">
+                    <div class="w-10 h-10 rounded-xl bg-purple-500/20 flex items-center justify-center">
+                        <i data-lucide="bot" class="w-5 h-5 text-purple-400"></i>
+                    </div>
+                    <h3 class="font-bold text-lg">AI Phân tích vị giác</h3>
+                </div>
+                <p class="text-sm text-slate-300 leading-relaxed mb-6">Hệ thống AI ghi nhận <strong class="text-white">Cơm gà sốt nấm</strong> đang nhận được phản hồi rất tốt. Tuy nhiên, <strong class="text-orange-400">Canh bí đao</strong> hơi mặn ở ca chiều.</p>
+                <div class="bg-white/10 rounded-2xl p-4 backdrop-blur-sm border border-white/5">
+                    <div class="flex justify-between items-center mb-2">
+                        <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Độ hài lòng chung</span>
+                        <span class="text-sm font-black text-green-400">92%</span>
+                    </div>
+                    <div class="w-full h-1.5 bg-slate-700 rounded-full overflow-hidden">
+                        <div class="w-[92%] h-full bg-green-400 rounded-full"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Low Stock Alert -->
+            <div class="bg-white rounded-[32px] p-6 shadow-sm border border-slate-100">
+                <h3 class="font-bold text-slate-800 mb-4 flex items-center gap-2">
+                    <i data-lucide="alert-circle" class="w-4 h-4 text-orange-500"></i> Cần bổ sung gấp
+                </h3>
+                <div class="space-y-4">
+                    @foreach(var item in new[] { 
+                        new { Name = "Thịt bò Úc", Qty = "15kg", Status = "Thiếu hụt", Color="text-red-600 bg-red-50 border-red-100" },
+                        new { Name = "Gạo ST25", Qty = "50kg", Status = "Sắp hết", Color="text-orange-600 bg-orange-50 border-orange-100" },
+                        new { Name = "Hành tây", Qty = "5kg", Status = "Sắp hết", Color="text-orange-600 bg-orange-50 border-orange-100" }
+                    })
+                    {
+                        <div class="flex items-center justify-between p-3 hover:bg-slate-50 rounded-xl transition-colors cursor-pointer border border-transparent hover:border-slate-100">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center">
+                                    <i data-lucide="package" class="w-4 h-4 text-slate-500"></i>
+                                </div>
+                                <div>
+                                    <p class="font-bold text-sm text-slate-800">@item.Name</p>
+                                    <p class="text-xs font-medium text-slate-400">Tồn: @item.Qty</p>
+                                </div>
+                            </div>
+                            <span class="text-[10px] font-bold px-2 py-1 rounded-lg border @item.Color">@item.Status</span>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- TOP PERFORMING MEALS TABLE -->
+    <div class="bg-white rounded-[32px] p-8 shadow-sm border border-slate-100">
+        <div class="flex items-center justify-between mb-6">
+            <h3 class="text-xl font-bold text-slate-800">Thực đơn nổi bật hôm nay</h3>
+            <button class="text-sm font-bold text-green-600 hover:text-green-700 hover:underline">Xem tất cả</button>
+        </div>
+        
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse min-w-[800px]">
+                <thead>
+                    <tr class="border-b border-slate-100 text-xs uppercase tracking-wider text-slate-400">
+                        <th class="pb-4 font-semibold px-4">Tên Món Ăn</th>
+                        <th class="pb-4 font-semibold px-4">Danh mục</th>
+                        <th class="pb-4 font-semibold px-4">Số suất</th>
+                        <th class="pb-4 font-semibold px-4">Đánh giá</th>
+                        <th class="pb-4 font-semibold px-4 text-right">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody class="text-sm">
+                    @foreach(var meal in new[] {
+                        new { Name = "Combo Cơm sườn nướng", Cat = "Văn phòng", Sold = 1250, Rate = "4.9", Status = "Đang phục vụ", StatusCls="text-green-600 bg-green-50 border-green-100" },
+                        new { Name = "Phần ăn học đường số 1", Cat = "Trường học", Sold = 800, Rate = "4.7", Status = "Đang phục vụ", StatusCls="text-green-600 bg-green-50 border-green-100" },
+                        new { Name = "Cơm đùi gà xối mỡ", Cat = "Nhà máy", Sold = 2100, Rate = "4.8", Status = "Gần hết", StatusCls="text-orange-600 bg-orange-50 border-orange-100" },
+                        new { Name = "Bento Nhật Bản", Cat = "Văn phòng", Sold = 450, Rate = "5.0", Status = "Hết món", StatusCls="text-red-600 bg-red-50 border-red-100" }
+                    })
+                    {
+                        <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition-colors group">
+                            <td class="py-4 px-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-xl bg-slate-200 overflow-hidden shrink-0">
+                                        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=100&q=80" class="w-full h-full object-cover" />
+                                    </div>
+                                    <span class="font-bold text-slate-800 group-hover:text-green-600 transition-colors">@meal.Name</span>
+                                </div>
+                            </td>
+                            <td class="py-4 px-4 font-medium text-slate-500">@meal.Cat</td>
+                            <td class="py-4 px-4 font-bold text-slate-700">@meal.Sold</td>
+                            <td class="py-4 px-4">
+                                <div class="flex items-center gap-1 text-yellow-500 font-bold">
+                                    <i data-lucide="star" class="w-4 h-4 fill-yellow-500"></i>
+                                    @meal.Rate
+                                </div>
+                            </td>
+                            <td class="py-4 px-4 text-right">
+                                <span class="inline-flex text-[11px] font-bold px-3 py-1 rounded-full border @meal.StatusCls">
+                                    @meal.Status
+                                </span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        lucide.createIcons();
+    </script>
+}

@@ -3,10 +3,18 @@
     Layout = "_LayoutCustomer";
 
     var posts = new[] {
-        new { Id = 1, Title = "ĐẠI TIỆC ÂM NHẠC – HUITMEAL MUSIC FESTIVAL 2024", Date = "10/01/2024", Category = "Hoạt động nội bộ", Image = "/assets/images/t1.jpg", Excerpt = "Chương trình ca nhạc nội bộ hoành tráng để chúc mừng thành công của tập đoàn trong năm qua, quy tụ dàn nghệ sĩ hàng đầu...", ReadTime = "5 phút đọc" },
-        new { Id = 2, Title = "LỄ KÝ KẾT HỢP TÁC CHIẾN LƯỢC TOÀN DIỆN", Date = "15/02/2024", Category = "Hợp tác phát triển", Image = "/assets/images/t2.jpg", Excerpt = "HuitMeal chính thức bắt tay cùng đối tác quốc tế để mở rộng thị trường và nâng tầm dịch vụ suất ăn công nghiệp lên chuẩn 5 sao...", ReadTime = "3 phút đọc" },
-        new { Id = 3, Title = "BỮA ĂN YÊU THƯƠNG – HUITMEAL GẮN KẾT CỘNG ĐỒNG", Date = "05/03/2024", Category = "Tin tức 24h", Image = "/assets/images/t3.jpg", Excerpt = "Dự án từ thiện chia sẻ khó khăn cùng đồng bào vùng cao, mang đến hàng ngàn suất ăn nóng sốt và đầy đủ dinh dưỡng...", ReadTime = "4 phút đọc" },
-        new { Id = 4, Title = "HỘI NGHỊ TỔNG KẾT KINH DOANH QUÝ I/2024", Date = "20/04/2024", Category = "Hoạt động nội bộ", Image = "/assets/images/t4.jpg", Excerpt = "Đánh giá hoạt động quý đầu năm, vinh danh những cá nhân xuất sắc và đề ra chiến lược bứt phá cho các quý tiếp theo...", ReadTime = "6 phút đọc" },
+        new { Id = 1, Title = "ĐẠI TIỆC ÂM NHẠC – HUITMEAL MUSIC FESTIVAL 2024", Date = "10/01/2024", Category = "Hoạt động nội bộ", 
+              Image = "https://images.unsplash.com/photo-1540039155732-68473638c205?w=800&q=80", 
+              Excerpt = "Chương trình ca nhạc nội bộ hoành tráng để chúc mừng thành công của tập đoàn trong năm qua, quy tụ dàn nghệ sĩ hàng đầu cùng sự tham gia của hơn 2000 cán bộ nhân viên...", ReadTime = "5 phút đọc" },
+        new { Id = 2, Title = "LỄ KÝ KẾT HỢP TÁC CHIẾN LƯỢC TOÀN DIỆN VỚI ĐỐI TÁC QUỐC TẾ", Date = "15/02/2024", Category = "Hợp tác phát triển", 
+              Image = "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?w=800&q=80", 
+              Excerpt = "HuitMeal chính thức bắt tay cùng đối tác quốc tế để mở rộng thị trường và nâng tầm dịch vụ suất ăn công nghiệp lên chuẩn 5 sao. Sự kiện đánh dấu bước ngoặt quan trọng trong năm 2024...", ReadTime = "3 phút đọc" },
+        new { Id = 3, Title = "BỮA ĂN YÊU THƯƠNG – HUITMEAL GẮN KẾT CỘNG ĐỒNG VÙNG CAO", Date = "05/03/2024", Category = "Tin tức 24h", 
+              Image = "https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?w=800&q=80", 
+              Excerpt = "Dự án từ thiện chia sẻ khó khăn cùng đồng bào vùng cao, mang đến hàng ngàn suất ăn nóng sốt và đầy đủ dinh dưỡng cho các em nhỏ tại các điểm trường khó khăn nhất...", ReadTime = "4 phút đọc" },
+        new { Id = 4, Title = "HỘI NGHỊ TỔNG KẾT KINH DOANH QUÝ I/2024", Date = "20/04/2024", Category = "Hoạt động nội bộ", 
+              Image = "https://images.unsplash.com/photo-1515169067868-5387ec356754?w=800&q=80", 
+              Excerpt = "Đánh giá hoạt động quý đầu năm, vinh danh những cá nhân xuất sắc và đề ra chiến lược bứt phá cho các quý tiếp theo. Tập thể HuitMeal quyết tâm hoàn thành vượt mức mục tiêu...", ReadTime = "6 phút đọc" },
     };
 
     var featured = posts.First();
@@ -14,115 +22,167 @@
 }
 
 <style>
-    @@keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    [x-cloak] { display: none !important; }
+    
+    .text-gradient {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
-
-    .animate-fadeInUp {
-        animation: fadeInUp 0.8s ease-out forwards;
-    }
-
+    
     .glass-pill {
         background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(10px);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
         border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .card-hover-effect {
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover-effect:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 25px 50px -12px rgba(0,0,0,0.15);
+    }
+    
+    .sticky-sidebar {
+        position: sticky;
+        top: 100px; /* Offset for header */
     }
 </style>
 
-<div class="w-full bg-white overflow-hidden">
+<div class="w-full bg-transparent overflow-hidden font-sans">
+    
     <!-- HERO SECTION -->
-    <section class="relative h-[500px] md:h-[650px] flex items-center overflow-hidden">
+    <section class="relative h-[550px] md:h-[700px] flex items-center overflow-hidden bg-slate-900">
+        <!-- Background Image with Overlay -->
         <div class="absolute inset-0">
-            <img src="/assets/images/news_hero.png" alt="News Hero" class="w-full h-full object-cover" />
-            <div class="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent"></div>
+            <img src="https://images.unsplash.com/photo-1504384308090-c894fdcc538d?q=80&w=2000" alt="News Hero" class="w-full h-full object-cover opacity-60" />
+            <div class="absolute inset-0 bg-gradient-to-r from-slate-900 via-slate-900/80 to-transparent"></div>
+            <!-- Decorative blur -->
+            <div class="absolute top-1/4 left-1/4 w-[500px] h-[500px] bg-orange-500/20 rounded-full blur-[120px] pointer-events-none mix-blend-screen"></div>
         </div>
         
-        <div class="relative z-10 max-w-7xl mx-auto px-6 md:px-12 w-full animate-fadeInUp">
-            <div class="max-w-2xl">
-                <span class="inline-block px-4 py-1.5 mb-6 text-[10px] font-black tracking-[0.3em] uppercase text-white glass-pill rounded-full">News & Stories</span>
-                <h1 class="text-4xl md:text-7xl font-black text-white leading-[1.1] mb-6">
+        <div class="relative z-10 max-w-7xl mx-auto px-6 w-full" x-data="{ loaded: false }" x-init="setTimeout(() => loaded = true, 100)">
+            <div class="max-w-3xl"
+                 x-show="loaded"
+                 x-transition:enter="transition duration-1000 cubic-bezier(0.16, 1, 0.3, 1)"
+                 x-transition:enter-start="opacity-0 translate-y-12"
+                 x-transition:enter-end="opacity-100 translate-y-0">
+                
+                <div class="inline-flex items-center gap-2 px-5 py-2 mb-8 text-[11px] font-black tracking-[0.2em] uppercase text-white glass-pill rounded-full shadow-lg">
+                    <span class="w-2 h-2 rounded-full bg-orange-500 animate-pulse"></span>
+                    Tin tức & Sự kiện
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl lg:text-[80px] font-black text-white leading-[1.1] tracking-tight mb-8">
                     Bản Tin <br />
-                    <span class="text-red-500">HuitMeal</span>
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">HuitMeal</span>
                 </h1>
-                <p class="text-gray-300 text-lg md:text-xl font-light leading-relaxed mb-8 border-l-4 border-red-500 pl-6">
-                    "Doanh nghiệp chỉ có thể phát triển nếu xã hội xung quanh phát triển".
-                    Hành trình kiến tạo giá trị bền vững.
-                </p>
+                
+                <div class="border-l-4 border-orange-500 pl-6 space-y-2">
+                    <p class="text-slate-300 text-lg md:text-xl font-medium leading-relaxed max-w-xl italic">
+                        "Doanh nghiệp chỉ có thể phát triển nếu xã hội xung quanh phát triển."
+                    </p>
+                    <p class="text-orange-400 font-bold uppercase tracking-widest text-xs">Hành trình kiến tạo giá trị bền vững</p>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- CONTENT SECTION -->
-    <section class="py-24 bg-gray-50/50">
-        <div class="max-w-7xl mx-auto px-6 md:px-12">
-            <div class="flex flex-col lg:flex-row gap-16">
+    <section class="py-24 relative">
+
+        <div class="max-w-7xl mx-auto px-6 relative z-10">
+            <div class="flex flex-col lg:flex-row gap-12 lg:gap-16 items-start">
                 
                 <!-- MAIN COLUMN -->
-                <div class="flex-1">
+                <div class="flex-1 w-full">
                     
                     <!-- FEATURED POST -->
-                    <div class="mb-20 animate-fadeInUp">
-                        <div class="group relative overflow-hidden rounded-[48px] bg-white shadow-2xl border border-gray-100 flex flex-col md:flex-row h-full md:h-[450px]">
-                            <div class="md:w-1/2 overflow-hidden h-64 md:h-full">
-                                <img src="@featured.Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                    <div class="mb-20">
+                        <div class="group relative overflow-hidden rounded-[40px] bg-white shadow-xl border border-slate-100 flex flex-col md:flex-row h-auto md:h-[480px] card-hover-effect">
+                            <!-- Image Side -->
+                            <div class="md:w-[55%] relative overflow-hidden h-72 md:h-full shrink-0">
+                                <img src="@featured.Image" class="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000" />
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 to-transparent md:hidden"></div>
                             </div>
-                            <div class="md:w-1/2 p-8 md:p-12 flex flex-col justify-center">
-                                <div class="flex items-center gap-3 mb-6">
-                                    <span class="px-3 py-1 bg-red-600 text-white text-[10px] font-black uppercase tracking-widest rounded-lg">Nổi bật</span>
-                                    <span class="text-xs text-gray-400 font-bold uppercase tracking-widest">@featured.Category</span>
-                                </div>
-                                <h2 class="text-2xl md:text-3xl font-black text-gray-900 mb-6 group-hover:text-red-600 transition-colors leading-tight">
-                                    @featured.Title
-                                </h2>
-                                <p class="text-gray-500 text-sm md:text-base leading-relaxed mb-8 line-clamp-3 font-light">
-                                    @featured.Excerpt
-                                </p>
-                                <div class="flex items-center justify-between mt-auto">
-                                    <div class="flex items-center gap-3 text-[11px] text-gray-400 font-bold">
-                                        <i data-lucide="calendar" class="w-4 h-4"></i> @featured.Date
+                            
+                            <!-- Content Side -->
+                            <div class="md:w-[45%] p-8 md:p-12 flex flex-col justify-center relative bg-white md:bg-transparent">
+                                <!-- Gradient fade for desktop to blend image and text -->
+                                <div class="hidden md:block absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-transparent to-white -translate-x-full z-10"></div>
+                                
+                                <div class="relative z-20">
+                                    <div class="flex flex-wrap items-center gap-3 mb-6">
+                                        <span class="px-3 py-1.5 bg-gradient-to-r from-orange-500 to-orange-400 text-white text-[10px] font-black uppercase tracking-widest rounded-lg shadow-md shadow-orange-500/20">Nổi bật</span>
+                                        <span class="text-[11px] text-slate-500 font-bold uppercase tracking-widest bg-slate-100 px-3 py-1.5 rounded-lg">@featured.Category</span>
                                     </div>
-                                    <a href="/Customer/PostDetail/@featured.Id" class="flex items-center gap-2 text-xs font-black text-red-600 group">
-                                        Đọc tiếp <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover:translate-x-2"></i>
-                                    </a>
+                                    
+                                    <h2 class="text-3xl md:text-4xl font-black text-slate-900 mb-6 group-hover:text-orange-500 transition-colors leading-tight tracking-tight">
+                                        @featured.Title
+                                    </h2>
+                                    
+                                    <p class="text-slate-500 text-base leading-relaxed mb-8 line-clamp-3 font-medium">
+                                        @featured.Excerpt
+                                    </p>
+                                    
+                                    <div class="flex flex-wrap items-center justify-between gap-4 mt-auto pt-6 border-t border-slate-100">
+                                        <div class="flex items-center gap-4 text-xs text-slate-400 font-bold uppercase tracking-wider">
+                                            <span class="flex items-center gap-1.5"><i data-lucide="calendar" class="w-4 h-4 text-slate-300"></i> @featured.Date</span>
+                                            <span class="w-1 h-1 bg-slate-300 rounded-full"></span>
+                                            <span class="flex items-center gap-1.5"><i data-lucide="clock" class="w-4 h-4 text-slate-300"></i> @featured.ReadTime</span>
+                                        </div>
+                                        <a href="/Customer/PostDetail/@featured.Id" class="inline-flex items-center gap-2 text-sm font-black text-orange-500 group/btn hover:text-orange-600 transition-colors bg-orange-50 px-4 py-2 rounded-xl">
+                                            Đọc tiếp <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover/btn:translate-x-1"></i>
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- LATEST NEWS HEADER -->
+                    <div class="flex items-center justify-between mb-10">
+                        <h3 class="text-2xl font-black text-slate-900 uppercase tracking-tight flex items-center gap-3">
+                            <i data-lucide="zap" class="w-6 h-6 text-orange-500"></i> Tin tức mới nhất
+                        </h3>
+                        <div class="h-px flex-1 bg-slate-200 mx-6"></div>
+                    </div>
+
                     <!-- NEWS GRID -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         @foreach (var post in otherPosts)
                         {
-                            <article class="group animate-fadeInUp">
-                                <div class="bg-white rounded-[40px] overflow-hidden border border-gray-100 shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-500 flex flex-col h-full">
-                                    <div class="relative h-64 overflow-hidden">
-                                        <img src="@post.Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
-                                        <div class="absolute top-6 left-6">
-                                            <span class="px-4 py-2 bg-white/90 backdrop-blur-md rounded-2xl text-[10px] font-black uppercase tracking-widest text-gray-900 shadow-lg">@post.Category</span>
+                            <article class="group">
+                                <div class="bg-white rounded-[32px] overflow-hidden border border-slate-100 shadow-sm card-hover-effect flex flex-col h-full">
+                                    <div class="relative h-60 overflow-hidden shrink-0 p-3 pb-0">
+                                        <div class="w-full h-full rounded-t-[20px] overflow-hidden relative">
+                                            <img src="@post.Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700" />
+                                            <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                            <div class="absolute top-4 left-4">
+                                                <span class="px-3 py-1.5 bg-white/95 backdrop-blur-md rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-800 shadow-sm">@post.Category</span>
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="p-8 flex flex-col flex-1">
-                                        <div class="flex items-center gap-4 text-[10px] text-gray-400 font-black uppercase tracking-widest mb-4">
+                                        <div class="flex items-center gap-3 text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-4">
                                             <span>@post.Date</span>
-                                            <span class="w-1 h-1 bg-gray-300 rounded-full"></span>
+                                            <span class="w-1 h-1 bg-orange-300 rounded-full"></span>
                                             <span>@post.ReadTime</span>
                                         </div>
-                                        <h3 class="text-xl font-bold text-gray-900 mb-4 line-clamp-2 group-hover:text-red-600 transition-colors leading-tight">
+                                        <h3 class="text-xl font-black text-slate-900 mb-4 line-clamp-2 group-hover:text-orange-500 transition-colors leading-tight">
                                             @post.Title
                                         </h3>
-                                        <p class="text-gray-500 text-sm leading-relaxed line-clamp-3 mb-8 font-light">
+                                        <p class="text-slate-500 text-sm leading-relaxed line-clamp-3 mb-8 flex-1">
                                             @post.Excerpt
                                         </p>
-                                        <div class="mt-auto">
-                                            <a href="/Customer/PostDetail/@post.Id" class="inline-flex items-center gap-2 text-xs font-black text-red-600 group/link">
-                                                KHÁM PHÁ <i data-lucide="chevron-right" class="w-4 h-4 transition-transform group-hover/link:translate-x-1"></i>
+                                        <div class="mt-auto pt-5 border-t border-slate-100 border-dashed">
+                                            <a href="/Customer/PostDetail/@post.Id" class="inline-flex items-center justify-between w-full text-sm font-bold text-slate-900 group/link hover:text-orange-500 transition-colors">
+                                                <span>Đọc chi tiết</span>
+                                                <div class="w-8 h-8 rounded-full bg-slate-50 flex items-center justify-center group-hover/link:bg-orange-50 transition-colors">
+                                                    <i data-lucide="arrow-right" class="w-4 h-4 transition-transform group-hover/link:translate-x-1"></i>
+                                                </div>
                                             </a>
                                         </div>
                                     </div>
@@ -132,69 +192,84 @@
                     </div>
 
                     <!-- PAGINATION -->
-                    <div class="flex justify-center mt-20 gap-3 items-center">
-                        <button class="w-12 h-12 flex items-center justify-center bg-white rounded-2xl border border-gray-100 shadow-sm hover:bg-red-600 hover:text-white transition-all">
+                    <div class="flex justify-center mt-16 gap-2 items-center">
+                        <button class="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-slate-200 text-slate-400 hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm">
                             <i data-lucide="chevron-left" class="w-5 h-5"></i>
                         </button>
-                        <button class="w-12 h-12 rounded-2xl bg-red-600 text-white font-black shadow-lg shadow-red-600/30">1</button>
-                        <button class="w-12 h-12 flex items-center justify-center bg-white rounded-2xl border border-gray-100 shadow-sm hover:bg-red-600 hover:text-white transition-all text-gray-400">2</button>
-                        <button class="w-12 h-12 flex items-center justify-center bg-white rounded-2xl border border-gray-100 shadow-sm hover:bg-red-600 hover:text-white transition-all">
+                        <button class="w-10 h-10 rounded-xl bg-gradient-to-r from-orange-500 to-orange-400 text-white font-black shadow-lg shadow-orange-500/30">1</button>
+                        <button class="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-all shadow-sm">2</button>
+                        <button class="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 transition-all shadow-sm">3</button>
+                        <span class="px-2 text-slate-400">...</span>
+                        <button class="w-10 h-10 flex items-center justify-center bg-white rounded-xl border border-slate-200 text-slate-600 hover:text-slate-900 hover:border-slate-300 transition-all shadow-sm">
                             <i data-lucide="chevron-right" class="w-5 h-5"></i>
                         </button>
                     </div>
                 </div>
 
                 <!-- SIDEBAR -->
-                <aside class="w-full lg:w-80 space-y-12">
+                <aside class="w-full lg:w-[340px] shrink-0 sticky-sidebar space-y-8">
                     
                     <!-- SEARCH -->
-                    <div class="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100">
-                        <h3 class="text-lg font-black text-gray-900 mb-6 uppercase tracking-widest">Tìm kiếm</h3>
-                        <div class="relative">
-                            <input type="text" placeholder="Nhập từ khóa..." class="w-full px-6 py-4 bg-gray-50 rounded-2xl border-none focus:ring-2 focus:ring-red-600 text-sm font-medium" />
-                            <button class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-red-600 transition-colors">
-                                <i data-lucide="search" class="w-5 h-5"></i>
+                    <div class="bg-white p-8 rounded-[32px] shadow-lg shadow-slate-200/40 border border-slate-100 relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-orange-400 to-orange-500"></div>
+                        <h3 class="text-lg font-black text-slate-900 mb-6 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="search" class="w-5 h-5 text-orange-500"></i> Tìm kiếm
+                        </h3>
+                        <div class="relative group">
+                            <input type="text" placeholder="Nhập từ khóa..." class="w-full px-5 py-3.5 bg-slate-50 rounded-xl border border-slate-200 focus:border-orange-500 focus:ring-4 focus:ring-orange-500/10 text-sm font-medium transition-all outline-none" />
+                            <button class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-orange-500 transition-colors w-8 h-8 flex items-center justify-center rounded-lg hover:bg-orange-50">
+                                <i data-lucide="search" class="w-4 h-4"></i>
                             </button>
                         </div>
                     </div>
 
                     <!-- CATEGORIES -->
-                    <div class="bg-gray-900 p-10 rounded-[40px] text-white shadow-2xl relative overflow-hidden">
-                        <div class="absolute top-0 right-0 w-32 h-32 bg-red-600/10 rounded-full -mr-16 -mt-16 blur-3xl"></div>
-                        <h3 class="text-lg font-black mb-8 uppercase tracking-widest text-red-500">Danh mục</h3>
-                        <ul class="space-y-4">
-                            <li><a href="#" class="flex items-center justify-between group py-2">
-                                <span class="text-sm font-bold text-gray-300 group-hover:text-white transition-colors">Tất cả</span>
-                                <span class="text-[10px] bg-white/10 px-2 py-1 rounded-md">12</span>
+                    <div class="bg-slate-900 p-8 rounded-[32px] text-white shadow-2xl relative overflow-hidden">
+                        <!-- Decorative shapes -->
+                        <div class="absolute -top-10 -right-10 w-32 h-32 bg-orange-500/20 rounded-full blur-2xl"></div>
+                        <div class="absolute -bottom-10 -left-10 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl"></div>
+                        
+                        <h3 class="text-lg font-black mb-6 uppercase tracking-widest text-white flex items-center gap-2 relative z-10">
+                            <i data-lucide="layers" class="w-5 h-5 text-orange-400"></i> Chuyên mục
+                        </h3>
+                        
+                        <ul class="space-y-3 relative z-10">
+                            <li><a href="#" class="flex items-center justify-between group py-2.5 px-4 rounded-xl hover:bg-white/10 transition-colors">
+                                <span class="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">Tất cả bài viết</span>
+                                <span class="text-[10px] font-black bg-orange-500 text-white px-2 py-1 rounded-md">12</span>
                             </a></li>
-                            <li class="border-t border-white/5 pt-4"><a href="#" class="flex items-center justify-between group py-2">
-                                <span class="text-sm font-bold text-gray-300 group-hover:text-white transition-colors">Hoạt động nội bộ</span>
-                                <span class="text-[10px] bg-white/10 px-2 py-1 rounded-md">05</span>
+                            <li><a href="#" class="flex items-center justify-between group py-2.5 px-4 rounded-xl hover:bg-white/10 transition-colors">
+                                <span class="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">Hoạt động nội bộ</span>
+                                <span class="text-[10px] font-black bg-slate-800 text-slate-300 px-2 py-1 rounded-md group-hover:bg-slate-700 transition-colors">05</span>
                             </a></li>
-                            <li class="border-t border-white/5 pt-4"><a href="#" class="flex items-center justify-between group py-2">
-                                <span class="text-sm font-bold text-gray-300 group-hover:text-white transition-colors">Hợp tác chiến lược</span>
-                                <span class="text-[10px] bg-white/10 px-2 py-1 rounded-md">03</span>
+                            <li><a href="#" class="flex items-center justify-between group py-2.5 px-4 rounded-xl hover:bg-white/10 transition-colors">
+                                <span class="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">Hợp tác chiến lược</span>
+                                <span class="text-[10px] font-black bg-slate-800 text-slate-300 px-2 py-1 rounded-md group-hover:bg-slate-700 transition-colors">03</span>
                             </a></li>
-                            <li class="border-t border-white/5 pt-4"><a href="#" class="flex items-center justify-between group py-2">
-                                <span class="text-sm font-bold text-gray-300 group-hover:text-white transition-colors">Tin tức 24h</span>
-                                <span class="text-[10px] bg-white/10 px-2 py-1 rounded-md">04</span>
+                            <li><a href="#" class="flex items-center justify-between group py-2.5 px-4 rounded-xl hover:bg-white/10 transition-colors">
+                                <span class="text-sm font-bold text-slate-300 group-hover:text-white transition-colors">Tin tức 24h</span>
+                                <span class="text-[10px] font-black bg-slate-800 text-slate-300 px-2 py-1 rounded-md group-hover:bg-slate-700 transition-colors">04</span>
                             </a></li>
                         </ul>
                     </div>
 
                     <!-- TRENDING -->
-                    <div class="bg-white p-8 rounded-[40px] shadow-sm border border-gray-100">
-                        <h3 class="text-lg font-black text-gray-900 mb-8 uppercase tracking-widest">Đang Hot</h3>
-                        <div class="space-y-8">
+                    <div class="bg-white p-8 rounded-[32px] shadow-lg shadow-slate-200/40 border border-slate-100">
+                        <h3 class="text-lg font-black text-slate-900 mb-6 uppercase tracking-widest flex items-center gap-2">
+                            <i data-lucide="flame" class="w-5 h-5 text-orange-500"></i> Bài viết nổi bật
+                        </h3>
+                        <div class="space-y-6">
                             @foreach (var post in posts.Take(3))
                             {
-                                <a href="/Customer/PostDetail/@post.Id" class="flex gap-4 group">
-                                    <div class="w-16 h-16 rounded-2xl overflow-hidden shrink-0">
+                                <a href="/Customer/PostDetail/@post.Id" class="flex gap-4 group items-center">
+                                    <div class="w-20 h-20 rounded-2xl overflow-hidden shrink-0 border border-slate-100 shadow-sm relative">
                                         <img src="@post.Image" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                                     </div>
-                                    <div>
-                                        <h4 class="text-xs font-bold text-gray-900 line-clamp-2 group-hover:text-red-600 transition-colors leading-tight">@post.Title</h4>
-                                        <span class="text-[10px] text-gray-400 font-bold">@post.Date</span>
+                                    <div class="flex-1">
+                                        <h4 class="text-sm font-bold text-slate-900 line-clamp-2 group-hover:text-orange-500 transition-colors leading-snug mb-2">@post.Title</h4>
+                                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider flex items-center gap-1.5">
+                                            <i data-lucide="clock" class="w-3 h-3"></i> @post.Date
+                                        </span>
                                     </div>
                                 </a>
                             }
@@ -202,13 +277,18 @@
                     </div>
 
                     <!-- NEWSLETTER -->
-                    <div class="bg-red-600 p-10 rounded-[40px] text-white shadow-2xl shadow-red-600/30">
-                        <i data-lucide="mail-plus" class="w-10 h-10 mb-6 opacity-50"></i>
-                        <h3 class="text-xl font-black mb-4 leading-tight">Đăng ký nhận tin mới nhất</h3>
-                        <p class="text-red-100 text-xs leading-relaxed mb-8">Nhận những thông tin cập nhật sớm nhất từ HuitMeal qua Email của bạn.</p>
-                        <div class="space-y-3">
-                            <input type="email" placeholder="Email của bạn..." class="w-full px-6 py-4 bg-white/20 border-none rounded-2xl placeholder:text-red-200 text-xs font-bold focus:ring-2 focus:ring-white" />
-                            <button class="w-full py-4 bg-white text-red-600 text-[10px] font-black uppercase tracking-widest rounded-2xl hover:bg-gray-100 transition-colors">Gửi ngay</button>
+                    <div class="bg-gradient-to-br from-orange-500 to-orange-600 p-8 rounded-[32px] text-white shadow-2xl shadow-orange-500/30 text-center relative overflow-hidden">
+                        <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                        <div class="relative z-10">
+                            <div class="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/20">
+                                <i data-lucide="mail-plus" class="w-8 h-8 text-white"></i>
+                            </div>
+                            <h3 class="text-2xl font-black mb-3 leading-tight tracking-tight">Nhận thông báo mới</h3>
+                            <p class="text-orange-100 text-sm leading-relaxed mb-8 font-medium">Cập nhật tin tức thị trường và sự kiện mới nhất từ HuitMeal.</p>
+                            <form class="space-y-3">
+                                <input type="email" placeholder="Nhập email của bạn..." class="w-full px-5 py-3.5 bg-black/10 border border-white/20 rounded-xl placeholder:text-white/60 text-sm font-medium focus:outline-none focus:bg-black/20 focus:border-white/40 transition-all text-white" required />
+                                <button type="submit" class="w-full py-3.5 bg-white text-orange-600 text-sm font-black uppercase tracking-widest rounded-xl hover:bg-slate-50 transition-colors shadow-lg active:scale-95">Đăng ký ngay</button>
+                            </form>
                         </div>
                     </div>
 
@@ -220,6 +300,8 @@
 
 @section Scripts {
     <script>
-        lucide.createIcons();
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
     </script>
 }

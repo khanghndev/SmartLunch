@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = "Chi tiết thực đơn - HuitMeal";
     Layout = "_LayoutCustomer";
     string level = Context.Request.Query["level"].ToString();
@@ -57,7 +57,7 @@
     var days = new[]{("t2","Thứ Hai"),("t3","Thứ Ba"),("t4","Thứ Tư"),("t5","Thứ Năm"),("t6","Thứ Sáu")};
 }
 
-<div class="w-full bg-white overflow-hidden">
+<div class="w-full bg-transparent overflow-hidden">
 
     <!-- HERO IMAGE -->
     <section class="relative h-[420px] md:h-[560px] overflow-hidden">
@@ -286,3 +286,4 @@
         document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
     </script>
 }
+

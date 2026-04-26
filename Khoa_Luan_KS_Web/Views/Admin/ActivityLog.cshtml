@@ -1,65 +1,260 @@
 @{
-    ViewData["Title"] = "Nhật ký hệ thống";
+    ViewData["Title"] = "Security Audit Log";
     Layout = "_LayoutAdmin";
-
-    var logs = new[] {
-        new { Id = 101, User = "admin01", Action = "CREATE", Target = "USER", Description = "Tạo mới tài khoản manager_hn", Time = "25/04/2026 14:30:10" },
-        new { Id = 102, User = "manager01", Action = "UPDATE", Target = "MENU", Description = "Cập nhật thực đơn tuần 4", Time = "25/04/2026 13:15:00" },
-        new { Id = 103, User = "system", Action = "CRON", Target = "BACKUP", Description = "Auto backup success", Time = "25/04/2026 00:00:00" },
-    };
 }
 
-<div class="p-2 sm:p-6 space-y-6">
-    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h1 class="text-2xl font-bold text-green-600">Nhật ký hoạt động (Activity Logs)</h1>
+<div class="space-y-8" x-data="auditLogManager()">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Nhật ký Hệ thống (Audit Log)</h1>
+            <p class="text-slate-500 mt-1 font-medium text-sm">Giám sát mọi hoạt động bảo mật, thay đổi dữ liệu và truy cập hệ thống của người dùng.</p>
+        </div>
         
-        <div class="flex gap-2">
-            <input type="text" placeholder="Tìm kiếm log..." class="border rounded-md px-4 py-2 w-full sm:w-64 focus:ring-green-500 focus:border-green-500" />
-            <button class="bg-gray-100 text-gray-600 hover:bg-gray-200 px-4 py-2 rounded shadow-sm border transition"><i class="fas fa-sync-alt"></i></button>
+        <div class="flex items-center gap-3">
+            <button class="px-5 py-2 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all text-sm flex items-center gap-2">
+                <i class="fas fa-file-export"></i> Xuất file Excel
+            </button>
+            <button class="px-5 py-2 admin-gradient text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:shadow-green-600/50 transition-all text-sm flex items-center gap-2">
+                <i class="fas fa-filter"></i> Lọc Nâng cao
+            </button>
         </div>
     </div>
 
-    <div class="bg-white rounded-xl shadow overflow-hidden">
-        <table class="w-full text-left text-sm whitespace-nowrap">
-            <thead class="bg-gray-50 border-b text-gray-600">
-                <tr>
-                    <th class="p-4">Thời gian</th>
-                    <th class="p-4">Người dùng</th>
-                    <th class="p-4">Hành động</th>
-                    <th class="p-4">Đối tượng</th>
-                    <th class="p-4 w-1/3">Mô tả chi tiết</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y">
-                @foreach(var log in logs) {
-                    <tr class="hover:bg-green-50 transition">
-                        <td class="p-4 text-gray-500">@log.Time</td>
-                        <td class="p-4 font-medium">@log.User</td>
-                        <td class="p-4">
-                            @if(log.Action == "CREATE") {
-                                <span class="px-2 py-1 text-xs rounded bg-blue-100 text-blue-700 font-bold">@log.Action</span>
-                            } else if (log.Action == "UPDATE") {
-                                <span class="px-2 py-1 text-xs rounded bg-orange-100 text-orange-700 font-bold">@log.Action</span>
-                            } else {
-                                <span class="px-2 py-1 text-xs rounded bg-gray-200 text-gray-700 font-bold">@log.Action</span>
-                            }
-                        </td>
-                        <td class="p-4">@log.Target</td>
-                        <td class="p-4 text-gray-600 truncate max-w-xs" title="@log.Description">@log.Description</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+    <!-- Filters -->
+    <div class="bg-white rounded-2xl p-4 border border-slate-200 shadow-sm flex flex-wrap gap-4 items-end">
+        <div class="flex-1 min-w-[200px]">
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Tìm kiếm</label>
+            <div class="relative">
+                <i class="fas fa-search text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                <input type="text" x-model="searchQuery" placeholder="IP, Email, Sự kiện..." class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-4 py-2.5 text-sm font-medium outline-none focus:border-green-500 focus:bg-white transition-colors" />
+            </div>
+        </div>
+        
+        <div class="w-48">
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Loại Sự kiện</label>
+            <select x-model="typeFilter" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 py-2.5 outline-none focus:border-green-500">
+                <option value="all">Tất cả</option>
+                <option value="Bảo mật">Bảo mật (Auth)</option>
+                <option value="Hệ thống">Hệ thống (System)</option>
+                <option value="Dữ liệu">Dữ liệu (Data)</option>
+            </select>
+        </div>
+        
+        <div class="w-40">
+            <label class="block text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-1">Mức độ (Severity)</label>
+            <select x-model="severityFilter" class="w-full bg-slate-50 border border-slate-200 text-slate-700 text-sm font-bold rounded-lg px-3 py-2.5 outline-none focus:border-green-500">
+                <option value="all">Tất cả</option>
+                <option value="Info">Info</option>
+                <option value="Warning">Warning</option>
+                <option value="Critical">Critical</option>
+            </select>
+        </div>
     </div>
-    
-    <!-- Pagination -->
-    <div class="flex justify-end items-center gap-2 mt-4">
-        <button class="p-2 rounded bg-gray-100 text-gray-400 cursor-not-allowed">
-            <i class="fas fa-chevron-left"></i>
-        </button>
-        <span class="px-2 text-sm text-gray-700">1 / 1</span>
-        <button class="p-2 rounded bg-gray-100 text-gray-400 cursor-not-allowed">
-            <i class="fas fa-chevron-right"></i>
-        </button>
+
+    <!-- Log Table -->
+    <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden flex flex-col">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50 border-b border-slate-200 text-[11px] uppercase tracking-widest text-slate-500 font-black">
+                        <th class="p-4 pl-6">Thời gian</th>
+                        <th class="p-4">Tài khoản / IP</th>
+                        <th class="p-4">Sự kiện</th>
+                        <th class="p-4">Mô tả Chi tiết</th>
+                        <th class="p-4">Loại</th>
+                        <th class="p-4 pr-6 text-center">Mức độ</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-sm">
+                    <template x-for="log in filteredLogs" :key="log.id">
+                        <tr class="hover:bg-slate-50 transition-colors cursor-pointer" @@click="viewDetail(log)">
+                            <td class="p-4 pl-6 whitespace-nowrap">
+                                <div class="font-bold text-slate-700" x-text="log.date"></div>
+                                <div class="text-[11px] font-medium text-slate-400 font-mono" x-text="log.time"></div>
+                            </td>
+                            
+                            <td class="p-4">
+                                <div class="font-bold text-green-700" x-text="log.user"></div>
+                                <div class="text-xs font-mono text-slate-500 mt-0.5" x-text="log.ip"></div>
+                            </td>
+                            
+                            <td class="p-4">
+                                <div class="font-bold text-slate-800" x-text="log.event"></div>
+                            </td>
+                            
+                            <td class="p-4 max-w-xs truncate text-slate-600 font-medium" x-text="log.desc"></td>
+                            
+                            <td class="p-4">
+                                <span class="px-2 py-1 text-[10px] font-bold rounded uppercase tracking-wider bg-slate-100 text-slate-600" x-text="log.type"></span>
+                            </td>
+                            
+                            <td class="p-4 pr-6 text-center">
+                                <div class="inline-flex w-8 h-8 rounded-full items-center justify-center" :class="getSeverityBg(log.severity)">
+                                    <i :class="getSeverityIcon(log.severity)"></i>
+                                </div>
+                            </td>
+                        </tr>
+                    </template>
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination Mock -->
+        <div class="p-4 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500 bg-slate-50/50">
+            <span>Hiển thị <span class="font-bold text-slate-800">1-10</span> trong số <span class="font-bold text-slate-800">1,248</span> bản ghi</span>
+            <div class="flex gap-1">
+                <button class="px-3 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-50">Trước</button>
+                <button class="px-3 py-1 rounded bg-green-600 text-white font-bold">1</button>
+                <button class="px-3 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100">2</button>
+                <button class="px-3 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100">3</button>
+                <button class="px-3 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100">Sau</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: LOG DETAILS -->
+    <div x-show="isDetailOpen" style="display: none;" class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div x-show="isDetailOpen" 
+             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
+             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
+             class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @@click="isDetailOpen = false"></div>
+
+        <div class="fixed inset-0 z-10 overflow-y-auto">
+            <div class="flex min-h-full items-center justify-center p-4 text-center sm:p-0">
+                <div x-show="isDetailOpen" 
+                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
+                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                     class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl" @@click.stop>
+                    
+                    <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
+                        <h3 class="text-xl font-black text-slate-800">Chi tiết Sự kiện (Log Data)</h3>
+                        <button @@click="isDetailOpen = false" class="text-slate-400 hover:text-slate-600 bg-slate-200/50 hover:bg-slate-200 p-1.5 rounded-full transition-colors">
+                            <i class="fas fa-times w-4 text-center"></i>
+                        </button>
+                    </div>
+                    
+                    <div class="p-6">
+                        <template x-if="selectedLog">
+                            <div class="space-y-6">
+                                <div class="flex items-center gap-4 pb-6 border-b border-slate-100">
+                                    <div class="w-12 h-12 rounded-full flex items-center justify-center text-xl shrink-0" :class="getSeverityBg(selectedLog.severity)">
+                                        <i :class="getSeverityIcon(selectedLog.severity)"></i>
+                                    </div>
+                                    <div>
+                                        <h4 class="text-lg font-black text-slate-800" x-text="selectedLog.event"></h4>
+                                        <p class="text-sm text-slate-500 font-medium mt-1" x-text="selectedLog.desc"></p>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tài khoản thực hiện</p>
+                                        <p class="text-sm font-bold text-green-600" x-text="selectedLog.user"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Địa chỉ IP</p>
+                                        <p class="text-sm font-mono font-medium text-slate-700" x-text="selectedLog.ip"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Thời gian</p>
+                                        <p class="text-sm font-bold text-slate-700" x-text="selectedLog.date + ' ' + selectedLog.time"></p>
+                                    </div>
+                                    <div>
+                                        <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Loại Event / Mức độ</p>
+                                        <p class="text-sm font-bold text-slate-700">
+                                            <span x-text="selectedLog.type"></span> - 
+                                            <span :class="getSeverityColor(selectedLog.severity)" x-text="selectedLog.severity"></span>
+                                        </p>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Dữ liệu thô (Raw JSON Payload)</p>
+                                    <div class="bg-slate-900 text-green-400 font-mono text-xs p-4 rounded-xl overflow-x-auto">
+<pre>{
+  "eventId": "EVT-20260426-8874",
+  "timestamp": "2026-04-26T15:02:44Z",
+  "actor": {
+    "id": "USR-001",
+    "email": "admin@huitmeal.com"
+  },
+  "action": "UPDATE_ROLE",
+  "target": {
+    "id": "USR-105",
+    "email": "tran.le@huitmeal.com",
+    "oldRole": "Customer",
+    "newRole": "Manager"
+  },
+  "clientIp": "14.224.135.22",
+  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"
+}</pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('auditLogManager', () => ({
+                searchQuery: '',
+                typeFilter: 'all',
+                severityFilter: 'all',
+                isDetailOpen: false,
+                selectedLog: null,
+                
+                logs: [
+                    { id: 1, date: '26/04/2026', time: '15:02:44', user: 'admin@huitmeal.com', ip: '14.224.135.22', event: 'Thay đổi Quyền người dùng', desc: 'Cấp quyền Manager cho tran.le@huitmeal.com', type: 'Bảo mật', severity: 'Warning' },
+                    { id: 2, date: '26/04/2026', time: '14:50:11', user: 'System', ip: '127.0.0.1', event: 'Đăng nhập thất bại (x5)', desc: 'Brute-force detected. IP Blocked temporarily.', type: 'Bảo mật', severity: 'Critical' },
+                    { id: 3, date: '26/04/2026', time: '14:00:00', user: 'System (Cron)', ip: '127.0.0.1', event: 'Auto Backup Thành công', desc: 'Sao lưu DB lên AWS S3 (45.2GB)', type: 'Hệ thống', severity: 'Info' },
+                    { id: 4, date: '26/04/2026', time: '12:30:15', user: 'manager.bep@huitmeal.com', ip: '113.161.88.10', event: 'Xóa Thực đơn Tuần', desc: 'Xóa dữ liệu thực đơn tuần 17', type: 'Dữ liệu', severity: 'Warning' },
+                    { id: 5, date: '26/04/2026', time: '09:15:00', user: 'manager.bep@huitmeal.com', ip: '113.161.88.10', event: 'Đăng nhập thành công', desc: 'Session ID: sess_87f9a...', type: 'Bảo mật', severity: 'Info' }
+                ],
+                
+                get filteredLogs() {
+                    return this.logs.filter(log => {
+                        const matchSearch = log.user.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+                                            log.ip.includes(this.searchQuery) ||
+                                            log.event.toLowerCase().includes(this.searchQuery.toLowerCase());
+                        const matchType = this.typeFilter === 'all' || log.type === this.typeFilter;
+                        const matchSev = this.severityFilter === 'all' || log.severity === this.severityFilter;
+                        return matchSearch && matchType && matchSev;
+                    });
+                },
+                
+                getSeverityBg(sev) {
+                    if (sev === 'Info') return 'bg-blue-100 text-blue-600';
+                    if (sev === 'Warning') return 'bg-yellow-100 text-yellow-600';
+                    if (sev === 'Critical') return 'bg-red-100 text-red-600';
+                    return 'bg-slate-100 text-slate-600';
+                },
+                
+                getSeverityIcon(sev) {
+                    if (sev === 'Info') return 'fas fa-info-circle';
+                    if (sev === 'Warning') return 'fas fa-exclamation-triangle';
+                    if (sev === 'Critical') return 'fas fa-shield-alt';
+                    return 'fas fa-circle';
+                },
+                
+                getSeverityColor(sev) {
+                    if (sev === 'Info') return 'text-blue-600';
+                    if (sev === 'Warning') return 'text-yellow-600';
+                    if (sev === 'Critical') return 'text-red-600';
+                    return 'text-slate-600';
+                },
+                
+                viewDetail(log) {
+                    this.selectedLog = log;
+                    this.isDetailOpen = true;
+                }
+            }));
+        });
+    </script>
+}

@@ -1,4 +1,4 @@
-@{
+﻿@{
     ViewData["Title"] = "Thực đơn Trường học - HuitMeal";
     Layout = "_LayoutCustomer";
     string level = ViewData["Level"] as string ?? Context.Request.Query["level"].ToString();
@@ -99,7 +99,7 @@
     };
 }
 
-<div class="w-full bg-white overflow-hidden">
+<div class="w-full bg-transparent overflow-hidden">
 
     <!-- HERO -->
     <section class="relative h-[380px] md:h-[480px] flex items-end overflow-hidden">
@@ -278,7 +278,7 @@
     </section>
 
     <!-- CTA -->
-    <section class="py-20 bg-white">
+    <section class="py-20 bg-transparent">
         <div class="max-w-5xl mx-auto px-6">
             <div class="bg-gray-900 rounded-[40px] p-12 md:p-16 text-center relative overflow-hidden">
                 <div class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-orange-500/10 blur-[80px] rounded-full pointer-events-none"></div>
@@ -312,3 +312,4 @@
         document.addEventListener('DOMContentLoaded', () => { lucide.createIcons(); });
     </script>
 }
+

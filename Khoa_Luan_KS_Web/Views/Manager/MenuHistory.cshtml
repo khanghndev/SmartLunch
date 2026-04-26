@@ -1,24 +1,174 @@
 @{
-    ViewData["Title"] = "Lịch sử Menu";
+    ViewData["Title"] = "Lịch sử Thực đơn";
     Layout = "_LayoutManager";
 }
 
-<div class="p-2 sm:p-6 space-y-6">
-    <h1 class="text-2xl font-bold text-green-600">Lịch sử Thực đơn</h1>
-    <div class="bg-white border text-sm rounded shadow">
-        <div class="p-4 border-b hover:bg-gray-50 cursor-pointer flex justify-between items-center">
-            <div>
-                <p class="font-bold text-gray-700">Tuần 17 (19/04 - 25/04)</p>
-                <p class="text-gray-500 text-xs mt-1">Trạng thái: <span class="text-green-600">Hoàn tất</span></p>
-            </div>
-            <i class="fas fa-chevron-right text-gray-400"></i>
+<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="historyManager()">
+    
+    <!-- HEADER -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Lịch sử Thực đơn</h1>
+            <p class="text-slate-500 mt-1 font-medium text-sm">Tra cứu, đánh giá và tái sử dụng các thực đơn đã phục vụ trong quá khứ.</p>
         </div>
-        <div class="p-4 hover:bg-gray-50 cursor-pointer flex justify-between items-center">
-            <div>
-                <p class="font-bold text-gray-700">Tuần 16 (12/04 - 18/04)</p>
-                <p class="text-gray-500 text-xs mt-1">Trạng thái: <span class="text-green-600">Hoàn tất</span></p>
+        
+        <div class="flex items-center gap-3">
+            <button class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+                Lọc nâng cao
+            </button>
+            <button class="px-5 py-2 bg-slate-800 text-white font-bold rounded-xl shadow-lg hover:bg-slate-900 transition-all flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
+                Tải báo cáo Năm
+            </button>
+        </div>
+    </div>
+
+    <!-- TIMELINE & STATS GRID -->
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        
+        <!-- SIDEBAR FILTER & STATS -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Search & Year Filter -->
+            <div class="bg-white p-5 rounded-[24px] shadow-sm border border-slate-100 space-y-4">
+                <div class="relative">
+                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input type="text" x-model="searchQuery" placeholder="Tìm kiếm tuần..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm font-medium outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                </div>
+                
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">Năm học / Năm tài chính</label>
+                    <select x-model="yearFilter" class="w-full bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500">
+                        <option value="2026">Năm 2026</option>
+                        <option value="2025">Năm 2025</option>
+                        <option value="2024">Năm 2024</option>
+                    </select>
+                </div>
             </div>
-            <i class="fas fa-chevron-right text-gray-400"></i>
+            
+            <!-- Quick Year Stats -->
+            <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-[24px] p-6 shadow-lg text-white space-y-6">
+                <div>
+                    <h3 class="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Tổng suất ăn (2026)</h3>
+                    <div class="text-3xl font-black">245,600</div>
+                </div>
+                <div>
+                    <h3 class="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Chi phí trung bình</h3>
+                    <div class="text-2xl font-black text-green-400">42,500đ <span class="text-sm font-medium text-white/50">/suất</span></div>
+                </div>
+                <div>
+                    <h3 class="text-white/60 text-xs font-bold uppercase tracking-widest mb-1">Đánh giá trung bình</h3>
+                    <div class="flex items-center gap-2 text-xl font-black text-yellow-400">
+                        4.7 
+                        <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TIMELINE LIST -->
+        <div class="lg:col-span-3 space-y-4">
+            <template x-for="history in filteredHistories" :key="history.id">
+                <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm hover:shadow-md transition-shadow group flex flex-col md:flex-row overflow-hidden relative">
+                    <!-- Left Accent Bar -->
+                    <div class="absolute left-0 top-0 bottom-0 w-1.5" :class="history.status === 'Hoàn tất' ? 'bg-green-500' : 'bg-slate-300'"></div>
+                    
+                    <!-- Week Info -->
+                    <div class="p-6 md:w-1/3 border-b md:border-b-0 md:border-r border-slate-100 bg-slate-50/50 pl-8">
+                        <div class="flex items-center gap-2 mb-2">
+                            <h3 class="text-xl font-black text-slate-800" x-text="history.week"></h3>
+                            <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded-md border" 
+                                  :class="history.status === 'Hoàn tất' ? 'bg-green-50 text-green-700 border-green-200' : 'bg-slate-100 text-slate-600 border-slate-200'" 
+                                  x-text="history.status"></span>
+                        </div>
+                        <p class="text-sm font-medium text-slate-500 mb-4 flex items-center gap-1.5">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <span x-text="history.date"></span>
+                        </p>
+                        
+                        <div class="space-y-2 mt-auto">
+                            <div class="text-xs text-slate-500 font-medium">Món được yêu thích nhất:</div>
+                            <div class="text-sm font-bold text-slate-800 flex items-center gap-1.5">
+                                <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                                <span x-text="history.bestDish"></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Metrics & Actions -->
+                    <div class="p-6 md:w-2/3 flex flex-col justify-between">
+                        <div class="grid grid-cols-3 gap-4 mb-4">
+                            <!-- Metric 1 -->
+                            <div>
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Số suất ăn</div>
+                                <div class="text-xl font-black text-slate-800" x-text="formatNumber(history.meals)"></div>
+                            </div>
+                            <!-- Metric 2 -->
+                            <div>
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Chi phí (Cost)</div>
+                                <div class="text-xl font-black text-slate-800" x-text="history.cost"></div>
+                            </div>
+                            <!-- Metric 3 -->
+                            <div>
+                                <div class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Đánh giá</div>
+                                <div class="flex items-center gap-1 text-xl font-black text-slate-800">
+                                    <span x-text="history.rating"></span>
+                                    <svg class="w-4 h-4 text-yellow-400 mb-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-slate-100">
+                            <button class="px-4 py-2 text-sm font-bold text-slate-600 hover:text-slate-800 hover:bg-slate-100 rounded-lg transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                Xem chi tiết
+                            </button>
+                            <button class="px-4 py-2 text-sm font-bold bg-green-50 text-green-700 hover:bg-green-100 hover:text-green-800 rounded-lg transition-colors flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                                Dùng làm Template
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+            
+            <div x-show="filteredHistories.length === 0" class="text-center py-12 bg-white rounded-[24px] border border-slate-100 border-dashed">
+                <svg class="mx-auto h-12 w-12 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+                <h3 class="mt-2 text-sm font-bold text-slate-800">Không tìm thấy dữ liệu</h3>
+                <p class="mt-1 text-sm text-slate-500">Thử thay đổi từ khóa tìm kiếm hoặc năm học.</p>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('historyManager', () => ({
+                searchQuery: '',
+                yearFilter: '2026',
+                
+                histories: [
+                    { id: 1, week: 'Tuần 18', date: '26/04 - 02/05', status: 'Hoàn tất', meals: 14850, cost: '330.1M', rating: 4.8, bestDish: 'Sườn xào chua ngọt', year: '2026' },
+                    { id: 2, week: 'Tuần 17', date: '19/04 - 25/04', status: 'Hoàn tất', meals: 14500, cost: '320.5M', rating: 4.6, bestDish: 'Cá diêu hồng chiên xù', year: '2026' },
+                    { id: 3, week: 'Tuần 16', date: '12/04 - 18/04', status: 'Hoàn tất', meals: 14200, cost: '315.2M', rating: 4.9, bestDish: 'Thịt kho tàu', year: '2026' },
+                    { id: 4, week: 'Tuần 15', date: '05/04 - 11/04', status: 'Đã lưu trữ', meals: 13800, cost: '300.0M', rating: 4.5, bestDish: 'Gà kho gừng', year: '2026' },
+                    { id: 5, week: 'Tuần 14', date: '29/03 - 04/04', status: 'Đã lưu trữ', meals: 14100, cost: '310.8M', rating: 4.7, bestDish: 'Đậu hũ dồn thịt', year: '2026' },
+                    { id: 6, week: 'Tuần 52', date: '24/12 - 30/12', status: 'Đã lưu trữ', meals: 12500, cost: '280.0M', rating: 4.9, bestDish: 'Gà quay tiêu', year: '2025' }
+                ],
+                
+                get filteredHistories() {
+                    return this.histories.filter(h => {
+                        const matchSearch = h.week.toLowerCase().includes(this.searchQuery.toLowerCase()) || h.date.includes(this.searchQuery);
+                        const matchYear = h.year === this.yearFilter;
+                        return matchSearch && matchYear;
+                    });
+                },
+                
+                formatNumber(num) {
+                    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                }
+            }));
+        });
+    </script>
+}

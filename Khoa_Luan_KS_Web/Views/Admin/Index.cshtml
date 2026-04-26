@@ -1,96 +1,208 @@
 @{
-    ViewData["Title"] = "Dashboard";
+    ViewData["Title"] = "System Status";
     Layout = "_LayoutAdmin";
 }
 
-<div class="space-y-6">
-    <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold text-gray-800">Tổng quan hệ thống</h2>
-        <button class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-md text-sm font-medium transition shadow-sm">
-            Tải báo cáo
-        </button>
-    </div>
-
-    <!-- STATS GRID -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-gray-500 text-sm font-medium">Tổng Đơn Hàng</p>
-                <h3 class="text-3xl font-bold mt-1">1,245</h3>
-                <p class="text-green-500 text-xs mt-2 font-medium">+12% so với tháng trước</p>
-            </div>
-            <div class="w-12 h-12 rounded-full bg-blue-50 flex items-center justify-center">
-                <i data-lucide="shopping-cart" class="text-blue-500" style="width:24px;height:24px"></i>
-            </div>
+<div class="space-y-8" x-data="systemDashboard()">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">System Status (Tổng quan Hệ thống)</h1>
+            <p class="text-slate-500 mt-1 font-medium text-sm">Giám sát tài nguyên máy chủ, lưu lượng truy cập và trạng thái bảo mật theo thời gian thực.</p>
         </div>
-
-        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-gray-500 text-sm font-medium">Khách Hàng Mới</p>
-                <h3 class="text-3xl font-bold mt-1">456</h3>
-                <p class="text-green-500 text-xs mt-2 font-medium">+5% so với tháng trước</p>
-            </div>
-            <div class="w-12 h-12 rounded-full bg-green-50 flex items-center justify-center">
-                <i data-lucide="users" class="text-green-500" style="width:24px;height:24px"></i>
-            </div>
-        </div>
-
-        <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-gray-500 text-sm font-medium">Doanh Thu</p>
-                <h3 class="text-3xl font-bold mt-1">1.2B ₫</h3>
-                <p class="text-green-500 text-xs mt-2 font-medium">+22% so với tháng trước</p>
-            </div>
-            <div class="w-12 h-12 rounded-full bg-yellow-50 flex items-center justify-center">
-                <i data-lucide="dollar-sign" class="text-yellow-500" style="width:24px;height:24px"></i>
-            </div>
-        </div>
-
-         <div class="bg-white p-6 rounded-xl border border-gray-100 shadow-sm flex items-center justify-between">
-            <div>
-                <p class="text-gray-500 text-sm font-medium">Hợp Đồng Chờ YD</p>
-                <h3 class="text-3xl font-bold mt-1">12</h3>
-                <p class="text-red-500 text-xs mt-2 font-medium">Cần xử lý ngay</p>
-            </div>
-            <div class="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center">
-                <i data-lucide="file-text" class="text-red-500" style="width:24px;height:24px"></i>
-            </div>
+        
+        <div class="flex items-center gap-3">
+            <button class="px-4 py-2 bg-white border border-slate-200 text-slate-600 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                Refresh
+            </button>
+            <button class="px-5 py-2 admin-gradient text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:shadow-green-600/50 transition-all text-sm flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Xuất System Report
+            </button>
         </div>
     </div>
 
-    <!-- TABLES AREA -->
-    <div class="bg-white rounded-xl border border-gray-100 shadow-sm mt-8">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h3 class="font-bold text-lg">Đơn hàng mới nhất</h3>
+    <!-- Health Metrics Grid -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- CPU Card -->
+        <div class="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-green-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+                        <i class="fas fa-microchip text-xl"></i>
+                    </div>
+                    <span class="px-2.5 py-1 bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-wider rounded-lg border border-green-200">Healthy</span>
+                </div>
+                <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">CPU Load</h3>
+                <div class="flex items-end gap-2">
+                    <p class="text-3xl font-black text-slate-800">18<span class="text-lg text-slate-500 font-bold">%</span></p>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-4">
+                    <div class="bg-green-500 h-1.5 rounded-full" style="width: 18%"></div>
+                </div>
+            </div>
         </div>
-        <div class="p-4 overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-600">
-                <thead class="text-xs uppercase bg-gray-50 text-gray-500">
-                    <tr>
-                        <th class="px-4 py-3 rounded-tl-lg">Mã Đơn</th>
-                        <th class="px-4 py-3">Khách Hàng</th>
-                        <th class="px-4 py-3">Ngày Đặt</th>
-                        <th class="px-4 py-3">Tổng Tiền</th>
-                        <th class="px-4 py-3 rounded-tr-lg">Trạng Thái</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="border-b">
-                        <td class="px-4 py-3 font-semibold text-gray-800">#ORD-001</td>
-                        <td class="px-4 py-3">Công ty TNHH ABC</td>
-                        <td class="px-4 py-3">25/04/2026</td>
-                        <td class="px-4 py-3 font-medium">12,500,000đ</td>
-                        <td class="px-4 py-3"><span class="bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs font-medium">Đang xử lý</span></td>
-                    </tr>
-                    <tr>
-                        <td class="px-4 py-3 font-semibold text-gray-800">#ORD-002</td>
-                        <td class="px-4 py-3">Nguyễn Văn A</td>
-                        <td class="px-4 py-3">25/04/2026</td>
-                        <td class="px-4 py-3 font-medium">500,000đ</td>
-                        <td class="px-4 py-3"><span class="bg-green-100 text-green-800 px-2 py-1 rounded text-xs font-medium">Hoàn thành</span></td>
-                    </tr>
-                </tbody>
-            </table>
+
+        <!-- RAM Card -->
+        <div class="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-blue-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                        <i class="fas fa-memory text-xl"></i>
+                    </div>
+                    <span class="px-2.5 py-1 bg-yellow-100 text-yellow-700 text-[10px] font-black uppercase tracking-wider rounded-lg border border-yellow-200">Warning</span>
+                </div>
+                <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">RAM Usage</h3>
+                <div class="flex items-end gap-2">
+                    <p class="text-3xl font-black text-slate-800">12.4<span class="text-lg text-slate-500 font-bold">GB</span></p>
+                    <p class="text-sm font-bold text-slate-400 mb-1">/ 16 GB</p>
+                </div>
+                <div class="w-full bg-slate-100 rounded-full h-1.5 mt-4">
+                    <div class="bg-blue-500 h-1.5 rounded-full" style="width: 77%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Network Card -->
+        <div class="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-emerald-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center">
+                        <i class="fas fa-network-wired text-xl"></i>
+                    </div>
+                    <span class="px-2.5 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-black uppercase tracking-wider rounded-lg border border-emerald-200">Active</span>
+                </div>
+                <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">Active Connections</h3>
+                <div class="flex items-end gap-2">
+                    <p class="text-3xl font-black text-slate-800">1,402</p>
+                    <p class="text-xs font-bold text-emerald-500 mb-1 flex items-center"><i class="fas fa-arrow-up mr-1"></i> 12%</p>
+                </div>
+                <p class="text-xs text-slate-400 font-medium mt-3">350 requests / sec</p>
+            </div>
+        </div>
+
+        <!-- Database Card -->
+        <div class="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm relative overflow-hidden group">
+            <div class="absolute -right-6 -top-6 w-24 h-24 bg-purple-50 rounded-full group-hover:scale-150 transition-transform duration-500 ease-out"></div>
+            <div class="relative z-10">
+                <div class="flex justify-between items-start mb-4">
+                    <div class="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center">
+                        <i class="fas fa-database text-xl"></i>
+                    </div>
+                    <span class="px-2.5 py-1 bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-wider rounded-lg border border-green-200">Synced</span>
+                </div>
+                <h3 class="text-slate-500 text-xs font-bold uppercase tracking-wider mb-1">DB Size</h3>
+                <div class="flex items-end gap-2">
+                    <p class="text-3xl font-black text-slate-800">45.2<span class="text-lg text-slate-500 font-bold">GB</span></p>
+                </div>
+                <p class="text-xs text-slate-400 font-medium mt-3">Last backup: 15 mins ago</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Chart Placeholder -->
+        <div class="lg:col-span-2 bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm flex flex-col min-h-[400px]">
+            <div class="flex justify-between items-center mb-6">
+                <div>
+                    <h3 class="font-black text-lg text-slate-800">Lưu lượng Truy cập API</h3>
+                    <p class="text-xs text-slate-500 font-medium">Thống kê request trong 24 giờ qua</p>
+                </div>
+                <select class="bg-slate-50 border border-slate-200 text-slate-700 text-xs font-bold rounded-xl px-3 py-1.5 outline-none">
+                    <option>24 Giờ qua</option>
+                    <option>7 Ngày qua</option>
+                </select>
+            </div>
+            
+            <div class="flex-1 border-2 border-dashed border-slate-200 rounded-xl bg-slate-50 flex items-center justify-center relative overflow-hidden">
+                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
+                <!-- Fake Chart visual -->
+                <div class="absolute bottom-0 w-full h-48 flex items-end justify-between px-8 pb-4 opacity-50">
+                    <div class="w-12 bg-green-200 rounded-t-lg h-12"></div>
+                    <div class="w-12 bg-green-300 rounded-t-lg h-24"></div>
+                    <div class="w-12 bg-green-400 rounded-t-lg h-16"></div>
+                    <div class="w-12 bg-green-500 rounded-t-lg h-32"></div>
+                    <div class="w-12 bg-green-400 rounded-t-lg h-20"></div>
+                    <div class="w-12 bg-green-600 rounded-t-lg h-40"></div>
+                    <div class="w-12 bg-green-500 rounded-t-lg h-28"></div>
+                </div>
+                <div class="text-center z-10 bg-white/80 backdrop-blur px-4 py-2 rounded-xl shadow border border-slate-100">
+                    <i class="fas fa-chart-line text-2xl text-green-500 mb-2"></i>
+                    <p class="text-sm font-bold text-slate-700">Khu vực hiển thị Biểu đồ (Chart.js)</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Real-time Audit Logs -->
+        <div class="bg-white rounded-[24px] p-6 border border-slate-100 shadow-sm flex flex-col min-h-[400px]">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="font-black text-lg text-slate-800">Cảnh báo & Hoạt động</h3>
+                <a href="/Admin/ActivityLog" class="text-xs font-bold text-green-600 hover:underline">Xem tất cả</a>
+            </div>
+            
+            <div class="space-y-4 flex-1 overflow-y-auto pr-2 custom-scrollbar">
+                <!-- Log item -->
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-exclamation-triangle text-xs"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-800">Đăng nhập thất bại (x5)</p>
+                        <p class="text-xs text-slate-500 mt-0.5">IP: 192.168.1.45 (Cảnh báo Brute-force)</p>
+                        <p class="text-[10px] font-bold text-slate-400 mt-1">2 phút trước</p>
+                    </div>
+                </div>
+                
+                <!-- Log item -->
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-user-edit text-xs"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-800">Thay đổi Quyền người dùng</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Admin <span class="font-bold">System Admin</span> đã cấp quyền Manager cho <span class="font-bold">tran.le@@...</span></p>
+                        <p class="text-[10px] font-bold text-slate-400 mt-1">15 phút trước</p>
+                    </div>
+                </div>
+                
+                <!-- Log item -->
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-database text-xs"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-800">Auto Backup Thành công</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Sao lưu dữ liệu vào Cloud Storage (AWS S3) - Dung lượng: 45.2GB</p>
+                        <p class="text-[10px] font-bold text-slate-400 mt-1">1 giờ trước</p>
+                    </div>
+                </div>
+                
+                 <!-- Log item -->
+                <div class="flex gap-4">
+                    <div class="w-8 h-8 rounded-full bg-yellow-100 text-yellow-600 flex items-center justify-center shrink-0 mt-1">
+                        <i class="fas fa-robot text-xs"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-bold text-slate-800">API AI Rate Limit Warning</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Đã đạt 85% hạn mức gọi API OpenAI trong ngày.</p>
+                        <p class="text-[10px] font-bold text-slate-400 mt-1">3 giờ trước</p>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('systemDashboard', () => ({
+                // Add any interactive logic here if needed
+            }));
+        });
+    </script>
+}
