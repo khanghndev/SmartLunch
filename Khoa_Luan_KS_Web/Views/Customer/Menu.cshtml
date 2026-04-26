@@ -3,291 +3,478 @@
     Layout = "_LayoutCustomer";
 }
 
-<div class="w-full bg-white overflow-hidden">
+<style>
+    [x-cloak] { display: none !important; }
+    .glass-panel {
+        background: rgba(255, 255, 255, 0.7);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.5);
+    }
+    .text-gradient {
+        background: linear-gradient(135deg, #f97316 0%, #ea580c 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+    .card-hover-effect {
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover-effect:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 20px 40px -10px rgba(0,0,0,0.1);
+    }
+    .card-hover-effect img {
+        transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .card-hover-effect:hover img {
+        transform: scale(1.05);
+    }
+    .animate-float {
+        animation: float 6s ease-in-out infinite;
+    }
+    .animate-float-delay {
+        animation: float 6s ease-in-out infinite;
+        animation-delay: 3s;
+    }
+    @@keyframes float {
+        0% { transform: translateY(0px); }
+        50% { transform: translateY(-20px); }
+        100% { transform: translateY(0px); }
+    }
+</style>
 
-    <!-- HERO -->
-    <section class="relative h-[420px] md:h-[520px] flex items-end overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=1920" class="absolute inset-0 w-full h-full object-cover brightness-60" />
-        <div class="absolute inset-0 bg-gradient-to-r from-gray-900/80 via-gray-900/40 to-transparent"></div>
-        <div class="relative z-10 max-w-7xl mx-auto px-6 pb-14 w-full"
-             x-data="{v:false}" x-init="setTimeout(()=>v=true,80)"
-             x-show="v" x-transition:enter="transition duration-700" x-transition:enter-start="opacity-0 translate-y-6" x-transition:enter-end="opacity-100 translate-y-0">
-            <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-300 text-[10px] font-bold uppercase tracking-[0.25em] mb-4">
-                <i data-lucide="utensils" class="w-3 h-3"></i> HuitMeal Catering
-            </span>
-            <h1 class="text-5xl md:text-7xl font-black text-white tracking-tight leading-tight mb-4">
-                Thực Đơn <span class="text-orange-400">Tiêu Biểu</span>
-            </h1>
-            <p class="text-gray-300 text-lg max-w-xl font-medium leading-relaxed">
-                Đa dạng, đầy đủ dinh dưỡng, thiết kế chuẩn khoa học cho từng đối tượng khách hàng.
-            </p>
+<div class="w-full bg-slate-50 overflow-hidden font-sans" x-data="{ activeTab: 'school', isLoaded: false }" x-init="setTimeout(() => isLoaded = true, 100)">
+
+    <!-- HERO SECTION -->
+    <section class="relative min-h-[90vh] flex items-center pt-24 pb-32 overflow-hidden bg-white">
+        <!-- Background decorative elements -->
+        <div class="absolute top-0 right-0 w-[800px] h-[800px] bg-orange-50/80 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3 pointer-events-none"></div>
+        <div class="absolute bottom-0 left-0 w-[600px] h-[600px] bg-slate-100 rounded-full blur-3xl translate-y-1/3 -translate-x-1/4 pointer-events-none"></div>
+        
+        <div class="max-w-7xl mx-auto px-6 w-full relative z-10 grid lg:grid-cols-2 gap-16 items-center">
+            
+            <!-- Hero Text -->
+            <div class="space-y-8" 
+                 :class="isLoaded ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-12'" 
+                 style="transition: all 1s cubic-bezier(0.16, 1, 0.3, 1);">
+                <div class="inline-flex items-center gap-3 px-4 py-2 rounded-full bg-orange-50 border border-orange-100 shadow-sm">
+                    <span class="flex h-2 w-2 rounded-full bg-orange-500">
+                        <span class="animate-ping absolute inline-flex h-2 w-2 rounded-full bg-orange-400 opacity-75"></span>
+                    </span>
+                    <span class="text-orange-600 text-[10px] font-black uppercase tracking-[0.2em]">Khám phá ẩm thực HuitMeal</span>
+                </div>
+                
+                <h1 class="text-5xl md:text-7xl font-black text-slate-900 tracking-tight leading-[1.1]">
+                    Thực Đơn <br />
+                    <span class="text-gradient">Tinh Hoa</span> 
+                    &amp; Dinh Dưỡng
+                </h1>
+                
+                <p class="text-slate-600 text-lg max-w-lg font-medium leading-relaxed">
+                    Hơn <span class="text-orange-500 font-bold">500+ món ăn</span> được thiết kế chuyên biệt bởi các chuyên gia dinh dưỡng hàng đầu, mang đến bữa ăn chuẩn vị, tốt cho sức khỏe.
+                </p>
+                
+                <div class="flex flex-wrap items-center gap-6 pt-4">
+                    <button @@click="document.getElementById('menu-section').scrollIntoView({behavior:'smooth'})" class="px-8 py-4 bg-orange-500 text-white rounded-2xl font-bold hover:bg-orange-600 transition-all shadow-xl shadow-orange-500/30 hover:shadow-orange-500/40 hover:-translate-y-1 flex items-center gap-2">
+                        Xem thực đơn <i data-lucide="arrow-down" class="w-5 h-5"></i>
+                    </button>
+                    <div class="flex items-center hidden sm:flex">
+                        <div class="flex -space-x-4">
+                            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80" class="w-12 h-12 rounded-full border-4 border-white object-cover" />
+                            <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=100&q=80" class="w-12 h-12 rounded-full border-4 border-white object-cover" />
+                            <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80" class="w-12 h-12 rounded-full border-4 border-white object-cover" />
+                            <div class="w-12 h-12 rounded-full border-4 border-white bg-slate-100 flex items-center justify-center z-10">
+                                <span class="text-[10px] font-black text-slate-600">+10k</span>
+                            </div>
+                        </div>
+                        <div class="ml-4">
+                            <p class="text-sm font-black text-slate-800 leading-tight">Khách hàng</p>
+                            <p class="text-[11px] font-medium text-slate-500">mỗi ngày</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hero Images -->
+            <div class="relative h-[600px] hidden lg:block"
+                 :class="isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-16'"
+                 style="transition: all 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s;">
+                <!-- Main Image -->
+                <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[480px] h-[480px] rounded-[40px] overflow-hidden shadow-2xl rotate-3 hover:rotate-0 transition-transform duration-700">
+                    <img src="https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=1000" class="w-full h-full object-cover" />
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                </div>
+                <!-- Floating Card 1 -->
+                <div class="absolute top-12 -left-8 glass-panel p-4 rounded-3xl shadow-xl animate-float flex items-center gap-4 z-20">
+                    <div class="w-12 h-12 bg-green-50 rounded-2xl flex items-center justify-center text-green-500 border border-green-100">
+                        <i data-lucide="leaf" class="w-6 h-6"></i>
+                    </div>
+                    <div>
+                        <p class="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Nguyên liệu</p>
+                        <p class="text-sm font-black text-slate-900">100% Sạch & Tươi</p>
+                    </div>
+                </div>
+                <!-- Floating Card 2 -->
+                <div class="absolute bottom-20 -right-8 glass-panel p-6 rounded-3xl shadow-xl animate-float-delay flex flex-col gap-2 w-56 z-20">
+                    <div class="flex items-center justify-between mb-1">
+                        <span class="text-[10px] font-black text-orange-500 uppercase tracking-widest">Đánh giá</span>
+                        <div class="flex text-amber-400 gap-0.5">
+                            <i data-lucide="star" class="w-3 h-3 fill-current"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-current"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-current"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-current"></i>
+                            <i data-lucide="star" class="w-3 h-3 fill-current"></i>
+                        </div>
+                    </div>
+                    <p class="text-4xl font-black text-slate-900">4.9<span class="text-lg text-slate-400">/5</span></p>
+                    <p class="text-[11px] font-medium text-slate-500 leading-tight">Được tin dùng bởi 500+ đối tác doanh nghiệp và trường học</p>
+                </div>
+            </div>
         </div>
-        <!-- Stats strip -->
-        <div class="absolute bottom-0 right-0 hidden lg:flex">
-            @foreach(var (n,l) in new[]{("500+","Món trong thực đơn"),("30","Ngày xoay vòng"),("3","Vùng miền")})
+    </section>
+
+    <!-- STATS STRIP -->
+    <section class="bg-slate-900 py-12 relative z-20">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-white/10">
+            @foreach(var (n,l,i) in new[]{("500+","Món ăn đa dạng","utensils-crossed"),("30","Ngày không trùng","calendar-days"),("100%","An toàn thực phẩm","shield-check"),("3","Vùng miền đặc trưng","map")})
             {
-                <div class="bg-white/10 backdrop-blur-md border-l border-white/10 px-8 py-5 text-center">
-                    <p class="text-2xl font-black text-white">@n</p>
-                    <p class="text-[10px] text-gray-400 font-semibold uppercase tracking-widest">@l</p>
+                <div class="text-center px-4 group cursor-default">
+                    <i data-lucide="@i" class="w-8 h-8 text-orange-400 mx-auto mb-4 opacity-80 group-hover:scale-110 group-hover:opacity-100 group-hover:text-orange-300 transition-all duration-300"></i>
+                    <p class="text-3xl md:text-5xl font-black text-white mb-2">@n</p>
+                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-[0.2em]">@l</p>
                 </div>
             }
         </div>
     </section>
 
-    <!-- TABS + CONTENT -->
-    <section class="py-20 max-w-7xl mx-auto px-6" x-data="{ cat: 'school' }">
+    <!-- MENU SECTION -->
+    <section id="menu-section" class="py-24 max-w-7xl mx-auto px-6 relative">
+        
+        <!-- Decorative bg -->
+        <div class="absolute top-40 left-0 w-full h-[500px] bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
 
-        <!-- Tab bar -->
-        <div class="flex flex-wrap justify-center gap-3 mb-16">
-            @foreach(var (key,icon,label) in new[]{("school","graduation-cap","Trường Học"),("office","briefcase","Văn Phòng"),("factory","factory","Công Nhân")})
-            {
-                <button @@click="cat='@key'"
-                        :class="cat==='@key' ? 'bg-orange-500 text-white shadow-lg shadow-orange-200' : 'bg-white text-gray-600 border border-gray-200 hover:border-orange-300'"
-                        class="px-7 py-3.5 rounded-full font-bold text-sm transition-all flex items-center gap-2">
-                    <i data-lucide="@icon" class="w-4 h-4"></i> @label
-                </button>
-            }
-        </div>
-
-        <!-- ===== TRƯỜNG HỌC ===== -->
-        <div x-show="cat==='school'" x-transition:enter="transition duration-400" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-            <!-- Mầm non & Tiểu học -->
-            <div class="mb-16">
-                <div class="flex items-center gap-4 mb-8">
-                    <div class="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center"><i data-lucide="sprout" class="w-5 h-5 text-white"></i></div>
-                    <div>
-                        <p class="text-xs font-black text-green-600 uppercase tracking-widest">3 – 11 tuổi</p>
-                        <h2 class="text-2xl font-black text-gray-900">Mầm Non &amp; Tiểu Học</h2>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach(var (img,name,desc,tag,kcal,badge) in new[]{
-                        ("https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=500&q=80","Cơm thịt băm xào ngô ngọt","Cơm mềm, thịt heo băm xào ngô, mướp xào tôm, canh bí đỏ, chuối tây","Bữa trưa","520 kcal","Mầm non"),
-                        ("https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500&q=80","Cơm đùi gà xốt chua ngọt","Đùi gà xốt cà, cải chíp xào tỏi, canh rau ngót cá rô, nho","Bữa trưa","560 kcal","Tiểu học"),
-                        ("https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=500&q=80","Bánh & Sữa buổi xế","Bánh bông lan, sữa chua Probi, thanh long đỏ cắt sẵn","Bữa phụ","180 kcal","Cả 2 khối"),
-                    })
-                    {
-                        <div class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 hover:-translate-y-1 transition-all duration-400 flex flex-col h-full">
-                            <div class="relative h-48 overflow-hidden shrink-0">
-                                <img src="@img" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                                <span class="absolute top-3 left-3 text-[10px] font-black px-3 py-1 rounded-full bg-green-100 text-green-700 border border-green-200">@tag</span>
-                                <span class="absolute top-3 right-3 bg-white/90 text-gray-900 text-xs font-black px-3 py-1 rounded-full flex items-center gap-1">
-                                    <i data-lucide="flame" class="w-3 h-3 text-orange-500"></i> @kcal
-                                </span>
-                            </div>
-                            <div class="p-5 flex flex-col flex-1">
-                                <h3 class="font-black text-gray-900 mb-2">@name</h3>
-                                <p class="text-xs text-gray-500 leading-relaxed mb-6 line-clamp-3 min-h-[50px]">@desc</p>
-                                <div class="mt-auto">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <span class="text-[10px] bg-orange-50 text-orange-600 border border-orange-100 px-3 py-1 rounded-full font-bold">Khuyên dùng: @badge</span>
-                                    </div>
-                                    <a href="/Customer/MealDetail?level=mamnon&day=t2"
-                                       class="flex items-center justify-center gap-2 w-full py-2.5 border border-orange-200 text-orange-600 rounded-xl font-bold text-sm hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all shadow-sm">
-                                        Xem chi tiết <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-
-            <!-- THCS & THPT -->
-            <div>
-                <div class="flex items-center gap-4 mb-8">
-                    <div class="w-10 h-10 rounded-full bg-purple-500 flex items-center justify-center"><i data-lucide="zap" class="w-5 h-5 text-white"></i></div>
-                    <div>
-                        <p class="text-xs font-black text-purple-600 uppercase tracking-widest">12 – 18 tuổi</p>
-                        <h2 class="text-2xl font-black text-gray-900">THCS &amp; THPT</h2>
-                    </div>
-                </div>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    @foreach(var (img,name,desc,kcal) in new[]{
-                        ("https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80","Khay 5 Món Tăng Trưởng","Bò xào cần tây, trứng cuộn ngũ sắc, rau muống tỏi, canh cải chua sườn, sữa Milo","850 kcal"),
-                        ("https://images.unsplash.com/photo-1628840042765-356cda07504e?w=500&q=80","Set Cơm Gà Chiên Giòn","Đùi gà chiên giòn, salad Nga, đậu ve kho quẹt, canh rau dền tôm, sữa chua","800 kcal"),
-                        ("https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&q=80","Mì Ý Bò Bằm Sốt Cà","Mì Ý, bò bằm sốt cà, salad rau, súp kem bắp, bánh mì tỏi","720 kcal"),
-                    })
-                    {
-                        <div class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-purple-200 hover:-translate-y-1 transition-all duration-400 flex flex-col h-full">
-                            <div class="relative h-48 overflow-hidden shrink-0">
-                                <img src="@img" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
-                                <span class="absolute top-3 right-3 bg-white/90 text-gray-900 text-xs font-black px-3 py-1 rounded-full flex items-center gap-1">
-                                    <i data-lucide="flame" class="w-3 h-3 text-orange-500"></i> @kcal
-                                </span>
-                            </div>
-                            <div class="p-5 flex flex-col flex-1">
-                                <h3 class="font-black text-gray-900 mb-2">@name</h3>
-                                <p class="text-xs text-gray-500 leading-relaxed mb-6 line-clamp-3 min-h-[50px]">@desc</p>
-                                <div class="mt-auto">
-                                    <div class="flex items-center justify-between mb-4">
-                                        <span class="text-[10px] bg-purple-50 text-purple-600 border border-purple-100 px-3 py-1 rounded-full font-bold">THCS &amp; THPT</span>
-                                    </div>
-                                    <a href="/Customer/MealDetail?level=thcs&day=t2"
-                                       class="flex items-center justify-center gap-2 w-full py-2.5 border border-orange-200 text-orange-600 rounded-xl font-bold text-sm hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all shadow-sm">
-                                        Xem chi tiết <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
-        </div>
-
-        <!-- ===== VĂN PHÒNG ===== -->
-        <div x-show="cat==='office'" style="display:none"
-             x-transition:enter="transition duration-400" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-            <div class="text-center mb-12">
-                <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-2">Set ăn văn phòng</p>
-                <h2 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">Healthy &amp; <span class="text-orange-600">Tiêu Chuẩn</span></h2>
-                <p class="text-gray-500 mt-3 max-w-xl mx-auto text-sm">Ít dầu mỡ, nhiều rau xanh, cân bằng tinh bột — giúp nhân viên tỉnh táo suốt buổi chiều.</p>
-            </div>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
-                @foreach(var (img,name,price,items,hot,kcal) in new[]{
-                    ("https://images.unsplash.com/photo-1612928646193-272e50df8298?w=500&q=80","Set Năng Động","35.000đ",new[]{"Cá diêu hồng sốt cà","Thịt luộc cà pháo","Rau dền luộc","Canh cải ngọt"},false,"580 kcal"),
-                    ("https://images.unsplash.com/photo-1543339308-43e59d6b73a6?w=500&q=80","Set Tiêu Chuẩn","45.000đ",new[]{"Sườn ram chua ngọt","Mực xào hành cần","Đậu ve xào tỏi","Canh chua chả cá","Tráng miệng: Dưa hấu"},true,"700 kcal"),
-                    ("https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=500&q=80","Set Eat Clean","55.000đ",new[]{"Cơm gạo lứt","Ức gà áp chảo sốt chanh leo","Salad mix mè rang","Canh nấm chay"},false,"620 kcal"),
-                })
+        <!-- Tab Navigation -->
+        <div class="flex flex-col items-center mb-20 relative z-10">
+            <p class="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mb-3">Danh mục thực đơn</p>
+            <h2 class="text-3xl md:text-5xl font-black text-slate-900 mb-10 text-center tracking-tight">Lựa Chọn Theo <span class="text-orange-500 relative">Nhu Cầu
+                <svg class="absolute -bottom-2 left-0 w-full text-orange-200 h-3" viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,10 Q50,20 100,10" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+            </span></h2>
+            
+            <div class="inline-flex p-1.5 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-slate-200/60">
+                @foreach(var (key,icon,label) in new[]{("school","graduation-cap","Trường Học"),("office","briefcase","Văn Phòng"),("factory","factory","Công Nhân")})
                 {
-                    <div class="group bg-white rounded-[28px] overflow-hidden border @(hot?"border-orange-400 ring-4 ring-orange-500/10":"border-gray-100") hover:shadow-2xl hover:-translate-y-1 transition-all duration-500 relative flex flex-col h-full">
-                        @if(hot){<div class="absolute top-4 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full z-10 shadow-lg shadow-orange-500/30 tracking-widest">🔥 BÁN CHẠY NHẤT</div>}
-                        <div class="relative h-52 overflow-hidden shrink-0">
-                            <img src="@img" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"/>
-                            <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
-                            <span class="absolute bottom-4 right-4 bg-white/95 backdrop-blur-sm text-gray-900 text-[10px] font-black px-3 py-1.5 rounded-xl flex items-center gap-1 shadow-sm">
-                                <i data-lucide="flame" class="w-3 h-3 text-orange-500"></i> @kcal
-                            </span>
-                        </div>
-                        <div class="p-6 flex flex-col flex-1">
-                            <div class="flex items-center justify-between mb-6">
-                                <h3 class="text-xl font-black text-gray-900">@name</h3>
-                                <span class="text-orange-600 font-black text-xl">@price</span>
-                            </div>
-                            <ul class="space-y-3 mb-8">
-                                @foreach(var it in items)
-                                {
-                                    <li class="flex items-start gap-3 text-[13px] text-gray-600 font-medium">
-                                        <i data-lucide="check-circle-2" class="w-4 h-4 text-green-500 flex-shrink-0 mt-0.5"></i> @it
-                                    </li>
-                                }
-                            </ul>
-                            <div class="mt-auto space-y-3">
-                                <a href="/Customer/MealDetail?level=tieuhoc&day=t2"
-                                   class="block text-center w-full py-3 border-2 border-orange-100 text-orange-600 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-orange-50 hover:border-orange-200 transition-all">
-                                    Xem chi tiết
-                                </a>
-                                <a href="/Customer/Contact" class="block text-center w-full py-3.5 @(hot?"bg-orange-500 text-white shadow-lg shadow-orange-500/25":"bg-[#0F172A] text-white") rounded-2xl font-black text-xs uppercase tracking-widest hover:scale-[1.02] active:scale-[0.98] transition-all">
-                                    Đặt set này
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+                    <button @@click="activeTab='@key'"
+                            class="relative px-8 py-3.5 rounded-full font-bold text-sm transition-all duration-300 flex items-center gap-2 overflow-hidden"
+                            :class="activeTab==='@key' ? 'text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'">
+                        <div class="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-400 transition-opacity duration-300 pointer-events-none"
+                             :class="activeTab==='@key' ? 'opacity-100' : 'opacity-0'"></div>
+                        <i data-lucide="@icon" class="w-4 h-4 relative z-10" :class="activeTab==='@key' ? 'text-white' : 'text-slate-400'"></i> 
+                        <span class="relative z-10">@label</span>
+                    </button>
                 }
             </div>
         </div>
 
-        <!-- ===== CÔNG NHÂN ===== -->
-        <div x-show="cat==='factory'" style="display:none"
-             x-transition:enter="transition duration-400" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
-            <div class="text-center mb-12">
-                <p class="text-orange-600 text-xs font-bold uppercase tracking-[0.3em] mb-2">Suất ăn công nghiệp</p>
-                <h2 class="text-3xl md:text-4xl font-black text-gray-900 tracking-tight">No – Đủ – <span class="text-orange-600">Tiết kiệm</span></h2>
-                <p class="text-gray-500 mt-3 max-w-xl mx-auto text-sm">Chú trọng lượng và chất. Đảm bảo công nhân ăn no, đủ năng lượng để tăng ca hiệu quả.</p>
+        <div class="relative z-10">
+            <!-- ===== TRƯỜNG HỌC ===== -->
+            <div x-show="activeTab==='school'" x-cloak
+                 x-transition:enter="transition duration-500 ease-out" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
+                
+                <!-- Mầm non & Tiểu học -->
+                <div class="mb-20">
+                    <div class="flex items-end justify-between mb-8">
+                        <div class="flex items-center gap-5">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30">
+                                <i data-lucide="sprout" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-green-600 uppercase tracking-[0.2em] mb-1">3 – 11 tuổi</p>
+                                <h3 class="text-3xl font-black text-slate-900 tracking-tight">Mầm Non &amp; Tiểu Học</h3>
+                            </div>
+                        </div>
+                        <a href="/Customer/School" class="hidden md:flex text-sm font-bold text-orange-500 hover:text-orange-600 items-center gap-1 group">
+                            Xem tất cả <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        @foreach(var (img,name,desc,tag,kcal,badge) in new[]{
+                            ("https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=80","Cơm thịt băm xào ngô ngọt","Cơm mềm dẻo, thịt heo băm xào ngô ngọt, mướp xào tôm, canh bí đỏ sườn non, chuối tây tráng miệng.","Bữa trưa","520 kcal","Mầm non"),
+                            ("https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&q=80","Cơm đùi gà xốt chua ngọt","Đùi gà xốt cà chua, cải chíp xào tỏi, canh rau ngót nấu thịt băm, nho Mỹ tráng miệng.","Bữa trưa","560 kcal","Tiểu học"),
+                            ("https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=800&q=80","Bánh & Sữa buổi xế","Bánh bông lan trứng muối cỡ nhỏ, sữa chua uống Probi, thanh long đỏ cắt sẵn vừa ăn.","Bữa phụ","180 kcal","Cả 2 khối"),
+                        })
+                        {
+                            <div class="card-hover-effect bg-white rounded-[32px] overflow-hidden border border-slate-100 flex flex-col h-full group">
+                                <div class="relative h-56 overflow-hidden shrink-0 p-3 pb-0">
+                                    <div class="w-full h-full rounded-t-[20px] overflow-hidden relative">
+                                        <img src="@img" class="w-full h-full object-cover"/>
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                                        <span class="absolute top-3 left-3 text-[10px] font-black px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-green-700 shadow-sm uppercase tracking-wider">@tag</span>
+                                        <span class="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                                            <i data-lucide="flame" class="w-3.5 h-3.5 text-orange-400"></i> @kcal
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="p-6 flex flex-col flex-1">
+                                    <h4 class="text-xl font-black text-slate-900 mb-3 group-hover:text-orange-500 transition-colors">@name</h4>
+                                    <p class="text-sm text-slate-500 leading-relaxed mb-6 flex-1">@desc</p>
+                                    
+                                    <div class="pt-5 border-t border-slate-100 border-dashed mt-auto flex items-center justify-between">
+                                        <div class="flex flex-col">
+                                            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Khuyên dùng</span>
+                                            <span class="text-xs font-black text-slate-700 bg-slate-100 px-3 py-1 rounded-lg inline-block">@badge</span>
+                                        </div>
+                                        <a href="/Customer/MealDetail?level=mamnon&day=t2" class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-colors">
+                                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                <!-- THCS & THPT -->
+                <div>
+                    <div class="flex items-end justify-between mb-8">
+                        <div class="flex items-center gap-5">
+                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
+                                <i data-lucide="zap" class="w-7 h-7 text-white"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em] mb-1">12 – 18 tuổi</p>
+                                <h3 class="text-3xl font-black text-slate-900 tracking-tight">THCS &amp; THPT</h3>
+                            </div>
+                        </div>
+                        <a href="/Customer/School" class="hidden md:flex text-sm font-bold text-orange-500 hover:text-orange-600 items-center gap-1 group">
+                            Xem tất cả <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
+                        </a>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                        @foreach(var (img,name,desc,kcal) in new[]{
+                            ("https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80","Khay 5 Món Tăng Trưởng","Bò xào cần tây, trứng cuộn ngũ sắc, rau muống tỏi, canh cải chua sườn, sữa Milo cung cấp năng lượng.","850 kcal"),
+                            ("https://images.unsplash.com/photo-1628840042765-356cda07504e?w=800&q=80","Set Cơm Gà Chiên Giòn","Đùi gà chiên giòn, salad Nga, đậu ve kho quẹt, canh rau dền tôm, sữa chua nha đam.","800 kcal"),
+                            ("https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80","Mì Ý Bò Bằm Sốt Cà","Mì Ý chuẩn vị, bò bằm sốt cà chua tươi, salad rau trộn giấm táo, súp kem bắp, bánh mì tỏi bơ.","720 kcal"),
+                        })
+                        {
+                            <div class="card-hover-effect bg-white rounded-[32px] overflow-hidden border border-slate-100 flex flex-col h-full group">
+                                <div class="relative h-56 overflow-hidden shrink-0 p-3 pb-0">
+                                    <div class="w-full h-full rounded-t-[20px] overflow-hidden relative">
+                                        <img src="@img" class="w-full h-full object-cover"/>
+                                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
+                                        <span class="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
+                                            <i data-lucide="flame" class="w-3.5 h-3.5 text-orange-400"></i> @kcal
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="p-6 flex flex-col flex-1">
+                                    <h4 class="text-xl font-black text-slate-900 mb-3 group-hover:text-purple-600 transition-colors">@name</h4>
+                                    <p class="text-sm text-slate-500 leading-relaxed mb-6 flex-1">@desc</p>
+                                    
+                                    <div class="pt-5 border-t border-slate-100 border-dashed mt-auto flex items-center justify-between">
+                                        <div class="flex flex-col">
+                                            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Độ tuổi</span>
+                                            <span class="text-xs font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-lg inline-block">Trung học</span>
+                                        </div>
+                                        <a href="/Customer/MealDetail?level=thcs&day=t2" class="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center hover:bg-purple-600 hover:text-white transition-colors">
+                                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <!-- Feature card -->
-                <div class="group bg-white rounded-[28px] overflow-hidden border border-gray-100 hover:shadow-xl transition-all">
-                    <div class="relative h-64 overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1590868309235-ea34bed7bd7f?w=700&q=80" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"/>
-                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
-                        <div class="absolute bottom-4 left-4">
-                            <span class="bg-blue-500 text-white text-xs font-black px-3 py-1 rounded-full">Đồng giá 22k–25k</span>
-                            <h3 class="text-2xl font-black text-white mt-2">Suất Ăn Tăng Ca</h3>
+
+            <!-- ===== VĂN PHÒNG ===== -->
+            <div x-show="activeTab==='office'" x-cloak
+                 x-transition:enter="transition duration-500 ease-out" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
+                
+                <div class="text-center mb-16">
+                    <h3 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">Healthy &amp; <span class="text-orange-500">Tiêu Chuẩn</span></h3>
+                    <p class="text-slate-500 max-w-2xl mx-auto text-base">Ít dầu mỡ, nhiều rau xanh, cân bằng tinh bột — thiết kế đặc biệt giúp nhân viên duy trì sự tỉnh táo và năng lượng suốt ngày làm việc.</p>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center max-w-6xl mx-auto">
+                    @foreach(var (img,name,price,items,hot,kcal) in new[]{
+                        ("https://images.unsplash.com/photo-1612928646193-272e50df8298?w=800&q=80","Set Năng Động","35.000đ",new[]{"Cá diêu hồng sốt cà","Thịt luộc cà pháo","Rau dền luộc","Canh cải ngọt"},false,"580 kcal"),
+                        ("https://images.unsplash.com/photo-1543339308-43e59d6b73a6?w=800&q=80","Set Tiêu Chuẩn","45.000đ",new[]{"Sườn ram chua ngọt","Mực xào hành cần","Đậu ve xào tỏi","Canh chua chả cá","Tráng miệng: Dưa hấu"},true,"700 kcal"),
+                        ("https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80","Set Eat Clean","55.000đ",new[]{"Cơm gạo lứt","Ức gà áp chảo chanh leo","Salad mix mè rang","Canh nấm chay"},false,"620 kcal"),
+                    })
+                    {
+                        <div class="relative bg-white rounded-[40px] border @(hot ? "border-orange-200 shadow-2xl shadow-orange-500/10 scale-100 md:scale-105 z-10" : "border-slate-100 shadow-lg scale-100") overflow-hidden transition-all duration-500 flex flex-col group">
+                            @if(hot)
+                            {
+                                <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-orange-400 to-orange-500"></div>
+                                <div class="absolute top-5 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full z-10 shadow-lg shadow-orange-500/30 tracking-[0.2em] uppercase whitespace-nowrap">Bán Chạy Nhất</div>
+                            }
+                            
+                            <div class="relative h-60 overflow-hidden shrink-0">
+                                <img src="@img" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
+                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
+                                <div class="absolute bottom-5 left-6 right-6 flex items-end justify-between">
+                                    <div>
+                                        <h4 class="text-2xl font-black text-white leading-tight">@name</h4>
+                                    </div>
+                                    <span class="bg-white/20 backdrop-blur-md border border-white/20 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1">
+                                        <i data-lucide="flame" class="w-3.5 h-3.5 text-orange-300"></i> @kcal
+                                    </span>
+                                </div>
+                            </div>
+                            
+                            <div class="p-8 flex flex-col flex-1">
+                                <div class="flex items-end justify-center mb-8 pb-8 border-b border-slate-100">
+                                    <span class="text-4xl font-black text-slate-900">@price</span>
+                                    <span class="text-sm font-medium text-slate-400 mb-1 ml-1">/ phần</span>
+                                </div>
+                                
+                                <ul class="space-y-4 mb-8 flex-1">
+                                    @foreach(var it in items)
+                                    {
+                                        <li class="flex items-start gap-3">
+                                            <div class="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
+                                                <i data-lucide="check" class="w-3 h-3 text-green-500 font-bold"></i>
+                                            </div>
+                                            <span class="text-sm text-slate-600 font-medium">@it</span>
+                                        </li>
+                                    }
+                                </ul>
+                                
+                                <div class="mt-auto space-y-3 pt-4">
+                                    <a href="/Customer/Contact" class="block text-center w-full py-4 @(hot ? "bg-orange-500 text-white shadow-xl shadow-orange-500/25 hover:bg-orange-600" : "bg-slate-900 text-white hover:bg-slate-800") rounded-2xl font-black text-sm transition-all hover:-translate-y-0.5">
+                                        Đặt Set Này
+                                    </a>
+                                    <a href="/Customer/MealDetail?level=tieuhoc&day=t2" class="block text-center w-full py-4 bg-transparent text-slate-500 rounded-2xl font-bold text-sm hover:text-slate-900 transition-colors">
+                                        Xem chi tiết <i data-lucide="arrow-right" class="w-4 h-4 inline-block ml-1"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- ===== CÔNG NHÂN ===== -->
+            <div x-show="activeTab==='factory'" x-cloak
+                 x-transition:enter="transition duration-500 ease-out" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
+                
+                <div class="bg-white rounded-[40px] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden flex flex-col lg:flex-row">
+                    <!-- Image Side -->
+                    <div class="lg:w-1/2 relative h-[400px] lg:h-auto overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1590868309235-ea34bed7bd7f?w=1200&q=80" class="absolute inset-0 w-full h-full object-cover"/>
+                        <div class="absolute inset-0 bg-gradient-to-r from-slate-900/80 lg:from-transparent lg:to-slate-900/80"></div>
+                        
+                        <div class="absolute inset-0 p-10 flex flex-col justify-end lg:items-end text-left lg:text-right">
+                            <div class="lg:ml-auto">
+                                <span class="inline-block bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full mb-4">Giải pháp tiết kiệm</span>
+                                <h3 class="text-4xl md:text-5xl font-black text-white mb-4">Suất Ăn <br/>Tăng Ca</h3>
+                                <p class="text-white/80 max-w-sm lg:ml-auto text-sm leading-relaxed">Chú trọng số lượng và chất lượng, đảm bảo 100% công nhân được ăn no, đủ năng lượng làm việc hiệu quả.</p>
+                            </div>
                         </div>
                     </div>
-                    <div class="p-6">
-                        <p class="text-gray-500 text-sm mb-5">Khay Inox 5 ngăn, luôn giữ nóng. Cơm không giới hạn. Giao trước 11:00 sáng mỗi ngày.</p>
-                        <div class="grid grid-cols-2 gap-2 mb-6">
-                            @foreach(var it in new[]{"Cơm trắng (thêm thoải mái)","Đùi gà kho gừng","Cá trê chiên mắm me","Trứng chiên hành","Bắp cải luộc cà chua","Chuối tráng miệng"})
+                    
+                    <!-- Content Side -->
+                    <div class="lg:w-1/2 p-10 md:p-16">
+                        <div class="inline-block border-b-2 border-orange-500 pb-2 mb-8">
+                            <span class="text-3xl font-black text-slate-900">22.000đ - 25.000đ<span class="text-sm text-slate-500 font-medium ml-2">/ suất</span></span>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+                            @foreach(var (icon,title,desc,color) in new[]{
+                                ("utensils","Khay Inox 5 ngăn","Giữ nhiệt, an toàn","orange"),
+                                ("truck","Giao trước 11:00","Đảm bảo bữa trưa nóng","blue"),
+                                ("refresh-cw","Xoay vòng 30 ngày","Thực đơn không nhàm chán","green"),
+                                ("users","Phục vụ số lượng lớn","Sẵn sàng cho 1000+ người","purple"),
+                            })
                             {
-                                <div class="flex items-center gap-2 text-sm text-gray-700 font-medium">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-orange-500 flex-shrink-0"></span> @it
+                                <div class="flex gap-4 items-start">
+                                    <div class="w-12 h-12 rounded-xl bg-@(color)-50 flex items-center justify-center shrink-0">
+                                        <i data-lucide="@icon" class="w-6 h-6 text-@(color)-500"></i>
+                                    </div>
+                                    <div>
+                                        <h5 class="font-bold text-slate-900 mb-1">@title</h5>
+                                        <p class="text-xs text-slate-500">@desc</p>
+                                    </div>
                                 </div>
                             }
                         </div>
-                        <div class="flex gap-3">
-                            <a href="/Customer/MealDetail?level=thpt&day=t2"
-                               class="flex-1 text-center py-2.5 border border-orange-200 text-orange-600 rounded-xl font-bold text-sm hover:bg-orange-50 transition-all">
-                                Xem chi tiết
+
+                        <div class="bg-slate-50 rounded-2xl p-6 mb-10 border border-slate-100">
+                            <h5 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Thực đơn mẫu hôm nay</h5>
+                            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
+                                @foreach(var it in new[]{"Cơm trắng (không giới hạn)","Đùi gà kho gừng","Cá trê chiên mắm me","Trứng chiên hành","Bắp cải luộc cà chua","Chuối tráng miệng"})
+                                {
+                                    <li class="flex items-center gap-2 text-sm text-slate-700 font-medium">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></div>
+                                        @it
+                                    </li>
+                                }
+                            </ul>
+                        </div>
+
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <a href="/Customer/Contact" class="flex-1 text-center py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-orange-500 transition-all shadow-lg hover:-translate-y-1">
+                                Đăng ký tư vấn
                             </a>
-                            <a href="/Customer/Contact"
-                               class="flex-1 text-center py-2.5 bg-orange-500 text-white rounded-xl font-bold text-sm hover:bg-orange-400 transition-all">
-                                Đặt suất ăn
+                            <a href="/Customer/MealDetail?level=thpt&day=t2" class="flex-1 text-center py-4 border-2 border-slate-200 text-slate-700 rounded-2xl font-bold text-sm hover:border-slate-900 hover:text-slate-900 transition-all">
+                                Xem chi tiết
                             </a>
                         </div>
                     </div>
-                </div>
-                <!-- Info cards -->
-                <div class="grid grid-cols-2 gap-4 content-start">
-                    @foreach(var (icon,title,desc,color) in new[]{
-                        ("utensils","Khay Inox 5 ngăn","Giữ nhiệt, an toàn, tái sử dụng được","orange"),
-                        ("shield-check","ISO 22000:2018","Quy trình sản xuất đạt chuẩn quốc tế","green"),
-                        ("truck","Giao trước 11:00","Đảm bảo bữa trưa luôn nóng hổi","blue"),
-                        ("repeat","Xoay vòng 30 ngày","Không lặp lại 1 món trong 4 tuần","purple"),
-                        ("users","1.000+ công nhân","Phục vụ mỗi ngày tại TP.HCM","red"),
-                        ("star","4.8/5 đánh giá","Từ các khu công nghiệp đối tác","amber"),
-                    })
-                    {
-                        <div class="bg-white border border-gray-100 rounded-2xl p-5 hover:shadow-md hover:border-orange-200 transition-all">
-                            <div class="w-10 h-10 rounded-xl bg-@(color)-50 flex items-center justify-center mb-3">
-                                <i data-lucide="@icon" class="w-5 h-5 text-@(color)-500"></i>
-                            </div>
-                            <h4 class="font-black text-gray-900 text-sm mb-1">@title</h4>
-                            <p class="text-xs text-gray-500 leading-relaxed">@desc</p>
-                        </div>
-                    }
                 </div>
             </div>
         </div>
     </section>
 
     <!-- CERTIFICATION STRIP -->
-    <div class="bg-gray-50 border-y border-gray-100 py-8">
-        <div class="max-w-7xl mx-auto px-6 flex flex-wrap justify-center gap-6 items-center">
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-widest">Được chứng nhận bởi:</span>
-            @foreach(var cert in new[]{"ISO 22000:2018","HACCP","VietGAP","Bộ Y tế","Bộ NN&PTNT"})
-            {
-                <span class="flex items-center gap-2 bg-white border border-gray-200 rounded-full px-4 py-2 text-xs font-bold text-gray-700">
-                    <i data-lucide="shield-check" class="w-3.5 h-3.5 text-green-500"></i> @cert
-                </span>
-            }
+    <div class="bg-white py-16 border-t border-slate-100 relative z-20">
+        <div class="max-w-7xl mx-auto px-6 text-center">
+            <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8">Đạt tiêu chuẩn chất lượng</p>
+            <div class="flex flex-wrap justify-center gap-4 md:gap-8 items-center">
+                @foreach(var cert in new[]{"ISO 22000:2018","HACCP","VietGAP","Bộ Y tế","Bộ NN&PTNT"})
+                {
+                    <div class="flex items-center gap-3 bg-slate-50 border border-slate-100 rounded-2xl px-6 py-3 hover:bg-white hover:shadow-lg hover:border-green-100 transition-all duration-300 group cursor-default">
+                        <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center group-hover:scale-110 transition-transform">
+                            <i data-lucide="shield-check" class="w-4 h-4 text-green-600"></i>
+                        </div>
+                        <span class="text-sm font-bold text-slate-700 group-hover:text-slate-900">@cert</span>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 
     <!-- CTA -->
-    <section class="py-24 bg-white">
-        <div class="max-w-5xl mx-auto px-6">
-            <div class="bg-gray-900 rounded-[40px] p-12 md:p-20 text-center relative overflow-hidden">
-                <div class="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-48 bg-orange-500/10 blur-[80px] rounded-full pointer-events-none"></div>
-                <div class="relative z-10">
-                    <p class="text-orange-400 text-xs font-bold uppercase tracking-[0.3em] mb-4">Nhận thực đơn đầy đủ</p>
-                    <h2 class="text-3xl md:text-5xl font-black text-white mb-5 tracking-tight leading-tight">
-                        Muốn nhận thực đơn <br /><span class="text-orange-400">30 ngày đầy đủ?</span>
-                    </h2>
-                    <p class="text-gray-400 max-w-xl mx-auto font-medium mb-10 leading-relaxed">
-                        HuitMeal cung cấp hơn 500+ món ăn không lặp lại, có phiên bản theo từng vùng miền Bắc – Trung – Nam, phù hợp mọi đối tượng.
-                    </p>
-                    <div class="flex flex-col sm:flex-row justify-center gap-4">
-                        <a href="/Customer/Contact" class="px-10 py-4 bg-orange-500 text-white rounded-full font-bold hover:bg-orange-400 transition-all shadow-lg shadow-orange-500/25 text-sm flex items-center justify-center gap-2">
-                            <i data-lucide="send" class="w-4 h-4"></i> Gửi yêu cầu ngay
-                        </a>
-                        <a href="tel:0966741866" class="px-10 py-4 bg-white/10 text-white border border-white/20 rounded-full font-bold hover:bg-white/20 transition-all text-sm flex items-center justify-center gap-2">
-                            <i data-lucide="phone" class="w-4 h-4 text-orange-400"></i> 0966 741 866
-                        </a>
-                    </div>
+    <section class="py-24 relative overflow-hidden">
+        <!-- Background image with overlay -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1555243896-c709bfa0b564?q=80&w=1920" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-slate-900/90 backdrop-blur-sm"></div>
+        </div>
+        
+        <div class="max-w-4xl mx-auto px-6 relative z-10 text-center">
+            <!-- Glowing orb -->
+            <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-500/30 blur-[100px] rounded-full pointer-events-none"></div>
+            
+            <div class="relative">
+                <span class="inline-block px-4 py-1.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30 text-[10px] font-black uppercase tracking-[0.3em] mb-6">Trải nghiệm HuitMeal</span>
+                <h2 class="text-4xl md:text-6xl font-black text-white mb-6 tracking-tight leading-tight">
+                    Nhận Thực Đơn <br />
+                    <span class="text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-300">30 Ngày Miễn Phí</span>
+                </h2>
+                <p class="text-slate-300 text-lg max-w-2xl mx-auto font-medium mb-12 leading-relaxed">
+                    Đội ngũ chuyên gia dinh dưỡng của chúng tôi sẵn sàng thiết kế thực đơn riêng biệt phù hợp với ngân sách và nhu cầu của bạn.
+                </p>
+                
+                <div class="flex flex-col sm:flex-row justify-center gap-5">
+                    <a href="/Customer/Contact" class="px-10 py-5 bg-gradient-to-r from-orange-500 to-orange-400 text-white rounded-2xl font-bold hover:scale-105 transition-transform shadow-xl shadow-orange-500/30 flex items-center justify-center gap-3">
+                        <i data-lucide="calendar-check" class="w-5 h-5"></i> Nhận tư vấn ngay
+                    </a>
+                    <a href="tel:0966741866" class="px-10 py-5 bg-white/10 backdrop-blur-md text-white border border-white/20 rounded-2xl font-bold hover:bg-white/20 hover:scale-105 transition-all flex items-center justify-center gap-3">
+                        <i data-lucide="phone-call" class="w-5 h-5 text-orange-400"></i> Hotline: 0966 741 866
+                    </a>
                 </div>
             </div>
         </div>
@@ -295,5 +482,9 @@
 </div>
 
 @section Scripts {
-    <script>document.addEventListener('DOMContentLoaded',()=>{lucide.createIcons();});</script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+        });
+    </script>
 }

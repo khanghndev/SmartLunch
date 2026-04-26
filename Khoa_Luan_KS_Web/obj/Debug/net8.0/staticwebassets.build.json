@@ -1,6 +1,6 @@
 {
   "Version": 1,
-  "Hash": "SqpMhBQaxhMmaJFtX6dMkXz3uW8KgqMORLHx78qOJeo=",
+  "Hash": "iJI8tAdCfxqq6ahfw1Otwck1BzVIr7aMKGFYxhA68yQ=",
   "Source": "Khoa_Luan_KS_Web",
   "BasePath": "_content/Khoa_Luan_KS_Web",
   "Mode": "Default",
@@ -1382,6 +1382,27 @@
       "OriginalItemSpec": "wwwroot\\assets\\images\\fact3.jpg"
     },
     {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\factory_hero_premium.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/factory_hero_premium#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "koaa07ipsm",
+      "Integrity": "bM92jLGnyBvHJPKAXWcPQGMC5z6CYrcJTE3Pn8wj6/M=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\factory_hero_premium.png"
+    },
+    {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\guiyeucaulienhe.jpg",
       "SourceId": "Khoa_Luan_KS_Web",
       "SourceType": "Discovered",
@@ -1781,6 +1802,48 @@
       "OriginalItemSpec": "wwwroot\\assets\\images\\map.jpg"
     },
     {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\menu_suggestions_hero.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/menu_suggestions_hero#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "hvnwdg7zp4",
+      "Integrity": "IyJM9NKamTzgcr4i1GPd8Nc0KmdK6iOfinxzutG6UWc=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\menu_suggestions_hero.png"
+    },
+    {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\modern_cafeteria_premium.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/modern_cafeteria_premium#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "l1msdxfspr",
+      "Integrity": "Z2CJPH/X84SmCc1fIzb8IJpIJvOUNyjs5rEbGUa6fgU=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\modern_cafeteria_premium.png"
+    },
+    {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\news_hero.png",
       "SourceId": "Khoa_Luan_KS_Web",
       "SourceType": "Discovered",
@@ -1842,6 +1905,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\assets\\images\\nhiem.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\nutrition_philosophy.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/nutrition_philosophy#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "y41bupetm6",
+      "Integrity": "gtyABanU+GgG2sTOG8kE6COHCA1FVNBBfyT72znCSfM=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\nutrition_philosophy.png"
     },
     {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\partners_hero.png",
@@ -2346,6 +2430,27 @@
       "CopyToOutputDirectory": "Never",
       "CopyToPublishDirectory": "PreserveNewest",
       "OriginalItemSpec": "wwwroot\\assets\\images\\service4.jpg"
+    },
+    {
+      "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\special_dish_premium.png",
+      "SourceId": "Khoa_Luan_KS_Web",
+      "SourceType": "Discovered",
+      "ContentRoot": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\",
+      "BasePath": "_content/Khoa_Luan_KS_Web",
+      "RelativePath": "assets/images/special_dish_premium#[.{fingerprint}]?.png",
+      "AssetKind": "All",
+      "AssetMode": "All",
+      "AssetRole": "Primary",
+      "AssetMergeBehavior": "",
+      "AssetMergeSource": "",
+      "RelatedAsset": "",
+      "AssetTraitName": "",
+      "AssetTraitValue": "",
+      "Fingerprint": "a0qbfcfsd3",
+      "Integrity": "amfyuO2v39w7Os16aulmbG0Xqpbd5IFegTtXtL8oKw0=",
+      "CopyToOutputDirectory": "Never",
+      "CopyToPublishDirectory": "PreserveNewest",
+      "OriginalItemSpec": "wwwroot\\assets\\images\\special_dish_premium.png"
     },
     {
       "Identity": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\studentbottom.jpg",
@@ -9154,6 +9259,88 @@
       ]
     },
     {
+      "Route": "assets/images/factory_hero_premium.koaa07ipsm.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\factory_hero_premium.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "917891"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"bM92jLGnyBvHJPKAXWcPQGMC5z6CYrcJTE3Pn8wj6/M=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 17:38:03 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "koaa07ipsm"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/factory_hero_premium.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-bM92jLGnyBvHJPKAXWcPQGMC5z6CYrcJTE3Pn8wj6/M="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/factory_hero_premium.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\factory_hero_premium.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "917891"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"bM92jLGnyBvHJPKAXWcPQGMC5z6CYrcJTE3Pn8wj6/M=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 17:38:03 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-bM92jLGnyBvHJPKAXWcPQGMC5z6CYrcJTE3Pn8wj6/M="
+        }
+      ]
+    },
+    {
       "Route": "assets/images/guiyeucaulienhe.jpg",
       "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\guiyeucaulienhe.jpg",
       "Selectors": [],
@@ -10712,6 +10899,170 @@
       ]
     },
     {
+      "Route": "assets/images/menu_suggestions_hero.hvnwdg7zp4.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\menu_suggestions_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "893852"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"IyJM9NKamTzgcr4i1GPd8Nc0KmdK6iOfinxzutG6UWc=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 26 Apr 2026 05:37:24 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "hvnwdg7zp4"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/menu_suggestions_hero.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-IyJM9NKamTzgcr4i1GPd8Nc0KmdK6iOfinxzutG6UWc="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/menu_suggestions_hero.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\menu_suggestions_hero.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "893852"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"IyJM9NKamTzgcr4i1GPd8Nc0KmdK6iOfinxzutG6UWc=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 26 Apr 2026 05:37:24 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-IyJM9NKamTzgcr4i1GPd8Nc0KmdK6iOfinxzutG6UWc="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/modern_cafeteria_premium.l1msdxfspr.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\modern_cafeteria_premium.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "880005"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"Z2CJPH/X84SmCc1fIzb8IJpIJvOUNyjs5rEbGUa6fgU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 17:38:18 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "l1msdxfspr"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/modern_cafeteria_premium.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-Z2CJPH/X84SmCc1fIzb8IJpIJvOUNyjs5rEbGUa6fgU="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/modern_cafeteria_premium.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\modern_cafeteria_premium.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "880005"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"Z2CJPH/X84SmCc1fIzb8IJpIJvOUNyjs5rEbGUa6fgU=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 17:38:18 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-Z2CJPH/X84SmCc1fIzb8IJpIJvOUNyjs5rEbGUa6fgU="
+        }
+      ]
+    },
+    {
       "Route": "assets/images/news_hero.k4oc4dxqk7.png",
       "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\news_hero.png",
       "Selectors": [],
@@ -10954,6 +11305,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-wBbCuIdzh9WaG1cOBqkDJyMh12ihPpZPIY/VKuKDoAY="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/nutrition_philosophy.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\nutrition_philosophy.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "933008"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"gtyABanU+GgG2sTOG8kE6COHCA1FVNBBfyT72znCSfM=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 26 Apr 2026 05:36:37 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-gtyABanU+GgG2sTOG8kE6COHCA1FVNBBfyT72znCSfM="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/nutrition_philosophy.y41bupetm6.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\nutrition_philosophy.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "933008"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"gtyABanU+GgG2sTOG8kE6COHCA1FVNBBfyT72znCSfM=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sun, 26 Apr 2026 05:36:37 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "y41bupetm6"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/nutrition_philosophy.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-gtyABanU+GgG2sTOG8kE6COHCA1FVNBBfyT72znCSfM="
         }
       ]
     },
@@ -12922,6 +13355,88 @@
         {
           "Name": "integrity",
           "Value": "sha256-IPzRUjOK/fYWfpJUNsXOryBV5GZ5mPcJatcVoZZlksM="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/special_dish_premium.a0qbfcfsd3.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\special_dish_premium.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "818900"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"amfyuO2v39w7Os16aulmbG0Xqpbd5IFegTtXtL8oKw0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 17:38:34 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=31536000, immutable"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "fingerprint",
+          "Value": "a0qbfcfsd3"
+        },
+        {
+          "Name": "label",
+          "Value": "assets/images/special_dish_premium.png"
+        },
+        {
+          "Name": "integrity",
+          "Value": "sha256-amfyuO2v39w7Os16aulmbG0Xqpbd5IFegTtXtL8oKw0="
+        }
+      ]
+    },
+    {
+      "Route": "assets/images/special_dish_premium.png",
+      "AssetFile": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\special_dish_premium.png",
+      "Selectors": [],
+      "ResponseHeaders": [
+        {
+          "Name": "Accept-Ranges",
+          "Value": "bytes"
+        },
+        {
+          "Name": "Content-Length",
+          "Value": "818900"
+        },
+        {
+          "Name": "Content-Type",
+          "Value": "image/png"
+        },
+        {
+          "Name": "ETag",
+          "Value": "\"amfyuO2v39w7Os16aulmbG0Xqpbd5IFegTtXtL8oKw0=\""
+        },
+        {
+          "Name": "Last-Modified",
+          "Value": "Sat, 25 Apr 2026 17:38:34 GMT"
+        },
+        {
+          "Name": "Cache-Control",
+          "Value": "max-age=3600, must-revalidate"
+        }
+      ],
+      "EndpointProperties": [
+        {
+          "Name": "integrity",
+          "Value": "sha256-amfyuO2v39w7Os16aulmbG0Xqpbd5IFegTtXtL8oKw0="
         }
       ]
     },

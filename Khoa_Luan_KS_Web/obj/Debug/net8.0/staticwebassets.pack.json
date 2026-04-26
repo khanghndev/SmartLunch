@@ -325,6 +325,10 @@
       "PackagePath": "staticwebassets\\assets\\images\\fact3.jpg"
     },
     {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\factory_hero_premium.png",
+      "PackagePath": "staticwebassets\\assets\\images\\factory_hero_premium.png"
+    },
+    {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\guiyeucaulienhe.jpg",
       "PackagePath": "staticwebassets\\assets\\images\\guiyeucaulienhe.jpg"
     },
@@ -389,6 +393,14 @@
       "PackagePath": "staticwebassets\\assets\\images\\map.jpg"
     },
     {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\menu_suggestions_hero.png",
+      "PackagePath": "staticwebassets\\assets\\images\\menu_suggestions_hero.png"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\modern_cafeteria_premium.png",
+      "PackagePath": "staticwebassets\\assets\\images\\modern_cafeteria_premium.png"
+    },
+    {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\news_hero.png",
       "PackagePath": "staticwebassets\\assets\\images\\news_hero.png"
     },
@@ -399,6 +411,10 @@
     {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\nhiem.jpg",
       "PackagePath": "staticwebassets\\assets\\images\\nhiem.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\nutrition_philosophy.png",
+      "PackagePath": "staticwebassets\\assets\\images\\nutrition_philosophy.png"
     },
     {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\partners_hero.png",
@@ -447,6 +463,10 @@
     {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\service4.jpg",
       "PackagePath": "staticwebassets\\assets\\images\\service4.jpg"
+    },
+    {
+      "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\special_dish_premium.png",
+      "PackagePath": "staticwebassets\\assets\\images\\special_dish_premium.png"
     },
     {
       "Id": "C:\\Users\\khang\\Downloads\\web\\Khoa_Luan_KS_Web\\Khoa_Luan_KS_Web\\wwwroot\\assets\\images\\studentbottom.jpg",

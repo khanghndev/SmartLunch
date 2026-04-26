@@ -6,14 +6,14 @@
     if (string.IsNullOrEmpty(level)) level = "mamnon";
     if (string.IsNullOrEmpty(day))   day   = "t2";
 
-    var levelLabels = new Dictionary<string,string>{{"mamnon","Mầm Non"},{"tieuhoc","Tiểu Học"},{"thcs","THCS"},{"thpt","THPT"}};
+    var levelLabels = new Dictionary<string,string>{{"mamnon","Mầm Non"},{"tieuhoc","Tiểu Học"},{"thcs","THCS"},{"thpt","THPT"},{"factory","Nhà máy"},{"office","Văn phòng"}};
     string levelLabel = levelLabels.GetValueOrDefault(level, "Học đường");
 
     // Full week meal data
     var meals = new Dictionary<string,(string Title,string Tag,string Kcal,string Img,string Desc,string[] Ingredients,string[] Steps,(string Label,int Pct)[] Nutrients)>{
         ["t2"]=(
             "Cơm thịt heo kho trứng cút","Bữa chính trưa","650 kcal",
-            "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=900&q=80",
+            "/assets/images/fact2.jpg",
             "Món cơm truyền thống với thịt heo ba chỉ kho mềm ngọt cùng trứng cút đậm đà. Nước kho sánh, màu đẹp, thơm mùi nước dừa – món ăn quen thuộc được yêu thích nhất trong thực đơn học đường.",
             new[]{"Cơm gạo ST25 (180g)","Thịt heo ba chỉ tươi (100g)","Trứng cút luộc (4 quả)","Nước dừa tươi (100ml)","Tỏi, hành, nước mắm, đường","Rau muống xào tỏi (80g)","Canh bí đỏ hầm xương (200ml)","Dưa leo ngâm giấm (50g)"},
             new[]{"Thịt heo rửa sạch, cắt miếng vừa, ướp 15 phút","Phi thơm tỏi hành, cho thịt vào xào săn","Thêm nước dừa, kho liu riu 30 phút","Cho trứng cút vào, kho thêm 10 phút","Nêm nếm vừa miệng, tắt bếp"},
@@ -21,7 +21,7 @@
         ),
         ["t3"]=(
             "Cơm gà nướng mật ong","Bữa chính trưa","680 kcal",
-            "https://images.unsplash.com/photo-1512058564366-18510be2db19?w=900&q=80",
+            "/assets/images/service2.jpg",
             "Đùi gà ta được ướp mật ong và gia vị đặc biệt, nướng vàng đều trong lò – giòn bên ngoài, mềm ngọt bên trong. Phục vụ kèm cơm trắng dẻo và canh rau thanh mát.",
             new[]{"Cơm trắng gạo Jasmine (180g)","Đùi gà ta (120g)","Mật ong nguyên chất (15ml)","Nước tương, tỏi, gừng","Rau cải xào tỏi (80g)","Canh cà chua trứng (200ml)","Dưa cải trắng muối (40g)"},
             new[]{"Gà ướp mật ong + nước tương 30 phút","Nướng lò 200°C trong 25 phút","Lật mặt, phết thêm mật ong, nướng 10 phút","Trình bày cùng cơm và rau"},
@@ -29,7 +29,7 @@
         ),
         ["t4"]=(
             "Cơm cá hú kho gừng","Bữa chính trưa","620 kcal",
-            "https://images.unsplash.com/photo-1547592166-23ac45744acd?w=900&q=80",
+            "/assets/images/fact1.jpg",
             "Cá hú biển tươi kho gừng – món ăn giàu omega-3, đặc biệt tốt cho phát triển trí não học sinh. Nước kho cá vàng ươm, thấm đều, kết hợp hài hòa với vị cay nhẹ của gừng tươi.",
             new[]{"Cơm trắng (180g)","Cá hú tươi (130g)","Gừng tươi, sả (20g)","Nước mắm, tiêu, đường","Bắp cải xào (80g)","Canh rau dền (200ml)","Dưa hành muối (40g)"},
             new[]{"Cá rửa, khứa nhẹ, ướp gia vị 20 phút","Cho cá vào nồi, kho vừa lửa","Thêm gừng, sả vào, kho thêm 15 phút","Nêm nếm, đậy nắp giữ ấm"},
@@ -37,7 +37,7 @@
         ),
         ["t5"]=(
             "Mì Ý bò bằm sốt cà","Bữa chính trưa","700 kcal",
-            "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=900&q=80",
+            "/assets/images/vanphong.jpg",
             "Mì Ý nấu chín vừa, phủ sốt cà chua bò bằm đậm đà – món ăn phổ biến trong thực đơn quốc tế hóa của HuitMeal, giúp học sinh làm quen với ẩm thực đa dạng và bổ dưỡng.",
             new[]{"Mì Ý số 5 (150g)","Thịt bò bằm tươi (100g)","Cà chua bi (80g)","Hành tây, tỏi, cần tây","Dầu olive, muối, tiêu","Rau salad trộn (60g)","Bánh mì nướng bơ tỏi (1 lát)"},
             new[]{"Luộc mì al dente, vớt ra","Xào bò bằm với hành tỏi","Cho cà chua vào, nêm gia vị","Trộn mì với sốt, trình bày"},
@@ -45,7 +45,7 @@
         ),
         ["t6"]=(
             "Cơm chiên dương châu tôm","Bữa chính trưa","730 kcal",
-            "https://images.unsplash.com/photo-1569050467447-ce54b3bbc37d?w=900&q=80",
+            "/assets/images/tieuhoc.jpg",
             "Cơm chiên dương châu truyền thống với tôm tươi, xúc xích, trứng và rau thập cẩm – màu sắc bắt mắt, thơm ngon, là món được học sinh yêu thích nhất trong thực đơn cuối tuần.",
             new[]{"Cơm nguội (200g)","Tôm tươi (60g)","Trứng gà (1 quả)","Xúc xích (40g)","Cà rốt, đậu Hà Lan (50g)","Hành lá, tỏi, dầu ăn","Nước tương Maggi, muối, tiêu"},
             new[]{"Xào tỏi với dầu ăn đến vàng thơm","Cho tôm, xúc xích vào xào sơ","Đẩy sang bên, đập trứng vào chiên","Cho cơm vào, đảo đều mạnh tay","Thêm rau, nêm gia vị, tắt bếp"},

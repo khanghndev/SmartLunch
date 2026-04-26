@@ -20,7 +20,7 @@ namespace Khoa_Luan_KS_Web.Controllers
         public IActionResult Office() => View();
         public IActionResult School() => View();
         public IActionResult Safety() => View();
-        public IActionResult SafetyS() => View();
+        public IActionResult MenuSuggestions() => View();
         
         // Menu
         public IActionResult Menu() => View();

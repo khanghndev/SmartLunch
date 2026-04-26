@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("Khoa_Luan_KS_Web")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+71ed95bf617d1e97d60ea692400f971de5e323c3")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+9aa84e86b4eb5f5b7f074d6a745ca0c8f91db5f0")]
 [assembly: System.Reflection.AssemblyProductAttribute("Khoa_Luan_KS_Web")]
 [assembly: System.Reflection.AssemblyTitleAttribute("Khoa_Luan_KS_Web")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

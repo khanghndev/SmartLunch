@@ -1,0 +1,430 @@
+@{
+    ViewData["Title"] = "Gợi ý thực đơn - HuitMeal";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="w-full bg-white overflow-hidden">
+    <!-- ===== HERO SECTION ===== -->
+    <section class="relative w-full h-[50vh] min-h-[500px] md:h-[70vh] flex items-center justify-center overflow-hidden">
+        <div class="absolute inset-0">
+            <img src="/assets/images/menu_suggestions_hero.png" class="w-full h-full object-cover object-center scale-105" alt="Menu Suggestions Banner" />
+            <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-[2px]"></div>
+            <div class="absolute inset-0 bg-gradient-to-b from-slate-900/40 via-transparent to-white"></div>
+        </div>
+
+        <div class="relative z-10 max-w-5xl mx-auto px-6 text-center">
+            <div data-animate="fade-down">
+                <span class="inline-block px-4 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 text-xs md:text-sm font-bold uppercase tracking-[0.2em] mb-6 backdrop-blur-md">
+                    Chuyên gia dinh dưỡng
+                </span>
+            </div>
+            <h1 data-animate="fade-up" data-delay="1" class="text-4xl md:text-6xl lg:text-8xl font-black text-white leading-[1.1] mb-6 tracking-tight">
+                Gợi ý <br/>
+                <span class="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-300">Thực đơn chuẩn</span>
+            </h1>
+            <p data-animate="fade-up" data-delay="2" class="text-lg md:text-xl text-slate-200 max-w-3xl mx-auto mb-10 leading-relaxed font-medium">
+                Khám phá các mẫu thực đơn được thiết kế khoa học, tối ưu dinh dưỡng cho từng môi trường làm việc và học tập.
+            </p>
+            <div data-animate="fade-up" data-delay="3" class="flex justify-center gap-4">
+                <a href="#samples" class="px-8 py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-bold text-sm transition-all shadow-lg shadow-emerald-500/25 hover:-translate-y-1">
+                    XEM CÁC MẪU THỰC ĐƠN
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== SAMPLE MENUS SECTION ===== -->
+    <section id="samples" class="py-24 bg-white" x-data="{ filter: 'all' }">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="text-center max-w-3xl mx-auto mb-20" data-animate="fade-up">
+                <h4 class="text-emerald-600 font-bold uppercase tracking-widest text-sm mb-4">Mẫu thực đơn tiêu biểu</h4>
+                <h2 class="text-3xl md:text-5xl font-black text-slate-900 mb-8 tracking-tight">Lựa chọn tối ưu cho bạn</h2>
+                
+                <!-- Filter Tabs -->
+                <div class="inline-flex p-1.5 bg-slate-100 rounded-3xl w-fit">
+                    <button @@click="filter = 'all'" :class="filter === 'all' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'" class="px-8 py-3 rounded-2xl font-bold text-xs md:text-sm transition-all duration-300 uppercase">Tất cả</button>
+                    <button @@click="filter = 'factory'" :class="filter === 'factory' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'" class="px-8 py-3 rounded-2xl font-bold text-xs md:text-sm transition-all duration-300 uppercase">Nhà máy</button>
+                    <button @@click="filter = 'office'" :class="filter === 'office' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'" class="px-8 py-3 rounded-2xl font-bold text-xs md:text-sm transition-all duration-300 uppercase">Văn phòng</button>
+                    <button @@click="filter = 'school'" :class="filter === 'school' ? 'bg-white text-emerald-600 shadow-sm' : 'text-slate-500 hover:text-slate-900'" class="px-8 py-3 rounded-2xl font-bold text-xs md:text-sm transition-all duration-300 uppercase">Trường học</button>
+                </div>
+            </div>
+
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-10">
+                <!-- Card 1: Factory 1 -->
+                <div x-show="filter === 'all' || filter === 'factory'" x-transition:enter="transition ease-out duration-500" class="group bg-white rounded-[40px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full hover:-translate-y-2" data-animate="fade-up">
+                    <div class="relative h-[280px] overflow-hidden">
+                        <img src="/assets/images/fact1.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Factory Meal 1" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="absolute top-6 left-6">
+                            <span class="px-4 py-1.5 bg-orange-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">NHÀ MÁY</span>
+                        </div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-grow">
+                        <h3 class="text-2xl font-black text-slate-900 mb-4 group-hover:text-emerald-600 transition-colors">Suất Năng Lượng Đột Phá</h3>
+                        <p class="text-slate-500 text-sm mb-6 leading-relaxed">Được thiết kế cho công nhân lao động cường độ cao, giàu đạm và tinh bột phức hợp.</p>
+                        <div class="space-y-3 mb-8 flex-grow">
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Bò kho bánh mì / Cơm trắng</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Cá điêu hồng chiên xù</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Cải thìa xào tỏi, Canh bí đỏ</span>
+                            </div>
+                        </div>
+                        <div class="pt-6 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-xl font-black text-slate-900">750 Kcal</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Năng lượng cao</div>
+                            </div>
+                            <a href="/Customer/MealDetail?level=factory&day=t2" class="px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold text-xs group-hover:bg-emerald-500 transition-all shadow-lg hover:shadow-emerald-500/30">
+                                XEM CHI TIẾT
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Office 1 -->
+                <div x-show="filter === 'all' || filter === 'office'" x-transition:enter="transition ease-out duration-500" class="group bg-white rounded-[40px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full hover:-translate-y-2" data-animate="fade-up" data-delay="1">
+                    <div class="relative h-[280px] overflow-hidden">
+                        <img src="/assets/images/service2.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Office Meal 1" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="absolute top-6 left-6">
+                            <span class="px-4 py-1.5 bg-emerald-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">VĂN PHÒNG</span>
+                        </div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-grow">
+                        <h3 class="text-2xl font-black text-slate-900 mb-4 group-hover:text-emerald-600 transition-colors">Suất Light & Healthy</h3>
+                        <p class="text-slate-500 text-sm mb-6 leading-relaxed">Cân bằng dinh dưỡng, ít dầu mỡ, giúp duy trì sự tỉnh táo suốt buổi chiều.</p>
+                        <div class="space-y-3 mb-8 flex-grow">
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Cá hồi áp chảo sốt chanh dây</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Cơm gạo lứt huyết rồng</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Salad bơ dưa leo, Súp đậu lăng</span>
+                            </div>
+                        </div>
+                        <div class="pt-6 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-xl font-black text-slate-900">520 Kcal</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Dinh dưỡng cân bằng</div>
+                            </div>
+                            <a href="/Customer/MealDetail?level=office&day=t3" class="px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold text-xs group-hover:bg-emerald-500 transition-all shadow-lg hover:shadow-emerald-500/30">
+                                XEM CHI TIẾT
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: School 1 -->
+                <div x-show="filter === 'all' || filter === 'school'" x-transition:enter="transition ease-out duration-500" class="group bg-white rounded-[40px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full hover:-translate-y-2" data-animate="fade-up" data-delay="2">
+                    <div class="relative h-[280px] overflow-hidden">
+                        <img src="/assets/images/mamnon.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="School Meal 1" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="absolute top-6 left-6">
+                            <span class="px-4 py-1.5 bg-blue-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">TRƯỜNG HỌC</span>
+                        </div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-grow">
+                        <h3 class="text-2xl font-black text-slate-900 mb-4 group-hover:text-emerald-600 transition-colors">Suất Kids Development</h3>
+                        <p class="text-slate-500 text-sm mb-6 leading-relaxed">Hương vị trẻ thơ, kích thích vị giác và bổ sung Canxi phát triển chiều cao.</p>
+                        <div class="space-y-3 mb-8 flex-grow">
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Thịt viên sốt cà chua</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Trứng hấp ngũ sắc, Tôm rim</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Canh sườn khoai tây, Su su xào</span>
+                            </div>
+                        </div>
+                        <div class="pt-6 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-xl font-black text-slate-900">450 Kcal</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Phát triển chiều cao</div>
+                            </div>
+                            <a href="/Customer/MealDetail?level=mamnon&day=t2" class="px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold text-xs group-hover:bg-emerald-500 transition-all shadow-lg hover:shadow-emerald-500/30">
+                                XEM CHI TIẾT
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Factory 2 -->
+                <div x-show="filter === 'all' || filter === 'factory'" x-transition:enter="transition ease-out duration-500" class="group bg-white rounded-[40px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full hover:-translate-y-2" data-animate="fade-up">
+                    <div class="relative h-[280px] overflow-hidden">
+                        <img src="/assets/images/fact2.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Factory Meal 2" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="absolute top-6 left-6">
+                            <span class="px-4 py-1.5 bg-orange-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">NHÀ MÁY</span>
+                        </div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-grow">
+                        <h3 class="text-2xl font-black text-slate-900 mb-4 group-hover:text-emerald-600 transition-colors">Suất Bền Bỉ Sáng Tạo</h3>
+                        <p class="text-slate-500 text-sm mb-6 leading-relaxed">Tập trung vào vitamin nhóm B và khoáng chất giúp giảm mệt mỏi cơ bắp.</p>
+                        <div class="space-y-3 mb-8 flex-grow">
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Gà nướng mật ong / Cơm dẻo</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Thịt kho trứng cút đậm đà</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Rau muống xào tỏi, Canh chua cá</span>
+                            </div>
+                        </div>
+                        <div class="pt-6 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-xl font-black text-slate-900">720 Kcal</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Năng lượng bền bỉ</div>
+                            </div>
+                            <a href="/Customer/MealDetail?level=factory&day=t3" class="px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold text-xs group-hover:bg-emerald-500 transition-all shadow-lg hover:shadow-emerald-500/30">
+                                XEM CHI TIẾT
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 5: Office 2 -->
+                <div x-show="filter === 'all' || filter === 'office'" x-transition:enter="transition ease-out duration-500" class="group bg-white rounded-[40px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full hover:-translate-y-2" data-animate="fade-up" data-delay="1">
+                    <div class="relative h-[280px] overflow-hidden">
+                        <img src="/assets/images/vanphong.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="Office Meal 2" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="absolute top-6 left-6">
+                            <span class="px-4 py-1.5 bg-emerald-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">VĂN PHÒNG</span>
+                        </div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-grow">
+                        <h3 class="text-2xl font-black text-slate-900 mb-4 group-hover:text-emerald-600 transition-colors">Suất Office Gourmet</h3>
+                        <p class="text-slate-500 text-sm mb-6 leading-relaxed">Trải nghiệm ẩm thực cao cấp ngay tại văn phòng với nguyên liệu thượng hạng.</p>
+                        <div class="space-y-3 mb-8 flex-grow">
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Bò bít tết sốt rượu vang đỏ</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Khoai tây nghiền béo ngậy</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Salad Garden, Tráng miệng Panna Cotta</span>
+                            </div>
+                        </div>
+                        <div class="pt-6 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-xl font-black text-slate-900">580 Kcal</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ẩm thực cao cấp</div>
+                            </div>
+                            <a href="/Customer/MealDetail?level=office&day=t5" class="px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold text-xs group-hover:bg-emerald-500 transition-all shadow-lg hover:shadow-emerald-500/30">
+                                XEM CHI TIẾT
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 6: School 2 -->
+                <div x-show="filter === 'all' || filter === 'school'" x-transition:enter="transition ease-out duration-500" class="group bg-white rounded-[40px] overflow-hidden border border-slate-100 shadow-sm hover:shadow-2xl transition-all duration-500 flex flex-col h-full hover:-translate-y-2" data-animate="fade-up" data-delay="2">
+                    <div class="relative h-[280px] overflow-hidden">
+                        <img src="/assets/images/tieuhoc.jpg" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" alt="School Meal 2" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+                        <div class="absolute top-6 left-6">
+                            <span class="px-4 py-1.5 bg-blue-500 text-white rounded-full text-[10px] font-black uppercase tracking-widest shadow-lg">TRƯỜNG HỌC</span>
+                        </div>
+                    </div>
+                    <div class="p-8 flex flex-col flex-grow">
+                        <h3 class="text-2xl font-black text-slate-900 mb-4 group-hover:text-emerald-600 transition-colors">Suất Happy Learning</h3>
+                        <p class="text-slate-500 text-sm mb-6 leading-relaxed">Giàu Omega-3 từ cá tươi, hỗ trợ phát triển trí não và khả năng tập trung.</p>
+                        <div class="space-y-3 mb-8 flex-grow">
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Cá hú kho gừng thanh đạm</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Tôm chiên xù cốm xanh</span>
+                            </div>
+                            <div class="flex items-center gap-3 text-slate-700 font-medium">
+                                <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i> 
+                                <span class="text-sm">Canh rau dền, Sinh tố trái cây</span>
+                            </div>
+                        </div>
+                        <div class="pt-6 border-t border-slate-100 flex items-center justify-between">
+                            <div>
+                                <div class="text-xl font-black text-slate-900">480 Kcal</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Tăng cường trí não</div>
+                            </div>
+                            <a href="/Customer/MealDetail?level=tieuhoc&day=t4" class="px-6 py-3 bg-slate-900 text-white rounded-2xl font-bold text-xs group-hover:bg-emerald-500 transition-all shadow-lg hover:shadow-emerald-500/30">
+                                XEM CHI TIẾT
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== NUTRITION PHILOSOPHY ===== -->
+    <section class="py-24 bg-slate-50 relative overflow-hidden">
+        <div class="absolute top-1/4 -right-24 w-96 h-96 bg-emerald-500/5 rounded-full blur-[100px] -z-10"></div>
+        
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid lg:grid-cols-2 gap-20 items-center">
+                <div class="order-2 lg:order-1 space-y-8" data-animate="fade-right">
+                    <div>
+                        <h4 class="text-emerald-600 font-bold uppercase tracking-widest text-sm mb-4">Triết lý dinh dưỡng</h4>
+                        <h2 class="text-3xl md:text-5xl font-black text-slate-900 leading-tight">
+                            Cân bằng hoàn hảo <br/>
+                            <span class="text-emerald-500">Trong từng bữa ăn</span>
+                        </h2>
+                    </div>
+                    <p class="text-slate-600 text-lg leading-relaxed font-medium">
+                        Chúng tôi không chỉ cung cấp thực phẩm, chúng tôi cung cấp giải pháp sức khỏe. Mỗi thực đơn là sự kết hợp tinh tế giữa hương vị và khoa học dinh dưỡng.
+                    </p>
+                    <div class="grid sm:grid-cols-2 gap-6">
+                        <div class="p-6 bg-white rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl transition-all">
+                            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-4">
+                                <i data-lucide="leaf" class="text-emerald-500 w-6 h-6"></i>
+                            </div>
+                            <h5 class="font-bold text-slate-900 mb-2">VietGAP Standard</h5>
+                            <p class="text-xs text-slate-500">100% nguyên liệu tươi sạch, có nguồn gốc rõ ràng.</p>
+                        </div>
+                        <div class="p-6 bg-white rounded-[32px] border border-slate-100 shadow-sm hover:shadow-xl transition-all">
+                            <div class="w-12 h-12 bg-emerald-50 rounded-2xl flex items-center justify-center mb-4">
+                                <i data-lucide="flask-conical" class="text-emerald-500 w-6 h-6"></i>
+                            </div>
+                            <h5 class="font-bold text-slate-900 mb-2">Scientific Ratio</h5>
+                            <p class="text-xs text-slate-500">Tính toán chính xác Calories cho từng đối tượng.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="order-1 lg:order-2 relative" data-animate="fade-left">
+                    <div class="relative rounded-[50px] overflow-hidden shadow-2xl z-10 aspect-square">
+                        <img src="/assets/images/nutrition_philosophy.png" class="w-full h-full object-cover" alt="Healthy Meal Planning" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent"></div>
+                    </div>
+                    <!-- Stats Floating Card -->
+                    <div class="absolute -bottom-8 -left-8 bg-white p-8 rounded-[40px] shadow-2xl z-20 border border-slate-100 hidden md:block">
+                        <div class="flex items-center gap-8">
+                            <div class="text-center">
+                                <div class="text-4xl font-black text-emerald-500">500+</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Thực đơn</div>
+                            </div>
+                            <div class="w-px h-12 bg-slate-100"></div>
+                            <div class="text-center">
+                                <div class="text-4xl font-black text-slate-900">15+</div>
+                                <div class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mt-1">Chuyên gia</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ===== CTA SECTION ===== -->
+    <section class="py-24 relative overflow-hidden">
+        <div class="absolute inset-0">
+            <img src="/assets/images/s4.jpg" class="w-full h-full object-cover" />
+            <div class="absolute inset-0 bg-slate-900/85 backdrop-blur-sm"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-6 relative z-10 text-center">
+            <div class="max-w-4xl mx-auto" data-animate="fade-up">
+                <h2 class="text-4xl md:text-7xl font-black text-white leading-[1.1] mb-8 tracking-tight">
+                    Thiết kế thực đơn <br/> 
+                    <span class="text-emerald-400 underline decoration-emerald-500/30 underline-offset-8">Dành riêng cho bạn</span>
+                </h2>
+                <p class="text-slate-300 text-lg md:text-xl mb-12 max-w-3xl mx-auto leading-relaxed">
+                    HuitMeal sẵn sàng đồng hành cùng doanh nghiệp bạn trong việc xây dựng một môi trường làm việc khỏe mạnh và năng suất.
+                </p>
+                <div class="flex flex-wrap justify-center gap-6">
+                    <a href="/Customer/Contact" class="px-12 py-5 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-black transition-all shadow-xl shadow-emerald-500/40 hover:-translate-y-1 active:scale-95">
+                        NHẬN TƯ VẤN NGAY
+                    </a>
+                    <a href="tel:0334297551" class="px-12 py-5 bg-white/10 hover:bg-white/20 text-white border border-white/20 backdrop-blur-md rounded-full font-black transition-all hover:-translate-y-1 active:scale-95 flex items-center gap-3">
+                        <i data-lucide="phone" class="w-5 h-5 text-emerald-400"></i> 0334 297 551
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize Lucide icons
+            lucide.createIcons();
+            
+            // Simple animation observer
+            const observerOptions = {
+                threshold: 0.1,
+                rootMargin: '0px 0px -50px 0px'
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const animation = entry.target.getAttribute('data-animate');
+                        const delay = entry.target.getAttribute('data-delay') || 0;
+                        
+                        setTimeout(() => {
+                            entry.target.classList.add('animate-active');
+                            entry.target.style.opacity = '1';
+                            entry.target.style.transform = 'translate(0, 0) scale(1)';
+                        }, delay * 150);
+                        
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            document.querySelectorAll('[data-animate]').forEach(el => {
+                el.style.opacity = '0';
+                const anim = el.getAttribute('data-animate');
+                if (anim === 'fade-up') el.style.transform = 'translateY(30px)';
+                if (anim === 'fade-down') el.style.transform = 'translateY(-30px)';
+                if (anim === 'fade-left') el.style.transform = 'translateX(30px)';
+                if (anim === 'fade-right') el.style.transform = 'translateX(-30px)';
+                if (anim === 'zoom-in') el.style.transform = 'scale(0.95)';
+                
+                el.style.transition = 'all 0.8s cubic-bezier(0.16, 1, 0.3, 1)';
+                observer.observe(el);
+            });
+        });
+    </script>
+}
+
+<style>
+    .animate-active {
+        opacity: 1 !important;
+        transform: translate(0, 0) scale(1) !important;
+    }
+    
+    [data-animate] {
+        will-change: transform, opacity;
+    }
+
+    #samples button {
+        white-space: nowrap;
+    }
+</style>

@@ -88,6 +88,10 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJcTWVudS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/khang/Downloads/web/Khoa_Luan_KS_Web/Khoa_Luan_KS_Web/Views/Customer/MenuSuggestions.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJcTWVudVN1Z2dlc3Rpb25zLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/khang/Downloads/web/Khoa_Luan_KS_Web/Khoa_Luan_KS_Web/Views/Customer/Office.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJcT2ZmaWNlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
@@ -114,10 +118,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/khang/Downloads/web/Khoa_Luan_KS_Web/Khoa_Luan_KS_Web/Views/Customer/Safety.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJcU2FmZXR5LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/khang/Downloads/web/Khoa_Luan_KS_Web/Khoa_Luan_KS_Web/Views/Customer/SafetyS.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ3VzdG9tZXJcU2FmZXR5Uy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/khang/Downloads/web/Khoa_Luan_KS_Web/Khoa_Luan_KS_Web/Views/Customer/School.cshtml]
