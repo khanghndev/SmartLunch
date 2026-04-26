@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Authentication;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -40,8 +42,11 @@ builder.Services
                 context.Response.Redirect(redirectUri);
                 return Task.CompletedTask;
             },
-            OnRedirectToAccessDenied = context =>
+            OnRedirectToAccessDenied = async context =>
             {
+                await context.HttpContext.SignOutAsync(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
+                context.HttpContext.Session.Clear();
+
                 var path = context.Request.Path.Value ?? string.Empty;
                 var role = path.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/admin", StringComparison.OrdinalIgnoreCase)
                     ? "Admin"
@@ -53,7 +58,6 @@ builder.Services
                 var redirectUri = $"/Auth/Login?role={Uri.EscapeDataString(role)}&returnUrl={Uri.EscapeDataString(returnUrl)}";
 
                 context.Response.Redirect(redirectUri);
-                return Task.CompletedTask;
             }
         };
     });
@@ -97,15 +101,22 @@ app.UseAuthorization();
 // Role-specific friendly prefixes for demo:
 // - https://localhost:5101/admin
 // - https://localhost:5102/manager
-app.MapControllerRoute(
-    name: "admin",
-    pattern: "admin/{action=Index}/{id?}",
-    defaults: new { controller = "Admin" });
+app.MapAreaControllerRoute(
+    name: "AdminArea",
+    areaName: "Admin",
+    pattern: "admin/{controller=Home}/{action=Index}/{id?}");
 
-app.MapControllerRoute(
-    name: "manager",
-    pattern: "manager/{action=Index}/{id?}",
-    defaults: new { controller = "Manager" });
+app.MapAreaControllerRoute(
+    name: "ManagerCatalogFriendly",
+    areaName: "Manager",
+    pattern: "Manager/{action}/{id?}",
+    defaults: new { controller = "Catalog" },
+    constraints: new { action = "(Suppliers|SupplierDetail|Employees|EmployeeDetail|Customers|CustomerDetail|Meals|MealDetail|MealEdit)" });
+
+app.MapAreaControllerRoute(
+    name: "ManagerArea",
+    areaName: "Manager",
+    pattern: "manager/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",

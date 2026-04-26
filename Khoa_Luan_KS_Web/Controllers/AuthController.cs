@@ -94,6 +94,11 @@ namespace Khoa_Luan_KS_Web.Controllers
         [HttpGet]
         public async Task<IActionResult> Logout(CancellationToken cancellationToken)
         {
+            // Identify role before clearing session/auth cookie
+            string? roleHint = null;
+            if (IsAdmin(User)) roleHint = "Admin";
+            else if (IsManager(User)) roleHint = "Manager";
+
             var accessToken = HttpContext.Session.GetString("access_token");
 
             try
@@ -108,6 +113,9 @@ namespace Khoa_Luan_KS_Web.Controllers
 
             HttpContext.Session.Clear();
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+
+            if (!string.IsNullOrEmpty(roleHint))
+                return RedirectToAction("Login", new { role = roleHint });
 
             return RedirectToAction("Index", "Customer");
         }

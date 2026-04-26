@@ -1,0 +1,206 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? ""; var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var isCatalog = controller == "Catalog";
+    var isMenu = controller == "Menu";
+    var defaultOpenMenu = isCatalog ? "'catalog'" : (isMenu ? "'menu'" : "null");
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - HuitMeal Manager</title>
+    <link rel="icon" type="image/png" href="/assets/images/Logo_tròn.png" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome (matching React) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #d1d5db; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden bg-gray-50 text-gray-800" x-data="{ sidebarOpen: false }">
+    
+    <!-- HEADER -->
+    <header class="bg-white shadow px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-20 relative shrink-0">
+        <div class="flex items-center gap-3">
+            <button class="md:hidden p-2 text-green-600 rounded shadow bg-green-50" x-on:click="sidebarOpen = !sidebarOpen">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="/Manager/Home/Index" class="block">
+                <img src="/assets/images/Logo.jpg" alt="HUIT MEAL" class="h-10 w-auto object-contain rounded hover:opacity-90 transition-opacity" />
+            </a>
+        </div>
+        
+        <div class="flex items-center gap-2 sm:gap-4 relative" x-data="{ profileOpen: false }">
+            <i class="fas fa-lock text-green-600 text-lg"></i>
+            <button x-on:click="profileOpen = !profileOpen" class="flex items-center gap-2 px-3 py-1 rounded hover:bg-green-50 transition bg-white relative">
+                <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center text-gray-600">M</div>
+                <span class="font-medium text-gray-700">Manager User</span>
+                <i class="fas fa-chevron-down text-gray-500 text-sm"></i>
+            </button>
+            <!-- Dropdown -->
+            <div x-show="profileOpen" x-on:click.outside="profileOpen = false" x-cloak class="absolute right-0 top-full mt-2 w-48 bg-white shadow-lg rounded-md py-2 z-50">
+                <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 flex items-center gap-2">
+                    <i class="fas fa-user"></i> Cập nhật thông tin
+                </a>
+                <a href="/Auth/LogOut" class="block px-4 py-2 text-sm text-gray-700 hover:bg-green-100 hover:text-green-700 flex items-center gap-2">
+                    <i class="fas fa-sign-out-alt"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 flex-col md:flex-row overflow-hidden relative">
+        <!-- OVERLAY MOBILE -->
+        <div x-show="sidebarOpen" x-on:click="sidebarOpen = false" x-cloak class="fixed inset-0 bg-black/30 z-30 md:hidden"></div>
+
+        <!-- SIDEBAR -->
+        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'" class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-100 shadow-xl transform transition-transform duration-300 md:relative md:translate-x-0 overflow-y-auto custom-scrollbar" x-data="{ openMenu: @Html.Raw(defaultOpenMenu) }">
+            <nav class="flex flex-col gap-1.5 p-4 min-h-full text-[14px] font-medium text-gray-600">
+                <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-3 mt-1">Bảng Điều Khiển</div>
+                
+                <!-- 1. Dashboard -->
+                <a href="/Manager/Home/Index" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Home" && action == "Index" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-home w-5 text-center @(controller == "Home" && action == "Index" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Tổng quan Hệ thống</span>
+                </a>
+
+                <!-- 2. Quản lý danh mục -->
+                <div>
+                    <button x-on:click="openMenu = openMenu === 'catalog' ? null : 'catalog'" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all @(isCatalog ? "text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-layer-group w-5 text-center @(isCatalog ? "text-green-600" : "text-gray-400")"></i>
+                            <span>Quản lý Danh mục</span>
+                        </div>
+                        <i :class="openMenu === 'catalog' ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[11px] text-gray-400 transition-transform"></i>
+                    </button>
+                    <div x-show="openMenu === 'catalog'" x-collapse class="mt-1 flex flex-col gap-0.5 relative before:absolute before:left-5 before:top-0 before:bottom-0 before:w-px before:bg-gray-200">
+                        <a href="/Manager/Catalog/Employees" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "Employees" || action == "EmployeeDetail" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
+                            @if(action == "Employees" || action == "EmployeeDetail") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
+                            Nhân viên
+                        </a>
+                        <a href="/Manager/Catalog/Suppliers" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "Suppliers" || action == "SupplierDetail" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
+                            @if(action == "Suppliers" || action == "SupplierDetail") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
+                            Nhà cung cấp
+                        </a>
+                        <a href="/Manager/Catalog/Customers" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "Customers" || action == "CustomerDetail" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
+                            @if(action == "Customers" || action == "CustomerDetail") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
+                            Khách hàng
+                        </a>
+                        <a href="/Manager/Catalog/Meals" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "Meals" || action == "MealDetail" || action == "MealEdit" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
+                            @if(action == "Meals" || action == "MealDetail" || action == "MealEdit") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
+                            Thực đơn
+                        </a>
+                    </div>
+                </div>
+
+                <!-- 3. Quản lý thực đơn -->
+                <div>
+                    <button x-on:click="openMenu = openMenu === 'menu' ? null : 'menu'" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl transition-all @(isMenu ? "text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                        <div class="flex items-center gap-3">
+                            <i class="fas fa-utensils w-5 text-center @(isMenu ? "text-green-600" : "text-gray-400")"></i>
+                            <span>Bếp & Thực đơn</span>
+                        </div>
+                        <i :class="openMenu === 'menu' ? 'fa-chevron-up' : 'fa-chevron-down'" class="fas text-[11px] text-gray-400 transition-transform"></i>
+                    </button>
+                    <div x-show="openMenu === 'menu'" x-collapse class="mt-1 flex flex-col gap-0.5 relative before:absolute before:left-5 before:top-0 before:bottom-0 before:w-px before:bg-gray-200">
+                        <a href="/Manager/Menu/Dashboard" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "Dashboard" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
+                            @if(action == "Dashboard") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
+                            Dashboard Bếp
+                        </a>
+                        <a href="/Manager/Menu/Weekly" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "Weekly" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
+                            @if(action == "Weekly") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
+                            Menu Thực đơn tuần
+                        </a>
+                        <a href="/Manager/Menu/Dish" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "Dish" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
+                            @if(action == "Dish") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
+                            Kho Món ăn
+                        </a>
+                        <a href="/Manager/Menu/History" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "History" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
+                            @if(action == "History") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
+                            Lịch sử phục vụ
+                        </a>
+                        <a href="/Manager/Menu/Ingredients" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "Ingredients" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
+                            @if(action == "Ingredients") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
+                            Định mức Nguyên liệu
+                        </a>
+                    </div>
+                </div>
+
+                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Hoạt động Kinh doanh</div>
+
+                <!-- 4. QL ATTP -->
+                <a href="/Manager/Operation/FoodSafety" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(action == "FoodSafety" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-shield-alt w-5 text-center @(action == "FoodSafety" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Giám sát ATTP</span>
+                </a>
+
+                <!-- 5. QL đơn hàng -->
+                <a href="/Manager/Order/Index" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Order" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-shopping-bag w-5 text-center @(controller == "Order" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Tiếp nhận Đơn hàng</span>
+                </a>
+
+                <!-- 6. Báo cáo & TX -->
+                <a href="/Manager/Finance/Index" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Finance" && action == "Index" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-chart-pie w-5 text-center @(controller == "Finance" && action == "Index" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Tài chính & Doanh thu</span>
+                </a>
+
+                <!-- 8. Công nợ -->
+                <a href="/Manager/Finance/Debts" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(action == "Debts" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-file-invoice-dollar w-5 text-center @(action == "Debts" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Thanh toán Công nợ</span>
+                </a>
+
+                <!-- 7. Phản hồi -->
+                <a href="/Manager/Operation/Feedback" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(action == "Feedback" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-comments w-5 text-center @(action == "Feedback" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Phản hồi & Khiếu nại</span>
+                </a>
+
+                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Chuỗi cung ứng</div>
+
+                <!-- 9. Tồn kho -->
+                <a href="/Manager/Inventory/Index" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Inventory" && action == "Index" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-boxes w-5 text-center @(controller == "Inventory" && action == "Index" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Quản lý Kho bãi</span>
+                </a>
+
+                <!-- 10. Nhập hàng -->
+                <a href="/Manager/Import/Index" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Import" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-truck-loading w-5 text-center @(controller == "Import" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Nhập NCC (Purchasing)</span>
+                </a>
+
+                <!-- 11. Giao hàng -->
+                <a href="/Manager/Inventory/Delivery" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(action == "Delivery" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-shipping-fast w-5 text-center @(action == "Delivery" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Hệ thống Giao hàng</span>
+                </a>
+
+                <!-- 12. Hợp đồng -->
+                <a href="/Manager/Contract/Index" class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Contract" ? "bg-green-50 text-green-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-file-contract w-5 text-center @(controller == "Contract" ? "text-green-600" : "text-gray-400")"></i>
+                    <span>Chứng từ & Pháp lý</span>
+                </a>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 p-4 sm:p-6 overflow-y-auto bg-gray-50">
+            @RenderBody()
+        </main>
+    </div>
+
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
+
