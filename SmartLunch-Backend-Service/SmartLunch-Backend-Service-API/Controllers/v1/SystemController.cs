@@ -36,8 +36,8 @@ public class SystemController : ControllerBase
     /// <summary>
     /// Get list of Systems with pagination
     /// </summary>
-    [HttpGet("logs")]
-    [Authorize(Policy = "permission:systems.read")]
+    [HttpGet("log")]
+    [Authorize(Policy = "permission:systems.log")]
     public async Task<ActionResult<BaseApiResponse<GetSystemLogsResponse>>> GetSystemLogs([FromQuery] GetSystemLogsRequest request)
     {
         try
@@ -65,7 +65,7 @@ public class SystemController : ControllerBase
     /// Backup
     /// </summary>
     [HttpPost("backup")]
-    [Authorize(Policy = "permission:systems.read")]
+    [Authorize(Policy = "permission:systems.backup")]
     public async Task<ActionResult<BaseApiResponse<BackupSystemResponse>>> BackupSystem(int id)
     {
         try
@@ -91,8 +91,8 @@ public class SystemController : ControllerBase
     /// <summary>
     /// List backup files (.sql) metadata for Admin UI
     /// </summary>
-    [HttpGet("backups")]
-    [Authorize(Policy = "permission:systems.read")]
+    [HttpGet("backup")]
+    [Authorize(Policy = "permission:systems.backup")]
     public async Task<ActionResult<BaseApiResponse<GetSystemBackupsResponse>>> GetSystemBackups([FromQuery] GetSystemBackupsRequest request)
     {
         try
@@ -117,8 +117,8 @@ public class SystemController : ControllerBase
     /// <summary>
     /// Download a backup file (.sql) by backup id
     /// </summary>
-    [HttpGet("backups/{id:int}/download")]
-    [Authorize(Policy = "permission:systems.read")]
+    [HttpGet("backup/{id:int}/download")]
+    [Authorize(Policy = "permission:systems.backup")]
     public async Task<IActionResult> DownloadBackup([FromRoute] int id)
     {
         var meta = await _mediator.Send(new GetSystemBackupFileQuery(id));
@@ -128,8 +128,8 @@ public class SystemController : ControllerBase
     /// <summary>
     /// Soft delete a backup metadata record; optionally delete physical file
     /// </summary>
-    [HttpDelete("backups/{id:int}")]
-    [Authorize(Policy = "permission:systems.create")]
+    [HttpDelete("backup/{id:int}")]
+    [Authorize(Policy = "permission:systems.backup")]
     public async Task<ActionResult<BaseApiResponse<DeleteSystemBackupResponse>>> DeleteBackup([FromRoute] int id, [FromQuery] bool deleteFile = false)
     {
         try
@@ -165,7 +165,7 @@ public class SystemController : ControllerBase
 
     /// <summary>Tạo tài khoản mới; có thể gán <see cref="CreateSystemRequest.InitialRoleId"/> (một role).</summary>
     [HttpPost("restore")]
-    [Authorize(Policy = "permission:systems.create")]
+    [Authorize(Policy = "permission:systems.restore")]
     public async Task<ActionResult<BaseApiResponse<RestoreSystemResponse>>> RestoreSystem([FromBody] RestoreSystemRequest request)
     {
         try
