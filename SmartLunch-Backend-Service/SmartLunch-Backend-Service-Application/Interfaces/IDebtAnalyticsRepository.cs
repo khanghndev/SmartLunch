@@ -4,9 +4,9 @@ namespace SmartLunch.Backend.Service.Application.Interfaces;
 
 public interface IDebtAnalyticsRepository
 {
-    /// <summary>Per unit: tổng tiền đơn (chưa hủy), tổng đã thu (Payment paid), số đơn.</summary>
-    Task<Dictionary<int, (decimal Billed, decimal Paid, int OrderCount)>> GetUnitBilledAndPaidAsync(
-        int? unitId,
+    /// <summary>Per organization: tổng tiền đơn (chưa hủy), tổng đã thu (Payment paid), số đơn.</summary>
+    Task<Dictionary<int, (decimal Billed, decimal Paid, int OrderCount)>> GetOrganizationBilledAndPaidAsync(
+        int? organizationId,
         CancellationToken cancellationToken = default);
 
     /// <summary>Per partner: tổng giá trị hợp đồng (TotalValue) và tổng đã chi (PartnerPayment completed).</summary>
@@ -17,7 +17,7 @@ public interface IDebtAnalyticsRepository
     Task<IReadOnlyList<Payment>> GetCustomerPaymentsInRangeAsync(
         DateTime rangeStart,
         DateTime rangeEndExclusive,
-        int? unitId,
+        int? organizationId,
         CancellationToken cancellationToken = default);
 
     Task<IReadOnlyList<PartnerPayment>> GetSupplierPaymentsInRangeAsync(

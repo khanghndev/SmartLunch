@@ -24,7 +24,7 @@ public class OrderRepository : IOrderRepository
     public async Task<Order?> GetByIdWithDetailsAsync(int id)
     {
         return await _context.Orders
-            .Include(o => o.Unit)
+            .Include(o => o.Organization)
             .Include(o => o.CreatedBySalesUser)
             .Include(o => o.OrderItems).ThenInclude(i => i.Dish)
             .Include(o => o.Deliveries)
@@ -39,7 +39,7 @@ public class OrderRepository : IOrderRepository
         string? status = null)
     {
         var query = _context.Orders
-            .Include(o => o.Unit)
+            .Include(o => o.Organization)
             .Include(o => o.OrderItems).ThenInclude(i => i.Dish)
             .AsQueryable();
 
@@ -62,7 +62,7 @@ public class OrderRepository : IOrderRepository
             query = query.Where(e =>
                 e.Status.Contains(term) ||
                 e.PaymentStatus.Contains(term) ||
-                (e.Unit != null && e.Unit.Name.Contains(term)));
+                (e.Organization != null && e.Organization.Name.Contains(term)));
         }
 
         var totalCount = await query.CountAsync();
@@ -80,10 +80,10 @@ public class OrderRepository : IOrderRepository
     public async Task<List<MealStatisticItemDto>> GetMealStatisticsAsync(
         DateTime? startDate,
         DateTime? endDate,
-        int? unitId)
+        int? organizationId)
     {
         var query = _context.Orders
-            .Include(o => o.Unit)
+            .Include(o => o.Organization)
             .Include(o => o.OrderItems)
             .Where(o => o.Status != "cancelled")
             .AsQueryable();
@@ -94,8 +94,8 @@ public class OrderRepository : IOrderRepository
         if (endDate.HasValue)
             query = query.Where(o => o.ScheduledDate <= endDate.Value);
 
-        if (unitId.HasValue)
-            query = query.Where(o => o.UnitId == unitId.Value);
+        if (organizationId.HasValue)
+            query = query.Where(o => o.OrganizationId == organizationId.Value);
 
         var orders = await query.ToListAsync();
 
@@ -105,20 +105,20 @@ public class OrderRepository : IOrderRepository
             { 
                 Date = DateOnly.FromDateTime(x.Order.ScheduledDate),
                 MealSlot = x.Order.ScheduledDate.TimeOfDay.Hours < 15 ? "Lunch" : "Dinner",
-                UnitId = x.Order.UnitId,
-                UnitName = x.Order.Unit?.Name ?? "Unknown"
+                OrganizationId = x.Order.OrganizationId,
+                OrganizationName = x.Order.Organization?.Name ?? "Unknown"
             })
             .Select(g => new MealStatisticItemDto
             {
                 Date = g.Key.Date,
                 MealSlot = g.Key.MealSlot,
-                UnitId = g.Key.UnitId,
-                UnitName = g.Key.UnitName,
+                OrganizationId = g.Key.OrganizationId,
+                OrganizationName = g.Key.OrganizationName,
                 TotalMeals = g.Sum(x => x.Item.Quantity),
                 TotalAmount = g.Sum(x => x.Item.TotalPrice)
             })
             .OrderByDescending(x => x.Date)
-            .ThenBy(x => x.UnitName)
+            .ThenBy(x => x.OrganizationName)
             .ToList();
 
         return result;

@@ -67,21 +67,21 @@ INSERT INTO permissions (Name, Description, Resource, Action) VALUES
 ('media_files.delete', 'Xóa tệp', 'media_files', 'delete'),
 ('media_files.list', 'Danh sách tệp', 'media_files', 'list');
 
--- 09. units
+-- 09. organizations
 INSERT INTO permissions (Name, Description, Resource, Action) VALUES
-('units.create', 'Tạo đơn vị', 'units', 'create'),
-('units.read', 'Xem đơn vị', 'units', 'read'),
-('units.update', 'Cập nhật đơn vị', 'units', 'update'),
-('units.delete', 'Xóa đơn vị', 'units', 'delete'),
-('units.list', 'Danh sách đơn vị', 'units', 'list');
+('organizations.create', 'Tạo đơn vị', 'organizations', 'create'),
+('organizations.read', 'Xem đơn vị', 'organizations', 'read'),
+('organizations.update', 'Cập nhật đơn vị', 'organizations', 'update'),
+('organizations.delete', 'Xóa đơn vị', 'organizations', 'delete'),
+('organizations.list', 'Danh sách đơn vị', 'organizations', 'list');
 
--- 10. user_units
+-- 10. user_organizations
 INSERT INTO permissions (Name, Description, Resource, Action) VALUES
-('user_units.create', 'Gán thành viên đơn vị', 'user_units', 'create'),
-('user_units.read', 'Xem thành viên đơn vị', 'user_units', 'read'),
-('user_units.update', 'Cập nhật thành viên', 'user_units', 'update'),
-('user_units.delete', 'Xóa thành viên đơn vị', 'user_units', 'delete'),
-('user_units.list', 'Danh sách thành viên', 'user_units', 'list');
+('user_organizations.create', 'Gán thành viên đơn vị', 'user_organizations', 'create'),
+('user_organizations.read', 'Xem thành viên đơn vị', 'user_organizations', 'read'),
+('user_organizations.update', 'Cập nhật thành viên', 'user_organizations', 'update'),
+('user_organizations.delete', 'Xóa thành viên đơn vị', 'user_organizations', 'delete'),
+('user_organizations.list', 'Danh sách thành viên', 'user_organizations', 'list');
 
 -- 11. partners
 INSERT INTO permissions (Name, Description, Resource, Action) VALUES

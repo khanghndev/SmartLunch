@@ -9,8 +9,8 @@ public class MealStatisticItemDto
 {
     public DateOnly Date { get; set; }
     public string MealSlot { get; set; } = string.Empty;
-    public int? UnitId { get; set; }
-    public string UnitName { get; set; } = string.Empty;
+    public int? OrganizationId { get; set; }
+    public string OrganizationName { get; set; } = string.Empty;
     public int TotalMeals { get; set; }
     public decimal TotalAmount { get; set; }
 }

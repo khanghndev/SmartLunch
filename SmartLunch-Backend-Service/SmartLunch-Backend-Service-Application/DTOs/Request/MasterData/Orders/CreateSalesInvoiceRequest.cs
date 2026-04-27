@@ -5,7 +5,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Orders;
 /// </summary>
 public class CreateSalesInvoiceRequest
 {
-    public int UnitId { get; set; }
+    public int OrganizationId { get; set; }
 
     /// <summary>Khách hàng (đặt cơm) — tùy chọn.</summary>
     public int? UserId { get; set; }

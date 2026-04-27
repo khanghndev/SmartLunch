@@ -3,7 +3,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Response.Cart;
 public class ShoppingCartDto
 {
     public int UserId { get; set; }
-    public int? UnitId { get; set; }
+    public int? OrganizationId { get; set; }
     public List<ShoppingCartLineDto> Items { get; set; } = new();
     public decimal TotalAmount { get; set; }
     public DateTime UpdatedAtUtc { get; set; }

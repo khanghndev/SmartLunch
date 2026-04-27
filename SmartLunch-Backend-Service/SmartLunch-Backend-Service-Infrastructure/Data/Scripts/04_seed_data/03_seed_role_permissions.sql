@@ -18,7 +18,7 @@ INSERT INTO role_permissions (RoleId, PermissionId, AssignedAt, IsActive)
 SELECT (SELECT Id FROM roles WHERE Name = 'Manager'), p.Id, NOW(), 1
 FROM permissions p
 WHERE p.Resource IN (
-    'users', 'units', 'user_units',
+    'users', 'organizations', 'user_organizations',
     'partners', 'contracts', 'partner_payments',
     'ingredients', 'inventory', 'orders', 'order_items', 'deliveries', 
     'payments', 'transactions', 'reviews', 'sentiments', 'complaints',

@@ -3,13 +3,13 @@ namespace SmartLunch.Backend.Service.Application.Helpers;
 public static class CutOffTimeValidator
 {
     /// <summary>
-    /// Checks whether an order is allowed to be placed based on the UnitType and ScheduledDate.
+    /// Checks whether an order is allowed to be placed based on the organization type and ScheduledDate.
     /// Throws ArgumentException if the cut-off time is violated.
     /// </summary>
-    /// <param name="unitType">"Office", "Factory", "School"</param>
+    /// <param name="organizationType">"Office", "Factory", "School"</param>
     /// <param name="scheduledDate">The desired date/time for the meal</param>
     /// <param name="nowUtc">The current time in UTC</param>
-    public static void Validate(string unitType, DateTime scheduledDate, DateTime nowUtc)
+    public static void Validate(string organizationType, DateTime scheduledDate, DateTime nowUtc)
     {
         // Convert UTC to Vietnam Time (+7) for accurate logic
         var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
@@ -20,7 +20,7 @@ public static class CutOffTimeValidator
 
         var daysDifference = (scheduledVn.Date - nowVn.Date).Days;
 
-        switch (unitType.ToLowerInvariant())
+        switch (organizationType.ToLowerInvariant())
         {
             case "office":
                 // Trước >= 1 ngày, chốt đơn lúc 17:00 ngày liền trước
@@ -43,7 +43,7 @@ public static class CutOffTimeValidator
                 break;
 
             default:
-                // Nếu unit type không xác định, có thể cho phép hoặc fallback logic chung
+                // Nếu organization type không xác định, có thể cho phép hoặc fallback logic chung
                 if (daysDifference < 1)
                     throw new ArgumentException("Phải đặt đơn trước ít nhất 1 ngày.");
                 break;

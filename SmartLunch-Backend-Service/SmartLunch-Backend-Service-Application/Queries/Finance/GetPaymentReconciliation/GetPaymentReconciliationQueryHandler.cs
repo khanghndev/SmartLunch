@@ -64,7 +64,7 @@ public class GetPaymentReconciliationQueryHandler : IRequestHandler<GetPaymentRe
             {
                 OrderId = order.Id,
                 ScheduledDate = order.ScheduledDate,
-                UnitName = order.Unit?.Name,
+                OrganizationName = order.Organization?.Name,
                 OrderTotal = order.TotalAmount,
                 RecordedPaymentStatus = order.PaymentStatus,
                 PaidAmount = paidAmount,

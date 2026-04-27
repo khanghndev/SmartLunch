@@ -10,18 +10,18 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.Crea
 public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoiceCommand, GetOrderResponse>
 {
     private readonly IOrderRepository _orderRepository;
-    private readonly IUnitRepository _unitRepository;
+    private readonly IOrganizationRepository _organizationRepository;
     private readonly IUserRepository _userRepository;
     private readonly IDishRepository _dishRepository;
 
     public CreateSalesInvoiceCommandHandler(
         IOrderRepository orderRepository,
-        IUnitRepository unitRepository,
+        IOrganizationRepository organizationRepository,
         IUserRepository userRepository,
         IDishRepository dishRepository)
     {
         _orderRepository = orderRepository;
-        _unitRepository = unitRepository;
+        _organizationRepository = organizationRepository;
         _userRepository = userRepository;
         _dishRepository = dishRepository;
     }
@@ -30,8 +30,8 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
     {
         var req = request.Request;
 
-        if (req.UnitId == 0)
-            throw new ArgumentException("UnitId is required.");
+        if (req.OrganizationId == 0)
+            throw new ArgumentException("OrganizationId is required.");
 
         if (req.Lines == null || req.Lines.Count == 0)
             throw new ArgumentException("At least one line item is required.");
@@ -44,9 +44,9 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
                 throw new ArgumentException("Quantity must be at least 1 for each line.");
         }
 
-        var unit = await _unitRepository.GetByIdAsync(req.UnitId);
-        if (unit == null)
-            throw new ArgumentException("Unit was not found.");
+        var organization = await _organizationRepository.GetByIdAsync(req.OrganizationId);
+        if (organization == null)
+            throw new ArgumentException("Organization was not found.");
 
         if (req.UserId.HasValue && req.UserId.Value != 0)
         {
@@ -66,7 +66,7 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
             scheduledUtc = DateTime.SpecifyKind(scheduledUtc, DateTimeKind.Utc);
 
         // --- CUT-OFF TIME VALIDATION ---
-        CutOffTimeValidator.Validate(unit.UnitType, scheduledUtc, DateTime.UtcNow);
+        CutOffTimeValidator.Validate(organization.Type, scheduledUtc, DateTime.UtcNow);
 
         var merged = req.Lines
             .GroupBy(l => l.DishId)
@@ -97,7 +97,7 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
         var order = new Order
         {
             UserId = req.UserId is { } uid && uid != 0 ? uid : null,
-            UnitId = req.UnitId,
+            OrganizationId = req.OrganizationId,
             OrderDate = DateTime.UtcNow,
             ScheduledDate = scheduledUtc,
             Status = OrderLifecycleStatus.Confirmed,

@@ -5,6 +5,6 @@ public class AddCartLineRequest
     public int DishId { get; set; }
     public int Quantity { get; set; } = 1;
 
-    /// <summary>Đơn vị đặt (tùy chọn).</summary>
-    public int? UnitId { get; set; }
+    /// <summary>Tổ chức đặt (tùy chọn).</summary>
+    public int? OrganizationId { get; set; }
 }

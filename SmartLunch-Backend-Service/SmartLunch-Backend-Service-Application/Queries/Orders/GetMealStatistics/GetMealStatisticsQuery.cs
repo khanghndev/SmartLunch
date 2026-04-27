@@ -8,12 +8,12 @@ public class GetMealStatisticsQuery : IRequest<GetMealStatisticsResponse>
 {
     public DateTime? StartDate { get; set; }
     public DateTime? EndDate { get; set; }
-    public int? UnitId { get; set; }
+    public int? OrganizationId { get; set; }
 
     public GetMealStatisticsQuery(GetMealStatisticsRequest request)
     {
         StartDate = request.StartDate;
         EndDate = request.EndDate;
-        UnitId = request.UnitId;
+        OrganizationId = request.OrganizationId;
     }
 }

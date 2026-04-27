@@ -30,7 +30,7 @@ public class GetShoppingCartQueryHandler : IRequestHandler<GetShoppingCartQuery,
         return new ShoppingCartDto
         {
             UserId = userId,
-            UnitId = null,
+            OrganizationId = null,
             Items = new List<ShoppingCartLineDto>(),
             TotalAmount = 0,
             UpdatedAtUtc = DateTime.UtcNow

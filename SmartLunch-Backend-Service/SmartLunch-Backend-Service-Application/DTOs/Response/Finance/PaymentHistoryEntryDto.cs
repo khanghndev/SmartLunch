@@ -10,8 +10,8 @@ public class PaymentHistoryEntryDto
     public string Method { get; set; } = string.Empty;
     public string Status { get; set; } = string.Empty;
     public int? OrderId { get; set; }
-    public int? UnitId { get; set; }
-    public string? UnitName { get; set; }
+    public int? OrganizationId { get; set; }
+    public string? OrganizationName { get; set; }
     public int? PartnerId { get; set; }
     public string? PartnerLegalName { get; set; }
     public int? ContractId { get; set; }

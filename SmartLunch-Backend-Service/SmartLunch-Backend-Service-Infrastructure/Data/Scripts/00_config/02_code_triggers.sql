@@ -53,11 +53,11 @@ FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('user_to
 CREATE TRIGGER trg_media_files_code BEFORE INSERT ON media_files
 FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('media_files'); END IF; END //
 
-CREATE TRIGGER trg_units_code BEFORE INSERT ON units
-FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('units'); END IF; END //
+CREATE TRIGGER trg_organizations_code BEFORE INSERT ON organizations
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('organizations'); END IF; END //
 
-CREATE TRIGGER trg_user_units_code BEFORE INSERT ON user_units
-FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('user_units'); END IF; END //
+CREATE TRIGGER trg_user_organizations_code BEFORE INSERT ON user_organizations
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('user_organizations'); END IF; END //
 
 CREATE TRIGGER trg_partners_code BEFORE INSERT ON partners
 FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('partners'); END IF; END //

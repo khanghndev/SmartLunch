@@ -34,11 +34,11 @@ public class AddCartLineCommandHandler : IRequestHandler<AddCartLineCommand, Get
 
         var cart = await LoadOrCreateAsync(command.UserId, cancellationToken);
 
-        if (req.UnitId.HasValue && req.UnitId.Value > 0)
+        if (req.OrganizationId.HasValue && req.OrganizationId.Value > 0)
         {
-            if (cart.UnitId.HasValue && cart.UnitId.Value != req.UnitId.Value)
-                throw new InvalidOperationException("Cart is bound to a different unit. Clear the cart first.");
-            cart.UnitId ??= req.UnitId;
+            if (cart.OrganizationId.HasValue && cart.OrganizationId.Value != req.OrganizationId.Value)
+                throw new InvalidOperationException("Cart is bound to a different organization. Clear the cart first.");
+            cart.OrganizationId ??= req.OrganizationId;
         }
 
         var existing = cart.Items.FirstOrDefault(i => i.DishId == req.DishId);
@@ -75,7 +75,7 @@ public class AddCartLineCommandHandler : IRequestHandler<AddCartLineCommand, Get
             return new ShoppingCartDto
             {
                 UserId = userId,
-                UnitId = null,
+                OrganizationId = null,
                 Items = new List<ShoppingCartLineDto>(),
                 TotalAmount = 0,
                 UpdatedAtUtc = DateTime.UtcNow

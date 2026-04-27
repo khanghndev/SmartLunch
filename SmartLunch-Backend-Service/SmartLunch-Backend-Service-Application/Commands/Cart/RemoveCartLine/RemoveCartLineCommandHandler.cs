@@ -28,7 +28,7 @@ public class RemoveCartLineCommandHandler : IRequestHandler<RemoveCartLineComman
             throw new KeyNotFoundException("Cart line not found.");
 
         if (cart.Items.Count == 0)
-            cart.UnitId = null;
+            cart.OrganizationId = null;
 
         ShoppingCartMath.RecalculateTotals(cart);
         await _cartCache.SaveAsync(cart, cancellationToken);

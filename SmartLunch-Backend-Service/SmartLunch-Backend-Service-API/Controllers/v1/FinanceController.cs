@@ -8,7 +8,7 @@ using SmartLunch.Backend.Service.Application.Queries.Finance.GetCashflowSummary;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetPartnerPayables;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetPaymentHistory;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetPaymentReconciliation;
-using SmartLunch.Backend.Service.Application.Queries.Finance.GetUnitReceivables;
+using SmartLunch.Backend.Service.Application.Queries.Finance.GetOrganizationReceivables;
 using System.Net;
 
 namespace SmartLunch.Backend.Service.API.Controllers;
@@ -86,30 +86,30 @@ public class FinanceController : ControllerBase
     }
 
     /// <summary>
-    /// Công nợ khách hàng doanh nghiệp (theo đơn vị / Unit): tổng đơn chưa hủy − đã thu (Payment paid).
+    /// Công nợ khách hàng doanh nghiệp (theo tổ chức / Organization): tổng đơn chưa hủy − đã thu (Payment paid).
     /// </summary>
-    [HttpGet("unit-receivables")]
+    [HttpGet("organization-receivables")]
     [Authorize(Policy = "permission:payments.read")]
     [Authorize(Policy = "permission:orders.read")]
-    [Authorize(Policy = "permission:units.read")]
-    public async Task<ActionResult<BaseApiResponse<GetUnitReceivablesResponse>>> GetUnitReceivables(
-        [FromQuery] GetUnitReceivablesRequest request)
+    [Authorize(Policy = "permission:organizations.read")]
+    public async Task<ActionResult<BaseApiResponse<GetOrganizationReceivablesResponse>>> GetOrganizationReceivables(
+        [FromQuery] GetOrganizationReceivablesRequest request)
     {
         try
         {
-            var response = await _mediator.Send(new GetUnitReceivablesQuery(request));
-            return Ok(BaseApiResponse<GetUnitReceivablesResponse>.SuccessResult(response, "Unit receivables retrieved successfully"));
+            var response = await _mediator.Send(new GetOrganizationReceivablesQuery(request));
+            return Ok(BaseApiResponse<GetOrganizationReceivablesResponse>.SuccessResult(response, "Organization receivables retrieved successfully"));
         }
         catch (ArgumentException ex)
         {
-            return BadRequest(BaseApiResponse<GetUnitReceivablesResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            return BadRequest(BaseApiResponse<GetOrganizationReceivablesResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error building unit receivables");
+            _logger.LogError(ex, "Error building organization receivables");
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
-                BaseApiResponse<GetUnitReceivablesResponse>.ErrorResult("An error occurred while building unit receivables", new[] { ex.Message }));
+                BaseApiResponse<GetOrganizationReceivablesResponse>.ErrorResult("An error occurred while building organization receivables", new[] { ex.Message }));
         }
     }
 

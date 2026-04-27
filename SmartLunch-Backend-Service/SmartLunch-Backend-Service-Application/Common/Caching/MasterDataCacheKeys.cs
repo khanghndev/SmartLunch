@@ -14,10 +14,10 @@ public static class MasterDataCacheKeys
     public static string Partners(int page, int pageSize, string? searchTerm, bool? isActive) =>
         $"master-data:partners:list:page={page}:pageSize={pageSize}:search={Normalize(searchTerm)}:active={Normalize(isActive)}";
 
-    public static string Unit(int unitId) => $"master-data:units:detail:{unitId}";
+    public static string Organization(int organizationId) => $"master-data:organizations:detail:{organizationId}";
 
-    public static string Units(int page, int pageSize, string? searchTerm, bool? isActive) =>
-        $"master-data:units:list:page={page}:pageSize={pageSize}:search={Normalize(searchTerm)}:active={Normalize(isActive)}";
+    public static string Organizations(int page, int pageSize, string? searchTerm, bool? isActive) =>
+        $"master-data:organizations:list:page={page}:pageSize={pageSize}:search={Normalize(searchTerm)}:active={Normalize(isActive)}";
 
     private static string Normalize(string? value)
     {

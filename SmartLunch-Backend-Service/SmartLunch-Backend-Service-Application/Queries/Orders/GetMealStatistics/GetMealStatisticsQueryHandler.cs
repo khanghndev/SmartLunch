@@ -15,7 +15,7 @@ public class GetMealStatisticsQueryHandler : IRequestHandler<GetMealStatisticsQu
 
     public async Task<GetMealStatisticsResponse> Handle(GetMealStatisticsQuery request, CancellationToken cancellationToken)
     {
-        var data = await _orderRepository.GetMealStatisticsAsync(request.StartDate, request.EndDate, request.UnitId);
+        var data = await _orderRepository.GetMealStatisticsAsync(request.StartDate, request.EndDate, request.OrganizationId);
 
         return new GetMealStatisticsResponse
         {

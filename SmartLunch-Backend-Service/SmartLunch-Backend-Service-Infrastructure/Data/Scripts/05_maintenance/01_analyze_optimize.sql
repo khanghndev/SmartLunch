@@ -5,7 +5,7 @@
 
 ANALYZE TABLE
     users, roles, permissions, user_roles, user_permissions, role_permissions, user_tokens, media_files,
-    units, user_units,
+    organizations, user_organizations,
     partners, contracts, partner_payments,
     ingredients, ingredient_sources, inventory,
     internal_stock_issues, internal_stock_issue_lines,
@@ -20,7 +20,7 @@ ANALYZE TABLE
 
 OPTIMIZE TABLE
     system_logs, users, roles, permissions, user_roles, user_permissions, role_permissions, user_tokens, media_files,
-    units, user_units,
+    organizations, user_organizations,
     partners, contracts, partner_payments,
     ingredients, ingredient_sources, inventory,
     internal_stock_issues, internal_stock_issue_lines,

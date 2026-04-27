@@ -32,7 +32,7 @@ public class User
     public virtual ICollection<UserPermission> UserPermissions { get; set; } = new List<UserPermission>();
     public virtual ICollection<UserToken> UserTokens { get; set; } = new List<UserToken>();
     public virtual ICollection<MediaFile> MediaFiles { get; set; } = new List<MediaFile>();
-    public virtual ICollection<UserUnit> UserUnits { get; set; } = new List<UserUnit>();
+    public virtual ICollection<UserOrganization> UserOrganizations { get; set; } = new List<UserOrganization>();
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
     public virtual ICollection<Order> SalesOrdersCreated { get; set; } = new List<Order>();
     public virtual ICollection<Delivery> DeliveriesAssigned { get; set; } = new List<Delivery>();

@@ -8,7 +8,7 @@ public class Order
     public int Id { get; set; }
     public string? Code { get; set; }
     public int? UserId { get; set; }
-    public int? UnitId { get; set; }
+    public int? OrganizationId { get; set; }
     public int? ContractId { get; set; }
     public DateTime OrderDate { get; set; } = DateTime.UtcNow;
     public DateTime ScheduledDate { get; set; }
@@ -25,7 +25,7 @@ public class Order
     public int? CreatedBySalesUserId { get; set; }
 
     public virtual User? User { get; set; }
-    public virtual Unit? Unit { get; set; }
+    public virtual Organization? Organization { get; set; }
     public virtual Contract? Contract { get; set; }
     public virtual User? CreatedBySalesUser { get; set; }
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

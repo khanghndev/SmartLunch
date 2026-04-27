@@ -16,44 +16,44 @@ public class DebtAnalyticsRepository : IDebtAnalyticsRepository
         _context = context;
     }
 
-    public async Task<Dictionary<int, (decimal Billed, decimal Paid, int OrderCount)>> GetUnitBilledAndPaidAsync(
-        int? unitId,
+    public async Task<Dictionary<int, (decimal Billed, decimal Paid, int OrderCount)>> GetOrganizationBilledAndPaidAsync(
+        int? organizationId,
         CancellationToken cancellationToken = default)
     {
         var ordersQuery = _context.Orders
             .AsNoTracking()
-            .Where(o => o.UnitId != null && o.Status != OrderLifecycleStatus.Cancelled);
+            .Where(o => o.OrganizationId != null && o.Status != OrderLifecycleStatus.Cancelled);
 
-        if (unitId.HasValue)
-            ordersQuery = ordersQuery.Where(o => o.UnitId == unitId.Value);
+        if (organizationId.HasValue)
+            ordersQuery = ordersQuery.Where(o => o.OrganizationId == organizationId.Value);
 
         var billedRows = await ordersQuery
-            .GroupBy(o => o.UnitId!.Value)
+            .GroupBy(o => o.OrganizationId!.Value)
             .Select(g => new
             {
-                UnitId = g.Key,
+                OrganizationId = g.Key,
                 Billed = g.Sum(x => x.TotalAmount),
                 OrderCount = g.Count()
             })
             .ToListAsync(cancellationToken);
 
-        var billed = billedRows.ToDictionary(x => x.UnitId, x => (x.Billed, x.OrderCount));
+        var billed = billedRows.ToDictionary(x => x.OrganizationId, x => (x.Billed, x.OrderCount));
 
         var paidQuery =
             from p in _context.Payments.AsNoTracking()
             join o in _context.Orders.AsNoTracking() on p.OrderId equals o.Id
             where p.Status == PaymentRecordStatus.Paid
-                  && o.UnitId != null
+                  && o.OrganizationId != null
                   && o.Status != OrderLifecycleStatus.Cancelled
-            select new { o.UnitId, p.Amount };
+            select new { o.OrganizationId, p.Amount };
 
-        if (unitId.HasValue)
-            paidQuery = paidQuery.Where(x => x.UnitId == unitId.Value);
+        if (organizationId.HasValue)
+            paidQuery = paidQuery.Where(x => x.OrganizationId == organizationId.Value);
 
         var paid = await paidQuery
-            .GroupBy(x => x.UnitId!.Value)
-            .Select(g => new { UnitId = g.Key, Paid = g.Sum(x => x.Amount) })
-            .ToDictionaryAsync(x => x.UnitId, x => x.Paid, cancellationToken);
+            .GroupBy(x => x.OrganizationId!.Value)
+            .Select(g => new { OrganizationId = g.Key, Paid = g.Sum(x => x.Amount) })
+            .ToDictionaryAsync(x => x.OrganizationId, x => x.Paid, cancellationToken);
 
         var unitIds = billed.Keys.Union(paid.Keys).ToHashSet();
         var result = new Dictionary<int, (decimal Billed, decimal Paid, int OrderCount)>();
@@ -121,18 +121,18 @@ public class DebtAnalyticsRepository : IDebtAnalyticsRepository
     public async Task<IReadOnlyList<Payment>> GetCustomerPaymentsInRangeAsync(
         DateTime rangeStart,
         DateTime rangeEndExclusive,
-        int? unitId,
+        int? organizationId,
         CancellationToken cancellationToken = default)
     {
         var q = _context.Payments
             .AsNoTracking()
             .Include(p => p.Order)
-            .ThenInclude(o => o.Unit)
+            .ThenInclude(o => o.Organization)
             .Include(p => p.Payer)
             .Where(p => p.PaymentDate >= rangeStart && p.PaymentDate < rangeEndExclusive);
 
-        if (unitId.HasValue)
-            q = q.Where(p => p.Order.UnitId == unitId.Value);
+        if (organizationId.HasValue)
+            q = q.Where(p => p.Order.OrganizationId == organizationId.Value);
 
         return await q
             .OrderByDescending(p => p.PaymentDate)

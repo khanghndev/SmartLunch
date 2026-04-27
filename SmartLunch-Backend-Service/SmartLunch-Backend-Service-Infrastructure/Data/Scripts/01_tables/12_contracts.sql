@@ -1,11 +1,11 @@
-﻿-- =====================================================
+-- =====================================================
 -- Table: contracts
 -- =====================================================
 CREATE TABLE contracts (
     Id INT NOT NULL AUTO_INCREMENT,
     Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     PartnerId INT NULL COMMENT 'Nhà cung cấp (nếu là hợp đồng mua)',
-    UnitId INT NULL COMMENT 'Đơn vị khách hàng (nếu là hợp đồng bán)',
+    OrganizationId INT NULL COMMENT 'Đơn vị khách hàng (nếu là hợp đồng bán)',
     OrderId INT NULL COMMENT 'Đơn hàng liên kết (nếu là hợp đồng theo đơn)',
     
     ContractNumber VARCHAR(100) NULL,
@@ -31,11 +31,11 @@ CREATE TABLE contracts (
     PRIMARY KEY (Id),
     UNIQUE KEY UK_contracts_code (Code),
     INDEX IX_contracts_partner (PartnerId),
-    INDEX IX_contracts_unit (UnitId),
+    INDEX IX_contracts_org (OrganizationId),
     INDEX IX_contracts_order (OrderId),
     INDEX IX_contracts_status (Status),
 
     CONSTRAINT FK_contracts_partner FOREIGN KEY (PartnerId) REFERENCES partners (Id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT FK_contracts_unit FOREIGN KEY (UnitId) REFERENCES units (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT FK_contracts_org FOREIGN KEY (OrganizationId) REFERENCES organizations (Id) ON DELETE RESTRICT ON UPDATE CASCADE
     -- Note: FK to orders is omitted here to avoid circular dependency in table creation scripts
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'Hợp đồng và Chữ ký số';

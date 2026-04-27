@@ -32,8 +32,8 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<RolePermission> RolePermissions { get; set; }
         public DbSet<UserToken> UserTokens { get; set; }
         public DbSet<MediaFile> MediaFiles { get; set; }
-        public DbSet<Unit> Units { get; set; }
-        public DbSet<UserUnit> UserUnits { get; set; }
+        public DbSet<Organization> Organizations { get; set; }
+        public DbSet<UserOrganization> UserOrganizations { get; set; }
         public DbSet<Partner> Partners { get; set; }
         public DbSet<Contract> Contracts { get; set; }
         public DbSet<PartnerPayment> PartnerPayments { get; set; }
@@ -378,10 +378,10 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Unit
-            modelBuilder.Entity<Unit>(entity =>
+            // Organization
+            modelBuilder.Entity<Organization>(entity =>
             {
-                entity.ToTable("units");
+                entity.ToTable("organizations");
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.Name).IsUnique();
                 entity.HasIndex(e => new { e.IsActive, e.Name });
@@ -393,15 +393,15 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.ContactEmail).HasMaxLength(255);
             });
 
-            // UserUnit
-            modelBuilder.Entity<UserUnit>(entity =>
+            // UserOrganization
+            modelBuilder.Entity<UserOrganization>(entity =>
             {
-                entity.ToTable("user_units");
+                entity.ToTable("user_organizations");
                 entity.HasKey(e => e.Id);
-                entity.HasIndex(e => new { e.UserId, e.UnitId }).IsUnique();
+                entity.HasIndex(e => new { e.UserId, e.OrganizationId }).IsUnique();
                 entity.Property(e => e.Id).ValueGeneratedNever();
-                entity.HasOne(e => e.User).WithMany(u => u.UserUnits).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
-                entity.HasOne(e => e.Unit).WithMany(u => u.UserUnits).HasForeignKey(e => e.UnitId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.User).WithMany(u => u.UserOrganizations).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Organization).WithMany(u => u.UserOrganizations).HasForeignKey(e => e.OrganizationId).OnDelete(DeleteBehavior.Cascade);
             });
 
             // Partner
@@ -681,7 +681,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.ToTable("orders");
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.UserId);
-                entity.HasIndex(e => e.UnitId);
+                entity.HasIndex(e => e.OrganizationId);
                 entity.HasIndex(e => e.CreatedBySalesUserId);
                 entity.HasIndex(e => e.InvoiceCode).IsUnique();
                 entity.HasIndex(e => new { e.ScheduledDate, e.Status });
@@ -691,7 +691,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.PaymentStatus).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.InvoiceCode).HasMaxLength(40);
                 entity.HasOne(e => e.User).WithMany(u => u.Orders).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.SetNull);
-                entity.HasOne(e => e.Unit).WithMany().HasForeignKey(e => e.UnitId).OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(e => e.Organization).WithMany().HasForeignKey(e => e.OrganizationId).OnDelete(DeleteBehavior.SetNull);
                 entity.HasOne(e => e.CreatedBySalesUser).WithMany(u => u.SalesOrdersCreated).HasForeignKey(e => e.CreatedBySalesUserId).OnDelete(DeleteBehavior.SetNull);
             });
 

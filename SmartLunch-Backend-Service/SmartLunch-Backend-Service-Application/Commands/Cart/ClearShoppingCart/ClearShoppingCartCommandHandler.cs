@@ -20,7 +20,7 @@ public class ClearShoppingCartCommandHandler : IRequestHandler<ClearShoppingCart
         var empty = new ShoppingCartDto
         {
             UserId = command.UserId,
-            UnitId = null,
+            OrganizationId = null,
             Items = new List<ShoppingCartLineDto>(),
             TotalAmount = 0,
             UpdatedAtUtc = DateTime.UtcNow

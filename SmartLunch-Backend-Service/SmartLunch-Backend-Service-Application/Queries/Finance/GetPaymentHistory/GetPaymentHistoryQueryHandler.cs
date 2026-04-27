@@ -41,7 +41,7 @@ public class GetPaymentHistoryQueryHandler : IRequestHandler<GetPaymentHistoryQu
         if (req.Scope is PaymentHistoryScope.Customer or PaymentHistoryScope.All)
         {
             var payments = await _debtRepository.GetCustomerPaymentsInRangeAsync(
-                start, endEx, req.UnitId, cancellationToken);
+                start, endEx, req.OrganizationId, cancellationToken);
             merged.AddRange(payments.Select(p => new PaymentHistoryEntryDto
             {
                 Source = "customer",
@@ -51,8 +51,8 @@ public class GetPaymentHistoryQueryHandler : IRequestHandler<GetPaymentHistoryQu
                 Method = p.Method,
                 Status = p.Status,
                 OrderId = p.OrderId,
-                UnitId = p.Order.UnitId,
-                UnitName = p.Order.Unit?.Name,
+                OrganizationId = p.Order.OrganizationId,
+                OrganizationName = p.Order.Organization?.Name,
                 PartnerId = null,
                 PartnerLegalName = null,
                 ContractId = null,
@@ -73,8 +73,8 @@ public class GetPaymentHistoryQueryHandler : IRequestHandler<GetPaymentHistoryQu
                 Method = x.Method,
                 Status = x.Status,
                 OrderId = null,
-                UnitId = null,
-                UnitName = null,
+                OrganizationId = null,
+                OrganizationName = null,
                 PartnerId = x.PartnerId,
                 PartnerLegalName = x.Partner?.LegalName,
                 ContractId = x.ContractId,

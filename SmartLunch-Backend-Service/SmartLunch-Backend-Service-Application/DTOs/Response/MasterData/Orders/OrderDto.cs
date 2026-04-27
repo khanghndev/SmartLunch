@@ -4,8 +4,8 @@ public class OrderDto
 {
     public int Id { get; set; }
     public int? UserId { get; set; }
-    public int? UnitId { get; set; }
-    public string? UnitName { get; set; }
+    public int? OrganizationId { get; set; }
+    public string? OrganizationName { get; set; }
     public DateTime OrderDate { get; set; }
     public DateTime ScheduledDate { get; set; }
     public string Status { get; set; } = string.Empty;

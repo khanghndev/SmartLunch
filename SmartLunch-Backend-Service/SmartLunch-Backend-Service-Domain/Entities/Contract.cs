@@ -8,7 +8,7 @@ public class Contract
     public int Id { get; set; }
     public string? Code { get; set; }
     public int PartnerId { get; set; }
-    public int? UnitId { get; set; }
+    public int? OrganizationId { get; set; }
     public int? OrderId { get; set; }
     /// <summary>Số hợp đồng (ký hiệu nội bộ hoặc theo văn bản pháp lý).</summary>
     public string? ContractNumber { get; set; }
@@ -33,6 +33,6 @@ public class Contract
     public DateTime? UpdatedAt { get; set; }
 
     public virtual Partner Partner { get; set; } = null!;
-    public virtual Unit? Unit { get; set; }
+    public virtual Organization? Organization { get; set; }
     public virtual ICollection<PartnerPayment> PartnerPayments { get; set; } = new List<PartnerPayment>();
 }

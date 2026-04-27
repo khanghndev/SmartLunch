@@ -4,7 +4,7 @@ public class PaymentReconciliationLineDto
 {
     public int OrderId { get; set; }
     public DateTime ScheduledDate { get; set; }
-    public string? UnitName { get; set; }
+    public string? OrganizationName { get; set; }
     public decimal OrderTotal { get; set; }
     public string RecordedPaymentStatus { get; set; } = string.Empty;
     public decimal PaidAmount { get; set; }
