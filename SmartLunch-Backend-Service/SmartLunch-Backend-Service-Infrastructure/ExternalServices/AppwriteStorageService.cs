@@ -9,7 +9,7 @@ using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 
 namespace SmartLunch.Backend.Service.Infrastructure.ExternalServices;
 
-public class AppwriteStorageService : IFirebaseStorageService
+public class AppwriteStorageService : IStorageService
 {
     private readonly HttpClient _httpClient;
     private readonly ILogger<AppwriteStorageService> _logger;
@@ -31,7 +31,7 @@ public class AppwriteStorageService : IFirebaseStorageService
         _httpClient.DefaultRequestHeaders.Add("X-Appwrite-Key", _apiKey);
     }
 
-    public Task<FirebaseSignedUrlResult> CreateSignedUrlAsync(
+    public Task<StorageSignedUrlResult> CreateSignedUrlAsync(
         string objectName,
         HttpMethod method,
         string? contentType,
@@ -60,7 +60,7 @@ public class AppwriteStorageService : IFirebaseStorageService
                 headers[pair.Key] = pair.Value;
         }
 
-        return Task.FromResult(new FirebaseSignedUrlResult(
+        return Task.FromResult(new StorageSignedUrlResult(
             _bucketId,
             objectName,
             uploadUrl,
@@ -68,7 +68,7 @@ public class AppwriteStorageService : IFirebaseStorageService
             headers));
     }
 
-    public async Task<FirebaseObjectMetadata?> GetObjectMetadataAsync(string objectName)
+    public async Task<StorageObjectMetadata?> GetObjectMetadataAsync(string objectName)
     {
         var fileId = ToFileId(objectName);
         var url = $"{_endpoint}/storage/buckets/{_bucketId}/files/{Uri.EscapeDataString(fileId)}";
@@ -90,7 +90,7 @@ public class AppwriteStorageService : IFirebaseStorageService
         if (!string.IsNullOrWhiteSpace(updated) && DateTimeOffset.TryParse(updated, out var parsed))
             updatedAt = parsed;
 
-        return new FirebaseObjectMetadata(
+        return new StorageObjectMetadata(
             _bucketId,
             objectName,
             size,
@@ -134,7 +134,7 @@ public class AppwriteStorageService : IFirebaseStorageService
             res.EnsureSuccessStatusCode();
     }
 
-    private async Task<FirebaseSignedUrlResult> CreateDownloadUrlAsync(string objectName, string fileId, DateTime expiresAt)
+    private async Task<StorageSignedUrlResult> CreateDownloadUrlAsync(string objectName, string fileId, DateTime expiresAt)
     {
         try
         {
@@ -152,7 +152,7 @@ public class AppwriteStorageService : IFirebaseStorageService
             var token = doc.RootElement.GetProperty("token").GetString() ?? string.Empty;
 
             var url = $"{_endpoint}/storage/buckets/{_bucketId}/files/{Uri.EscapeDataString(fileId)}/view?project={Uri.EscapeDataString(_projectId)}&token={Uri.EscapeDataString(token)}";
-            return new FirebaseSignedUrlResult(_bucketId, objectName, url, expiresAt, new Dictionary<string, string>());
+            return new StorageSignedUrlResult(_bucketId, objectName, url, expiresAt, new Dictionary<string, string>());
         }
         catch (Exception ex)
         {

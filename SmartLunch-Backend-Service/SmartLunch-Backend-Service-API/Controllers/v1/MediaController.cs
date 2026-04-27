@@ -25,9 +25,9 @@ public class MediaController : ControllerBase
 {
     private readonly ILogger<MediaController> _logger;
     private readonly IMediator _mediator;
-    private readonly IFirebaseStorageService _storage;
+    private readonly IStorageService _storage;
 
-    public MediaController(ILogger<MediaController> logger, IMediator mediator, IFirebaseStorageService storage)
+    public MediaController(ILogger<MediaController> logger, IMediator mediator, IStorageService storage)
     {
         _logger = logger;
         _mediator = mediator;

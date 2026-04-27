@@ -1,6 +1,6 @@
 CREATE TABLE menu_suggestions (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     WeekStart DATE NOT NULL,
     GeneratedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     SuggestionText TEXT NOT NULL,

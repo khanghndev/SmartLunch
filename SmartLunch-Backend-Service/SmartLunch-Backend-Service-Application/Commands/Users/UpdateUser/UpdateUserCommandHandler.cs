@@ -33,8 +33,8 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, GetUs
         var user = await _userRepository.GetByIdAsync(request.UserId)
             ?? throw new KeyNotFoundException($"User with ID {request.UserId} was not found.");
 
-        if (TargetIsSuperAdmin(user) && !ActorIsSuperAdmin(actor))
-            throw new UnauthorizedAccessException("Only SuperAdmin can modify a SuperAdmin account.");
+        if (TargetIsAdmin(user) && !ActorIsAdmin(actor))
+            throw new UnauthorizedAccessException("Only Admin can modify an Admin account.");
 
         if (request.UserId == request.ActorUserId && req.IsActive == false)
             throw new InvalidOperationException("You cannot lock your own account.");
@@ -77,18 +77,18 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, GetUs
         return MapResponse(reloaded);
     }
 
-    private static bool TargetIsSuperAdmin(User user)
+    private static bool TargetIsAdmin(User user)
     {
         return user.UserRoles.Any(ur =>
             ur.IsActive && ur.Role != null
-            && string.Equals(ur.Role.Name, BuiltinRoles.SuperAdmin, StringComparison.OrdinalIgnoreCase));
+            && string.Equals(ur.Role.Name, BuiltinRoles.Admin, StringComparison.OrdinalIgnoreCase));
     }
 
-    private static bool ActorIsSuperAdmin(User actor)
+    private static bool ActorIsAdmin(User actor)
     {
         return actor.UserRoles.Any(ur =>
             ur.IsActive && ur.Role != null
-            && string.Equals(ur.Role.Name, BuiltinRoles.SuperAdmin, StringComparison.OrdinalIgnoreCase));
+            && string.Equals(ur.Role.Name, BuiltinRoles.Admin, StringComparison.OrdinalIgnoreCase));
     }
 
     private static GetUserResponse MapResponse(User user)

@@ -16,7 +16,7 @@ namespace SmartLunch.Backend.Service.API.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/sales/invoices")]
-[Authorize(Policy = "roles:Sales,Admin,SuperAdmin,Nhân viên bán")]
+[Authorize(Policy = "roles:SalesStaff,Admin")]
 public class SalesInvoiceController : ControllerBase
 {
     private readonly ILogger<SalesInvoiceController> _logger;

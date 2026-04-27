@@ -1,6 +1,6 @@
 CREATE TABLE transactions (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     Date DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     Description VARCHAR(255) NULL,
     Amount DECIMAL(12,2) NOT NULL,

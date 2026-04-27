@@ -12,6 +12,11 @@ public class Unit
     public string? Phone { get; set; }
     public string? ContactPerson { get; set; }
     public string? ContactEmail { get; set; }
+    public string? TaxCode { get; set; }
+    public string? LegalRepresentative { get; set; }
+    public string? LogoUrl { get; set; }
+    public string? Website { get; set; }
+    public string? EducationLevel { get; set; }
     
     /// <summary>Văn phòng (Office) / Xí nghiệp (Factory) / Trường học (School)</summary>
     public string UnitType { get; set; } = "Office";
@@ -29,4 +34,6 @@ public class Unit
     public int? UpdatedBy { get; set; }
 
     public virtual ICollection<UserUnit> UserUnits { get; set; } = new List<UserUnit>();
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+    public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
 }

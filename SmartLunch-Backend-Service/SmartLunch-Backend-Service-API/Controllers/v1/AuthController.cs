@@ -5,6 +5,8 @@ using SmartLunch.Backend.Service.Application.Commands.Auth;
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.Auth;
 using SmartLunch.Backend.Service.Application.DTOs.Response.Auth;
+using System.Net;
+using System.Security.Claims;
 using FirebaseLoginRequest = SmartLunch.Backend.Service.Application.DTOs.Request.Auth.FirebaseLoginRequest;
 using FirebaseLoginCommand = SmartLunch.Backend.Service.Application.Commands.Auth.FirebaseLoginCommand;
 using SmartLunch.Backend.Service.Application.Commands.Auth.LoginAdmin;
@@ -145,6 +147,7 @@ namespace SmartLunch.Backend.Service.API.Controllers
         }
 
         [HttpPost("refresh-token")]
+        [Authorize]
         public async Task<ActionResult<BaseApiResponse<RefreshTokenResponse>>> RefreshToken(RefreshTokenRequest request)
         {
             try
@@ -163,6 +166,53 @@ namespace SmartLunch.Backend.Service.API.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(BaseApiResponse<RefreshTokenResponse>.NotFoundResult(ex.Message));
+            }
+        }
+
+        [HttpPut("reset-password")]
+        [Authorize]
+        public async Task<ActionResult<BaseApiResponse<ResetPasswordResponse>>> ResetPassword([FromBody] ResetPasswordRequest request)
+        {
+            if (!ModelState.IsValid)
+            {
+                var errors = ModelState.Values
+                    .SelectMany(v => v.Errors)
+                    .Select(e => e.ErrorMessage)
+                    .ToList();
+                return BadRequest(BaseApiResponse<ResetPasswordResponse>.ErrorResult("Invalid request", errors));
+            }
+
+            try
+            {
+                var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
+                    throw new UnauthorizedAccessException("Invalid user context.");
+
+                var response = await _mediator.Send(new ResetPasswordCommand(request, userId));
+                return Ok(BaseApiResponse<ResetPasswordResponse>.SuccessResult(response, "Password reset successfully"));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(BaseApiResponse<ResetPasswordResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(BaseApiResponse<ResetPasswordResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(BaseApiResponse<ResetPasswordResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(BaseApiResponse<ResetPasswordResponse>.NotFoundResult(ex.Message));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error resetting password");
+                return StatusCode(
+                    (int)HttpStatusCode.InternalServerError,
+                    BaseApiResponse<ResetPasswordResponse>.ErrorResult("An error occurred while resetting password", new[] { ex.Message }));
             }
         }
 

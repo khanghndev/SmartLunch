@@ -1,6 +1,6 @@
 CREATE TABLE menu_schedule (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     MenuId INT NOT NULL,
     Date DATE NOT NULL,
     MealSlot VARCHAR(20) NOT NULL DEFAULT 'lunch',

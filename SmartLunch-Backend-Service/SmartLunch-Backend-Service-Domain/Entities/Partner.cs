@@ -17,6 +17,8 @@ public class Partner
     public string? ContactPerson { get; set; }
     public string? Phone { get; set; }
     public string? Email { get; set; }
+    public string? LogoUrl { get; set; }
+    public string? Website { get; set; }
     public decimal? PerformanceRating { get; set; }
     public string? ComplianceInfo { get; set; }
     public string? FinancialTerms { get; set; }

@@ -11,13 +11,13 @@ namespace SmartLunch.Backend.Service.Application.Commands.Media.GetDownloadUrl;
 public class GetMediaDownloadUrlCommandHandler : IRequestHandler<GetMediaDownloadUrlCommand, GetMediaDownloadUrlResponse>
 {
     private readonly IMediaFileRepository _mediaFileRepository;
-    private readonly IFirebaseStorageService _storage;
+    private readonly IStorageService _storage;
     private readonly IConfiguration _configuration;
     private readonly ILogger<GetMediaDownloadUrlCommandHandler> _logger;
 
     public GetMediaDownloadUrlCommandHandler(
         IMediaFileRepository mediaFileRepository,
-        IFirebaseStorageService storage,
+        IStorageService storage,
         IConfiguration configuration,
         ILogger<GetMediaDownloadUrlCommandHandler> logger)
     {

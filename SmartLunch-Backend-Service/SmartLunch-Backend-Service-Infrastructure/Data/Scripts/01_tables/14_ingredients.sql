@@ -1,6 +1,6 @@
 CREATE TABLE ingredients (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     Name VARCHAR(255) NOT NULL COMMENT 'Tên nguyên liệu',
     Unit VARCHAR(20) NOT NULL COMMENT 'Đơn vị (kg, lít, ...)',
     Description VARCHAR(255) NULL COMMENT 'Mô tả',

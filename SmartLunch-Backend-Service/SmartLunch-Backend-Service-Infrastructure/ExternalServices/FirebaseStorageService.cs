@@ -7,7 +7,7 @@ using System.Net.Http;
 
 namespace SmartLunch.Backend.Service.Infrastructure.ExternalServices;
 
-public class FirebaseStorageService : IFirebaseStorageService
+public class FirebaseStorageService : IStorageService
 {
     private readonly IConfiguration _configuration;
     private readonly ILogger<FirebaseStorageService> _logger;
@@ -33,7 +33,7 @@ public class FirebaseStorageService : IFirebaseStorageService
         _logger.LogInformation("Firebase Storage initialized. Bucket={Bucket}, ServiceAccountPath={ServiceAccountPath}", _bucket, serviceAccountPath);
     }
 
-    public Task<FirebaseSignedUrlResult> CreateSignedUrlAsync(
+    public Task<StorageSignedUrlResult> CreateSignedUrlAsync(
         string objectName,
         HttpMethod method,
         string? contentType,
@@ -82,7 +82,7 @@ public class FirebaseStorageService : IFirebaseStorageService
         var url = _urlSigner.Sign(template, options);
         var expiresAtUtc = DateTime.UtcNow.Add(expiresIn);
 
-        return Task.FromResult(new FirebaseSignedUrlResult(
+        return Task.FromResult(new StorageSignedUrlResult(
             _bucket,
             objectName,
             url,
@@ -90,13 +90,13 @@ public class FirebaseStorageService : IFirebaseStorageService
             requiredHeadersNormalized));
     }
 
-    public async Task<FirebaseObjectMetadata?> GetObjectMetadataAsync(string objectName)
+    public async Task<StorageObjectMetadata?> GetObjectMetadataAsync(string objectName)
     {
         try
         {
             var obj = await _storageClient.GetObjectAsync(_bucket, objectName);
             var sizeBytes = obj.Size.HasValue ? checked((long)obj.Size.Value) : 0L;
-            return new FirebaseObjectMetadata(
+            return new StorageObjectMetadata(
                 _bucket,
                 objectName,
                 sizeBytes,

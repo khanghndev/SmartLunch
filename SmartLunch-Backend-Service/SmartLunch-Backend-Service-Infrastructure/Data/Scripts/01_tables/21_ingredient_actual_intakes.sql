@@ -1,6 +1,6 @@
 CREATE TABLE ingredient_actual_intakes (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     ReceiptCode VARCHAR(40) NOT NULL,
     ProposalId INT NOT NULL,
     CreatedByUserId INT NOT NULL,

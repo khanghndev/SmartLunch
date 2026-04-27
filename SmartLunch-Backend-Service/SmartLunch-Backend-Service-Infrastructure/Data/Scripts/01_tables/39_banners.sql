@@ -3,6 +3,7 @@
 -- =====================================================
 CREATE TABLE banners (
     Id INT NOT NULL AUTO_INCREMENT,
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     PageName VARCHAR(100) NOT NULL COMMENT 'Trang hiển thị (Home, Factory, etc.)',
     Title VARCHAR(255) NULL COMMENT 'Tiêu đề banner',
     Subtitle VARCHAR(500) NULL COMMENT 'Phụ đề banner',
@@ -12,6 +13,8 @@ CREATE TABLE banners (
     IsActive TINYINT(1) NOT NULL DEFAULT 1,
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    CreatedBy INT NULL,
+    UpdatedBy INT NULL,
 
     PRIMARY KEY (Id),
     INDEX IX_banners_page_active (PageName, IsActive, DisplayOrder)

@@ -21,7 +21,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
             // ICacheService -> RedisCacheService (excluded from Scrutor scan by "Service" suffix)
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<ICartCacheService, CartCacheService>();
-            services.AddScoped<IFirebaseStorageService, AppwriteStorageService>();
+            services.AddScoped<IStorageService, AppwriteStorageService>();
 
             var assembly = typeof(DependencyInjection).Assembly;
 

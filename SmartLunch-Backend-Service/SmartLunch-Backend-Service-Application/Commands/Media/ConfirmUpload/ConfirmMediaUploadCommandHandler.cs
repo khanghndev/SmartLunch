@@ -24,13 +24,13 @@ public class ConfirmMediaUploadCommandHandler : IRequestHandler<ConfirmMediaUplo
         "video/quicktime"
     };
 
-    private readonly IFirebaseStorageService _storage;
+    private readonly IStorageService _storage;
     private readonly IMediaFileRepository _mediaFileRepository;
     private readonly IConfiguration _configuration;
     private readonly ILogger<ConfirmMediaUploadCommandHandler> _logger;
 
     public ConfirmMediaUploadCommandHandler(
-        IFirebaseStorageService storage,
+        IStorageService storage,
         IMediaFileRepository mediaFileRepository,
         IConfiguration configuration,
         ILogger<ConfirmMediaUploadCommandHandler> logger)

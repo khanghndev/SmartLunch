@@ -1,6 +1,6 @@
 CREATE TABLE ingredient_sources (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     IngredientId INT NOT NULL,
     PartnerId INT NULL,
     BatchNumber VARCHAR(50) NULL,

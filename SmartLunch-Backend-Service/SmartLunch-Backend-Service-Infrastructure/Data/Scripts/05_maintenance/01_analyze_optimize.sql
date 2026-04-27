@@ -14,10 +14,12 @@ ANALYZE TABLE
     dishes, dish_ingredients,
     weekly_menus, menu_schedule,
     orders, order_items, deliveries, payments,
-    transactions, reviews, sentiments, complaints, chatbot_logs, menu_suggestions;
+    transactions, reviews, sentiments, complaints, chatbot_logs, menu_suggestions,
+    news, recruitment, banners, notifications,
+    system_logs, system_backups;
 
 OPTIMIZE TABLE
-    users, roles, permissions, user_roles, user_permissions, role_permissions, user_tokens, media_files,
+    system_logs, users, roles, permissions, user_roles, user_permissions, role_permissions, user_tokens, media_files,
     units, user_units,
     partners, contracts, partner_payments,
     ingredients, ingredient_sources, inventory,
@@ -27,4 +29,6 @@ OPTIMIZE TABLE
     dishes, dish_ingredients,
     weekly_menus, menu_schedule,
     orders, order_items, deliveries, payments,
-    transactions, reviews, sentiments, complaints, chatbot_logs, menu_suggestions;
+    transactions, reviews, sentiments, complaints, chatbot_logs, menu_suggestions,
+    news, recruitment, banners, notifications,
+    system_logs, system_backups;

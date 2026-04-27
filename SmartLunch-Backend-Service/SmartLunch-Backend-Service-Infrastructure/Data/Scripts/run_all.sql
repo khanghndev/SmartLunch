@@ -48,6 +48,12 @@ SOURCE 01_tables/33_sentiments.sql;
 SOURCE 01_tables/34_complaints.sql;
 SOURCE 01_tables/35_chatbot_logs.sql;
 SOURCE 01_tables/36_menu_suggestions.sql;
+SOURCE 01_tables/37_news.sql;
+SOURCE 01_tables/38_recruitment.sql;
+SOURCE 01_tables/39_banners.sql;
+SOURCE 01_tables/40_notifications.sql;
+SOURCE 01_tables/41_system_logs.sql;
+SOURCE 01_tables/42_system_backups.sql;
 
 -- Step 1.5: Code generation (function + triggers) — SAU khi tạo bảng
 SOURCE 00_config/02_code_triggers.sql;
@@ -85,4 +91,4 @@ SOURCE 04_seed_data/17_seed_remaining_tables.sql;
 -- Step 5: Maintenance
 SOURCE 05_maintenance/01_analyze_optimize.sql;
 
-SELECT '✅ SmartLunch database setup completed!' AS Status;
+SELECT 'SmartLunch database setup completed!' AS Status;

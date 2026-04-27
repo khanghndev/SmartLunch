@@ -13,6 +13,10 @@ public class User
     public string? FirstName { get; set; }
     public string? LastName { get; set; }
     public string? PhoneNumber { get; set; }
+    public string? AvatarUrl { get; set; }
+    public string? Gender { get; set; }
+    public DateTime? BirthDate { get; set; }
+    public string? Address { get; set; }
     public string Provider { get; set; } = "system"; // "system", "google", "facebook", "firebase", etc.
     public bool IsActive { get; set; } = true;
     public bool IsEmailVerified { get; set; } = false;
@@ -43,4 +47,5 @@ public class User
     public virtual ICollection<IngredientIntakeProposal> IngredientIntakeProposalsCreated { get; set; } = new List<IngredientIntakeProposal>();
     public virtual ICollection<IngredientIntakeProposal> IngredientIntakeProposalsReviewed { get; set; } = new List<IngredientIntakeProposal>();
     public virtual ICollection<IngredientActualIntake> IngredientActualIntakesCreated { get; set; } = new List<IngredientActualIntake>();
+    public virtual ICollection<Notification> Notifications { get; set; } = new List<Notification>();
 }

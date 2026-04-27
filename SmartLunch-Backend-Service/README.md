@@ -39,7 +39,7 @@ Thư viện dùng chung (ngoài folder này): `SmartLunch-Shared-MessageQueue-Do
 - **MediatR** — CQRS nhẹ (command/query)
 - **Pomelo.EntityFrameworkCore.MySql** — MySQL
 - **JWT Bearer** — authentication
-- **Dynamic authorization** — policy dạng `roles:Admin,SuperAdmin` và `permission:users.read`, …
+- **Dynamic authorization** — policy dạng `roles:Admin` và `permission:users.read`, …
 - **API Versioning** — URL `api/v{version}`, header `X-API-Version`, query `api-version`
 - **Swagger / Swashbuckle** — `/swagger`
 - **Serilog** — logging theo cấu hình
@@ -103,7 +103,7 @@ Chi tiết cổng, Docker, AI service: [`RUN_AND_API.md`](../RUN_AND_API.md).
   - `roles:A,B,C` — user phải có **ít nhất một** role trong danh sách (kiểm tra qua DB/cache theo user id).
   - `permission:resource.action` — user phải có permission tương ứng (gộp từ role + gán trực tiếp user).
 
-Nhiều endpoint **master-data** yêu cầu role **Admin** hoặc **SuperAdmin** cộng thêm permission cụ thể (ví dụ `users.read`).
+Nhiều endpoint **master-data** yêu cầu role **Admin** cộng thêm permission cụ thể (ví dụ `users.read`).
 
 ---
 

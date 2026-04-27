@@ -1,6 +1,6 @@
 CREATE TABLE internal_stock_issues (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     IssueCode VARCHAR(40) NOT NULL,
     IssuedAt DATETIME NOT NULL,
     Reason VARCHAR(500) NULL,

@@ -1,6 +1,6 @@
 CREATE TABLE dish_ingredients (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     DishId INT NOT NULL,
     IngredientId INT NOT NULL,
     Quantity DECIMAL(10,2) NOT NULL,

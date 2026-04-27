@@ -12,6 +12,11 @@ public class Dish
     public string? Category { get; set; }
     public decimal Price { get; set; }
     public string? DietaryLabel { get; set; } // vegan, gluten-free, etc.
+    public string? ImageUrl { get; set; }
+    public decimal? Calories { get; set; }
+    public decimal? Protein { get; set; }
+    public decimal? Fat { get; set; }
+    public decimal? Carbs { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }

@@ -18,7 +18,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-[Authorize(Policy = "roles:Admin,SuperAdmin")]
+[Authorize(Policy = "roles:Admin")]
 public class RoleController : ControllerBase
 {
     private readonly ILogger<RoleController> _logger;
@@ -87,7 +87,7 @@ public class RoleController : ControllerBase
     /// Grant role to user
     /// </summary>
     [HttpPost("grant")]
-    [Authorize(Policy = "permission:roles.update")]
+    [Authorize(Policy = "permission:roles.grant")]
     public async Task<ActionResult<BaseApiResponse<GrantRoleToUserResponse>>> GrantRoleToUser([FromBody] GrantRoleToUserRequest request)
     {
         try
@@ -121,7 +121,7 @@ public class RoleController : ControllerBase
     /// Revoke role from user
     /// </summary>
     [HttpPost("revoke")]
-    [Authorize(Policy = "permission:roles.update")]
+    [Authorize(Policy = "permission:roles.revoke")]
     public async Task<ActionResult<BaseApiResponse<RevokeRoleFromUserResponse>>> RevokeRoleFromUser([FromBody] RevokeRoleFromUserRequest request)
     {
         try

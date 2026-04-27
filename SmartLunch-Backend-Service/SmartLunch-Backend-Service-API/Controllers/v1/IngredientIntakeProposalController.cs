@@ -21,7 +21,7 @@ namespace SmartLunch.Backend.Service.API.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/ingredient-intake-proposals")]
-[Authorize(Policy = "roles:Staff,Admin,SuperAdmin,Nhân viên")]
+[Authorize(Policy = "roles:Staff,Admin")]
 public class IngredientIntakeProposalController : ControllerBase
 {
     private readonly ILogger<IngredientIntakeProposalController> _logger;
@@ -36,7 +36,7 @@ public class IngredientIntakeProposalController : ControllerBase
     }
 
     /// <summary>
-    /// Danh sách phiếu: nhân viên chỉ thấy phiếu của mình; Admin/SuperAdmin thấy tất cả.
+    /// Danh sách phiếu: nhân viên chỉ thấy phiếu của mình; Admin thấy tất cả.
     /// </summary>
     [HttpGet]
     [Authorize(Policy = "permission:intakeproposals.read")]
@@ -72,7 +72,7 @@ public class IngredientIntakeProposalController : ControllerBase
 
     /// <summary>
     /// Lịch sử duyệt phiếu của quản lý: chỉ phiếu đã xử lý (không còn submitted).
-    /// Nhân viên kho chỉ thấy phiếu do mình tạo; Admin/SuperAdmin thấy toàn hệ thống.
+    /// Nhân viên kho chỉ thấy phiếu do mình tạo; Admin thấy toàn hệ thống.
     /// </summary>
     [HttpGet("review-history")]
     [Authorize(Policy = "permission:intakeproposals.read")]
@@ -110,7 +110,7 @@ public class IngredientIntakeProposalController : ControllerBase
     /// Quản lý duyệt / từ chối phiếu đề xuất (trạng thái submitted).
     /// </summary>
     [HttpPost("{proposalId:int}/review")]
-    [Authorize(Policy = "roles:Admin,SuperAdmin")]
+    [Authorize(Policy = "roles:Admin")]
     [Authorize(Policy = "permission:intakeproposals.review")]
     public async Task<ActionResult<BaseApiResponse<ReviewIngredientIntakeProposalResponse>>> ReviewProposal(
         int proposalId,

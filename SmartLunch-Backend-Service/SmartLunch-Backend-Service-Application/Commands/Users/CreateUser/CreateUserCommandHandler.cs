@@ -56,10 +56,10 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, GetUs
             if (!initialRole.IsActive)
                 throw new InvalidOperationException($"Role {initialRole.Name} is not active.");
 
-            if (string.Equals(initialRole.Name, BuiltinRoles.SuperAdmin, StringComparison.OrdinalIgnoreCase)
-                && !ActorIsSuperAdmin(actor))
+            if (string.Equals(initialRole.Name, BuiltinRoles.Admin, StringComparison.OrdinalIgnoreCase)
+                && !ActorIsAdmin(actor))
             {
-                throw new UnauthorizedAccessException("Only SuperAdmin can assign the SuperAdmin role.");
+                throw new UnauthorizedAccessException("Only Admin can assign the Admin role.");
             }
         }
 
@@ -103,11 +103,11 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, GetUs
         return MapResponse(reloaded);
     }
 
-    private static bool ActorIsSuperAdmin(User actor)
+    private static bool ActorIsAdmin(User actor)
     {
         return actor.UserRoles.Any(ur =>
             ur.IsActive && ur.Role != null
-            && string.Equals(ur.Role.Name, BuiltinRoles.SuperAdmin, StringComparison.OrdinalIgnoreCase));
+            && string.Equals(ur.Role.Name, BuiltinRoles.Admin, StringComparison.OrdinalIgnoreCase));
     }
 
     private static GetUserResponse MapResponse(User user)

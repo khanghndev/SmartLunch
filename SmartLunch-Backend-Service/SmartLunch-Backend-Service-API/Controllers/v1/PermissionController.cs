@@ -20,7 +20,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-[Authorize(Policy = "roles:Admin,SuperAdmin")]
+[Authorize(Policy = "roles:Admin")]
 public class PermissionController : ControllerBase
 {
     private readonly ILogger<PermissionController> _logger;
@@ -89,7 +89,7 @@ public class PermissionController : ControllerBase
     /// Grant permission to user
     /// </summary>
     [HttpPost("grant-to-user")]
-    [Authorize(Policy = "permission:permissions.update")]
+    [Authorize(Policy = "permission:permissions.grant")]
     public async Task<ActionResult<BaseApiResponse<GrantPermissionToUserResponse>>> GrantPermissionToUser([FromBody] GrantPermissionToUserRequest request)
     {
         try
@@ -123,7 +123,7 @@ public class PermissionController : ControllerBase
     /// Revoke permission from user
     /// </summary>
     [HttpPost("revoke-from-user")]
-    [Authorize(Policy = "permission:permissions.update")]
+    [Authorize(Policy = "permission:permissions.revoke")]
     public async Task<ActionResult<BaseApiResponse<RevokePermissionFromUserResponse>>> RevokePermissionFromUser([FromBody] RevokePermissionFromUserRequest request)
     {
         try
@@ -157,7 +157,7 @@ public class PermissionController : ControllerBase
     /// Grant permission to role
     /// </summary>
     [HttpPost("grant-to-role")]
-    [Authorize(Policy = "permission:permissions.update")]
+    [Authorize(Policy = "permission:permissions.grant")]
     public async Task<ActionResult<BaseApiResponse<GrantPermissionToRoleResponse>>> GrantPermissionToRole([FromBody] GrantPermissionToRoleRequest request)
     {
         try
@@ -191,7 +191,7 @@ public class PermissionController : ControllerBase
     /// Revoke permission from role
     /// </summary>
     [HttpPost("revoke-from-role")]
-    [Authorize(Policy = "permission:permissions.update")]
+    [Authorize(Policy = "permission:permissions.revoke")]
     public async Task<ActionResult<BaseApiResponse<RevokePermissionFromRoleResponse>>> RevokePermissionFromRole([FromBody] RevokePermissionFromRoleRequest request)
     {
         try

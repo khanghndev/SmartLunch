@@ -1,6 +1,6 @@
 CREATE TABLE sentiments (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     ReviewId INT NOT NULL,
     SentimentLabel VARCHAR(20) NOT NULL,
     Confidence DECIMAL(4,2) NULL,

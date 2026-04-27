@@ -1,6 +1,6 @@
 namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Users;
 
-/// <summary>Tạo tài khoản (Admin / SuperAdmin).</summary>
+/// <summary>Tạo tài khoản (Admin).</summary>
 public class CreateUserRequest
 {
     public string Username { get; set; } = string.Empty;

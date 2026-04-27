@@ -29,7 +29,6 @@ END //
 -- Triggers: BEFORE INSERT cho mỗi bảng
 -- Tự động set Code nếu chưa có
 -- =====================================================
-
 CREATE TRIGGER trg_users_code BEFORE INSERT ON users
 FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('users'); END IF; END //
 
@@ -134,5 +133,17 @@ FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('chatbot
 
 CREATE TRIGGER trg_menu_suggestions_code BEFORE INSERT ON menu_suggestions
 FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('menu_suggestions'); END IF; END //
+
+CREATE TRIGGER trg_news_code BEFORE INSERT ON news
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('news'); END IF; END //
+
+CREATE TRIGGER trg_recruitment_code BEFORE INSERT ON recruitment
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('recruitment'); END IF; END //
+
+CREATE TRIGGER trg_banners_code BEFORE INSERT ON banners
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('banners'); END IF; END //
+
+CREATE TRIGGER trg_notifications_code BEFORE INSERT ON notifications
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('notifications'); END IF; END //
 
 DELIMITER ;

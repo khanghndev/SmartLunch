@@ -10,8 +10,6 @@ public static class IntakeProposalAccessHelper
         {
             if (string.Equals(n, "Admin", StringComparison.OrdinalIgnoreCase))
                 return true;
-            if (string.Equals(n, "SuperAdmin", StringComparison.OrdinalIgnoreCase))
-                return true;
         }
 
         return false;

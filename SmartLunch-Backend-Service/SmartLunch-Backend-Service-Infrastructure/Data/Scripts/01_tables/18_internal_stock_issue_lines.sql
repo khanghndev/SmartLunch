@@ -1,6 +1,6 @@
 CREATE TABLE internal_stock_issue_lines (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     IssueId INT NOT NULL,
     IngredientId INT NOT NULL,
     Quantity DECIMAL(12,2) NOT NULL,

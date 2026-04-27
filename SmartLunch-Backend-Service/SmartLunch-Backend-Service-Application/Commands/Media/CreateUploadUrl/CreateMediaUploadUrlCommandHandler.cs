@@ -23,12 +23,12 @@ public class CreateMediaUploadUrlCommandHandler : IRequestHandler<CreateMediaUpl
         "video/quicktime"
     };
 
-    private readonly IFirebaseStorageService _storage;
+    private readonly IStorageService _storage;
     private readonly IConfiguration _configuration;
     private readonly ILogger<CreateMediaUploadUrlCommandHandler> _logger;
 
     public CreateMediaUploadUrlCommandHandler(
-        IFirebaseStorageService storage,
+        IStorageService storage,
         IConfiguration configuration,
         ILogger<CreateMediaUploadUrlCommandHandler> logger)
     {

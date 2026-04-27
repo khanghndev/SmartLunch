@@ -1,6 +1,6 @@
 CREATE TABLE deliveries (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     OrderId INT NOT NULL,
     AssignedStaffId INT NULL,
     DeliveryAddress VARCHAR(255) NOT NULL,

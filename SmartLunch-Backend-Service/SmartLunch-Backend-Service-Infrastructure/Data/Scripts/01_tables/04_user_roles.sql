@@ -1,6 +1,6 @@
 CREATE TABLE user_roles (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     UserId INT NOT NULL,
     RoleId INT NOT NULL,
     AssignedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

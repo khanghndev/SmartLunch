@@ -18,7 +18,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-[Authorize(Policy = "roles:Admin,Sales,SuperAdmin,Nhân viên bán")]
+[Authorize(Policy = "roles:Admin,Sales")]
 public class OrderController : ControllerBase
 {
     private readonly ILogger<OrderController> _logger;
@@ -123,7 +123,7 @@ public class OrderController : ControllerBase
     /// Thống kê suất ăn theo ngày / ca / bộ phận (Dành cho Admin và Công ty).
     /// </summary>
     [HttpGet("statistics/meal-count")]
-    [Authorize(Policy = "roles:Admin,Company,Công ty,SuperAdmin")]
+    [Authorize(Policy = "roles:Admin,Company")]
     [Authorize(Policy = "permission:orders.read")]
     public async Task<ActionResult<BaseApiResponse<GetMealStatisticsResponse>>> GetMealStatistics([FromQuery] GetMealStatisticsRequest request)
     {

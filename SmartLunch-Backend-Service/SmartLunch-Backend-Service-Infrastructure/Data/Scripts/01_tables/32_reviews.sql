@@ -1,6 +1,6 @@
 CREATE TABLE reviews (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     UserId INT NOT NULL,
     DishId INT NULL,
     OrderId INT NULL,

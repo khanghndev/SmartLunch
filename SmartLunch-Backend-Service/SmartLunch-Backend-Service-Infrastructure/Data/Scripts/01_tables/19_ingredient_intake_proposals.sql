@@ -1,6 +1,6 @@
 CREATE TABLE ingredient_intake_proposals (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     ProposalCode VARCHAR(40) NOT NULL,
     Status VARCHAR(20) NOT NULL,
     HeaderNote VARCHAR(500) NULL,

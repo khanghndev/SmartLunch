@@ -22,6 +22,8 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         }
 
         #region DbSets
+        public DbSet<SystemLog> SystemLogs { get; set; }
+        public DbSet<SystemBackup> SystemBackups { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Permission> Permissions { get; set; }
@@ -58,6 +60,10 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<Complaint> Complaints { get; set; }
         public DbSet<ChatbotLog> ChatbotLogs { get; set; }
         public DbSet<MenuSuggestion> MenuSuggestions { get; set; }
+        public DbSet<News> News { get; set; }
+        public DbSet<Recruitment> Recruitment { get; set; }
+        public DbSet<Banner> Banners { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
         #endregion
 
         #region Utilities
@@ -156,6 +162,62 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<SystemLog>(entity =>
+            {
+                entity.ToTable("system_logs");
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id)
+                    .IsRequired()
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.Timestamp);
+
+                entity.Property(e => e.Level)
+                    .HasMaxLength(50);
+
+                entity.Property(e => e.Message)
+                    .HasColumnType("text");
+
+                entity.Property(e => e.Template)
+                    .HasColumnType("text");
+
+                entity.Property(e => e.Exception)
+                    .HasColumnType("text");
+
+                entity.Property(e => e.Properties)
+                    .HasColumnType("text");
+            });
+
+            modelBuilder.Entity<SystemBackup>(entity =>
+            {
+                entity.ToTable("system_backups");
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Id)
+                    .IsRequired()
+                    .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.FileName)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.FilePath)
+                    .IsRequired()
+                    .HasMaxLength(1024);
+
+                entity.Property(e => e.SizeBytes);
+                entity.Property(e => e.CreatedAtUtc);
+                entity.Property(e => e.RestoredAtUtc);
+                entity.Property(e => e.DeletedAtUtc);
+                entity.Property(e => e.IsDeleted);
+
+                entity.HasIndex(e => e.CreatedAtUtc);
+                entity.HasIndex(e => e.IsDeleted);
+            });
+       
+       
 
             // Configure User entity
             modelBuilder.Entity<User>(entity =>
@@ -759,6 +821,49 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.SuggestionText).IsRequired();
                 entity.Property(e => e.AlgorithmVersion).HasMaxLength(50);
                 entity.HasOne(e => e.CreatedByUser).WithMany(u => u.MenuSuggestionsCreated).HasForeignKey(e => e.CreatedBy).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<News>(entity =>
+            {
+                entity.ToTable("news");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.CreatedBy);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Content).IsRequired();
+            });
+
+            modelBuilder.Entity<Recruitment>(entity =>
+            {
+                entity.ToTable("recruitment");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.CreatedBy);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+            });
+
+            modelBuilder.Entity<Banner>(entity =>
+            {
+                entity.ToTable("banners");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.IsActive);
+                entity.HasIndex(e => e.CreatedBy);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+            });
+
+            modelBuilder.Entity<Notification>(entity =>
+            {
+                entity.ToTable("notifications");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.IsRead);
+                entity.HasIndex(e => e.UserId);
+                entity.HasIndex(e => e.SendAt);
+                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Message).IsRequired();
             });
         }
         #endregion

@@ -16,7 +16,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-[Authorize(Policy = "roles:Admin,SuperAdmin")]
+[Authorize(Policy = "roles:Admin")]
 public class UserPermissionController : ControllerBase
 {
     private readonly ILogger<UserPermissionController> _logger;

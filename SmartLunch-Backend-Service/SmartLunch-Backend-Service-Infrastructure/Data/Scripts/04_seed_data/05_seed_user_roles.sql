@@ -1,41 +1,48 @@
 -- =====================================================
 -- Seed: User-Role Assignments (by username → role name)
+-- Expect usernames to match those seeded in 04_seed_users.sql
+-- Role names must match those seeded in 01_seed_roles.sql
 -- =====================================================
-INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'superadmin' AND r.Name = 'Super Admin';
-
+-- Admin
 INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
 SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'admin' AND r.Name = 'Admin';
 
+-- Manager
 INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'quanly' AND r.Name = 'Quản lý công ty';
+SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'manager' AND r.Name = 'Manager';
+
+-- WarehouseStaff
+INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'warehouse_staff' AND r.Name = 'WarehouseStaff';
+
+-- ChefStaff
+INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'chef_staff' AND r.Name = 'ChefStaff';
+
+-- SalesStaff
+INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'sales_staff' AND r.Name = 'SalesStaff';
+
+-- Organization (B2B customers)
+INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'abc_company' AND r.Name = 'Organization';
 
 INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'nhanvien_kho' AND r.Name = 'Nhân viên';
+SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'xyz_school' AND r.Name = 'Organization';
+
+-- Shipper
+INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'shipper1' AND r.Name = 'Shipper';
 
 INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'nhanvien_bep' AND r.Name = 'Nhân viên';
+SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'shipper2' AND r.Name = 'Shipper';
+
+-- Customer (B2C)
+INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
+SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'customer1' AND r.Name = 'Customer';
 
 INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'nhanvien_banhang' AND r.Name = 'Nhân viên';
+SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'customer2' AND r.Name = 'Customer';
 
 INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'cty_abc' AND r.Name = 'Khách hàng doanh nghiệp';
-
-INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'truong_xyz' AND r.Name = 'Khách hàng doanh nghiệp';
-
-INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'shipper1' AND r.Name = 'Nhân viên vận chuyển';
-
-INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'shipper2' AND r.Name = 'Nhân viên vận chuyển';
-
-INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'khach1' AND r.Name = 'Khách hàng cá nhân';
-
-INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'khach2' AND r.Name = 'Khách hàng cá nhân';
-
-INSERT INTO user_roles (UserId, RoleId, AssignedAt, AssignedBy, IsActive)
-SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'khach3' AND r.Name = 'Khách hàng cá nhân';
+SELECT u.Id, r.Id, NOW(), 1, 1 FROM users u, roles r WHERE u.Username = 'customer3' AND r.Name = 'Customer';
