@@ -228,10 +228,10 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
 
             optionsBuilder.UseMySql(connectionString, serverVersion, mysqlOptions =>
             {
-                mysqlOptions.EnableRetryOnFailure(
-                    maxRetryCount: options.MaxRetryCount,
-                    maxRetryDelay: TimeSpan.FromSeconds(options.MaxRetryDelay),
-                    errorNumbersToAdd: null);
+                // mysqlOptions.EnableRetryOnFailure(
+                //     maxRetryCount: options.MaxRetryCount,
+                //     maxRetryDelay: TimeSpan.FromSeconds(options.MaxRetryDelay),
+                //     errorNumbersToAdd: null);
 
                 // Apply command timeout
                 if (options.CommandTimeout > 0)

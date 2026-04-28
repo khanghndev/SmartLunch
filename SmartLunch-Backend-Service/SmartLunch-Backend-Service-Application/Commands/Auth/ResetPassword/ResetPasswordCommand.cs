@@ -7,12 +7,10 @@ namespace SmartLunch.Backend.Service.Application.Commands.Auth;
 public class ResetPasswordCommand : IRequest<ResetPasswordResponse>
 {
     public ResetPasswordRequest Request { get; }
-    public int ActorUserId { get; }
 
-    public ResetPasswordCommand(ResetPasswordRequest request, int actorUserId)
+    public ResetPasswordCommand(ResetPasswordRequest request)
     {
         Request = request;
-        ActorUserId = actorUserId;
     }
 }
 

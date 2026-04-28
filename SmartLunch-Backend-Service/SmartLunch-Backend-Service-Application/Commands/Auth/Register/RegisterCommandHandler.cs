@@ -18,6 +18,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
     private readonly IPasswordHasher _passwordHasher;
     private readonly IJwtService _jwtService;
     private readonly ILogger<RegisterCommandHandler> _logger;
+    private readonly IUnitOfWork _unitOfWork;
 
     public RegisterCommandHandler(
         IUserRepository userRepository,
@@ -27,6 +28,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         IRolePermissionRepository rolePermissionRepository,
         IPasswordHasher passwordHasher,
         IJwtService jwtService,
+        IUnitOfWork unitOfWork,
         ILogger<RegisterCommandHandler> logger)
     {
         _userRepository = userRepository;
@@ -37,6 +39,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
         _passwordHasher = passwordHasher;
         _jwtService = jwtService;
         _logger = logger;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<RegisterResponse> Handle(RegisterCommand request, CancellationToken cancellationToken)
@@ -61,69 +64,79 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
             throw new InvalidOperationException("Email already exists");
         }
 
-        // Create user - use email as username if username is not provided
-        var user = new User
+        await _unitOfWork.BeginTransactionAsync();
+
+        try
         {
-
-            Username = req.Email, // Use email as username
-            Email = req.Email,
-            PasswordHash = _passwordHasher.HashPassword(req.Password),
-            Provider = "system",
-            IsActive = true,
-            IsEmailVerified = false,
-            CreatedAt = DateTime.UtcNow
-        };
-        await _userRepository.CreateAsync(user);
-
-        var userRole = new UserRole
-        {
-
-            UserId = user.Id,
-            RoleId = req.RoleId ?? 0,
-            AssignedAt = DateTime.UtcNow,
-            IsActive = true
-        };
-        await _userRoleRepository.CreateAsync(userRole);
-
-        var rolePermissionList = await _rolePermissionRepository.GetByRoleIdAsync(req.RoleId ?? 0);
-        foreach (var rolePermission in rolePermissionList)
-        {
-            var userPermission = new UserPermission
+            // Create user - use email as username if username is not provided
+            var user = new User
             {
-
-                UserId = user.Id,
-                PermissionId = rolePermission.PermissionId,
+                Email = req.Email,
+                PasswordHash = _passwordHasher.HashPassword(req.Password),
+                Provider = "system",
+                IsActive = true,
+                IsEmailVerified = false,
+                CreatedAt = DateTime.UtcNow
             };
-            await _userPermissionRepository.CreateAsync(userPermission);
+            var userCreate = await _userRepository.CreateAsync(user);
+
+            _logger.LogInformation("User created successfully: {UserId}", userCreate.Id);
+            
+            var userRole = new UserRole
+            {
+                UserId = userCreate.Id,
+                RoleId = req.RoleId ?? 0,
+                AssignedAt = DateTime.UtcNow,
+                IsActive = true
+            };
+            await _userRoleRepository.CreateAsync(userRole);
+
+            var rolePermissionList = await _rolePermissionRepository.GetByRoleIdAsync(req.RoleId ?? 0);
+            foreach (var rolePermission in rolePermissionList)
+            {
+                var userPermission = new UserPermission
+                {
+
+                    UserId = userCreate.Id,
+                    PermissionId = rolePermission.PermissionId,
+                };
+                await _userPermissionRepository.CreateAsync(userPermission);
+            }
+
+            // Generate tokens
+            var roles = new List<string> { "Customer" }; // Default role
+            var accessToken = _jwtService.GenerateAccessToken(userCreate, roles);
+            var refreshToken = _jwtService.GenerateRefreshToken();
+            var expiresAt = DateTime.UtcNow.AddMinutes(60);
+            var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+
+            // Store token in database
+            var userToken = new UserToken
+            {
+                UserId = userCreate.Id,
+                AccessToken = accessToken,
+                RefreshToken = refreshToken,
+                IssuedAt = DateTime.UtcNow,
+                ExpiresAt = refreshTokenExpiresAt,
+                IsActive = true
+            };
+
+            await _userTokenRepository.CreateAsync(userToken);
+
+            await _unitOfWork.CommitAsync();
+
+            _logger.LogInformation("User registered successfully: {Email}", userCreate.Email);
+
+            return new RegisterResponse
+            {
+                Username = userCreate.Username,
+                Email = userCreate.Email
+            };
         }
-
-        // Generate tokens
-        var roles = new List<string> { "User" }; // Default role
-        var accessToken = _jwtService.GenerateAccessToken(user, roles);
-        var refreshToken = _jwtService.GenerateRefreshToken();
-        var expiresAt = DateTime.UtcNow.AddMinutes(60);
-        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
-
-        // Store token in database
-        var userToken = new UserToken
+        catch
         {
-
-            UserId = user.Id,
-            AccessToken = accessToken,
-            RefreshToken = refreshToken,
-            IssuedAt = DateTime.UtcNow,
-            ExpiresAt = refreshTokenExpiresAt,
-            IsActive = true
-        };
-
-        await _userTokenRepository.CreateAsync(userToken);
-
-        _logger.LogInformation("User registered successfully: {Email}", user.Email);
-
-        return new RegisterResponse
-        {
-            Username = user.Username,
-            Email = user.Email
-        };
+            await _unitOfWork.RollbackAsync();
+            throw;
+        }
     }
 }

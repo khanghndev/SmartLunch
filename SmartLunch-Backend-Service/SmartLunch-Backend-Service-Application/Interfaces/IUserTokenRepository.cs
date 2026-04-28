@@ -7,6 +7,7 @@ public interface IUserTokenRepository
     Task<UserToken?> GetByIdAsync(int id);
     Task<UserToken?> GetByAccessTokenAsync(string accessToken);
     Task<UserToken?> GetByRefreshTokenAsync(string refreshToken);
+    Task<UserToken?> GetByJtiAsync(string jti);
     Task<IEnumerable<UserToken>> GetByUserIdAsync(int userId);
     Task<IEnumerable<UserToken>> GetActiveByUserIdAsync(int userId);
     Task<(List<UserToken> UserTokens, int TotalCount)> GetUserTokensAsync(int page, int pageSize, string? searchTerm = null, bool? isActive = null);

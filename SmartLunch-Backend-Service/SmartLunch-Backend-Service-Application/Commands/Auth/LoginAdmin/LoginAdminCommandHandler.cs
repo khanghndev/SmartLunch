@@ -6,6 +6,7 @@ using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
 
 namespace SmartLunch.Backend.Service.Application.Handlers.Auth.LoginAdmin;
 
@@ -92,16 +93,18 @@ public class LoginAdminCommandHandler : IRequestHandler<LoginAdminCommand, Login
         // Revoke all existing active tokens for this user
         await _userTokenRepository.RevokeAllUserTokensAsync(user.Id);
 
+        var jti = _jwtService.GetPrincipalFromToken(accessToken)?.Claims.FirstOrDefault(c => c.Type == "jti")?.Value;
+
         // Store new token in database
         var userToken = new UserToken
         {
-
             UserId = user.Id,
             AccessToken = accessToken,
             RefreshToken = refreshToken,
             IssuedAt = DateTime.UtcNow,
             ExpiresAt = refreshTokenExpiresAt,
-            IsActive = true
+            IsActive = true,
+            Jti = jti
         };
 
         await _userTokenRepository.CreateAsync(userToken);

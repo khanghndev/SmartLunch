@@ -170,7 +170,6 @@ namespace SmartLunch.Backend.Service.API.Controllers
         }
 
         [HttpPut("reset-password")]
-        [Authorize]
         public async Task<ActionResult<BaseApiResponse<ResetPasswordResponse>>> ResetPassword([FromBody] ResetPasswordRequest request)
         {
             if (!ModelState.IsValid)
@@ -184,11 +183,7 @@ namespace SmartLunch.Backend.Service.API.Controllers
 
             try
             {
-                var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
-                    throw new UnauthorizedAccessException("Invalid user context.");
-
-                var response = await _mediator.Send(new ResetPasswordCommand(request, userId));
+                var response = await _mediator.Send(new ResetPasswordCommand(request));
                 return Ok(BaseApiResponse<ResetPasswordResponse>.SuccessResult(response, "Password reset successfully"));
             }
             catch (ArgumentException ex)

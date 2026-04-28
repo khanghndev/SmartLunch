@@ -6,6 +6,7 @@ using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
+using System.Security.Claims;
 
 namespace SmartLunch.Backend.Service.Application.Handlers.Auth;
 
@@ -127,6 +128,8 @@ public class FirebaseLoginCommandHandler : IRequestHandler<FirebaseLoginCommand,
         // Revoke all existing active tokens for this user
         await _userTokenRepository.RevokeAllUserTokensAsync(user.Id);
 
+        var jti = _jwtService.GetPrincipalFromToken(accessToken)?.Claims.FirstOrDefault(c => c.Type == "jti")?.Value;
+
         // Store new token in database
         var userToken = new UserToken
         {
@@ -136,7 +139,8 @@ public class FirebaseLoginCommandHandler : IRequestHandler<FirebaseLoginCommand,
             RefreshToken = refreshToken,
             IssuedAt = DateTime.UtcNow,
             ExpiresAt = refreshTokenExpiresAt,
-            IsActive = true
+            IsActive = true,
+            Jti = jti
         };
 
         await _userTokenRepository.CreateAsync(userToken);

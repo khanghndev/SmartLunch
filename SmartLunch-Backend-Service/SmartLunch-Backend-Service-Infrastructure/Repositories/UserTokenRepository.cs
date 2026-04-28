@@ -35,6 +35,13 @@ public class UserTokenRepository : IUserTokenRepository
             .FirstOrDefaultAsync(ut => ut.RefreshToken == refreshToken && ut.IsActive);
     }
 
+    public async Task<UserToken?> GetByJtiAsync(string jti)
+    {
+        return await _context.UserTokens
+            .Include(ut => ut.User)
+            .FirstOrDefaultAsync(ut => ut.Jti == jti && ut.IsActive);
+    }
+
     public async Task<IEnumerable<UserToken>> GetByUserIdAsync(int userId)
     {
         return await _context.UserTokens

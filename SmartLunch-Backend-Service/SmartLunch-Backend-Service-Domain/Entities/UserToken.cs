@@ -15,6 +15,7 @@ public class UserToken
     public DateTime? RevokedAt { get; set; }
     public string? ReplacedByToken { get; set; }
     public bool IsActive { get; set; } = true;
+    public string? Jti { get; set; } // JWT ID
 
     // Navigation property
     public virtual User User { get; set; } = null!;

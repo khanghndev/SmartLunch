@@ -44,7 +44,9 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
         if (string.Equals(req.CurrentPassword, req.NewPassword, StringComparison.Ordinal))
             throw new InvalidOperationException("New password must be different from current password.");
 
-        var user = await _userRepository.GetByIdAsync(request.ActorUserId)
+        _logger.LogInformation("Resetting password for user {Email}", req.Email);
+
+        var user = await _userRepository.GetByEmailAsync(req.Email)
             ?? throw new UnauthorizedAccessException("Invalid user context.");
 
         if (!user.IsActive)

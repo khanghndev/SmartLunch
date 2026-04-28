@@ -6,6 +6,7 @@ using SmartLunch.Backend.Service.API.Authorization.Role;
 using SmartLunch.Backend.Service.API.Authorization.Permission;
 using SmartLunch.Backend.Service.API.Extensions;
 using SmartLunch.Backend.Service.API.Hubs;
+using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.API.Middlewares;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
@@ -191,6 +192,23 @@ builder.Services.AddAuthentication(options =>
 
     options.Events = new JwtBearerEvents
     {
+        OnTokenValidated = async context =>
+        {
+            var tokenService = context.HttpContext.RequestServices
+                .GetRequiredService<IUserTokenRepository>();
+
+            var jti = context.Principal?.FindFirst("jti")?.Value;
+
+            if (!string.IsNullOrEmpty(jti))
+            {
+                var token = await tokenService.GetByJtiAsync(jti);
+                if (token == null || !token.IsActive)
+                {
+                    context.Fail("Token revoked"); // => 401
+                }
+            }
+        },
+
         OnMessageReceived = context =>
         {
             var accessToken = context.Request.Query["access_token"];

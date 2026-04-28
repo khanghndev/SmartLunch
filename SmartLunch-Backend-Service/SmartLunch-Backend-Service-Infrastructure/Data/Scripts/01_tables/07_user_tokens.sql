@@ -1,6 +1,6 @@
 CREATE TABLE user_tokens (
     Id INT NOT NULL AUTO_INCREMENT,
-    Code VARCHAR(20) NULL COMMENT 'M� t? sinh (trigger)',
+    Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     UserId INT NOT NULL,
     AccessToken VARCHAR(2000) NOT NULL,
     RefreshToken VARCHAR(2000) NOT NULL,
@@ -9,6 +9,7 @@ CREATE TABLE user_tokens (
     RevokedAt DATETIME NULL,
     ReplacedByToken VARCHAR(2000) NULL,
     IsActive TINYINT(1) NOT NULL DEFAULT 1,
+    Jti VARCHAR(200) NULL COMMENT 'JWT ID',
     PRIMARY KEY (Id),
     UNIQUE KEY UK_user_tokens_code (Code),
     INDEX IX_user_tokens_user (UserId),

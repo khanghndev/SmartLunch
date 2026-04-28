@@ -217,8 +217,6 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.IsDeleted);
             });
        
-       
-
             // Configure User entity
             modelBuilder.Entity<User>(entity =>
             {
@@ -227,7 +225,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.Username).IsUnique();
                 entity.HasIndex(e => e.Email).IsUnique();
                 entity.HasIndex(e => e.IsActive);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Username).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.PasswordHash).IsRequired().HasMaxLength(500);
@@ -244,7 +242,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.Name).IsUnique();
                 entity.HasIndex(e => e.IsActive);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
                 entity.Property(e => e.Description).HasMaxLength(500);
             });
@@ -258,7 +256,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.Resource);
                 entity.HasIndex(e => e.Action);
                 entity.HasIndex(e => e.IsActive);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
                 entity.Property(e => e.Description).HasMaxLength(500);
                 entity.Property(e => e.Resource).IsRequired().HasMaxLength(100);
@@ -274,7 +272,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.RoleId);
                 entity.HasIndex(e => e.IsActive);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(ur => ur.User)
                     .WithMany(u => u.UserRoles)
@@ -296,7 +294,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.PermissionId);
                 entity.HasIndex(e => e.IsActive);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(up => up.User)
                     .WithMany(u => u.UserPermissions)
@@ -318,7 +316,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.RoleId);
                 entity.HasIndex(e => e.PermissionId);
                 entity.HasIndex(e => e.IsActive);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
 
                 entity.HasOne(rp => rp.Role)
                     .WithMany(r => r.RolePermissions)
@@ -341,15 +339,10 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.RefreshToken);
                 entity.HasIndex(e => e.IsActive);
                 entity.HasIndex(e => e.ExpiresAt);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.AccessToken).IsRequired().HasMaxLength(2000);
                 entity.Property(e => e.RefreshToken).IsRequired().HasMaxLength(2000);
                 entity.Property(e => e.ReplacedByToken).HasMaxLength(2000);
-
-                entity.HasOne(ut => ut.User)
-                    .WithMany(u => u.UserTokens)
-                    .HasForeignKey(ut => ut.UserId)
-                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // Configure MediaFile entity
@@ -363,7 +356,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.MediaType);
                 entity.HasIndex(e => new { e.Bucket, e.ObjectName }).IsUnique();
 
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.OwnerUserId).IsRequired();
                 entity.Property(e => e.Bucket).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.ObjectName).IsRequired().HasMaxLength(1024);
@@ -385,7 +378,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.Name).IsUnique();
                 entity.HasIndex(e => new { e.IsActive, e.Name });
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Address).HasMaxLength(255);
                 entity.Property(e => e.Phone).HasMaxLength(50);
@@ -399,7 +392,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.ToTable("user_organizations");
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.UserId, e.OrganizationId }).IsUnique();
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.HasOne(e => e.User).WithMany(u => u.UserOrganizations).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Organization).WithMany(u => u.UserOrganizations).HasForeignKey(e => e.OrganizationId).OnDelete(DeleteBehavior.Cascade);
             });
@@ -411,7 +404,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.TaxId).IsUnique();
                 entity.HasIndex(e => new { e.IsActive, e.LegalName });
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.LegalName).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.BusinessRegistrationNumber).HasMaxLength(100);
                 entity.Property(e => e.TaxId).HasMaxLength(50);
@@ -433,7 +426,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.PartnerId);
                 entity.HasIndex(e => e.Status);
                 entity.HasIndex(e => new { e.StartDate, e.EndDate });
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.ContractNumber).HasMaxLength(100);
                 entity.Property(e => e.Description).HasMaxLength(1000);
                 entity.Property(e => e.SupplySchedule).HasMaxLength(500);
@@ -451,7 +444,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.ContractId);
                 entity.HasIndex(e => e.PartnerId);
                 entity.HasIndex(e => e.PaymentDate);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Amount).HasPrecision(12, 2);
                 entity.Property(e => e.Method).IsRequired().HasMaxLength(30);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
@@ -467,7 +460,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.Name).IsUnique();
                 entity.HasIndex(e => e.DefaultSupplierId);
                 entity.HasIndex(e => e.IsActive);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Unit).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.Description).HasMaxLength(255);
@@ -483,7 +476,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.IngredientId);
                 entity.HasIndex(e => e.PartnerId);
                 entity.HasIndex(e => e.ExpirationDate);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.BatchNumber).HasMaxLength(50);
                 entity.Property(e => e.OriginDetails).HasMaxLength(255);
                 entity.Property(e => e.Certification).HasMaxLength(255);
@@ -509,7 +502,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.IssueCode).IsUnique();
                 entity.HasIndex(e => e.IssuedAt);
                 entity.HasIndex(e => e.CreatedByUserId);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.IssueCode).IsRequired().HasMaxLength(40);
                 entity.Property(e => e.Reason).HasMaxLength(500);
                 entity.HasOne(e => e.CreatedByUser)
@@ -524,7 +517,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.IssueId);
                 entity.HasIndex(e => e.IngredientId);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Quantity).HasPrecision(12, 2);
                 entity.HasOne(e => e.Issue)
                     .WithMany(i => i.Lines)
@@ -545,7 +538,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.Status);
                 entity.HasIndex(e => e.CreatedByUserId);
                 entity.HasIndex(e => e.CreatedAt);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.ProposalCode).IsRequired().HasMaxLength(40);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.HeaderNote).HasMaxLength(500);
@@ -566,7 +559,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.ProposalId);
                 entity.HasIndex(e => e.IngredientId);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Quantity).HasPrecision(12, 2);
                 entity.Property(e => e.LineNote).HasMaxLength(255);
                 entity.HasOne(e => e.Proposal)
@@ -588,7 +581,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.ProposalId).IsUnique();
                 entity.HasIndex(e => e.CreatedByUserId);
                 entity.HasIndex(e => e.ReceivedAt);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.ReceiptCode).IsRequired().HasMaxLength(40);
                 entity.Property(e => e.Note).HasMaxLength(500);
                 entity.HasOne(e => e.Proposal)
@@ -607,7 +600,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.IntakeId);
                 entity.HasIndex(e => e.IngredientId);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Quantity).HasPrecision(12, 2);
                 entity.HasOne(e => e.Intake)
                     .WithMany(i => i.Lines)
@@ -626,7 +619,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.Name).IsUnique();
                 entity.HasIndex(e => new { e.IsActive, e.Category });
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Description).HasMaxLength(255);
                 entity.Property(e => e.Category).HasMaxLength(100);
@@ -642,7 +635,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => new { e.DishId, e.IngredientId }).IsUnique();
                 entity.HasIndex(e => e.DishId);
                 entity.HasIndex(e => e.IngredientId);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Quantity).HasPrecision(10, 2);
                 entity.Property(e => e.Unit).HasMaxLength(20);
                 entity.HasOne(e => e.Dish).WithMany(d => d.DishIngredients).HasForeignKey(e => e.DishId).OnDelete(DeleteBehavior.Cascade);
@@ -656,7 +649,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.StartDate, e.EndDate }).IsUnique();
                 entity.HasIndex(e => e.CreatedBy);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Description).HasMaxLength(255);
                 entity.HasOne(e => e.CreatedByUser).WithMany(u => u.WeeklyMenusCreated).HasForeignKey(e => e.CreatedBy).OnDelete(DeleteBehavior.Restrict);
             });
@@ -669,7 +662,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => new { e.MenuId, e.Date, e.MealSlot, e.DishId }).IsUnique();
                 entity.HasIndex(e => e.DishId);
                 entity.HasIndex(e => e.Date);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.MealSlot).IsRequired().HasMaxLength(20);
                 entity.HasOne(e => e.Menu).WithMany(m => m.MenuSchedules).HasForeignKey(e => e.MenuId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Dish).WithMany(d => d.MenuSchedules).HasForeignKey(e => e.DishId).OnDelete(DeleteBehavior.Restrict);
@@ -685,7 +678,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.CreatedBySalesUserId);
                 entity.HasIndex(e => e.InvoiceCode).IsUnique();
                 entity.HasIndex(e => new { e.ScheduledDate, e.Status });
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.TotalAmount).HasPrecision(12, 2);
                 entity.Property(e => e.PaymentStatus).IsRequired().HasMaxLength(20);
@@ -702,7 +695,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.OrderId);
                 entity.HasIndex(e => e.DishId);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.UnitPrice).HasPrecision(10, 2);
                 entity.Property(e => e.TotalPrice).HasPrecision(12, 2);
                 entity.HasOne(e => e.Order).WithMany(o => o.OrderItems).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.Cascade);
@@ -716,7 +709,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.OrderId);
                 entity.HasIndex(e => e.AssignedStaffId);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.DeliveryAddress).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.DeliveryStatus).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.Notes).HasMaxLength(255);
@@ -732,7 +725,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.OrderId);
                 entity.HasIndex(e => e.PayerId);
                 entity.HasIndex(e => e.PaymentDate);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Amount).HasPrecision(12, 2);
                 entity.Property(e => e.Method).IsRequired().HasMaxLength(30);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
@@ -747,7 +740,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.Date);
                 entity.HasIndex(e => e.Category);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Description).HasMaxLength(255);
                 entity.Property(e => e.Amount).HasPrecision(12, 2);
                 entity.Property(e => e.Category).HasMaxLength(100);
@@ -763,7 +756,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.DishId);
                 entity.HasIndex(e => e.OrderId);
                 entity.HasIndex(e => e.CreatedAt);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.HasOne(e => e.User).WithMany(u => u.Reviews).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Dish).WithMany(d => d.Reviews).HasForeignKey(e => e.DishId).OnDelete(DeleteBehavior.SetNull);
                 entity.HasOne(e => e.Order).WithMany(o => o.Reviews).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.SetNull);
@@ -775,7 +768,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.ToTable("sentiments");
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.ReviewId).IsUnique();
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.SentimentLabel).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.Confidence).HasPrecision(4, 2);
                 entity.HasOne(e => e.Review).WithOne(r => r.Sentiment).HasForeignKey<Sentiment>(e => e.ReviewId).OnDelete(DeleteBehavior.Cascade);
@@ -790,7 +783,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.OrderId);
                 entity.HasIndex(e => e.AssignedTo);
                 entity.HasIndex(e => e.Status);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
                 entity.HasOne(e => e.User).WithMany(u => u.ComplaintsRaised).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
@@ -805,7 +798,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.CreatedAt);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Message).IsRequired();
                 entity.HasOne(e => e.User).WithMany(u => u.ChatbotLogs).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.SetNull);
             });
@@ -817,7 +810,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.WeekStart);
                 entity.HasIndex(e => e.CreatedBy);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.SuggestionText).IsRequired();
                 entity.Property(e => e.AlgorithmVersion).HasMaxLength(50);
                 entity.HasOne(e => e.CreatedByUser).WithMany(u => u.MenuSuggestionsCreated).HasForeignKey(e => e.CreatedBy).OnDelete(DeleteBehavior.SetNull);
@@ -829,7 +822,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.IsActive);
                 entity.HasIndex(e => e.CreatedBy);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Content).IsRequired();
             });
@@ -840,7 +833,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.IsActive);
                 entity.HasIndex(e => e.CreatedBy);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
             });
 
@@ -850,7 +843,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.IsActive);
                 entity.HasIndex(e => e.CreatedBy);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
             });
 
@@ -861,7 +854,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.IsRead);
                 entity.HasIndex(e => e.UserId);
                 entity.HasIndex(e => e.SendAt);
-                entity.Property(e => e.Id).ValueGeneratedNever();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Message).IsRequired();
             });
