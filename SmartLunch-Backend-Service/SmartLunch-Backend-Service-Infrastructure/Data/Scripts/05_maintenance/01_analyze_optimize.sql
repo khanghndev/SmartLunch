@@ -19,7 +19,7 @@ ANALYZE TABLE
     system_logs, system_backups;
 
 OPTIMIZE TABLE
-    system_logs, users, roles, permissions, user_roles, user_permissions, role_permissions, user_tokens, media_files,
+    users, roles, permissions, user_roles, user_permissions, role_permissions, user_tokens, media_files,
     organizations, user_organizations,
     partners, contracts, partner_payments,
     ingredients, ingredient_sources, inventory,
