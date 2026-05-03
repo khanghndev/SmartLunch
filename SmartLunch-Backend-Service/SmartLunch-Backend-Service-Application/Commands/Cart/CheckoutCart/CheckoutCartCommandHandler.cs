@@ -50,7 +50,6 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
         var order = new Order
         {
             UserId = command.UserId,
-            OrganizationId = cart.OrganizationId,
             OrderDate = DateTime.UtcNow,
             ScheduledDate = scheduledUtc,
             Status = OrderLifecycleStatus.Pending,

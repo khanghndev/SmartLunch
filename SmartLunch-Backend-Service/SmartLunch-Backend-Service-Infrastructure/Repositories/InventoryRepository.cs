@@ -60,4 +60,19 @@ public class InventoryRepository : IInventoryRepository
             .ThenInclude(ing => ing.DefaultSupplier)
             .FirstOrDefaultAsync(i => i.IngredientId == ingredientId, cancellationToken);
     }
+
+    public async Task<List<Inventory>> GetByIngredientIdsAsync(
+        IEnumerable<int> ingredientIds,
+        CancellationToken cancellationToken = default)
+    {
+        var idList = ingredientIds.Distinct().ToList();
+        if (idList.Count == 0)
+            return new List<Inventory>();
+
+        return await _context.Inventories
+            .AsNoTracking()
+            .Include(i => i.Ingredient)
+            .Where(i => idList.Contains(i.IngredientId))
+            .ToListAsync(cancellationToken);
+    }
 }

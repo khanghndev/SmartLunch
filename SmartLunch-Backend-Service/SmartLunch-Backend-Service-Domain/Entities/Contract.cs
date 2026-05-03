@@ -9,7 +9,7 @@ public class Contract
     public string? Code { get; set; }
     public int PartnerId { get; set; }
     public int? OrganizationId { get; set; }
-    public int? OrderId { get; set; }
+
     /// <summary>Số hợp đồng (ký hiệu nội bộ hoặc theo văn bản pháp lý).</summary>
     public string? ContractNumber { get; set; }
     public string ContractType { get; set; } = "Framework"; // Framework | Order-Based
@@ -35,4 +35,5 @@ public class Contract
     public virtual Partner Partner { get; set; } = null!;
     public virtual Organization? Organization { get; set; }
     public virtual ICollection<PartnerPayment> PartnerPayments { get; set; } = new List<PartnerPayment>();
+    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 }

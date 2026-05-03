@@ -43,4 +43,16 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
 
         return (weeklyMenus, totalCount);
     }
+
+    public async Task<WeeklyMenu?> GetWeeklyMenuWithSchedulesByDateAsync(DateTime date)
+    {
+        return await _context.WeeklyMenus
+            .Include(wm => wm.MenuSchedules)
+                .ThenInclude(ms => ms.Dish)
+                    .ThenInclude(d => d.DishDishCategories)
+                        .ThenInclude(ddc => ddc.DishCategory)
+            .Where(wm => wm.StartDate <= date && wm.EndDate >= date)
+            .OrderByDescending(wm => wm.CreatedAt)
+            .FirstOrDefaultAsync();
+    }
 }

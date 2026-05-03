@@ -12,6 +12,10 @@ class RulesProfile:
     allergy_filter: dict[str, Any]
     incompatible_pairs: dict[str, Any]
     constraints: dict[str, Any] = field(default_factory=dict)
+    ingredient_groups: dict[str, list[str]] = field(default_factory=dict)
+    """Groups of ingredient NameEnglish. 
+    Keys: protein, seafood, vegetable, spice, etc. 
+    Values: list of ingredient keywords."""
 
 
 def _default_profile() -> RulesProfile:
@@ -54,15 +58,30 @@ class RulesLoader:
         try:    
             with open(self._rules_path, "r", encoding="utf-8") as f:
                 raw = json.load(f)
-            profile = raw.get("profiles", {}).get(profile_key)
-            if not profile:
-                return _default_profile()
+            
+            profiles = raw.get("profiles", {})
+            default_raw = profiles.get("default", {})
+            profile_raw = profiles.get(profile_key, {}) if profile_key != "default" else {}
+            
+            if not profile_raw and profile_key != "default":
+                # If profile not found, fallback to default
+                profile_raw = default_raw
+
+            # ── Inherit and Merge ──
+            # 1. Ingredient Groups: Always take from default, then override/extend with profile-specific
+            groups = default_raw.get("ingredient_groups", {}).copy()
+            groups.update(profile_raw.get("ingredient_groups", {}))
+            
+            # 2. Constraints: Same logic
+            constraints = default_raw.get("constraints", {}).copy()
+            constraints.update(profile_raw.get("constraints", {}))
 
             return RulesProfile(
-                scoring=profile.get("scoring", {}),
-                allergy_filter=profile.get("allergy_filter", {}),
-                incompatible_pairs=profile.get("incompatible_pairs", {}),
-                constraints=profile.get("constraints", {}),
+                scoring=profile_raw.get("scoring", default_raw.get("scoring", {})),
+                allergy_filter=profile_raw.get("allergy_filter", default_raw.get("allergy_filter", {})),
+                incompatible_pairs=profile_raw.get("incompatible_pairs", default_raw.get("incompatible_pairs", {})),
+                constraints=constraints,
+                ingredient_groups=groups,
             )
         except FileNotFoundError:
             return _default_profile()

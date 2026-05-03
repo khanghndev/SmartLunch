@@ -20,18 +20,26 @@ public class CreateDishCommandHandler : IRequestHandler<CreateDishCommand, GetDi
         var req = request.Request;
         if (string.IsNullOrWhiteSpace(req.Name))
             throw new ArgumentException("Name is required.");
-        if (!DishCatalogCategory.IsValidOrEmpty(req.Category))
-            throw new ArgumentException(
-                "Invalid category. Use one of: man, xao, canh, trang_mieng, or leave empty.");
         if (req.Price < 0)
             throw new ArgumentException("Price cannot be negative.");
+        if (req.DishSlotCategoryCodes is not { Count: > 0 })
+            throw new ArgumentException("DishSlotCategoryCodes is required and must contain at least one slot key (e.g. main, soup).");
+
+        DishAiEnglishCatalog.ValidateSlotCategoryListOrThrow(req.DishSlotCategoryCodes);
+        if (string.IsNullOrWhiteSpace(req.CookingMethod))
+            throw new ArgumentException("CookingMethod is required (cooking_methods.MethodKey, e.g. fried, stewed).");
+        DishAiEnglishCatalog.ValidateCookingMethodOrThrow(req.CookingMethod);
+
+        var methodKey = req.CookingMethod.Trim();
+        var cookingMethodId = await _dishRepository.ResolveCookingMethodIdByMethodKeyAsync(methodKey, cancellationToken)
+            ?? throw new ArgumentException($"Unknown cooking method: '{methodKey}'.");
 
         var entity = new Dish
         {
-            Code = string.IsNullOrWhiteSpace(req.Code) ? null : req.Code.Trim(),
             Name = req.Name.Trim(),
+            NameEnglish = string.IsNullOrWhiteSpace(req.NameEnglish) ? null : req.NameEnglish.Trim(),
             Description = string.IsNullOrWhiteSpace(req.Description) ? null : req.Description.Trim(),
-            Category = DishCatalogCategory.Normalize(req.Category),
+            CookingMethodId = cookingMethodId,
             Price = req.Price,
             DietaryLabel = string.IsNullOrWhiteSpace(req.DietaryLabel) ? null : req.DietaryLabel.Trim(),
             ImageUrl = string.IsNullOrWhiteSpace(req.ImageUrl) ? null : req.ImageUrl.Trim(),
@@ -65,6 +73,7 @@ public class CreateDishCommandHandler : IRequestHandler<CreateDishCommand, GetDi
         }
 
         await _dishRepository.CreateAsync(entity);
+        await _dishRepository.ReplaceDishDishCategoriesAsync(entity.Id, req.DishSlotCategoryCodes, cancellationToken);
 
         var reloaded = await _dishRepository.GetByIdWithIngredientsAsync(entity.Id);
         var dish = reloaded ?? entity;

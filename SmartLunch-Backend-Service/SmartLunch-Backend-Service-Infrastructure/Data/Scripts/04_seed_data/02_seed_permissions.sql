@@ -289,4 +289,5 @@ INSERT INTO permissions (Name, Description, Resource, Action) VALUES
 ('menu_suggestions.read', 'Xem gợi ý thực đơn', 'menu_suggestions', 'read'),
 ('menu_suggestions.update', 'Cập nhật gợi ý', 'menu_suggestions', 'update'),
 ('menu_suggestions.delete', 'Xóa gợi ý thực đơn', 'menu_suggestions', 'delete'),
-('menu_suggestions.list', 'Danh sách gợi ý', 'menu_suggestions', 'list');
+('menu_suggestions.list', 'Danh sách gợi ý', 'menu_suggestions', 'list'),
+('menu_suggestions.generate', 'Tạo gợi ý thực đơn', 'menu_suggestions', 'generate');

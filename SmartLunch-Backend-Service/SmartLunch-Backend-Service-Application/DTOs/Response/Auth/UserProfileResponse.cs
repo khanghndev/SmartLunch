@@ -10,7 +10,13 @@ public class UserProfileResponse
     public string? FullName => $"{FirstName} {LastName}".Trim();
     public string? PhoneNumber { get; set; }
     public string? AvatarUrl { get; set; }
+    public string? Gender { get; set; }
+    public DateTime? BirthDate { get; set; }
     public string? Address { get; set; }
+    public string Provider { get; set; } = "system";
+    public bool IsEmailVerified { get; set; }
+    public DateTime? LastLoginAt { get; set; }
+    public DateTime CreatedAt { get; set; }
     public List<string> Roles { get; set; } = new();
 
     // Unit info for Organization users

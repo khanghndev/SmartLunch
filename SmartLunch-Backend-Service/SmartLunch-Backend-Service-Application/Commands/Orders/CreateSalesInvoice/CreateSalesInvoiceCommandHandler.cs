@@ -97,7 +97,6 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
         var order = new Order
         {
             UserId = req.UserId is { } uid && uid != 0 ? uid : null,
-            OrganizationId = req.OrganizationId,
             OrderDate = DateTime.UtcNow,
             ScheduledDate = scheduledUtc,
             Status = OrderLifecycleStatus.Confirmed,

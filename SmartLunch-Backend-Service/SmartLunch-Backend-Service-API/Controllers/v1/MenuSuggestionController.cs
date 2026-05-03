@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.Commands.MenuSuggestions.CreateMenuSuggestion;
+using SmartLunch.Backend.Service.Application.Commands.MenuSuggestions.GenerateMenuSuggestionFromAi;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.MenuSuggestions;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.MenuSuggestions;
 using SmartLunch.Backend.Service.Application.Queries.MenuSuggestions.GetMenuSuggestion;
@@ -34,7 +35,7 @@ public class MenuSuggestionController : ControllerBase
     /// Get list of menusuggestions with pagination
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "permission:menusuggestions.read")]
+    [Authorize(Policy = "permission:menu_suggestions.read")]
     public async Task<ActionResult<BaseApiResponse<GetMenuSuggestionsResponse>>> GetMenuSuggestions([FromQuery] GetMenuSuggestionsRequest request)
     {
         try
@@ -60,7 +61,7 @@ public class MenuSuggestionController : ControllerBase
     /// Get menusuggestion by ID
     /// </summary>
     [HttpGet("{id}")]
-    [Authorize(Policy = "permission:menusuggestions.read")]
+    [Authorize(Policy = "permission:menu_suggestions.read")]
     public async Task<ActionResult<BaseApiResponse<GetMenuSuggestionResponse>>> GetMenuSuggestion(int id)
     {
         try
@@ -84,17 +85,18 @@ public class MenuSuggestionController : ControllerBase
     }
 
     /// <summary>
-    /// Create menu suggestion (AI-Service calls this to store recommendation).
+    /// Generate menu suggestion by calling AI service, then persist normalized data.
     /// </summary>
-    [HttpPost]
-    public async Task<ActionResult<BaseApiResponse<CreateMenuSuggestionResponse>>> CreateMenuSuggestion(
-        [FromBody] CreateMenuSuggestionRequest request)
+    [HttpPost("generate")]
+    [Authorize(Policy = "permission:menu_suggestions.generate")]
+    public async Task<ActionResult<BaseApiResponse<CreateMenuSuggestionResponse>>> GenerateMenuSuggestionFromAi(
+        [FromBody] GenerateMenuSuggestionFromAiRequest request)
     {
         try
         {
             var createdByUserId = RequireUserId();
-            var response = await _mediator.Send(new CreateMenuSuggestionCommand(request, createdByUserId));
-            return Ok(BaseApiResponse<CreateMenuSuggestionResponse>.SuccessResult(response, "MenuSuggestion created successfully"));
+            var response = await _mediator.Send(new GenerateMenuSuggestionFromAiCommand(request, createdByUserId));
+            return Ok(BaseApiResponse<CreateMenuSuggestionResponse>.SuccessResult(response, "MenuSuggestion generated successfully"));
         }
         catch (ArgumentException ex)
         {
@@ -106,10 +108,10 @@ public class MenuSuggestionController : ControllerBase
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating menu suggestion");
+            _logger.LogError(ex, "Error generating menu suggestion from AI");
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
-                BaseApiResponse<CreateMenuSuggestionResponse>.ErrorResult("An error occurred while creating menu suggestion", new[] { ex.Message }));
+                BaseApiResponse<CreateMenuSuggestionResponse>.ErrorResult("An error occurred while generating menu suggestion", new[] { ex.Message }));
         }
     }
 
@@ -120,4 +122,5 @@ public class MenuSuggestionController : ControllerBase
             throw new UnauthorizedAccessException("Invalid user context.");
         return userId;
     }
+
 }

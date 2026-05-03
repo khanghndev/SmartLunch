@@ -48,7 +48,7 @@ public class FinanceAnalyticsRepository : IFinanceAnalyticsRepository
     {
         var query = _context.Orders
             .Include(o => o.Payments)
-            .Include(o => o.Organization)
+            .Include(o => o.Contract).ThenInclude(c => c.Organization)
             .Where(o => o.ScheduledDate >= rangeStart && o.ScheduledDate < rangeEndExclusive);
 
         if (!includeCancelledOrders)

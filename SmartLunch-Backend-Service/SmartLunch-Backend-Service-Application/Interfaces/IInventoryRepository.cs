@@ -16,4 +16,9 @@ public interface IInventoryRepository
     /// Tồn kho kèm nguyên liệu và NCC mặc định (đọc chi tiết).
     /// </summary>
     Task<Inventory?> GetByIngredientIdWithIngredientAsync(int ingredientId, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Batch-fetch tồn kho theo danh sách IngredientId (dùng cho AI payload).
+    /// </summary>
+    Task<List<Inventory>> GetByIngredientIdsAsync(IEnumerable<int> ingredientIds, CancellationToken cancellationToken = default);
 }

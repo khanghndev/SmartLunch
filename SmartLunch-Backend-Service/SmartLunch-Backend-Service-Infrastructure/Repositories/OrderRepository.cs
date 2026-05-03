@@ -24,7 +24,7 @@ public class OrderRepository : IOrderRepository
     public async Task<Order?> GetByIdWithDetailsAsync(int id)
     {
         return await _context.Orders
-            .Include(o => o.Organization)
+            .Include(o => o.Contract).ThenInclude(c => c.Organization)
             .Include(o => o.CreatedBySalesUser)
             .Include(o => o.OrderItems).ThenInclude(i => i.Dish)
             .Include(o => o.Deliveries)
@@ -39,7 +39,7 @@ public class OrderRepository : IOrderRepository
         string? status = null)
     {
         var query = _context.Orders
-            .Include(o => o.Organization)
+            .Include(o => o.Contract).ThenInclude(c => c.Organization)
             .Include(o => o.OrderItems).ThenInclude(i => i.Dish)
             .AsQueryable();
 
@@ -62,7 +62,7 @@ public class OrderRepository : IOrderRepository
             query = query.Where(e =>
                 e.Status.Contains(term) ||
                 e.PaymentStatus.Contains(term) ||
-                (e.Organization != null && e.Organization.Name.Contains(term)));
+                (e.Contract != null && e.Contract.Organization != null && e.Contract.Organization.Name.Contains(term)));
         }
 
         var totalCount = await query.CountAsync();
@@ -83,7 +83,7 @@ public class OrderRepository : IOrderRepository
         int? organizationId)
     {
         var query = _context.Orders
-            .Include(o => o.Organization)
+            .Include(o => o.Contract).ThenInclude(c => c.Organization)
             .Include(o => o.OrderItems)
             .Where(o => o.Status != "cancelled")
             .AsQueryable();
@@ -95,7 +95,7 @@ public class OrderRepository : IOrderRepository
             query = query.Where(o => o.ScheduledDate <= endDate.Value);
 
         if (organizationId.HasValue)
-            query = query.Where(o => o.OrganizationId == organizationId.Value);
+            query = query.Where(o => o.Contract!.OrganizationId == organizationId.Value);
 
         var orders = await query.ToListAsync();
 
@@ -105,8 +105,8 @@ public class OrderRepository : IOrderRepository
             { 
                 Date = DateOnly.FromDateTime(x.Order.ScheduledDate),
                 MealSlot = x.Order.ScheduledDate.TimeOfDay.Hours < 15 ? "Lunch" : "Dinner",
-                OrganizationId = x.Order.OrganizationId,
-                OrganizationName = x.Order.Organization?.Name ?? "Unknown"
+                OrganizationId = x.Order.Contract?.OrganizationId,
+                OrganizationName = x.Order.Contract?.Organization?.Name ?? "Unknown"
             })
             .Select(g => new MealStatisticItemDto
             {
@@ -119,6 +119,96 @@ public class OrderRepository : IOrderRepository
             })
             .OrderByDescending(x => x.Date)
             .ThenBy(x => x.OrganizationName)
+            .ToList();
+
+        return result;
+    }
+
+    public async Task<List<DetailedMealItemDto>> GetDetailedMealStatisticsAsync(
+        DateTime? startDate,
+        DateTime? endDate,
+        int? organizationId)
+    {
+        var query = _context.Orders
+            .Include(o => o.Contract).ThenInclude(c => c.Organization)
+            .Include(o => o.OrderItems).ThenInclude(i => i.Dish)
+            .Where(o => o.Status != "cancelled")
+            .AsQueryable();
+
+        if (startDate.HasValue)
+            query = query.Where(o => o.ScheduledDate >= startDate.Value);
+        
+        if (endDate.HasValue)
+            query = query.Where(o => o.ScheduledDate <= endDate.Value);
+
+        if (organizationId.HasValue)
+            query = query.Where(o => o.Contract!.OrganizationId == organizationId.Value);
+
+        var orders = await query.ToListAsync();
+
+        // Get all menu schedules for the date range to match with orders
+        var start = startDate ?? orders.Min(o => (DateTime?)o.ScheduledDate) ?? DateTime.MinValue;
+        var end = endDate ?? orders.Max(o => (DateTime?)o.ScheduledDate) ?? DateTime.MaxValue;
+
+        var menuSchedules = await _context.MenuSchedules
+            .Include(ms => ms.Menu)
+            .Where(ms => ms.Date >= start.Date && ms.Date <= end.Date)
+            .ToListAsync();
+
+        var result = orders
+            .SelectMany(o => o.OrderItems.Select(i => new { Order = o, Item = i }))
+            .Select(x => 
+            {
+                var date = DateOnly.FromDateTime(x.Order.ScheduledDate);
+                var slot = x.Order.ScheduledDate.TimeOfDay.Hours < 15 ? "lunch" : "dinner";
+                
+                // Try to find the matching menu schedule
+                var schedule = menuSchedules.FirstOrDefault(ms => 
+                    ms.Date.Date == x.Order.ScheduledDate.Date && 
+                    ms.DishId == x.Item.DishId && 
+                    ms.MealSlot.ToLower() == slot);
+
+                return new 
+                { 
+                    Date = date,
+                    MealSlot = slot == "lunch" ? "Lunch" : "Dinner",
+                    OrganizationId = x.Order.Contract?.OrganizationId,
+                    OrganizationName = x.Order.Contract?.Organization?.Name ?? "Unknown",
+                    MenuId = schedule?.MenuId,
+                    MenuName = schedule?.Menu?.Description ?? "General Menu",
+                    DishId = x.Item.DishId,
+                    DishName = x.Item.Dish?.Name ?? "Unknown",
+                    Quantity = x.Item.Quantity,
+                    TotalPrice = x.Item.TotalPrice
+                };
+            })
+            .GroupBy(x => new 
+            { 
+                x.Date,
+                x.MealSlot,
+                x.OrganizationId,
+                x.OrganizationName,
+                x.MenuId,
+                x.MenuName,
+                x.DishId,
+                x.DishName
+            })
+            .Select(g => new DetailedMealItemDto
+            {
+                Date = g.Key.Date,
+                MealSlot = g.Key.MealSlot,
+                OrganizationId = g.Key.OrganizationId,
+                OrganizationName = g.Key.OrganizationName,
+                MenuId = g.Key.MenuId,
+                MenuName = g.Key.MenuName,
+                DishId = g.Key.DishId,
+                DishName = g.Key.DishName,
+                Quantity = g.Sum(x => x.Quantity),
+                TotalAmount = g.Sum(x => x.TotalPrice)
+            })
+            .OrderByDescending(x => x.Date)
+            .ThenBy(x => x.OrganizationName)
+            .ThenBy(x => x.DishName)
             .ToList();
 
         return result;

@@ -1,6 +1,6 @@
 namespace SmartLunch.Backend.Service.Application.Constants;
 
-/// <summary>Phân loại món trong danh mục (lưu trong Dish.Category).</summary>
+/// <summary>Phân loại hiển thị tĩnh cho catalog (không lưu trên Dish; dùng UI nếu cần).</summary>
 public static class DishCatalogCategory
 {
     public const string Man = "man";

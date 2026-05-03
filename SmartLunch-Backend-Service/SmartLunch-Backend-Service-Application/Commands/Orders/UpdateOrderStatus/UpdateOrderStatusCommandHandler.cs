@@ -108,9 +108,9 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
             return;
         }
 
-        var address = order.Organization?.Address;
+        var address = order.Contract?.Organization?.Address;
         if (string.IsNullOrWhiteSpace(address))
-            address = order.Organization?.Name;
+            address = order.Contract?.Organization?.Name;
         if (string.IsNullOrWhiteSpace(address))
             address = "—";
 

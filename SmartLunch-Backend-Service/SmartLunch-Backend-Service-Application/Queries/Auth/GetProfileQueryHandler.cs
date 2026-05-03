@@ -40,20 +40,21 @@ public class GetProfileQueryHandler : IRequestHandler<GetProfileQuery, UserProfi
             Roles = user.UserRoles.Select(ur => ur.Role.Name).ToList()
         };
 
-        // Get the first unit the user belongs to (if any)
-        var userUnit = user.UserUnits.FirstOrDefault(uu => uu.IsActive);
-        if (userUnit != null && userUnit.Unit != null)
+        // First organization the user belongs to (if any)
+        var userOrg = user.UserOrganizations.FirstOrDefault(uo => uo.IsActive);
+        if (userOrg?.Organization != null)
         {
+            var org = userOrg.Organization;
             response.Unit = new UnitInfoResponse
             {
-                Id = userUnit.Unit.Id,
-                Name = userUnit.Unit.Name,
-                TaxCode = userUnit.Unit.TaxCode,
-                LegalRepresentative = userUnit.Unit.LegalRepresentative,
-                Address = userUnit.Unit.Address,
-                Phone = userUnit.Unit.Phone,
-                ContactEmail = userUnit.Unit.ContactEmail,
-                UnitType = userUnit.Unit.UnitType
+                Id = org.Id,
+                Name = org.Name,
+                TaxCode = org.TaxCode,
+                LegalRepresentative = org.LegalRepresentative,
+                Address = org.Address,
+                Phone = org.Phone,
+                ContactEmail = org.ContactEmail,
+                UnitType = org.Type
             };
         }
 

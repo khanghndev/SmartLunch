@@ -34,8 +34,49 @@ public class GetMenuSuggestionQueryHandler : IRequestHandler<GetMenuSuggestionQu
                 WeekStart = menuSuggestion.WeekStart,
                 GeneratedAt = menuSuggestion.GeneratedAt,
                 SuggestionText = menuSuggestion.SuggestionText,
+                Version = menuSuggestion.Version,
+                RulesKey = menuSuggestion.RulesKey,
+                BudgetPerServing = menuSuggestion.BudgetPerServing,
+                TopK = menuSuggestion.TopK,
+                TimeLimitSeconds = menuSuggestion.TimeLimitSeconds,
+                PlanCount = menuSuggestion.PlanCount,
                 AlgorithmVersion = menuSuggestion.AlgorithmVersion,
-                CreatedBy = menuSuggestion.CreatedBy
+                CreatedBy = menuSuggestion.CreatedBy,
+                Plans = menuSuggestion.Plans
+                    .OrderBy(p => p.Rank)
+                    .Select(p => new MenuSuggestionPlanDto
+                    {
+                        Id = p.Id,
+                        Rank = p.Rank,
+                        PlanScore = p.PlanScore,
+                        ObjectiveValue = p.ObjectiveValue,
+                        Days = p.Days
+                            .OrderBy(d => d.DayIndex)
+                            .Select(d => new MenuSuggestionPlanDayDto
+                            {
+                                Id = d.Id,
+                                DayIndex = d.DayIndex,
+                                DayName = d.DayName,
+                                Items = d.Items
+                                    .Select(i =>
+                                    {
+                                        var itemDto = new MenuSuggestionPlanItemDto
+                                        {
+                                            Id = i.Id,
+                                            SlotCategory = i.SlotCategory,
+                                            DishName = i.DishName,
+                                            DishSourceCategory = i.DishSourceCategory,
+                                            Score = i.Score,
+                                            CostPerServing = i.CostPerServing,
+                                        };
+                                        itemDto.SetReasonsFromJson(i.ReasonsJson);
+                                        return itemDto;
+                                    })
+                                    .ToList()
+                            })
+                            .ToList()
+                    })
+                    .ToList()
             }
         };
     }

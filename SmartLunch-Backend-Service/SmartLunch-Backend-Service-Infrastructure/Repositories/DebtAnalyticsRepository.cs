@@ -22,13 +22,13 @@ public class DebtAnalyticsRepository : IDebtAnalyticsRepository
     {
         var ordersQuery = _context.Orders
             .AsNoTracking()
-            .Where(o => o.OrganizationId != null && o.Status != OrderLifecycleStatus.Cancelled);
+            .Where(o => o.Status != OrderLifecycleStatus.Cancelled);
 
         if (organizationId.HasValue)
-            ordersQuery = ordersQuery.Where(o => o.OrganizationId == organizationId.Value);
+            ordersQuery = ordersQuery.Where(o => o.Contract!.OrganizationId == organizationId.Value);
 
         var billedRows = await ordersQuery
-            .GroupBy(o => o.OrganizationId!.Value)
+            .GroupBy(o => o.Contract!.OrganizationId!.Value)
             .Select(g => new
             {
                 OrganizationId = g.Key,
@@ -43,9 +43,9 @@ public class DebtAnalyticsRepository : IDebtAnalyticsRepository
             from p in _context.Payments.AsNoTracking()
             join o in _context.Orders.AsNoTracking() on p.OrderId equals o.Id
             where p.Status == PaymentRecordStatus.Paid
-                  && o.OrganizationId != null
+                  && o.Contract!.OrganizationId != null
                   && o.Status != OrderLifecycleStatus.Cancelled
-            select new { o.OrganizationId, p.Amount };
+            select new { o.Contract.OrganizationId, p.Amount };
 
         if (organizationId.HasValue)
             paidQuery = paidQuery.Where(x => x.OrganizationId == organizationId.Value);
@@ -127,12 +127,12 @@ public class DebtAnalyticsRepository : IDebtAnalyticsRepository
         var q = _context.Payments
             .AsNoTracking()
             .Include(p => p.Order)
-            .ThenInclude(o => o.Organization)
+            .ThenInclude(o => o.Contract).ThenInclude(c => c.Organization)
             .Include(p => p.Payer)
             .Where(p => p.PaymentDate >= rangeStart && p.PaymentDate < rangeEndExclusive);
 
         if (organizationId.HasValue)
-            q = q.Where(p => p.Order.OrganizationId == organizationId.Value);
+            q = q.Where(p => p.Order.Contract!.OrganizationId == organizationId.Value);
 
         return await q
             .OrderByDescending(p => p.PaymentDate)

@@ -3,11 +3,18 @@ CREATE TABLE menu_suggestions (
     Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     WeekStart DATE NOT NULL,
     GeneratedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    Version INT NOT NULL DEFAULT 1,
+    RulesKey VARCHAR(50) NULL,
+    BudgetPerServing DECIMAL(10,2) NULL,
+    TopK INT NULL,
+    TimeLimitSeconds DECIMAL(5,2) NULL,
+    PlanCount INT NULL,
     SuggestionText TEXT NOT NULL,
     AlgorithmVersion VARCHAR(50) NULL,
     CreatedBy INT NULL,
     PRIMARY KEY (Id),
     UNIQUE KEY UK_menu_suggestions_code (Code),
     INDEX IX_menu_suggestions_week (WeekStart),
+    INDEX IX_menu_suggestions_week_createdby (WeekStart, CreatedBy, Version),
     CONSTRAINT FK_menu_suggestions_user FOREIGN KEY (CreatedBy) REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'Gợi ý thực đơn AI';

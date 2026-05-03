@@ -17,7 +17,12 @@ public interface IOrderRepository
     Task<List<MealStatisticItemDto>> GetMealStatisticsAsync(
         DateTime? startDate,
         DateTime? endDate,
-        int? unitId);
+        int? organizationId);
+
+    Task<List<DetailedMealItemDto>> GetDetailedMealStatisticsAsync(
+        DateTime? startDate,
+        DateTime? endDate,
+        int? organizationId);
 
     Task<bool> InvoiceCodeExistsAsync(string invoiceCode, CancellationToken cancellationToken = default);
 

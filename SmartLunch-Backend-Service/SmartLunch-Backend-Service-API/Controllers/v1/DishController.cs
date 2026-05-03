@@ -112,6 +112,7 @@ public class DishController : ControllerBase
 
     /// <summary>
     /// Sửa món; ẩn món bằng IsActive = false.
+    /// AI: NameEnglish; CookingMethod = MethodKey (cooking_methods). Tạo món: CookingMethod bắt buộc. Cập nhật: null giữ FK. DishSlotCategoryCodes: tạo ≥1 slot; cập nhật null giữ junction.
     /// </summary>
     [HttpPut("{id:int}")]
     [Authorize(Policy = "permission:dishes.update")]

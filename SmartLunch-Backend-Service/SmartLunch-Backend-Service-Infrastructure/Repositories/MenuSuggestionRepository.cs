@@ -17,6 +17,9 @@ public class MenuSuggestionRepository : IMenuSuggestionRepository
     public async Task<MenuSuggestion?> GetByIdAsync(int id)
     {
         return await _context.MenuSuggestions
+            .Include(x => x.Plans)
+                .ThenInclude(p => p.Days)
+                    .ThenInclude(d => d.Items)
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
@@ -39,6 +42,16 @@ public class MenuSuggestionRepository : IMenuSuggestionRepository
             .ToListAsync();
 
         return (menuSuggestions, totalCount);
+    }
+
+    public async Task<int> GetNextVersionAsync(DateTime weekStartUtc, int createdByUserId)
+    {
+        var weekStart = weekStartUtc.Date;
+        var max = await _context.MenuSuggestions
+            .Where(x => x.CreatedBy == createdByUserId && x.WeekStart.Date == weekStart)
+            .Select(x => (int?)x.Version)
+            .MaxAsync();
+        return (max ?? 0) + 1;
     }
 
     public async Task AddAsync(MenuSuggestion menuSuggestion, CancellationToken cancellationToken = default)

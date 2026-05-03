@@ -34,6 +34,5 @@ public class Organization
     public int? UpdatedBy { get; set; }
 
     public virtual ICollection<UserOrganization> UserOrganizations { get; set; } = new List<UserOrganization>();
-    public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
     public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();
 }

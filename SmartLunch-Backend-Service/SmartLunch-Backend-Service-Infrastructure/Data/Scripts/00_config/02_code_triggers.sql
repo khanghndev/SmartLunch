@@ -146,4 +146,16 @@ FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('banners
 CREATE TRIGGER trg_notifications_code BEFORE INSERT ON notifications
 FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('notifications'); END IF; END //
 
+CREATE TRIGGER trg_ingredient_categories_code BEFORE INSERT ON ingredient_categories
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('ingredient_categories'); END IF; END //
+
+CREATE TRIGGER trg_dish_categories_code BEFORE INSERT ON dish_categories
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('dish_categories'); END IF; END //
+
+CREATE TRIGGER trg_dish_dish_categories_code BEFORE INSERT ON dish_dish_categories
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('dish_dish_categories'); END IF; END //
+
+CREATE TRIGGER trg_cooking_methods_code BEFORE INSERT ON cooking_methods
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('cooking_methods'); END IF; END //
+
 DELIMITER ;

@@ -11,8 +11,8 @@ public static class OrderDtoMapping
         {
             Id = order.Id,
             UserId = order.UserId,
-            OrganizationId = order.OrganizationId,
-            OrganizationName = order.Organization?.Name,
+            OrganizationId = order.Contract?.OrganizationId,
+            OrganizationName = order.Contract?.Organization?.Name,
             OrderDate = order.OrderDate,
             ScheduledDate = order.ScheduledDate,
             Status = order.Status,

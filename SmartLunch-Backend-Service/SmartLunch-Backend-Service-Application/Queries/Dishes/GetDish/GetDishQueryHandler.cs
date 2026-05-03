@@ -176,19 +176,22 @@ public class GetDishQueryHandler : IRequestHandler<GetDishQuery, GetDishResponse
             Id = dto.Id,
             Code = dto.Code,
             Name = dto.Name,
+            NameEnglish = dto.NameEnglish,
             Description = dto.Description,
-            Category = dto.Category,
+            PrimarySlotKey = dto.PrimarySlotKey,
+            DishSlotCategoryCodes = [..dto.DishSlotCategoryCodes],
+            CookingMethod = dto.CookingMethod,
             Price = dto.Price,
             DietaryLabel = dto.DietaryLabel,
             ImageUrl = resolvedUrl,
+            Images = dto.Images.ToList(),
             Calories = dto.Calories,
             Protein = dto.Protein,
             Fat = dto.Fat,
             Carbs = dto.Carbs,
             IsActive = dto.IsActive,
             CreatedAt = dto.CreatedAt,
-            UpdatedAt = dto.UpdatedAt,
-            Images = dto.Images
+            UpdatedAt = dto.UpdatedAt
         };
     }
 }

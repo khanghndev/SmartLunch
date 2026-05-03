@@ -29,6 +29,12 @@ public class GetMenuSuggestionsQueryHandler : IRequestHandler<GetMenuSuggestions
                 WeekStart = menuSuggestion.WeekStart,
                 GeneratedAt = menuSuggestion.GeneratedAt,
                 SuggestionText = menuSuggestion.SuggestionText,
+                Version = menuSuggestion.Version,
+                RulesKey = menuSuggestion.RulesKey,
+                BudgetPerServing = menuSuggestion.BudgetPerServing,
+                TopK = menuSuggestion.TopK,
+                TimeLimitSeconds = menuSuggestion.TimeLimitSeconds,
+                PlanCount = menuSuggestion.PlanCount,
                 AlgorithmVersion = menuSuggestion.AlgorithmVersion,
                 CreatedBy = menuSuggestion.CreatedBy
         }).ToList();

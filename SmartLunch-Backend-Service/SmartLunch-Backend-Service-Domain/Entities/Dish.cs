@@ -8,8 +8,10 @@ public class Dish
     public int Id { get; set; }
     public string? Code { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? NameEnglish { get; set; }  // English name for AI grouping
     public string? Description { get; set; }
-    public string? Category { get; set; }
+    public int? CookingMethodId { get; set; }
+    public virtual CookingMethod? CookingMethod { get; set; }
     public decimal Price { get; set; }
     public string? DietaryLabel { get; set; } // vegan, gluten-free, etc.
     public string? ImageUrl { get; set; }
@@ -21,6 +23,7 @@ public class Dish
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? UpdatedAt { get; set; }
 
+    public virtual ICollection<DishDishCategory> DishDishCategories { get; set; } = new List<DishDishCategory>();
     public virtual ICollection<DishIngredient> DishIngredients { get; set; } = new List<DishIngredient>();
     public virtual ICollection<DishImage> DishImages { get; set; } = new List<DishImage>();
     public virtual ICollection<MenuSchedule> MenuSchedules { get; set; } = new List<MenuSchedule>();

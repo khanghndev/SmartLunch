@@ -8,6 +8,7 @@ using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Orders;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetOrder;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetOrders;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetMealStatistics;
+using SmartLunch.Backend.Service.Application.Queries.Orders.GetDetailedMealStatistics;
 using System.Net;
 
 namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
@@ -143,6 +144,28 @@ public class OrderController : ControllerBase
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetMealStatisticsResponse>.ErrorResult("An error occurred while retrieving meal statistics", new[] { ex.Message }));
+        }
+    }
+    /// <summary>
+    /// Thống kê chi tiết suất ăn (theo từng món) cho ngày / ca / bộ phận.
+    /// </summary>
+    [HttpGet("statistics/details")]
+    [Authorize(Policy = "roles:Admin,Company")]
+    [Authorize(Policy = "permission:orders.read")]
+    public async Task<ActionResult<BaseApiResponse<GetDetailedMealStatisticsResponse>>> GetDetailedMealStatistics([FromQuery] GetMealStatisticsRequest request)
+    {
+        try
+        {
+            var query = new GetDetailedMealStatisticsQuery(request);
+            var response = await _mediator.Send(query);
+            return Ok(BaseApiResponse<GetDetailedMealStatisticsResponse>.SuccessResult(response, "Detailed meal statistics retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving detailed meal statistics");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetDetailedMealStatisticsResponse>.ErrorResult("An error occurred while retrieving detailed meal statistics", new[] { ex.Message }));
         }
     }
 }

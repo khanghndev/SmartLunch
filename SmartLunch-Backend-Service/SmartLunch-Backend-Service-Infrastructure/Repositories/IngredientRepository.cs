@@ -45,4 +45,11 @@ public class IngredientRepository : IIngredientRepository
 
         return (ingredients, totalCount);
     }
+
+    public async Task<List<Ingredient>> GetAllWithCategoryAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.Ingredients
+            .Include(e => e.Category)
+            .ToListAsync(cancellationToken);
+    }
 }

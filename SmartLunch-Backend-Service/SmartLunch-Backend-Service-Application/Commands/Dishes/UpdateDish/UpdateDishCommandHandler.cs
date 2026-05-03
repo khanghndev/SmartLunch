@@ -23,20 +23,19 @@ public class UpdateDishCommandHandler : IRequestHandler<UpdateDishCommand, GetDi
         var req = request.Request;
         if (string.IsNullOrWhiteSpace(req.Name))
             throw new ArgumentException("Name is required.");
-        if (!DishCatalogCategory.IsValidOrEmpty(req.Category))
-            throw new ArgumentException(
-                "Invalid category. Use one of: man, xao, canh, trang_mieng, or leave empty.");
         if (req.Price < 0)
             throw new ArgumentException("Price cannot be negative.");
 
-        // Load with images to allow synchronization
+        if (req.DishSlotCategoryCodes is not null)
+            DishAiEnglishCatalog.ValidateSlotCategoryListOrThrow(req.DishSlotCategoryCodes);
+
+        // Load with images + ingredients for sync and response
         var entity = await _dishRepository.GetByIdWithIngredientsAsync(request.DishId);
         if (entity == null)
             throw new KeyNotFoundException($"Dish with ID {request.DishId} was not found.");
 
         entity.Name = req.Name.Trim();
         entity.Description = string.IsNullOrWhiteSpace(req.Description) ? null : req.Description.Trim();
-        entity.Category = DishCatalogCategory.Normalize(req.Category);
         entity.Price = req.Price;
         entity.DietaryLabel = string.IsNullOrWhiteSpace(req.DietaryLabel) ? null : req.DietaryLabel.Trim();
         entity.Calories = req.Calories;
@@ -45,6 +44,23 @@ public class UpdateDishCommandHandler : IRequestHandler<UpdateDishCommand, GetDi
         entity.Carbs = req.Carbs;
         entity.IsActive = req.IsActive;
         entity.UpdatedAt = DateTime.UtcNow;
+
+        if (req.NameEnglish is not null)
+            entity.NameEnglish = string.IsNullOrWhiteSpace(req.NameEnglish) ? null : req.NameEnglish.Trim();
+        if (req.CookingMethod is not null)
+        {
+            if (string.IsNullOrWhiteSpace(req.CookingMethod))
+            {
+                entity.CookingMethodId = null;
+            }
+            else
+            {
+                DishAiEnglishCatalog.ValidateCookingMethodOrThrow(req.CookingMethod);
+                var mk = req.CookingMethod.Trim();
+                entity.CookingMethodId = await _dishRepository.ResolveCookingMethodIdByMethodKeyAsync(mk, cancellationToken)
+                    ?? throw new ArgumentException($"Unknown cooking method: '{mk}'.");
+            }
+        }
 
         // Synchronize images if provided
         if (req.Images != null)
@@ -82,6 +98,10 @@ public class UpdateDishCommandHandler : IRequestHandler<UpdateDishCommand, GetDi
         }
 
         await _dishRepository.UpdateAsync(entity);
+
+        if (req.DishSlotCategoryCodes is not null)
+            await _dishRepository.ReplaceDishDishCategoriesAsync(request.DishId, req.DishSlotCategoryCodes, cancellationToken);
+
         await _cacheService.RemoveAsync(MasterDataCacheKeys.Dish(request.DishId), cancellationToken);
 
         // Reload to get fresh data with resolved URLs

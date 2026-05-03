@@ -15,8 +15,7 @@
           "budget": 0.10
         },
         "preference_match_bonus": 0.2,
-        "preference_miss_penalty": 0.05,
-        "randomness": 0.25
+        "preference_miss_penalty": 0.05
       },
       "allergy_filter": {
         "enabled": true,
@@ -27,13 +26,15 @@
         "keywords": []
       }
     },
+    
     "industrial": {
       "scoring": {
         "base_score": 0.3,
         "budget_fit_weight": 0.25,
         "popularity_weight": 0.15,
-        "ingredient_reuse_bonus": 0.2,
-        "cooking_diversity_bonus": 0.1,
+        "ingredient_reuse_bonus": 0.14,
+        "cooking_diversity_bonus": 0.14,
+        "repeat_main_dish_penalty": 0.28,
         "available_ingredient_bonus": 0.15,
         "tag_weights": {
           "traditional": 0.10,
@@ -42,20 +43,166 @@
           "budget": 0.12
         }
       },
-      "allergy_filter": {
-        "enabled": true,
-        "substring_match": true
-      },
-      "incompatible_pairs": {
-        "mode": "ingredient_keyword_overlap",
-        "keywords": []
-      },
       "constraints": {
-        "max_same_protein_per_week": 3,
-        "min_fish_per_week": 2,
+        "group_frequencies": [
+          { "group_name": "protein", "max_count": 3 },
+          { "group_name": "seafood", "min_count": 2 }
+        ],
         "no_repeat_main_ingredient_consecutive_days": true,
         "alternate_cooking_methods": true,
-        "prefer_ingredient_reuse": true
+        "prefer_ingredient_reuse": true,
+        "max_consecutive_same_main_dish": 3
+      }
+    },
+
+    "org_company": {
+      "scoring": {
+        "base_score": 0.28,
+        "budget_fit_weight": 0.30,
+        "popularity_weight": 0.18,
+        "ingredient_reuse_bonus": 0.10,
+        "cooking_diversity_bonus": 0.18,
+        "repeat_main_dish_penalty": 0.35,
+        "available_ingredient_bonus": 0.18,
+        "tag_weights": {
+          "budget": 0.16,
+          "traditional": 0.10,
+          "comfort": 0.08,
+          "healthy": 0.08,
+          "high_protein": 0.14
+        }
+      },
+      "constraints": {
+        "group_frequencies": [
+          { "group_name": "protein", "max_count": 3 },
+          { "group_name": "seafood", "min_count": 2 }
+        ],
+        "no_repeat_main_ingredient_consecutive_days": true,
+        "alternate_cooking_methods": true,
+        "prefer_ingredient_reuse": true,
+        "max_consecutive_same_main_dish": 2
+      }
+    },
+
+    "org_elementary": {
+      "scoring": {
+        "base_score": 0.35,
+        "budget_fit_weight": 0.15,
+        "popularity_weight": 0.10,
+        "ingredient_reuse_bonus": 0.10,
+        "cooking_diversity_bonus": 0.15,
+        "tag_weights": {
+          "healthy": 0.20,
+          "kid_friendly": 0.25,
+          "soft_texture": 0.15,
+          "low_spice": 0.10,
+          "spicy": -0.50
+        }
+      },
+      "constraints": {
+        "group_frequencies": [
+          { "group_name": "protein", "max_count": 3 },
+          { "group_name": "seafood", "min_count": 2 }
+        ],
+        "no_repeat_main_ingredient_consecutive_days": true,
+        "alternate_cooking_methods": true,
+        "max_consecutive_same_main_dish": 2
+      }
+    },
+
+    "org_primary_school": {
+      "scoring": {
+        "base_score": 0.32,
+        "budget_fit_weight": 0.18,
+        "popularity_weight": 0.12,
+        "tag_weights": {
+          "healthy": 0.18,
+          "kid_friendly": 0.20,
+          "high_fiber": 0.10,
+          "spicy": -0.30
+        }
+      },
+      "constraints": {
+        "group_frequencies": [
+          { "group_name": "protein", "max_count": 3 },
+          { "group_name": "seafood", "min_count": 2 }
+        ],
+        "no_repeat_main_ingredient_consecutive_days": true,
+        "alternate_cooking_methods": true,
+        "max_consecutive_same_main_dish": 2
+      }
+    },
+
+    "org_secondary_school": {
+      "scoring": {
+        "base_score": 0.30,
+        "budget_fit_weight": 0.22,
+        "popularity_weight": 0.15,
+        "tag_weights": {
+          "healthy": 0.15,
+          "high_protein": 0.10,
+          "high_fiber": 0.10,
+          "budget": 0.05
+        }
+      },
+      "constraints": {
+        "group_frequencies": [
+          { "group_name": "protein", "max_count": 4 },
+          { "group_name": "seafood", "min_count": 1 }
+        ],
+        "no_repeat_main_ingredient_consecutive_days": true,
+        "alternate_cooking_methods": true,
+        "max_consecutive_same_main_dish": 3
+      }
+    },
+
+    "org_high_school": {
+      "scoring": {
+        "base_score": 0.29,
+        "budget_fit_weight": 0.25,
+        "popularity_weight": 0.18,
+        "tag_weights": {
+          "healthy": 0.10,
+          "high_protein": 0.15,
+          "budget": 0.08,
+          "traditional": 0.05
+        }
+      },
+      "constraints": {
+        "group_frequencies": [
+          { "group_name": "protein", "max_count": 4 },
+          { "group_name": "seafood", "min_count": 1 }
+        ],
+        "no_repeat_main_ingredient_consecutive_days": true,
+        "alternate_cooking_methods": true,
+        "max_consecutive_same_main_dish": 3
+      }
+    },
+
+    "vegetarian": {
+      "scoring": {
+        "base_score": 0.35,
+        "budget_fit_weight": 0.20,
+        "popularity_weight": 0.15,
+        "ingredient_reuse_bonus": 0.15,
+        "cooking_diversity_bonus": 0.15,
+        "available_ingredient_bonus": 0.15,
+        "tag_weights": {
+          "vegetarian": 0.25,
+          "healthy": 0.15,
+          "high_fiber": 0.10,
+          "traditional": 0.05
+        }
+      },
+      "constraints": {
+        "group_frequencies": [
+          { "group_name": "animal_meat", "max_count": 0 },
+          { "group_name": "plant_protein", "min_count": 5 }
+        ],
+        "no_repeat_main_ingredient_consecutive_days": true,
+        "alternate_cooking_methods": true,
+        "prefer_ingredient_reuse": true,
+        "max_consecutive_same_main_dish": 2
       }
     }
   }

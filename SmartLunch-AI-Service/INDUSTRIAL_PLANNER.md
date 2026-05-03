@@ -22,7 +22,7 @@ Hệ thống này giải quyết triệt để bằng cách sử dụng **ràng 
 SmartLunch-AI-Service/
 ├── app/
 │   ├── api/v1/endpoints/
-│   │   ├── industrial.py      ← Endpoint chính: POST /recommend/industrial/week
+│   │   ├── industrial.py      ← Endpoint chính: POST /recommend/industrial/menus
 │   │   ├── recommend.py       ← Endpoint cũ (giữ lại): POST /recommend/week/plan
 │   │   ├── chat.py            ← Chatbot Q&A
 │   │   └── feedback.py        ← Phân tích cảm xúc
@@ -51,14 +51,16 @@ SmartLunch-AI-Service/
 ┌─────────────────────────────────────────────────────────────────┐
 │                    CLIENT / BACKEND SERVICE                      │
 │                                                                  │
-│  POST /api/v1/recommend/industrial/week                          │
-│  Body: { dishes[], constraints, budget, servings_per_day, ... }  │
+│  POST /api/v1/recommend/industrial/menus                         │
+│  Body: { top_k, days[], meal_structure[], dishes[], constraints,  │
+│          budget_per_serving, rules_key, ... }                     │
 └──────────────────────────┬──────────────────────────────────────┘
                            │
                            ▼
 ┌──────────────────────────────────────────────────────────────────┐
 │  BƯỚC 1: VALIDATE & PARSE INPUT                                  │
-│  • Phân loại món ăn theo category (main/side/soup/vegetable)     │
+│  • Xác định slot cần cover: meal_structure (mặc định: main/side/soup/dessert) │
+│  • Với món “tổng hợp” (phở/mì/bánh canh): dùng `covers_categories` để cover nhiều slot │
 │  • Kiểm tra mỗi slot trong meal_structure có ít nhất 1 món      │
 │  • Nạp rules profile từ rules.json                               │
 └──────────────────────────┬──────────────────────────────────────┘
@@ -81,10 +83,11 @@ SmartLunch-AI-Service/
 │  BƯỚC 3: XÂY DỰNG MÔ HÌNH TỐI ƯU (CP-SAT)                      │
 │                                                                   │
 │  Biến quyết định:                                                 │
-│    x[ngày][slot][món] = 0 hoặc 1                                 │
+│    y[ngày][món] = 0 hoặc 1                                       │
+│    (một món có thể cover nhiều slot: main/side/soup)             │
 │                                                                   │
 │  Ràng buộc:                                                       │
-│    ① Mỗi ngày, mỗi slot chọn ĐÚNG 1 món                         │
+│    ① Mỗi ngày, mỗi slot phải được cover ĐÚNG 1 lần              │
 │    ② Mỗi món xuất hiện ≤ max_per_week lần/tuần                  │
 │    ③ Mỗi loại protein (heo/gà/cá) ≤ N bữa/tuần                 │
 │    ④ Cá ≥ M bữa/tuần (đảm bảo dinh dưỡng)                      │
@@ -99,9 +102,9 @@ SmartLunch-AI-Service/
 ┌──────────────────────────────────────────────────────────────────┐
 │  BƯỚC 4: GIẢI & SINH KẾT QUẢ                                     │
 │                                                                   │
-│  → Thực đơn 7 ngày (mỗi ngày: mặn + phụ + canh + rau)          │
-│  → Danh sách mua hàng (gom nguyên liệu, trừ tồn kho)           │
-│  → Ước tính chi phí (trung bình/suất, tổng tuần, within_budget) │
+│  → Top-K phương án thực đơn theo số ngày yêu cầu                │
+│  → Mỗi phương án có điểm (plan_score + objective_value)         │
+│  → Sắp xếp theo điểm giảm dần để chọn menu hợp lý nhất          │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -117,9 +120,14 @@ Mỗi ngày **bắt buộc** phải có đủ các slot theo `meal_structure`. M
 | 1 | `main` | Món mặn chính (gà kho, cá chiên, thịt kho...) |
 | 2 | `side` | Món phụ / xào (bắp cải xào, đậu que xào...) |
 | 3 | `soup` | Món canh (canh bí, canh chua...) |
-| 4 | `vegetable` | Món rau (rau muống xào, rau luộc...) |
+| 4 | `dessert` | Tráng miệng (sữa chua, trái cây, pudding...) |
 
-> **Lưu ý:** Khung bữa ăn có thể tùy chỉnh. Ví dụ thêm `dessert` hoặc `noodle_soup`.
+#### Món “tổng hợp” (phở/mì/bánh canh)
+Có những món có thể thay thế nhiều slot cùng lúc. Ví dụ:
+- **Phở bò** cover `main + side + soup`
+- Khi đó, trong 1 ngày chỉ cần chọn thêm `dessert` (ví dụ sữa chua)
+
+Để khai báo, dùng field `covers_categories` trong `IndustrialDish`.
 
 ### 4.2 Giới Hạn Protein (`max_same_protein_per_week`)
 - **Mặc định:** 3
@@ -152,7 +160,8 @@ Mỗi ngày **bắt buộc** phải có đủ các slot theo `meal_structure`. M
 ### 4.7 Giới Hạn Budget (`budget_per_serving`)
 - **Mặc định:** 25,000 VND
 - **Ý nghĩa:** Tổng cost của tất cả các món trong 1 ngày **không được vượt** budget/suất
-- **Tính toán:** `cost(main) + cost(side) + cost(soup) + cost(vegetable) ≤ budget`
+- **Tính toán:** `cost(main) + cost(side) + cost(soup) + cost(dessert) ≤ budget`
+  - Với món tổng hợp (phở/mì): `cost(phở) + cost(dessert) ≤ budget`
 
 ---
 
@@ -189,7 +198,8 @@ Mỗi món ăn cần cung cấp đầy đủ thông tin sau:
 | Trường | Kiểu | Bắt buộc | Mô tả | Ví dụ |
 |--------|------|----------|-------|-------|
 | `name` | string | ✅ | Tên món | `"Gà kho gừng"` |
-| `category` | enum | ✅ | Loại món | `main`, `side`, `soup`, `vegetable` |
+| `category` | enum | ✅ | Loại món | `main`, `side`, `soup`, `dessert` |
+| `covers_categories` | enum[] | ❌ | Slot mà món có thể cover | `["main","side","soup"]` (phở/mì) |
 | `main_ingredient` | string | ✅ | Nguyên liệu chính | `"chicken"` |
 | `sub_ingredients` | string[] | ❌ | Nguyên liệu phụ | `["gừng", "nước mắm"]` |
 | `cooking_method` | enum | ✅ | Cách chế biến | `fried`, `stewed`, `boiled`, ... |
@@ -202,22 +212,36 @@ Mỗi món ăn cần cung cấp đầy đủ thông tin sau:
 
 ## 7. API Reference
 
-### `POST /api/v1/recommend/industrial/week`
+### `POST /api/v1/recommend/industrial/menus`
 
-**Mô tả:** Sinh thực đơn tuần tối ưu cho bếp công nghiệp.
+**Mô tả:** Sinh **top-K** phương án thực đơn theo số ngày yêu cầu, tập trung vào menu + điểm, bỏ qua shopping/cost.
 
-#### Request Body:
+#### Request Body (ví dụ cho cả tuần):
 
 ```json
 {
-  "servings_per_day": 800,
-  "budget_per_serving": 25000,
+  "budget_per_serving": 26000,
   "days": ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ nhật"],
-  "meal_structure": ["main", "side", "soup", "vegetable"],
+  "meal_structure": ["main", "side", "soup", "dessert"],
+  "top_k": 3,
+  "time_limit_seconds": 5.0,
   "dishes": [
+    {
+      "name": "Mực xào",
+      "category": "main",
+      "covers_categories": [],
+      "main_ingredient": "squid",
+      "sub_ingredients": ["hành", "tỏi"],
+      "cooking_method": "stir_fried",
+      "cost_per_serving": 12000,
+      "popularity": 4,
+      "max_per_week": 2,
+      "tags": ["comfort"]
+    },
     {
       "name": "Gà kho gừng",
       "category": "main",
+      "covers_categories": [],
       "main_ingredient": "chicken",
       "sub_ingredients": ["gừng", "nước mắm"],
       "cooking_method": "stewed",
@@ -227,139 +251,1233 @@ Mỗi món ăn cần cung cấp đầy đủ thông tin sau:
       "tags": ["traditional", "comfort"]
     },
     {
-      "name": "Cá chiên sốt cà",
-      "category": "main",
-      "main_ingredient": "fish",
-      "sub_ingredients": ["cà chua", "dầu ăn"],
-      "cooking_method": "fried",
-      "cost_per_serving": 14000,
-      "popularity": 3
-    },
-    {
       "name": "Thịt heo kho trứng",
       "category": "main",
+      "covers_categories": [],
       "main_ingredient": "pork",
       "sub_ingredients": ["trứng", "nước dừa"],
       "cooking_method": "stewed",
+      "cost_per_serving": 12000,
+      "popularity": 5,
+      "max_per_week": 2,
+      "tags": ["traditional"]
+    },
+    {
+      "name": "Cá kho tộ",
+      "category": "main",
+      "covers_categories": [],
+      "main_ingredient": "fish",
+      "sub_ingredients": ["tiêu", "nước mắm"],
+      "cooking_method": "stewed",
       "cost_per_serving": 13000,
-      "popularity": 5
+      "popularity": 4,
+      "max_per_week": 2,
+      "tags": ["traditional", "healthy"]
+    },
+    {
+      "name": "Phở bò",
+      "category": "main",
+      "covers_categories": ["main", "side", "soup"],
+      "main_ingredient": "beef",
+      "sub_ingredients": ["bánh phở", "hành", "rau thơm"],
+      "cooking_method": "boiled",
+      "cost_per_serving": 22000,
+      "popularity": 5,
+      "max_per_week": 2,
+      "tags": ["comfort"]
+    },
+    {
+      "name": "Măng xào",
+      "category": "side",
+      "covers_categories": [],
+      "main_ingredient": "bamboo_shoot",
+      "sub_ingredients": ["tỏi"],
+      "cooking_method": "stir_fried",
+      "cost_per_serving": 5000,
+      "popularity": 3,
+      "max_per_week": 3,
+      "tags": ["traditional"]
     },
     {
       "name": "Bắp cải xào",
       "category": "side",
+      "covers_categories": [],
       "main_ingredient": "cabbage",
       "sub_ingredients": ["tỏi"],
       "cooking_method": "stir_fried",
-      "cost_per_serving": 5000,
-      "popularity": 3
+      "cost_per_serving": 4000,
+      "popularity": 3,
+      "max_per_week": 3,
+      "tags": ["budget"]
     },
     {
-      "name": "Rau muống xào tỏi",
-      "category": "vegetable",
-      "main_ingredient": "rau muống",
+      "name": "Đậu que xào tỏi",
+      "category": "side",
+      "covers_categories": [],
+      "main_ingredient": "green_beans",
       "sub_ingredients": ["tỏi"],
       "cooking_method": "stir_fried",
       "cost_per_serving": 4000,
-      "popularity": 4
+      "popularity": 4,
+      "max_per_week": 3,
+      "tags": ["healthy"]
     },
     {
-      "name": "Canh bí đỏ thịt băm",
+      "name": "Canh rau ngót",
       "category": "soup",
-      "main_ingredient": "bí",
+      "covers_categories": [],
+      "main_ingredient": "rau ngót",
       "sub_ingredients": ["thịt băm"],
       "cooking_method": "boiled",
       "cost_per_serving": 6000,
-      "popularity": 4
+      "popularity": 4,
+      "max_per_week": 3,
+      "tags": ["healthy"]
     },
     {
-      "name": "Canh chua cá lóc",
+      "name": "Canh bí đỏ",
       "category": "soup",
-      "main_ingredient": "cá",
-      "sub_ingredients": ["cà chua", "bạc hà"],
+      "covers_categories": [],
+      "main_ingredient": "pumpkin",
+      "sub_ingredients": ["hành"],
       "cooking_method": "boiled",
-      "cost_per_serving": 7000,
-      "popularity": 5
+      "cost_per_serving": 5000,
+      "popularity": 4,
+      "max_per_week": 3,
+      "tags": ["healthy", "budget"]
+    },
+    {
+      "name": "Canh cải xanh",
+      "category": "soup",
+      "covers_categories": [],
+      "main_ingredient": "mustard_greens",
+      "sub_ingredients": ["gừng"],
+      "cooking_method": "boiled",
+      "cost_per_serving": 5000,
+      "popularity": 3,
+      "max_per_week": 3,
+      "tags": ["healthy"]
+    },
+    {
+      "name": "Sữa chua",
+      "category": "dessert",
+      "covers_categories": [],
+      "main_ingredient": "yogurt",
+      "sub_ingredients": [],
+      "cooking_method": "raw",
+      "cost_per_serving": 4000,
+      "popularity": 4,
+      "max_per_week": 7,
+      "tags": ["kid_friendly"]
     }
   ],
-  "available_ingredients": [
-    {"name": "thịt heo", "quantity_kg": 20},
-    {"name": "chicken", "quantity_kg": 10}
-  ],
+  "available_ingredients": [],
   "constraints": {
     "max_same_protein_per_week": 3,
-    "min_fish_per_week": 2,
+    "min_fish_per_week": 0,
     "no_repeat_main_ingredient_consecutive_days": true,
     "alternate_cooking_methods": true,
-    "prefer_ingredient_reuse": true
+    "prefer_ingredient_reuse": true,
+    "max_consecutive_same_main_dish": 3
   },
   "rules_key": "industrial"
 }
 ```
 
-#### Response (3-in-1):
+#### Response (top-K):
 
 ```json
 {
-  "week_menu": [
-    {
-      "day": "Thứ 2",
-      "dishes": [
+    "plans": [
         {
-          "name": "Gà kho gừng",
-          "category": "main",
-          "score": 0.85,
-          "reasons": ["Món phổ biến", "Điểm phù hợp cao", "Chế biến: stewed", "Nguyên liệu chính: chicken"],
-          "cost_per_serving": 12000
+            "rank": 1,
+            "plan_score": 0.598,
+            "objective_value": 17047.0,
+            "week_menu": [
+                {
+                    "day": "Thứ 2",
+                    "dishes": [
+                        {
+                            "name": "Gà kho gừng",
+                            "category": "main",
+                            "score": 0.715,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: chicken"
+                            ],
+                            "cost_per_serving": 12000.0
+                        },
+                        {
+                            "name": "Măng xào",
+                            "category": "side",
+                            "score": 0.538,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: bamboo_shoot"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Canh bí đỏ",
+                            "category": "soup",
+                            "score": 0.638,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: pumpkin"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 3",
+                    "dishes": [
+                        {
+                            "name": "Mực xào",
+                            "category": "main",
+                            "score": 0.615,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: squid"
+                            ],
+                            "cost_per_serving": 12000.0
+                        },
+                        {
+                            "name": "Bắp cải xào",
+                            "category": "side",
+                            "score": 0.548,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: cabbage"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh rau ngót",
+                            "category": "soup",
+                            "score": 0.528,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: rau ngót"
+                            ],
+                            "cost_per_serving": 6000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 4",
+                    "dishes": [
+                        {
+                            "name": "Gà kho gừng",
+                            "category": "main",
+                            "score": 0.715,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: chicken"
+                            ],
+                            "cost_per_serving": 12000.0
+                        },
+                        {
+                            "name": "Bắp cải xào",
+                            "category": "side",
+                            "score": 0.548,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: cabbage"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh rau ngót",
+                            "category": "soup",
+                            "score": 0.528,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: rau ngót"
+                            ],
+                            "cost_per_serving": 6000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 5",
+                    "dishes": [
+                        {
+                            "name": "Phở bò",
+                            "category": "main",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "side",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "soup",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 6",
+                    "dishes": [
+                        {
+                            "name": "Cá kho tộ",
+                            "category": "main",
+                            "score": 0.695,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: fish"
+                            ],
+                            "cost_per_serving": 13000.0
+                        },
+                        {
+                            "name": "Đậu que xào tỏi",
+                            "category": "side",
+                            "score": 0.508,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: green_beans"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh bí đỏ",
+                            "category": "soup",
+                            "score": 0.638,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: pumpkin"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 7",
+                    "dishes": [
+                        {
+                            "name": "Phở bò",
+                            "category": "main",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "side",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "soup",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Chủ nhật",
+                    "dishes": [
+                        {
+                            "name": "Cá kho tộ",
+                            "category": "main",
+                            "score": 0.695,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: fish"
+                            ],
+                            "cost_per_serving": 13000.0
+                        },
+                        {
+                            "name": "Bắp cải xào",
+                            "category": "side",
+                            "score": 0.548,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: cabbage"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh bí đỏ",
+                            "category": "soup",
+                            "score": 0.638,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: pumpkin"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                }
+            ]
         },
         {
-          "name": "Bắp cải xào",
-          "category": "side",
-          "score": 0.7,
-          "reasons": ["Chế biến: stir_fried", "Nguyên liệu chính: cabbage"],
-          "cost_per_serving": 5000
+            "rank": 2,
+            "plan_score": 0.598,
+            "objective_value": 17047.0,
+            "week_menu": [
+                {
+                    "day": "Thứ 2",
+                    "dishes": [
+                        {
+                            "name": "Cá kho tộ",
+                            "category": "main",
+                            "score": 0.695,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: fish"
+                            ],
+                            "cost_per_serving": 13000.0
+                        },
+                        {
+                            "name": "Bắp cải xào",
+                            "category": "side",
+                            "score": 0.548,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: cabbage"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh bí đỏ",
+                            "category": "soup",
+                            "score": 0.638,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: pumpkin"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 3",
+                    "dishes": [
+                        {
+                            "name": "Mực xào",
+                            "category": "main",
+                            "score": 0.615,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: squid"
+                            ],
+                            "cost_per_serving": 12000.0
+                        },
+                        {
+                            "name": "Măng xào",
+                            "category": "side",
+                            "score": 0.538,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: bamboo_shoot"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Canh bí đỏ",
+                            "category": "soup",
+                            "score": 0.638,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: pumpkin"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 4",
+                    "dishes": [
+                        {
+                            "name": "Cá kho tộ",
+                            "category": "main",
+                            "score": 0.695,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: fish"
+                            ],
+                            "cost_per_serving": 13000.0
+                        },
+                        {
+                            "name": "Bắp cải xào",
+                            "category": "side",
+                            "score": 0.548,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: cabbage"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh bí đỏ",
+                            "category": "soup",
+                            "score": 0.638,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: pumpkin"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 5",
+                    "dishes": [
+                        {
+                            "name": "Phở bò",
+                            "category": "main",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "side",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "soup",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 6",
+                    "dishes": [
+                        {
+                            "name": "Gà kho gừng",
+                            "category": "main",
+                            "score": 0.715,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: chicken"
+                            ],
+                            "cost_per_serving": 12000.0
+                        },
+                        {
+                            "name": "Bắp cải xào",
+                            "category": "side",
+                            "score": 0.548,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: cabbage"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh rau ngót",
+                            "category": "soup",
+                            "score": 0.528,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: rau ngót"
+                            ],
+                            "cost_per_serving": 6000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 7",
+                    "dishes": [
+                        {
+                            "name": "Phở bò",
+                            "category": "main",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "side",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "soup",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Chủ nhật",
+                    "dishes": [
+                        {
+                            "name": "Gà kho gừng",
+                            "category": "main",
+                            "score": 0.715,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: chicken"
+                            ],
+                            "cost_per_serving": 12000.0
+                        },
+                        {
+                            "name": "Đậu que xào tỏi",
+                            "category": "side",
+                            "score": 0.508,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: green_beans"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh rau ngót",
+                            "category": "soup",
+                            "score": 0.528,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: rau ngót"
+                            ],
+                            "cost_per_serving": 6000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                }
+            ]
         },
         {
-          "name": "Canh bí đỏ thịt băm",
-          "category": "soup",
-          "score": 0.75,
-          "reasons": ["Món phổ biến", "Chế biến: boiled", "Nguyên liệu chính: bí"],
-          "cost_per_serving": 6000
-        },
-        {
-          "name": "Rau muống xào tỏi",
-          "category": "vegetable",
-          "score": 0.8,
-          "reasons": ["Món phổ biến", "Chế biến: stir_fried", "Nguyên liệu chính: rau muống"],
-          "cost_per_serving": 4000
+            "rank": 3,
+            "plan_score": 0.598,
+            "objective_value": 17047.0,
+            "week_menu": [
+                {
+                    "day": "Thứ 2",
+                    "dishes": [
+                        {
+                            "name": "Cá kho tộ",
+                            "category": "main",
+                            "score": 0.695,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: fish"
+                            ],
+                            "cost_per_serving": 13000.0
+                        },
+                        {
+                            "name": "Bắp cải xào",
+                            "category": "side",
+                            "score": 0.548,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: cabbage"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh bí đỏ",
+                            "category": "soup",
+                            "score": 0.638,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: pumpkin"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 3",
+                    "dishes": [
+                        {
+                            "name": "Phở bò",
+                            "category": "main",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "side",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "soup",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 4",
+                    "dishes": [
+                        {
+                            "name": "Cá kho tộ",
+                            "category": "main",
+                            "score": 0.695,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: fish"
+                            ],
+                            "cost_per_serving": 13000.0
+                        },
+                        {
+                            "name": "Bắp cải xào",
+                            "category": "side",
+                            "score": 0.548,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: cabbage"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh bí đỏ",
+                            "category": "soup",
+                            "score": 0.638,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: pumpkin"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 5",
+                    "dishes": [
+                        {
+                            "name": "Phở bò",
+                            "category": "main",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "side",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Phở bò",
+                            "category": "soup",
+                            "score": 0.742,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: beef"
+                            ],
+                            "cost_per_serving": 22000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 6",
+                    "dishes": [
+                        {
+                            "name": "Gà kho gừng",
+                            "category": "main",
+                            "score": 0.715,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: chicken"
+                            ],
+                            "cost_per_serving": 12000.0
+                        },
+                        {
+                            "name": "Măng xào",
+                            "category": "side",
+                            "score": 0.538,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: bamboo_shoot"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Canh bí đỏ",
+                            "category": "soup",
+                            "score": 0.638,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: pumpkin"
+                            ],
+                            "cost_per_serving": 5000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Thứ 7",
+                    "dishes": [
+                        {
+                            "name": "Mực xào",
+                            "category": "main",
+                            "score": 0.615,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: squid"
+                            ],
+                            "cost_per_serving": 12000.0
+                        },
+                        {
+                            "name": "Đậu que xào tỏi",
+                            "category": "side",
+                            "score": 0.508,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: green_beans"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh rau ngót",
+                            "category": "soup",
+                            "score": 0.528,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: rau ngót"
+                            ],
+                            "cost_per_serving": 6000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                },
+                {
+                    "day": "Chủ nhật",
+                    "dishes": [
+                        {
+                            "name": "Gà kho gừng",
+                            "category": "main",
+                            "score": 0.715,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Điểm phù hợp cao",
+                                "Chế biến: stewed",
+                                "Nguyên liệu chính: chicken"
+                            ],
+                            "cost_per_serving": 12000.0
+                        },
+                        {
+                            "name": "Bắp cải xào",
+                            "category": "side",
+                            "score": 0.548,
+                            "reasons": [
+                                "Chế biến: stir_fried",
+                                "Nguyên liệu chính: cabbage"
+                            ],
+                            "cost_per_serving": 4000.0
+                        },
+                        {
+                            "name": "Canh rau ngót",
+                            "category": "soup",
+                            "score": 0.528,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: boiled",
+                                "Nguyên liệu chính: rau ngót"
+                            ],
+                            "cost_per_serving": 6000.0
+                        },
+                        {
+                            "name": "Sữa chua",
+                            "category": "dessert",
+                            "score": 0.458,
+                            "reasons": [
+                                "Món phổ biến",
+                                "Chế biến: raw",
+                                "Nguyên liệu chính: yogurt"
+                            ],
+                            "cost_per_serving": 4000.0
+                        }
+                    ],
+                    "day_cost_per_serving": 26000.0
+                }
+            ]
         }
-      ],
-      "day_cost_per_serving": 27000
-    }
-  ],
-  "shopping_list": [
-    {
-      "ingredient_name": "chicken",
-      "total_kg": 240.0,
-      "available_kg": 10.0,
-      "to_buy_kg": 230.0,
-      "category": "protein"
-    },
-    {
-      "ingredient_name": "cabbage",
-      "total_kg": 560.0,
-      "available_kg": 0,
-      "to_buy_kg": 560.0,
-      "category": "vegetable"
-    }
-  ],
-  "cost_estimate": {
-    "avg_cost_per_serving": 24500,
-    "total_week_cost": 137200000,
-    "within_budget": true
-  },
-  "plan_score": 0.78
+    ]
 }
 ```
+
+> **Lưu ý:** Ví dụ response ở trên chỉ hiển thị 1 ngày (`Thứ 2`) để ngắn gọn.
+> Khi bạn gửi `days` đủ 7 ngày, trường `week_menu` sẽ có đủ 7 phần tử tương ứng (`Thứ 2` → `Chủ nhật`).
 
 ---
 
@@ -428,6 +1546,10 @@ File `app/core/rules.json` cho phép thay đổi hành vi AI **mà không cần 
 ---
 
 ## 9. Danh Sách Mua Hàng (Shopping List)
+
+> **Ghi chú:** Phần Shopping List thuộc luồng response “3-in-1” (legacy). Với luồng mới
+> `POST /api/v1/recommend/industrial/menus`, hệ thống tập trung trả về **top-K thực đơn + điểm**,
+> **bỏ qua** mua hàng và ước tính chi phí.
 
 Hệ thống tự động sinh danh sách mua hàng dựa trên:
 

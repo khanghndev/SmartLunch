@@ -1,11 +1,12 @@
-﻿CREATE TABLE dishes (
+CREATE TABLE dishes (
     Id INT NOT NULL AUTO_INCREMENT,
     Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
-    Name VARCHAR(255) NOT NULL COMMENT 'Tên món ăn',
+    Name VARCHAR(255) NOT NULL COMMENT 'Tên món ăn (tiếng Việt)',
+    NameEnglish VARCHAR(255) NULL COMMENT 'Tên món ăn tiếng Anh (dùng cho AI grouping)',
     Description VARCHAR(255) NULL COMMENT 'Mô tả',
-    Category VARCHAR(100) NULL COMMENT 'Danh mục',
+    CookingMethodId INT NULL COMMENT 'FK cooking_methods.Id (MethodKey = enum AI)',
     Price DECIMAL(10,2) NOT NULL COMMENT 'Giá mỗi phần',
-    ImageUrl VARCHAR(500) NULL COMMENT 'Ảnh món ăn',
+    ImageUrl VARCHAR(500) NULL COMMENT 'ảnh món ăn',
     DietaryLabel VARCHAR(50) NULL COMMENT 'Nhãn dinh dưỡng',
     Calories DECIMAL(10,2) NULL COMMENT 'Năng lượng (kcal)',
     Protein DECIMAL(10,2) NULL COMMENT 'Đạm (g)',
@@ -17,5 +18,7 @@
     PRIMARY KEY (Id),
     UNIQUE KEY UK_dishes_code (Code),
     UNIQUE KEY UK_dishes_name (Name),
-    INDEX IX_dishes_active_category (IsActive, Category)
+    INDEX IX_dishes_active (IsActive),
+    INDEX IX_dishes_cooking_method (CookingMethodId),
+    CONSTRAINT FK_dishes_cooking_method FOREIGN KEY (CookingMethodId) REFERENCES cooking_methods (Id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'Món ăn';

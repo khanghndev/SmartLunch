@@ -47,7 +47,10 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<IngredientIntakeProposalLine> IngredientIntakeProposalLines { get; set; }
         public DbSet<IngredientActualIntake> IngredientActualIntakes { get; set; }
         public DbSet<IngredientActualIntakeLine> IngredientActualIntakeLines { get; set; }
+        public DbSet<CookingMethod> CookingMethods { get; set; }
         public DbSet<Dish> Dishes { get; set; }
+        public DbSet<DishCategory> DishCategories { get; set; }
+        public DbSet<DishDishCategory> DishDishCategories { get; set; }
         public DbSet<DishImage> DishImages { get; set; }
         public DbSet<DishIngredient> DishIngredients { get; set; }
         public DbSet<WeeklyMenu> WeeklyMenus { get; set; }
@@ -63,10 +66,14 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<Complaint> Complaints { get; set; }
         public DbSet<ChatbotLog> ChatbotLogs { get; set; }
         public DbSet<MenuSuggestion> MenuSuggestions { get; set; }
+        public DbSet<MenuSuggestionPlan> MenuSuggestionPlans { get; set; }
+        public DbSet<MenuSuggestionPlanDay> MenuSuggestionPlanDays { get; set; }
+        public DbSet<MenuSuggestionPlanItem> MenuSuggestionPlanItems { get; set; }
         public DbSet<News> News { get; set; }
         public DbSet<Recruitment> Recruitment { get; set; }
         public DbSet<Banner> Banners { get; set; }
         public DbSet<Notification> Notifications { get; set; }
+        public DbSet<IngredientCategory> IngredientCategories { get; set; }
         #endregion
 
         #region Utilities
@@ -437,6 +444,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.TotalValue).HasPrecision(12, 2);
                 entity.Property(e => e.DepositAmount).HasPrecision(12, 2);
                 entity.HasOne(e => e.Partner).WithMany(p => p.Contracts).HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.Organization).WithMany(o => o.Contracts).HasForeignKey(e => e.OrganizationId).OnDelete(DeleteBehavior.SetNull);
             });
 
             // PartnerPayment
@@ -469,6 +477,21 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.Description).HasMaxLength(255);
                 entity.Property(e => e.CostPerUnit).HasPrecision(10, 2);
                 entity.HasOne(e => e.DefaultSupplier).WithMany(p => p.IngredientsAsDefaultSupplier).HasForeignKey(e => e.DefaultSupplierId).OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(e => e.Category).WithMany(c => c.Ingredients).HasForeignKey(e => e.CategoryId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            // IngredientCategory
+            modelBuilder.Entity<IngredientCategory>(entity =>
+            {
+                entity.ToTable("ingredient_categories");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.HasIndex(e => e.NameEnglish).IsUnique();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Code).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.NameEnglish).IsRequired().HasMaxLength(50);
+                entity.Property(e => e.Description).HasMaxLength(255);
             });
 
             // IngredientSource
@@ -615,19 +638,62 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            modelBuilder.Entity<CookingMethod>(entity =>
+            {
+                entity.ToTable("cooking_methods");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.HasIndex(e => e.MethodKey).IsUnique();
+                entity.Property(e => e.Code).HasMaxLength(20);
+                entity.Property(e => e.MethodKey).IsRequired().HasMaxLength(32);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            });
+
             // Dish
             modelBuilder.Entity<Dish>(entity =>
             {
                 entity.ToTable("dishes");
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.Name).IsUnique();
-                entity.HasIndex(e => new { e.IsActive, e.Category });
+                entity.HasIndex(e => e.IsActive);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.NameEnglish).HasMaxLength(255);
                 entity.Property(e => e.Description).HasMaxLength(255);
-                entity.Property(e => e.Category).HasMaxLength(100);
                 entity.Property(e => e.Price).HasPrecision(10, 2);
                 entity.Property(e => e.DietaryLabel).HasMaxLength(50);
+                entity.HasOne(e => e.CookingMethod)
+                    .WithMany(m => m.Dishes)
+                    .HasForeignKey(e => e.CookingMethodId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<DishCategory>(entity =>
+            {
+                entity.ToTable("dish_categories");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.HasIndex(e => e.SlotKey).IsUnique();
+                entity.Property(e => e.Code).HasMaxLength(20);
+                entity.Property(e => e.SlotKey).IsRequired().HasMaxLength(32);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            });
+
+            modelBuilder.Entity<DishDishCategory>(entity =>
+            {
+                entity.ToTable("dish_dish_categories");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.Property(e => e.Code).HasMaxLength(20);
+                entity.HasIndex(e => new { e.DishId, e.DishCategoryId }).IsUnique();
+                entity.HasOne(e => e.DishCategory)
+                    .WithMany(c => c.DishDishCategories)
+                    .HasForeignKey(e => e.DishCategoryId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Dish)
+                    .WithMany(d => d.DishDishCategories)
+                    .HasForeignKey(e => e.DishId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
 
             // DishIngredient
@@ -677,7 +743,6 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.ToTable("orders");
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => e.UserId);
-                entity.HasIndex(e => e.OrganizationId);
                 entity.HasIndex(e => e.CreatedBySalesUserId);
                 entity.HasIndex(e => e.InvoiceCode).IsUnique();
                 entity.HasIndex(e => new { e.ScheduledDate, e.Status });
@@ -687,7 +752,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.PaymentStatus).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.InvoiceCode).HasMaxLength(40);
                 entity.HasOne(e => e.User).WithMany(u => u.Orders).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.SetNull);
-                entity.HasOne(e => e.Organization).WithMany().HasForeignKey(e => e.OrganizationId).OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(e => e.Contract).WithMany(c => c.Orders).HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.SetNull);
                 entity.HasOne(e => e.CreatedBySalesUser).WithMany(u => u.SalesOrdersCreated).HasForeignKey(e => e.CreatedBySalesUserId).OnDelete(DeleteBehavior.SetNull);
             });
 
@@ -816,7 +881,59 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.SuggestionText).IsRequired();
                 entity.Property(e => e.AlgorithmVersion).HasMaxLength(50);
+                entity.Property(e => e.RulesKey).HasMaxLength(50);
+                entity.Property(e => e.Version).HasDefaultValue(1);
                 entity.HasOne(e => e.CreatedByUser).WithMany(u => u.MenuSuggestionsCreated).HasForeignKey(e => e.CreatedBy).OnDelete(DeleteBehavior.SetNull);
+                entity.HasMany(e => e.Plans)
+                    .WithOne(p => p.MenuSuggestion)
+                    .HasForeignKey(p => p.MenuSuggestionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // MenuSuggestionPlan
+            modelBuilder.Entity<MenuSuggestionPlan>(entity =>
+            {
+                entity.ToTable("menu_suggestion_plans");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.MenuSuggestionId);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Rank).IsRequired();
+                entity.Property(e => e.PlanScore).HasPrecision(6, 3);
+                entity.Property(e => e.ObjectiveValue).HasPrecision(18, 3);
+                entity.HasMany(e => e.Days)
+                    .WithOne(d => d.MenuSuggestionPlan)
+                    .HasForeignKey(d => d.MenuSuggestionPlanId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // MenuSuggestionPlanDay
+            modelBuilder.Entity<MenuSuggestionPlanDay>(entity =>
+            {
+                entity.ToTable("menu_suggestion_plan_days");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.MenuSuggestionPlanId);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.DayName).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.DayIndex).IsRequired();
+                entity.HasMany(e => e.Items)
+                    .WithOne(i => i.MenuSuggestionPlanDay)
+                    .HasForeignKey(i => i.MenuSuggestionPlanDayId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // MenuSuggestionPlanItem
+            modelBuilder.Entity<MenuSuggestionPlanItem>(entity =>
+            {
+                entity.ToTable("menu_suggestion_plan_items");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.MenuSuggestionPlanDayId);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.SlotCategory).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.DishName).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.DishSourceCategory).HasMaxLength(20);
+                entity.Property(e => e.Score).HasPrecision(6, 3);
+                entity.Property(e => e.CostPerServing).HasPrecision(10, 2);
+                entity.Property(e => e.ReasonsJson);
             });
 
             modelBuilder.Entity<News>(entity =>

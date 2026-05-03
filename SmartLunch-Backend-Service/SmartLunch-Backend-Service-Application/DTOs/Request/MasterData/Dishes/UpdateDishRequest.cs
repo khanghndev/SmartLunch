@@ -3,8 +3,13 @@ namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Dishes;
 public class UpdateDishRequest
 {
     public string Name { get; set; } = string.Empty;
+    /// <summary>Nếu null trong JSON: giữ nguyên giá trị DB.</summary>
+    public string? NameEnglish { get; set; }
     public string? Description { get; set; }
-    public string? Category { get; set; }
+    /// <summary>Nếu null: không đổi junction. Nếu gửi (kể cả rỗng): thay toàn bộ slot.</summary>
+    public List<string>? DishSlotCategoryCodes { get; set; }
+    /// <summary>Nếu null: giữ nguyên DB. Chuỗi rỗng: xóa FK. Giá trị: MethodKey (cooking_methods).</summary>
+    public string? CookingMethod { get; set; }
     public decimal Price { get; set; }
     public string? DietaryLabel { get; set; }
     public string? ImageUrl { get; set; }
