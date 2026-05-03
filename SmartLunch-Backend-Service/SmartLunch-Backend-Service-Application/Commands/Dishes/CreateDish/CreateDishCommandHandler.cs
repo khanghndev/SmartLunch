@@ -28,15 +28,41 @@ public class CreateDishCommandHandler : IRequestHandler<CreateDishCommand, GetDi
 
         var entity = new Dish
         {
-
+            Code = string.IsNullOrWhiteSpace(req.Code) ? null : req.Code.Trim(),
             Name = req.Name.Trim(),
             Description = string.IsNullOrWhiteSpace(req.Description) ? null : req.Description.Trim(),
             Category = DishCatalogCategory.Normalize(req.Category),
             Price = req.Price,
             DietaryLabel = string.IsNullOrWhiteSpace(req.DietaryLabel) ? null : req.DietaryLabel.Trim(),
+            ImageUrl = string.IsNullOrWhiteSpace(req.ImageUrl) ? null : req.ImageUrl.Trim(),
+            Calories = req.Calories,
+            Protein = req.Protein,
+            Fat = req.Fat,
+            Carbs = req.Carbs,
             IsActive = req.IsActive,
             CreatedAt = DateTime.UtcNow
         };
+
+        if (req.Images != null && req.Images.Count > 0)
+        {
+            if (req.Images.Count > 5)
+                throw new ArgumentException("A dish cannot have more than 5 images.");
+
+            foreach (var imgReq in req.Images)
+            {
+                entity.DishImages.Add(new DishImage
+                {
+                    MediaFileId = imgReq.MediaFileId,
+                    Role = string.IsNullOrWhiteSpace(imgReq.Role) ? "gallery" : imgReq.Role.ToLowerInvariant(),
+                    SortOrder = imgReq.SortOrder ?? 0
+                });
+            }
+
+            // Temporarily use objectName if we can (though MediaFile isn't loaded yet, 
+            // the repository will save it and we reload later)
+            // But actually we can't get ObjectName here without querying MediaFiles.
+            // We'll let the reload handle it.
+        }
 
         await _dishRepository.CreateAsync(entity);
 

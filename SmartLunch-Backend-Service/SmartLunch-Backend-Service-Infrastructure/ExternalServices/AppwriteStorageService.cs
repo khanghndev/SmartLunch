@@ -110,13 +110,14 @@ public class AppwriteStorageService : IStorageService
         await content.CopyToAsync(ms, cancellationToken);
         var payload = ms.ToArray();
         var uploadUrl = $"{_endpoint}/storage/buckets/{_bucketId}/files";
-        using var firstForm = BuildUploadForm(fileId, objectName, contentType, payload);
+        
+        using var firstForm = BuildUploadForm(fileId, objectName, contentType, payload, isPublic: true);
         using var res = await _httpClient.PostAsync(uploadUrl, firstForm, cancellationToken);
         if (res.StatusCode == HttpStatusCode.Conflict)
         {
             // Replace existing object by deleting then re-uploading.
             await DeleteObjectAsync(objectName);
-            using var retryForm = BuildUploadForm(fileId, objectName, contentType, payload);
+            using var retryForm = BuildUploadForm(fileId, objectName, contentType, payload, isPublic: true);
             using var retryRes = await _httpClient.PostAsync(uploadUrl, retryForm, cancellationToken);
             retryRes.EnsureSuccessStatusCode();
             return;
@@ -136,29 +137,13 @@ public class AppwriteStorageService : IStorageService
 
     private async Task<StorageSignedUrlResult> CreateDownloadUrlAsync(string objectName, string fileId, DateTime expiresAt)
     {
-        try
-        {
-            var tokenUrl = $"{_endpoint}/storage/buckets/{_bucketId}/files/{Uri.EscapeDataString(fileId)}/tokens";
-            using var tokenReq = new HttpRequestMessage(HttpMethod.Post, tokenUrl)
-            {
-                Content = new StringContent("{}")
-            };
-            tokenReq.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            using var tokenRes = await _httpClient.SendAsync(tokenReq);
-            tokenRes.EnsureSuccessStatusCode();
-
-            var tokenJson = await tokenRes.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(tokenJson);
-            var token = doc.RootElement.GetProperty("token").GetString() ?? string.Empty;
-
-            var url = $"{_endpoint}/storage/buckets/{_bucketId}/files/{Uri.EscapeDataString(fileId)}/view?project={Uri.EscapeDataString(_projectId)}&token={Uri.EscapeDataString(token)}";
-            return new StorageSignedUrlResult(_bucketId, objectName, url, expiresAt, new Dictionary<string, string>());
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Failed to create Appwrite download token for {ObjectName}", objectName);
-            throw;
-        }
+        // For Appwrite Cloud, we use the public 'view' endpoint with project ID.
+        // This requires the file to have 'read("any")' permissions, which we now set during upload.
+        var url = $"{_endpoint}/storage/buckets/{_bucketId}/files/{Uri.EscapeDataString(fileId)}/view?project={Uri.EscapeDataString(_projectId)}";
+        
+        // Note: For truly private files, one would normally use Appwrite's JWT or session, 
+        // but for a public catalog, the view URL with public permissions is standard.
+        return await Task.FromResult(new StorageSignedUrlResult(_bucketId, objectName, url, expiresAt, new Dictionary<string, string>()));
     }
 
     private static string ToFileId(string objectName)
@@ -173,7 +158,8 @@ public class AppwriteStorageService : IStorageService
         string fileId,
         string objectName,
         string contentType,
-        byte[] payload)
+        byte[] payload,
+        bool isPublic = true)
     {
         var contentDisposition = new ContentDispositionHeaderValue("form-data")
         {
@@ -186,10 +172,18 @@ public class AppwriteStorageService : IStorageService
             streamContent.Headers.ContentType = new MediaTypeHeaderValue(contentType);
         streamContent.Headers.ContentDisposition = contentDisposition;
 
-        return new MultipartFormDataContent
+        var form = new MultipartFormDataContent
         {
             { new StringContent(fileId), "fileId" },
             { streamContent, "file", Path.GetFileName(objectName) }
         };
+
+        if (isPublic)
+        {
+            // Set public read permissions for Appwrite
+            form.Add(new StringContent("read(\"any\")"), "permissions[]");
+        }
+
+        return form;
     }
 }

@@ -22,6 +22,7 @@ public class Dish
     public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<DishIngredient> DishIngredients { get; set; } = new List<DishIngredient>();
+    public virtual ICollection<DishImage> DishImages { get; set; } = new List<DishImage>();
     public virtual ICollection<MenuSchedule> MenuSchedules { get; set; } = new List<MenuSchedule>();
     public virtual ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();

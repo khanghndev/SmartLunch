@@ -12,6 +12,7 @@ CREATE TABLE users (
     LastName VARCHAR(100) NULL COMMENT 'Tên',
     PhoneNumber VARCHAR(20) NULL COMMENT 'Số điện thoại',
     AvatarUrl VARCHAR(500) NULL COMMENT 'Ảnh đại diện',
+    AvatarMediaFileId INT NULL COMMENT 'Media file id cho avatar (ưu tiên hơn AvatarUrl)',
     Gender VARCHAR(10) NULL COMMENT 'Giới tính',
     BirthDate DATE NULL COMMENT 'Ngày sinh',
     Address VARCHAR(255) NULL COMMENT 'Địa chỉ',

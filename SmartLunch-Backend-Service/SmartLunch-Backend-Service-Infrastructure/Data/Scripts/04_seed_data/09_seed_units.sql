@@ -13,3 +13,5 @@ INSERT INTO user_units (UserId, UnitId, JoinedAt, IsActive)
 SELECT u.Id, un.Id, NOW(), 1 FROM users u, units un WHERE u.Username = 'khach1' AND un.Name = 'Công ty TNHH ABC Tech';
 INSERT INTO user_units (UserId, UnitId, JoinedAt, IsActive)
 SELECT u.Id, un.Id, NOW(), 1 FROM users u, units un WHERE u.Username = 'khach2' AND un.Name = 'Trường THPT XYZ';
+INSERT INTO user_units (UserId, UnitId, JoinedAt, IsActive)
+SELECT u.Id, un.Id, NOW(), 1 FROM users u, units un WHERE u.Username = 'customer1' AND un.Name = 'Công ty TNHH ABC Tech';

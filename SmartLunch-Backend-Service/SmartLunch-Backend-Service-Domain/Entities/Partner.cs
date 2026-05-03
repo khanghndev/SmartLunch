@@ -30,4 +30,5 @@ public class Partner
     public virtual ICollection<PartnerPayment> PartnerPayments { get; set; } = new List<PartnerPayment>();
     public virtual ICollection<Ingredient> IngredientsAsDefaultSupplier { get; set; } = new List<Ingredient>();
     public virtual ICollection<IngredientSource> IngredientSources { get; set; } = new List<IngredientSource>();
+    public virtual ICollection<PartnerDocument> PartnerDocuments { get; set; } = new List<PartnerDocument>();
 }

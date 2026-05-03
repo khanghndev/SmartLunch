@@ -17,6 +17,8 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
     public async Task<WeeklyMenu?> GetByIdAsync(int id)
     {
         return await _context.WeeklyMenus
+            .Include(m => m.WeeklyMenuImages)
+            .ThenInclude(img => img.MediaFile)
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
@@ -33,6 +35,8 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
 
         var weeklyMenus = await query
             .OrderBy(e => e.StartDate)
+            .Include(m => m.WeeklyMenuImages)
+            .ThenInclude(img => img.MediaFile)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

@@ -14,7 +14,17 @@ public class PartnerDto
     public decimal? PerformanceRating { get; set; }
     public string? ComplianceInfo { get; set; }
     public string? FinancialTerms { get; set; }
+    public List<PartnerDocumentDto> Documents { get; set; } = new();
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+}
+
+public class PartnerDocumentDto
+{
+    public int Id { get; set; }
+    public int MediaFileId { get; set; }
+    public string DocumentType { get; set; } = "other";
+    public bool IsVerified { get; set; }
+    public string Url { get; set; } = string.Empty;
 }

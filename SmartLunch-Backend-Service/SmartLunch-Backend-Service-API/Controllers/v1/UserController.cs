@@ -19,7 +19,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-[Authorize(Policy = "roles:Admin")]
+[Authorize(Policy = "roles:Super Admin,Admin,Manager")]
 public class UserController : ControllerBase
 {
     private readonly ILogger<UserController> _logger;
@@ -154,6 +154,60 @@ public class UserController : ControllerBase
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetUserResponse>.ErrorResult("An error occurred while updating user", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Khóa tài khoản người dùng.</summary>
+    [HttpPost("{id:int}/lock")]
+    [Authorize(Policy = "permission:users.update")]
+    public async Task<ActionResult<BaseApiResponse<GetUserResponse>>> Lock(int id)
+    {
+        try
+        {
+            var actorId = RequireUserId();
+            var request = new UpdateUserRequest { IsActive = false };
+            var response = await _mediator.Send(new UpdateUserCommand(id, request, actorId));
+            return Ok(BaseApiResponse<GetUserResponse>.SuccessResult(response, "User locked successfully"));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, BaseApiResponse<GetUserResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Mở khóa tài khoản người dùng.</summary>
+    [HttpPost("{id:int}/unlock")]
+    [Authorize(Policy = "permission:users.update")]
+    public async Task<ActionResult<BaseApiResponse<GetUserResponse>>> Unlock(int id)
+    {
+        try
+        {
+            var actorId = RequireUserId();
+            var request = new UpdateUserRequest { IsActive = true };
+            var response = await _mediator.Send(new UpdateUserCommand(id, request, actorId));
+            return Ok(BaseApiResponse<GetUserResponse>.SuccessResult(response, "User unlocked successfully"));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, BaseApiResponse<GetUserResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Đặt lại mật khẩu cho người dùng (bởi Admin).</summary>
+    [HttpPost("{id:int}/reset-password")]
+    [Authorize(Policy = "permission:users.update")]
+    public async Task<ActionResult<BaseApiResponse<GetUserResponse>>> ResetPassword(int id, [FromBody] string newPassword)
+    {
+        try
+        {
+            var actorId = RequireUserId();
+            var request = new UpdateUserRequest { NewPassword = newPassword };
+            var response = await _mediator.Send(new UpdateUserCommand(id, request, actorId));
+            return Ok(BaseApiResponse<GetUserResponse>.SuccessResult(response, "Password reset successfully"));
+        }
+        catch (Exception ex)
+        {
+            return StatusCode((int)HttpStatusCode.InternalServerError, BaseApiResponse<GetUserResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
         }
     }
 

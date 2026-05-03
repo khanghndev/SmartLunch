@@ -24,6 +24,8 @@ public class PartnerRepository : IPartnerRepository
     {
         return await _context.Partners
             .Include(p => p.Contracts)
+            .Include(p => p.PartnerDocuments)
+            .ThenInclude(d => d.MediaFile)
             .FirstOrDefaultAsync(p => p.Id == id);
     }
 
