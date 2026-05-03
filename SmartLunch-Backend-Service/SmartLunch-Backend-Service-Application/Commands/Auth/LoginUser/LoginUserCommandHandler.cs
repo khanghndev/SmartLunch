@@ -117,6 +117,7 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, LoginRe
             UserId = user.Id,
             Username = user.Username,
             Email = user.Email,
+            FullName = $"{user.FirstName} {user.LastName}".Trim(),
             AccessToken = accessToken,
             RefreshToken = refreshToken,
             RefreshTokenExpiresAt = refreshTokenExpiresAt

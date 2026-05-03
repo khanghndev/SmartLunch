@@ -36,6 +36,8 @@ public class DishRepository : IDishRepository
         return await _context.Dishes
             .Include(d => d.DishIngredients)
             .ThenInclude(di => di.Ingredient)
+            .Include(d => d.DishImages)
+            .ThenInclude(img => img.MediaFile)
             .FirstOrDefaultAsync(d => d.Id == id);
     }
 
@@ -62,6 +64,8 @@ public class DishRepository : IDishRepository
 
         var dishes = await query
             .OrderBy(d => d.Name)
+            .Include(d => d.DishImages)
+            .ThenInclude(img => img.MediaFile)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

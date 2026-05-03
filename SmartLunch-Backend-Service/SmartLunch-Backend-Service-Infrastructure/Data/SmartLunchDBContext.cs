@@ -35,6 +35,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<Organization> Organizations { get; set; }
         public DbSet<UserOrganization> UserOrganizations { get; set; }
         public DbSet<Partner> Partners { get; set; }
+        public DbSet<PartnerDocument> PartnerDocuments { get; set; }
         public DbSet<Contract> Contracts { get; set; }
         public DbSet<PartnerPayment> PartnerPayments { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
@@ -47,8 +48,10 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<IngredientActualIntake> IngredientActualIntakes { get; set; }
         public DbSet<IngredientActualIntakeLine> IngredientActualIntakeLines { get; set; }
         public DbSet<Dish> Dishes { get; set; }
+        public DbSet<DishImage> DishImages { get; set; }
         public DbSet<DishIngredient> DishIngredients { get; set; }
         public DbSet<WeeklyMenu> WeeklyMenus { get; set; }
+        public DbSet<WeeklyMenuImage> WeeklyMenuImages { get; set; }
         public DbSet<MenuSchedule> MenuSchedules { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
@@ -366,7 +369,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.Md5HashBase64).HasMaxLength(128);
 
                 entity.HasOne(e => e.OwnerUser)
-                    .WithMany()
+                    .WithMany(u => u.MediaFiles)
                     .HasForeignKey(e => e.OwnerUserId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
@@ -857,6 +860,11 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.Message).IsRequired();
+
+                entity.HasOne(e => e.User)
+                    .WithMany(u => u.Notifications)
+                    .HasForeignKey(e => e.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
         #endregion

@@ -17,4 +17,5 @@ public class WeeklyMenu
 
     public virtual User CreatedByUser { get; set; } = null!;
     public virtual ICollection<MenuSchedule> MenuSchedules { get; set; } = new List<MenuSchedule>();
+    public virtual ICollection<WeeklyMenuImage> WeeklyMenuImages { get; set; } = new List<WeeklyMenuImage>();
 }
