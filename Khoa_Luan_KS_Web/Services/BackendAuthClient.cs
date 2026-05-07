@@ -1,6 +1,7 @@
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Configuration;
 
 namespace Khoa_Luan_KS_Web.Services;
@@ -32,6 +33,17 @@ public class BackendAuthClient
     {
         var payload = new { token = accessToken };
         _ = await PostAsync<object>("/api/v1/Auth/logout", payload, bearerToken: accessToken, ct);
+    }
+
+    public async Task<RegisterResponse> RegisterAsync(string email, string password, string confirmPassword, int? roleId, CancellationToken ct)
+    {
+        var payload = new { email, password, confirmPassword, roleId };
+        return await PostAsync<RegisterResponse>("/api/v1/Auth/register", payload, bearerToken: null, ct);
+    }
+
+    public async Task<UserProfileResponse> GetProfileAsync(string accessToken, CancellationToken ct)
+    {
+        return await GetAsync<UserProfileResponse>("/api/v1/Auth/profile", accessToken, ct);
     }
 
     private async Task<T> PostAsync<T>(string path, object payload, string? bearerToken, CancellationToken ct)
@@ -76,6 +88,29 @@ public class BackendAuthClient
         return envelope.Data;
     }
 
+    private async Task<T> GetAsync<T>(string path, string accessToken, CancellationToken ct)
+    {
+        var baseUrl = _configuration["BackendApi:BaseUrl"]?.TrimEnd('/');
+        var client = _httpClientFactory.CreateClient();
+        client.BaseAddress = new Uri(baseUrl!);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        using var res = await client.GetAsync(path, ct);
+        var body = await res.Content.ReadAsStringAsync(ct);
+
+        if (!res.IsSuccessStatusCode)
+        {
+            var msg = TryExtractBackendMessage(body) ?? $"Backend request failed ({(int)res.StatusCode})";
+            throw new InvalidOperationException(msg);
+        }
+
+        var envelope = JsonSerializer.Deserialize<BaseApiResponse<T>>(body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        if (envelope == null || envelope.Data == null)
+            throw new InvalidOperationException("Invalid response from backend");
+
+        return envelope.Data;
+    }
+
     private static string? TryExtractBackendMessage(string body)
     {
         try
@@ -99,13 +134,56 @@ public sealed class BaseApiResponse<T>
     public T? Data { get; set; }
 }
 
+public class PaginationResponse<T>
+{
+    [JsonPropertyName("data")]
+    public List<T> Items { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+}
+
 public sealed class LoginResponse
 {
     public int UserId { get; set; }
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string FullName { get; set; } = string.Empty;
     public string AccessToken { get; set; } = string.Empty;
     public string RefreshToken { get; set; } = string.Empty;
     public DateTime RefreshTokenExpiresAt { get; set; }
+}
+
+public sealed class RegisterResponse
+{
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+}
+
+public sealed class UserProfileResponse
+{
+    public int Id { get; set; }
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string? PhoneNumber { get; set; }
+    public string? AvatarUrl { get; set; }
+    public string? Address { get; set; }
+    public List<string> Roles { get; set; } = new();
+    public UnitInfoResponse? Unit { get; set; }
+}
+
+public sealed class UnitInfoResponse
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? TaxCode { get; set; }
+    public string? LegalRepresentative { get; set; }
+    public string? Address { get; set; }
+    public string? Phone { get; set; }
+    public string? ContactEmail { get; set; }
+    public string UnitType { get; set; } = string.Empty;
 }
 

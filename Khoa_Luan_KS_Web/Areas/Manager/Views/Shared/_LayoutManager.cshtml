@@ -17,6 +17,8 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         [x-cloak] { display: none !important; }
         .custom-scrollbar::-webkit-scrollbar { width: 4px; }
@@ -96,7 +98,7 @@
                         </a>
                         <a href="/Manager/Catalog/Meals" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "Meals" || action == "MealDetail" || action == "MealEdit" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
                             @if(action == "Meals" || action == "MealDetail" || action == "MealEdit") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
-                            Thực đơn
+                            Món ăn
                         </a>
                     </div>
                 </div>
@@ -122,6 +124,10 @@
                         <a href="/Manager/Menu/Dish" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "Dish" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
                             @if(action == "Dish") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
                             Kho Món ăn
+                        </a>
+                        <a href="/Manager/MenuSuggestion/Index" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(controller == "MenuSuggestion" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
+                            @if(controller == "MenuSuggestion") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
+                            <span class="flex items-center gap-2">Gợi ý AI <i class="fas fa-sparkles text-orange-500 text-xs"></i></span>
                         </a>
                         <a href="/Manager/Menu/History" class="flex items-center relative pl-10 pr-3 py-2 rounded-xl transition-all @(action == "History" ? "bg-green-50 text-green-700 font-bold" : "text-gray-500 hover:text-green-700 hover:bg-gray-50")">
                             @if(action == "History") { <div class="absolute left-[19px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-green-500"></div> }
@@ -199,6 +205,51 @@
             @RenderBody()
         </main>
     </div>
+
+    <!-- Notification Toast -->
+    @{
+        var _toastMsg  = (TempData["Success"] as string) ?? (TempData["Error"] as string) ?? "";
+        var _toastType = TempData["Success"] != null ? "success" : "error";
+    }
+    @if (!string.IsNullOrEmpty(_toastMsg))
+    {
+        <div id="toast-root"
+             data-msg="@Html.Encode(_toastMsg)"
+             data-type="@_toastType">
+        </div>
+        <script>
+            (function () {
+                var el   = document.getElementById('toast-root');
+                var msg  = el ? el.getAttribute('data-msg')  : '';
+                var type = el ? el.getAttribute('data-type') : 'success';
+                if (!msg) return;
+
+                var toast = document.createElement('div');
+                toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;gap:12px;padding:14px 20px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.12);border:1px solid;min-width:300px;max-width:440px;background:#fff;transition:opacity .3s,transform .3s;';
+                toast.style.borderColor  = type === 'success' ? '#bbf7d0' : '#fecaca';
+                toast.style.color        = type === 'success' ? '#166534' : '#991b1b';
+
+                var icon = type === 'success' ? '✔' : '✖';
+                var iconBg = type === 'success' ? '#f0fdf4' : '#fff1f2';
+                var title  = type === 'success' ? 'Thông báo' : 'Lỗi hệ thống';
+
+                toast.innerHTML =
+                    '<div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:' + iconBg + '">' + icon + '</div>' +
+                    '<div style="flex:1;">' +
+                        '<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.5;margin:0 0 2px;">' + title + '</p>' +
+                        '<p style="font-size:13px;font-weight:700;margin:0;">' + msg + '</p>' +
+                    '</div>' +
+                    '<button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;opacity:.4;font-size:14px;padding:0;line-height:1;">✕</button>';
+
+                document.body.appendChild(toast);
+                setTimeout(function () {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(8px)';
+                    setTimeout(function () { toast.remove(); }, 300);
+                }, 5000);
+            })();
+        </script>
+    }
 
     @await RenderSectionAsync("Scripts", required: false)
 </body>

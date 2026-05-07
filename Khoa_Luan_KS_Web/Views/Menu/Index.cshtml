@@ -148,282 +148,328 @@
     </section>
 
     <!-- MENU SECTION -->
-    <section id="menu-section" class="py-24 max-w-7xl mx-auto px-6 relative">
-        
-        <!-- Decorative bg -->
-        <div class="absolute top-40 left-0 w-full h-[500px] bg-gradient-to-b from-white to-transparent pointer-events-none"></div>
-
-        <!-- Tab Navigation -->
-        <div class="flex flex-col items-center mb-20 relative z-10">
-            <p class="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mb-3">Danh mục thực đơn</p>
-            <h2 class="text-3xl md:text-5xl font-black text-slate-900 mb-10 text-center tracking-tight">Lựa Chọn Theo <span class="text-orange-500 relative">Nhu Cầu
-                <svg class="absolute -bottom-2 left-0 w-full text-orange-200 h-3" viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,10 Q50,20 100,10" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
-            </span></h2>
+    <section id="menu-section" class="py-20 bg-slate-50/50">
+        <div class="max-w-[1440px] mx-auto px-6 lg:px-8">
             
-            <div class="inline-flex p-1.5 bg-white/80 backdrop-blur-md rounded-full shadow-sm border border-slate-200/60">
-                @foreach(var (key,icon,label) in new[]{("school","graduation-cap","Trường Học"),("office","briefcase","Văn Phòng"),("factory","factory","Công Nhân")})
-                {
-                    <button @@click="activeTab='@key'"
-                            class="relative px-8 py-3.5 rounded-full font-bold text-sm transition-all duration-300 flex items-center gap-2 overflow-hidden"
-                            :class="activeTab==='@key' ? 'text-white' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/50'">
-                        <div class="absolute inset-0 bg-gradient-to-r from-orange-500 to-orange-400 transition-opacity duration-300 pointer-events-none"
-                             :class="activeTab==='@key' ? 'opacity-100' : 'opacity-0'"></div>
-                        <i data-lucide="@icon" class="w-4 h-4 relative z-10" :class="activeTab==='@key' ? 'text-white' : 'text-slate-400'"></i> 
-                        <span class="relative z-10">@label</span>
-                    </button>
-                }
-            </div>
-        </div>
-
-        <div class="relative z-10">
-            <!-- ===== TRƯỜNG HỌC ===== -->
-            <div x-show="activeTab==='school'" x-cloak
-                 x-transition:enter="transition duration-500 ease-out" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
-                
-                <!-- Mầm non & Tiểu học -->
-                <div class="mb-20">
-                    <div class="flex items-end justify-between mb-8">
-                        <div class="flex items-center gap-5">
-                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-green-400 to-green-600 flex items-center justify-center shadow-lg shadow-green-500/30">
-                                <i data-lucide="sprout" class="w-7 h-7 text-white"></i>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black text-green-600 uppercase tracking-[0.2em] mb-1">3 – 11 tuổi</p>
-                                <h3 class="text-3xl font-black text-slate-900 tracking-tight">Mầm Non &amp; Tiểu Học</h3>
-                            </div>
-                        </div>
-                        <a href="/Customer/School" class="hidden md:flex text-sm font-bold text-orange-500 hover:text-orange-600 items-center gap-1 group">
-                            Xem tất cả <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
-                        </a>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        @foreach(var (img,name,desc,tag,kcal,badge) in new[]{
-                            ("https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=800&q=80","Cơm thịt băm xào ngô ngọt","Cơm mềm dẻo, thịt heo băm xào ngô ngọt, mướp xào tôm, canh bí đỏ sườn non, chuối tây tráng miệng.","Bữa trưa","520 kcal","Mầm non"),
-                            ("https://images.unsplash.com/photo-1512058564366-18510be2db19?w=800&q=80","Cơm đùi gà xốt chua ngọt","Đùi gà xốt cà chua, cải chíp xào tỏi, canh rau ngót nấu thịt băm, nho Mỹ tráng miệng.","Bữa trưa","560 kcal","Tiểu học"),
-                            ("https://images.unsplash.com/photo-1551782450-a2132b4ba21d?w=800&q=80","Bánh & Sữa buổi xế","Bánh bông lan trứng muối cỡ nhỏ, sữa chua uống Probi, thanh long đỏ cắt sẵn vừa ăn.","Bữa phụ","180 kcal","Cả 2 khối"),
-                        })
-                        {
-                            <div class="card-hover-effect bg-white rounded-[32px] overflow-hidden border border-slate-100 flex flex-col h-full group">
-                                <div class="relative h-56 overflow-hidden shrink-0 p-3 pb-0">
-                                    <div class="w-full h-full rounded-t-[20px] overflow-hidden relative">
-                                        <img src="@img" class="w-full h-full object-cover"/>
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-                                        <span class="absolute top-3 left-3 text-[10px] font-black px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-sm text-green-700 shadow-sm uppercase tracking-wider">@tag</span>
-                                        <span class="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                                            <i data-lucide="flame" class="w-3.5 h-3.5 text-orange-400"></i> @kcal
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="p-6 flex flex-col flex-1">
-                                    <h4 class="text-xl font-black text-slate-900 mb-3 group-hover:text-orange-500 transition-colors">@name</h4>
-                                    <p class="text-sm text-slate-500 leading-relaxed mb-6 flex-1">@desc</p>
-                                    
-                                    <div class="pt-5 border-t border-slate-100 border-dashed mt-auto flex items-center justify-between">
-                                        <div class="flex flex-col">
-                                            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Khuyên dùng</span>
-                                            <span class="text-xs font-black text-slate-700 bg-slate-100 px-3 py-1 rounded-lg inline-block">@badge</span>
-                                        </div>
-                                        <a href="/Customer/MealDetail?level=mamnon&day=t2" class="w-10 h-10 rounded-full bg-orange-50 text-orange-500 flex items-center justify-center hover:bg-orange-500 hover:text-white transition-colors">
-                                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
-
-                <!-- THCS & THPT -->
-                <div>
-                    <div class="flex items-end justify-between mb-8">
-                        <div class="flex items-center gap-5">
-                            <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                                <i data-lucide="zap" class="w-7 h-7 text-white"></i>
-                            </div>
-                            <div>
-                                <p class="text-[10px] font-black text-purple-600 uppercase tracking-[0.2em] mb-1">12 – 18 tuổi</p>
-                                <h3 class="text-3xl font-black text-slate-900 tracking-tight">THCS &amp; THPT</h3>
-                            </div>
-                        </div>
-                        <a href="/Customer/School" class="hidden md:flex text-sm font-bold text-orange-500 hover:text-orange-600 items-center gap-1 group">
-                            Xem tất cả <i data-lucide="arrow-right" class="w-4 h-4 group-hover:translate-x-1 transition-transform"></i>
-                        </a>
-                    </div>
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-                        @foreach(var (img,name,desc,kcal) in new[]{
-                            ("https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=800&q=80","Khay 5 Món Tăng Trưởng","Bò xào cần tây, trứng cuộn ngũ sắc, rau muống tỏi, canh cải chua sườn, sữa Milo cung cấp năng lượng.","850 kcal"),
-                            ("https://images.unsplash.com/photo-1628840042765-356cda07504e?w=800&q=80","Set Cơm Gà Chiên Giòn","Đùi gà chiên giòn, salad Nga, đậu ve kho quẹt, canh rau dền tôm, sữa chua nha đam.","800 kcal"),
-                            ("https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=800&q=80","Mì Ý Bò Bằm Sốt Cà","Mì Ý chuẩn vị, bò bằm sốt cà chua tươi, salad rau trộn giấm táo, súp kem bắp, bánh mì tỏi bơ.","720 kcal"),
-                        })
-                        {
-                            <div class="card-hover-effect bg-white rounded-[32px] overflow-hidden border border-slate-100 flex flex-col h-full group">
-                                <div class="relative h-56 overflow-hidden shrink-0 p-3 pb-0">
-                                    <div class="w-full h-full rounded-t-[20px] overflow-hidden relative">
-                                        <img src="@img" class="w-full h-full object-cover"/>
-                                        <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent"></div>
-                                        <span class="absolute bottom-3 right-3 bg-slate-900/80 backdrop-blur-md text-white text-[11px] font-bold px-3 py-1.5 rounded-full flex items-center gap-1.5">
-                                            <i data-lucide="flame" class="w-3.5 h-3.5 text-orange-400"></i> @kcal
-                                        </span>
-                                    </div>
-                                </div>
-                                <div class="p-6 flex flex-col flex-1">
-                                    <h4 class="text-xl font-black text-slate-900 mb-3 group-hover:text-purple-600 transition-colors">@name</h4>
-                                    <p class="text-sm text-slate-500 leading-relaxed mb-6 flex-1">@desc</p>
-                                    
-                                    <div class="pt-5 border-t border-slate-100 border-dashed mt-auto flex items-center justify-between">
-                                        <div class="flex flex-col">
-                                            <span class="text-[9px] text-slate-400 uppercase tracking-widest font-bold mb-1">Độ tuổi</span>
-                                            <span class="text-xs font-black text-indigo-700 bg-indigo-50 px-3 py-1 rounded-lg inline-block">Trung học</span>
-                                        </div>
-                                        <a href="/Customer/MealDetail?level=thcs&day=t2" class="w-10 h-10 rounded-full bg-purple-50 text-purple-600 flex items-center justify-center hover:bg-purple-600 hover:text-white transition-colors">
-                                            <i data-lucide="arrow-right" class="w-5 h-5"></i>
-                                        </a>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
+            <div class="text-center mb-16 relative z-10">
+                <p class="text-orange-500 text-[10px] font-black uppercase tracking-[0.3em] mb-3">Thực đơn đa dạng</p>
+                <h2 class="text-3xl md:text-5xl font-black text-slate-900 mb-6 tracking-tight">Thực Đơn <span class="text-orange-500 relative">Hàng Tuần
+                    <svg class="absolute -bottom-2 left-0 w-full text-orange-200 h-3" viewBox="0 0 100 20" preserveAspectRatio="none"><path d="M0,10 Q50,20 100,10" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round"/></svg>
+                </span></h2>
+                <p class="text-slate-500 max-w-2xl mx-auto font-medium text-sm md:text-base leading-relaxed">Hệ thống thực đơn được thiết kế khoa học, thay đổi mỗi tuần đảm bảo cung cấp đầy đủ dinh dưỡng và hương vị đa dạng cho mọi đối tượng khách hàng.</p>
             </div>
 
-            <!-- ===== VĂN PHÒNG ===== -->
-            <div x-show="activeTab==='office'" x-cloak
-                 x-transition:enter="transition duration-500 ease-out" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
-                
-                <div class="text-center mb-16">
-                    <h3 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-4">Healthy &amp; <span class="text-orange-500">Tiêu Chuẩn</span></h3>
-                    <p class="text-slate-500 max-w-2xl mx-auto text-base">Ít dầu mỡ, nhiều rau xanh, cân bằng tinh bột — thiết kế đặc biệt giúp nhân viên duy trì sự tỉnh táo và năng lượng suốt ngày làm việc.</p>
-                </div>
+            <div class="flex flex-col lg:flex-row gap-8 items-start relative z-10"
+                 x-data="{ 
+                     activeCategory: 'cong-nghiep', 
+                     activeSubMenu: 'mau-1',
+                     menus: {
+                         'cong-nghiep': { title: 'Suất ăn công nghiệp', icon: 'factory', sub: [{id: 'mau-1', name: 'Thực đơn mẫu 1'}, {id: 'mau-2', name: 'Thực đơn mẫu 2'}, {id: 'mau-3', name: 'Thực đơn mẫu 3'}] },
+                         'hoc-sinh': { title: 'Suất ăn học sinh', icon: 'graduation-cap', sub: [{id: 'mau-1', name: 'Mầm non & Tiểu học'}, {id: 'mau-2', name: 'THCS & THPT'}] },
+                         'van-phong': { title: 'Cơm hộp văn phòng', icon: 'briefcase', sub: [{id: 'mau-1', name: 'Set Tiêu chuẩn'}, {id: 'mau-2', name: 'Set Eat Clean'}] },
+                         'theo-ban': { title: 'Thực đơn theo bàn', icon: 'users', sub: [{id: 'mau-1', name: 'Set Menu 1'}, {id: 'mau-2', name: 'Set Menu 2'}] },
+                         'buffet': { title: 'Thực đơn buffet', icon: 'utensils-crossed', sub: [{id: 'mau-1', name: 'Buffet Cơ bản'}, {id: 'mau-2', name: 'Buffet Cao cấp'}] },
+                         'tea-break': { title: 'Thực đơn Tea - Break', icon: 'coffee', sub: [{id: 'mau-1', name: 'Gói Tiêu chuẩn'}, {id: 'mau-2', name: 'Gói Đặc biệt'}] }
+                     }
+                 }">
+                 
+                 <!-- Sidebar -->
+                 <div class="w-full lg:w-[320px] shrink-0 bg-white rounded-3xl p-5 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 lg:sticky lg:top-28">
+                     <div class="flex items-center gap-3 mb-6 px-2">
+                         <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
+                             <i data-lucide="list-tree" class="w-5 h-5 text-orange-500"></i>
+                         </div>
+                         <h3 class="text-lg font-black text-slate-900">Danh mục thực đơn</h3>
+                     </div>
+                     <div class="space-y-3">
+                         <template x-for="(catData, catKey) in menus" :key="catKey">
+                             <div class="border border-slate-100 rounded-2xl overflow-hidden transition-all duration-300"
+                                  :class="activeCategory === catKey ? 'ring-1 ring-green-500/20 shadow-md bg-white' : 'bg-slate-50 hover:bg-white hover:border-slate-200'">
+                                 <button @@click="activeCategory = catKey; activeSubMenu = catData.sub[0].id" 
+                                         class="w-full px-5 py-4 flex items-center justify-between group transition-colors"
+                                         :class="activeCategory === catKey ? 'bg-green-600 text-white' : 'text-slate-700 hover:text-green-600'">
+                                     <div class="flex items-center gap-3">
+                                         <i :data-lucide="catData.icon" class="w-5 h-5" :class="activeCategory === catKey ? 'text-white' : 'text-green-600 opacity-70'"></i>
+                                         <span class="font-bold text-[15px]" x-text="catData.title"></span>
+                                     </div>
+                                     <i data-lucide="chevron-down" class="w-4 h-4 transition-transform duration-300" :class="activeCategory === catKey ? 'rotate-180' : ''"></i>
+                                 </button>
+                                 
+                                 <div x-show="activeCategory === catKey" 
+                                      x-transition:enter="transition ease-out duration-200"
+                                      x-transition:enter-start="opacity-0 -translate-y-2"
+                                      x-transition:enter-end="opacity-100 translate-y-0"
+                                      class="bg-white border-t border-slate-100">
+                                     <div class="p-2.5 space-y-1">
+                                         <template x-for="sub in catData.sub" :key="sub.id">
+                                             <button @@click="activeSubMenu = sub.id" 
+                                                     class="w-full text-left px-11 py-2.5 rounded-xl font-bold text-[13px] transition-all flex items-center gap-2"
+                                                     :class="activeSubMenu === sub.id ? 'bg-orange-50 text-orange-600' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-900'">
+                                                 <span class="w-1.5 h-1.5 rounded-full transition-colors" :class="activeSubMenu === sub.id ? 'bg-orange-500' : 'bg-slate-300'"></span>
+                                                 <span x-text="sub.name"></span>
+                                             </button>
+                                         </template>
+                                     </div>
+                                 </div>
+                             </div>
+                         </template>
+                     </div>
+                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-center max-w-6xl mx-auto">
-                    @foreach(var (img,name,price,items,hot,kcal) in new[]{
-                        ("https://images.unsplash.com/photo-1612928646193-272e50df8298?w=800&q=80","Set Năng Động","35.000đ",new[]{"Cá diêu hồng sốt cà","Thịt luộc cà pháo","Rau dền luộc","Canh cải ngọt"},false,"580 kcal"),
-                        ("https://images.unsplash.com/photo-1543339308-43e59d6b73a6?w=800&q=80","Set Tiêu Chuẩn","45.000đ",new[]{"Sườn ram chua ngọt","Mực xào hành cần","Đậu ve xào tỏi","Canh chua chả cá","Tráng miệng: Dưa hấu"},true,"700 kcal"),
-                        ("https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&q=80","Set Eat Clean","55.000đ",new[]{"Cơm gạo lứt","Ức gà áp chảo chanh leo","Salad mix mè rang","Canh nấm chay"},false,"620 kcal"),
-                    })
-                    {
-                        <div class="relative bg-white rounded-[40px] border @(hot ? "border-orange-200 shadow-2xl shadow-orange-500/10 scale-100 md:scale-105 z-10" : "border-slate-100 shadow-lg scale-100") overflow-hidden transition-all duration-500 flex flex-col group">
-                            @if(hot)
-                            {
-                                <div class="absolute top-0 inset-x-0 h-1.5 bg-gradient-to-r from-orange-400 to-orange-500"></div>
-                                <div class="absolute top-5 left-1/2 -translate-x-1/2 bg-orange-500 text-white text-[10px] font-black px-4 py-1.5 rounded-full z-10 shadow-lg shadow-orange-500/30 tracking-[0.2em] uppercase whitespace-nowrap">Bán Chạy Nhất</div>
-                            }
-                            
-                            <div class="relative h-60 overflow-hidden shrink-0">
-                                <img src="@img" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"/>
-                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 via-transparent to-transparent"></div>
-                                <div class="absolute bottom-5 left-6 right-6 flex items-end justify-between">
-                                    <div>
-                                        <h4 class="text-2xl font-black text-white leading-tight">@name</h4>
-                                    </div>
-                                    <span class="bg-white/20 backdrop-blur-md border border-white/20 text-white text-[11px] font-bold px-3 py-1.5 rounded-xl flex items-center gap-1">
-                                        <i data-lucide="flame" class="w-3.5 h-3.5 text-orange-300"></i> @kcal
-                                    </span>
-                                </div>
-                            </div>
-                            
-                            <div class="p-8 flex flex-col flex-1">
-                                <div class="flex items-end justify-center mb-8 pb-8 border-b border-slate-100">
-                                    <span class="text-4xl font-black text-slate-900">@price</span>
-                                    <span class="text-sm font-medium text-slate-400 mb-1 ml-1">/ phần</span>
-                                </div>
-                                
-                                <ul class="space-y-4 mb-8 flex-1">
-                                    @foreach(var it in items)
-                                    {
-                                        <li class="flex items-start gap-3">
-                                            <div class="w-5 h-5 rounded-full bg-green-50 flex items-center justify-center shrink-0 mt-0.5">
-                                                <i data-lucide="check" class="w-3 h-3 text-green-500 font-bold"></i>
-                                            </div>
-                                            <span class="text-sm text-slate-600 font-medium">@it</span>
-                                        </li>
-                                    }
-                                </ul>
-                                
-                                <div class="mt-auto space-y-3 pt-4">
-                                    <a href="/Customer/Contact" class="block text-center w-full py-4 @(hot ? "bg-orange-500 text-white shadow-xl shadow-orange-500/25 hover:bg-orange-600" : "bg-slate-900 text-white hover:bg-slate-800") rounded-2xl font-black text-sm transition-all hover:-translate-y-0.5">
-                                        Đặt Set Này
-                                    </a>
-                                    <a href="/Customer/MealDetail?level=tieuhoc&day=t2" class="block text-center w-full py-4 bg-transparent text-slate-500 rounded-2xl font-bold text-sm hover:text-slate-900 transition-colors">
-                                        Xem chi tiết <i data-lucide="arrow-right" class="w-4 h-4 inline-block ml-1"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
+                 <!-- Main Content -->
+                 <div class="flex-1 w-full bg-white rounded-3xl p-6 lg:p-8 shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-slate-100 overflow-hidden">
+                     <div class="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 pb-6 border-b border-slate-100 gap-4">
+                         <div>
+                             <h3 class="text-2xl font-black text-slate-900 mb-2 uppercase tracking-tight" x-text="menus[activeCategory].title + ' - ' + menus[activeCategory].sub.find(s => s.id === activeSubMenu).name"></h3>
+                             <p class="text-slate-500 text-[13px] font-medium flex items-center gap-1.5"><i data-lucide="info" class="w-4 h-4 text-orange-400"></i> Thực đơn chỉ mang tính chất tham khảo, có thể điều chỉnh theo yêu cầu.</p>
+                         </div>
+                         <div class="flex gap-2 shrink-0">
+                             <button class="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 rounded-xl font-bold text-sm transition-colors border border-slate-200 shadow-sm">
+                                 <i data-lucide="printer" class="w-4 h-4"></i> In
+                             </button>
+                             <button class="flex items-center gap-2 px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-bold text-sm transition-colors shadow-lg shadow-orange-500/20 border border-orange-600">
+                                 <i data-lucide="download" class="w-4 h-4"></i> Tải PDF
+                             </button>
+                         </div>
+                     </div>
 
-            <!-- ===== CÔNG NHÂN ===== -->
-            <div x-show="activeTab==='factory'" x-cloak
-                 x-transition:enter="transition duration-500 ease-out" x-transition:enter-start="opacity-0 translate-y-8" x-transition:enter-end="opacity-100 translate-y-0">
-                
-                <div class="bg-white rounded-[40px] shadow-2xl shadow-slate-200/50 border border-slate-100 overflow-hidden flex flex-col lg:flex-row">
-                    <!-- Image Side -->
-                    <div class="lg:w-1/2 relative h-[400px] lg:h-auto overflow-hidden">
-                        <img src="https://images.unsplash.com/photo-1590868309235-ea34bed7bd7f?w=1200&q=80" class="absolute inset-0 w-full h-full object-cover"/>
-                        <div class="absolute inset-0 bg-gradient-to-r from-slate-900/80 lg:from-transparent lg:to-slate-900/80"></div>
-                        
-                        <div class="absolute inset-0 p-10 flex flex-col justify-end lg:items-end text-left lg:text-right">
-                            <div class="lg:ml-auto">
-                                <span class="inline-block bg-blue-500 text-white text-[10px] font-black uppercase tracking-widest px-4 py-2 rounded-full mb-4">Giải pháp tiết kiệm</span>
-                                <h3 class="text-4xl md:text-5xl font-black text-white mb-4">Suất Ăn <br/>Tăng Ca</h3>
-                                <p class="text-white/80 max-w-sm lg:ml-auto text-sm leading-relaxed">Chú trọng số lượng và chất lượng, đảm bảo 100% công nhân được ăn no, đủ năng lượng làm việc hiệu quả.</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- Content Side -->
-                    <div class="lg:w-1/2 p-10 md:p-16">
-                        <div class="inline-block border-b-2 border-orange-500 pb-2 mb-8">
-                            <span class="text-3xl font-black text-slate-900">22.000đ - 25.000đ<span class="text-sm text-slate-500 font-medium ml-2">/ suất</span></span>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
-                            @foreach(var (icon,title,desc,color) in new[]{
-                                ("utensils","Khay Inox 5 ngăn","Giữ nhiệt, an toàn","orange"),
-                                ("truck","Giao trước 11:00","Đảm bảo bữa trưa nóng","blue"),
-                                ("refresh-cw","Xoay vòng 30 ngày","Thực đơn không nhàm chán","green"),
-                                ("users","Phục vụ số lượng lớn","Sẵn sàng cho 1000+ người","purple"),
-                            })
-                            {
-                                <div class="flex gap-4 items-start">
-                                    <div class="w-12 h-12 rounded-xl bg-@(color)-50 flex items-center justify-center shrink-0">
-                                        <i data-lucide="@icon" class="w-6 h-6 text-@(color)-500"></i>
-                                    </div>
-                                    <div>
-                                        <h5 class="font-bold text-slate-900 mb-1">@title</h5>
-                                        <p class="text-xs text-slate-500">@desc</p>
-                                    </div>
-                                </div>
-                            }
-                        </div>
+                     <!-- Weekly Grid Data -->
+                     <div class="overflow-x-auto w-full rounded-2xl border border-slate-200 shadow-sm custom-scrollbar">
+                         <table class="w-full min-w-[950px] text-left border-collapse bg-white">
+                             <thead>
+                                 <tr>
+                                     <th class="w-20 px-4 py-4 bg-green-600 text-white font-black text-[13px] uppercase tracking-wider border-b border-green-700 text-center">Ngày</th>
+                                     <th class="px-5 py-4 bg-green-600 text-white font-black text-[13px] uppercase tracking-wider border-b border-green-700 border-l border-green-500/30">Ca 1 (Sáng)</th>
+                                     <th class="px-5 py-4 bg-green-600 text-white font-black text-[13px] uppercase tracking-wider border-b border-green-700 border-l border-green-500/30">Ca 2 (Trưa)</th>
+                                     <th class="px-5 py-4 bg-green-600 text-white font-black text-[13px] uppercase tracking-wider border-b border-green-700 border-l border-green-500/30">M. Xào</th>
+                                     <th class="px-5 py-4 bg-green-600 text-white font-black text-[13px] uppercase tracking-wider border-b border-green-700 border-l border-green-500/30">M. Canh</th>
+                                     <th class="px-5 py-4 bg-green-600 text-white font-black text-[13px] uppercase tracking-wider border-b border-green-700 border-l border-green-500/30 text-center">T. Miệng</th>
+                                     <th class="px-5 py-4 bg-green-600 text-white font-black text-[13px] uppercase tracking-wider border-b border-green-700 border-l border-green-500/30">Ca 3 (Chiều)</th>
+                                 </tr>
+                             </thead>
+                             <tbody class="text-[13px] font-medium text-slate-700 divide-y divide-slate-200">
+                                 <!-- T2 -->
+                                 <tr class="hover:bg-slate-50 transition-colors group">
+                                     <td class="px-4 py-6 align-top border-r border-slate-100 text-center">
+                                         <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 text-slate-700 font-black text-lg border border-slate-200 group-hover:bg-orange-50 group-hover:text-orange-600 group-hover:border-orange-200 transition-colors">T2</div>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Bánh canh cua</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Bánh bao</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Sườn kho tiêu</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Trứng ốp la</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Cá thu nhật sốt cà</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-100 leading-tight">Giá - cải chua xào</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-bold border border-sky-100 leading-tight">Cải ngọt thịt bằm</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100 text-center">
+                                         <span class="inline-block px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-[11px] font-black border border-amber-200 uppercase">Nhãn</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Cá bống kho tiêu</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Đậu hũ dồn thịt</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Bò xào đậu ve</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Hủ tiếu xào</li>
+                                         </ul>
+                                     </td>
+                                 </tr>
+                                 <!-- T3 -->
+                                 <tr class="hover:bg-slate-50 transition-colors group">
+                                     <td class="px-4 py-6 align-top border-r border-slate-100 text-center">
+                                         <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 text-slate-700 font-black text-lg border border-slate-200 group-hover:bg-orange-50 group-hover:text-orange-600 group-hover:border-orange-200 transition-colors">T3</div>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Bún bò</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Mỳ xào giòn</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Gà kho lá chanh</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Trứng chiên cuộn thịt</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Cá bạc má chiên</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-100 leading-tight">Bầu luộc</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-bold border border-sky-100 leading-tight">Mướp - rau ngót nấu tôm khô</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100 text-center">
+                                         <span class="inline-block px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-[11px] font-black border border-amber-200 uppercase">Chuối</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Cá hú kho nước dừa</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Tép ram thịt</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Mực xào sả ớt</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Bún thịt nướng</li>
+                                         </ul>
+                                     </td>
+                                 </tr>
+                                 <!-- T4 -->
+                                 <tr class="hover:bg-slate-50 transition-colors group">
+                                     <td class="px-4 py-6 align-top border-r border-slate-100 text-center">
+                                         <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 text-slate-700 font-black text-lg border border-slate-200 group-hover:bg-orange-50 group-hover:text-orange-600 group-hover:border-orange-200 transition-colors">T4</div>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Cơm chiên dương châu</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Phở bò</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Chim cút rôti</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Mực chiên giòn</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Thịt kho đậu hũ</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-100 leading-tight">Rau muống xào tỏi</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-bold border border-sky-100 leading-tight">Bí xanh nấu tôm tươi</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100 text-center">
+                                         <span class="inline-block px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-[11px] font-black border border-amber-200 uppercase">Yaourt</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Thịt kho măng</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Gà rôti</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Chả lụa rim mặn</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Mỳ gà chua cay</li>
+                                         </ul>
+                                     </td>
+                                 </tr>
+                                 <!-- T5 -->
+                                 <tr class="hover:bg-slate-50 transition-colors group">
+                                     <td class="px-4 py-6 align-top border-r border-slate-100 text-center">
+                                         <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 text-slate-700 font-black text-lg border border-slate-200 group-hover:bg-orange-50 group-hover:text-orange-600 group-hover:border-orange-200 transition-colors">T5</div>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Hủ tíu nam vang</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Bánh mì thịt quay</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Cà chua dồn thịt</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Cá rô phi chiên giòn</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Gà ram mặn</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-100 leading-tight">Đậu đũa xào</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-bold border border-sky-100 leading-tight">Canh chua rau muống</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100 text-center">
+                                         <span class="inline-block px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-[11px] font-black border border-amber-200 uppercase">Dưa hấu</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Cá lóc kho tiêu</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Đậu hũ chiên sả</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Đùi gà hấp hành</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Nuôi xào bò</li>
+                                         </ul>
+                                     </td>
+                                 </tr>
+                                 <!-- T6 -->
+                                 <tr class="hover:bg-slate-50 transition-colors group">
+                                     <td class="px-4 py-6 align-top border-r border-slate-100 text-center">
+                                         <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 text-slate-700 font-black text-lg border border-slate-200 group-hover:bg-orange-50 group-hover:text-orange-600 group-hover:border-orange-200 transition-colors">T6</div>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Bò né</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Xôi mặn</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Thịt luộc cà pháo</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Cá nục kho dứa</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Trứng chiên thịt băm</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-100 leading-tight">Bắp cải xào</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-bold border border-sky-100 leading-tight">Canh bí đao sườn non</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100 text-center">
+                                         <span class="inline-block px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-[11px] font-black border border-amber-200 uppercase">Thơm</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Gà ram me</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Đậu hũ non sốt mỡ hành</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Bò kho gừng</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Bún riêu cua</li>
+                                         </ul>
+                                     </td>
+                                 </tr>
+                                 <!-- T7 -->
+                                 <tr class="hover:bg-slate-50 transition-colors group">
+                                     <td class="px-4 py-6 align-top border-r border-slate-100 text-center">
+                                         <div class="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-slate-100 text-slate-700 font-black text-lg border border-slate-200 group-hover:bg-orange-50 group-hover:text-orange-600 group-hover:border-orange-200 transition-colors">T7</div>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Cháo sườn</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Bánh mỳ ốp la</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Vịt kho gừng</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Đậu hũ tứ xuyên</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-orange-400 mt-1.5 shrink-0"></div>Sườn non ram mặn</li>
+                                         </ul>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-emerald-50 text-emerald-700 rounded-lg text-xs font-bold border border-emerald-100 leading-tight">Su hào xào tỏi</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100">
+                                         <span class="inline-block px-3 py-1.5 bg-sky-50 text-sky-700 rounded-lg text-xs font-bold border border-sky-100 leading-tight">Canh cải mầm thịt băm</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top border-r border-slate-100 text-center">
+                                         <span class="inline-block px-3 py-1 bg-amber-50 text-amber-700 rounded-full text-[11px] font-black border border-amber-200 uppercase">Thanh long</span>
+                                     </td>
+                                     <td class="px-5 py-6 align-top">
+                                         <ul class="space-y-2.5">
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Sườn chua ngọt</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Trứng chiên thịt băm</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Bò luộc cuốn bánh tráng</li>
+                                             <li class="flex items-start gap-2"><div class="w-1 h-1 rounded-full bg-slate-400 mt-1.5 shrink-0"></div>Mỳ Ý sốt bò băm</li>
+                                         </ul>
+                                     </td>
+                                 </tr>
+                             </tbody>
+                         </table>
+                     </div>
 
-                        <div class="bg-slate-50 rounded-2xl p-6 mb-10 border border-slate-100">
-                            <h5 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Thực đơn mẫu hôm nay</h5>
-                            <ul class="grid grid-cols-1 sm:grid-cols-2 gap-y-3 gap-x-4">
-                                @foreach(var it in new[]{"Cơm trắng (không giới hạn)","Đùi gà kho gừng","Cá trê chiên mắm me","Trứng chiên hành","Bắp cải luộc cà chua","Chuối tráng miệng"})
-                                {
-                                    <li class="flex items-center gap-2 text-sm text-slate-700 font-medium">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-orange-500 shrink-0"></div>
-                                        @it
-                                    </li>
-                                }
-                            </ul>
-                        </div>
+                 </div>
 
-                        <div class="flex flex-col sm:flex-row gap-4">
-                            <a href="/Customer/Contact" class="flex-1 text-center py-4 bg-slate-900 text-white rounded-2xl font-bold text-sm hover:bg-orange-500 transition-all shadow-lg hover:-translate-y-1">
-                                Đăng ký tư vấn
-                            </a>
-                            <a href="/Customer/MealDetail?level=thpt&day=t2" class="flex-1 text-center py-4 border-2 border-slate-200 text-slate-700 rounded-2xl font-bold text-sm hover:border-slate-900 hover:text-slate-900 transition-all">
-                                Xem chi tiết
-                            </a>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </section>
@@ -488,4 +534,3 @@
         });
     </script>
 }
-

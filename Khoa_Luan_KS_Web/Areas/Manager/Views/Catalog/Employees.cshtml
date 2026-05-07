@@ -1,9 +1,10 @@
+@model Khoa_Luan_KS_Web.Services.AdminGetUsersResponse
 @{
     ViewData["Title"] = "Quản lý Nhân Viên";
     Layout = "_LayoutManager";
 }
 
-<div class="px-4 py-6 md:p-8 space-y-8" x-data="{ isModalOpen: false, searchQuery: '' }">
+<div class="px-4 py-6 md:p-8 space-y-8" x-data="employeeManager()">
     <!-- Header Page -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -14,6 +15,18 @@
             <i class="fas fa-plus"></i> Thêm Nhân Viên
         </button>
     </div>
+
+    <!-- Actions Forms -->
+    <form id="lockForm" method="post" asp-action="LockEmployee" style="display:none">
+        <input type="hidden" name="id" id="lockId" />
+    </form>
+    <form id="unlockForm" method="post" asp-action="UnlockEmployee" style="display:none">
+        <input type="hidden" name="id" id="unlockId" />
+    </form>
+    <form id="resetPasswordForm" method="post" asp-action="ResetEmployeePassword" style="display:none">
+        <input type="hidden" name="id" id="resetId" />
+        <input type="hidden" name="newPassword" id="resetNewPassword" />
+    </form>
 
     <!-- Toolbar Filters -->
     <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
@@ -50,115 +63,55 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    <!-- Row 1 -->
-                    <tr class="hover:bg-gray-50/80 transition-colors group">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-4">
-                                <img src="https://i.pravatar.cc/150?u=a042581f4e29026024d" alt="Avatar" class="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100 shadow-sm" />
-                                <div>
-                                    <div class="font-bold text-gray-900 text-sm">Nguyễn Văn Khang</div>
-                                    <div class="text-[12px] text-gray-500 mt-0.5">khang.nguyen@huitmeal.com</div>
+                    <template x-for="emp in filteredEmployees" :key="emp.id">
+                        <tr class="hover:bg-gray-50/80 transition-colors group" :class="!emp.isActive ? 'opacity-60' : ''">
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-4">
+                                    <template x-if="emp.avatar">
+                                        <img :src="emp.avatar" alt="Avatar" class="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100 shadow-sm" :class="!emp.isActive ? 'grayscale' : ''" />
+                                    </template>
+                                    <template x-if="!emp.avatar">
+                                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold ring-2 ring-blue-50 shadow-sm" x-text="emp.initials"></div>
+                                    </template>
+                                    <div>
+                                        <div class="font-bold text-gray-900 text-sm" :class="!emp.isActive ? 'line-through decoration-gray-400' : ''" x-text="emp.name"></div>
+                                        <div class="text-[12px] text-gray-500 mt-0.5" x-text="emp.email"></div>
+                                    </div>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-gray-600 font-medium tracking-wide">
-                            <span class="bg-gray-100/80 text-gray-600 px-2.5 py-1 rounded-md text-xs font-bold border border-gray-200">#NV001</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-orange-50 text-orange-700 border border-orange-100">
-                                Bếp Trưởng
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-gray-600 font-medium">01/01/2026</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2 text-green-600 font-bold text-xs bg-green-50 px-2.5 py-1 w-fit rounded-lg border border-green-100">
-                                <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> Đang làm việc
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-center opacity-70 group-hover:opacity-100 transition-opacity">
-                            <div class="flex items-center justify-center gap-2">
-                                <a href="/Manager/EmployeeDetail/NV001" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shadow-sm" title="Xem chi tiết">
-                                    <i class="fas fa-eye text-xs"></i>
-                                </a>
-                                <button class="w-8 h-8 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-200 hover:text-gray-900 transition border border-gray-200" title="Chỉnh sửa">
-                                    <i class="fas fa-pen text-xs"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Row 2 -->
-                    <tr class="hover:bg-gray-50/80 transition-colors group">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-4">
-                                <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold ring-2 ring-blue-50 shadow-sm">
-                                    TB
+                            </td>
+                            <td class="px-6 py-4 text-gray-600 font-medium tracking-wide">
+                                <span class="bg-gray-100/80 text-gray-600 px-2.5 py-1 rounded-md text-xs font-bold border border-gray-200" x-text="'#' + emp.code"></span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border" :class="getRoleBadgeClass(emp.role)" x-text="emp.role"></span>
+                            </td>
+                            <td class="px-6 py-4 text-gray-600 font-medium" x-text="emp.joinDate"></td>
+                            <td class="px-6 py-4">
+                                <div x-show="emp.isActive" class="flex items-center gap-2 text-green-600 font-bold text-xs bg-green-50 px-2.5 py-1 w-fit rounded-lg border border-green-100">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> Đang làm việc
                                 </div>
-                                <div>
-                                    <div class="font-bold text-gray-900 text-sm">Trần Thị B</div>
-                                    <div class="text-[12px] text-gray-500 mt-0.5">tran.thi.b@huitmeal.com</div>
+                                <div x-show="!emp.isActive" class="flex items-center gap-2 text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 w-fit rounded-lg border border-red-100">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div> Đã nghỉ việc
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-gray-600 font-medium tracking-wide">
-                            <span class="bg-gray-100/80 text-gray-600 px-2.5 py-1 rounded-md text-xs font-bold border border-gray-200">#NV002</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-blue-50 text-blue-700 border border-blue-100">
-                                Phục vụ
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-gray-600 font-medium">15/02/2026</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2 text-green-600 font-bold text-xs bg-green-50 px-2.5 py-1 w-fit rounded-lg border border-green-100">
-                                <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> Đang làm việc
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-center opacity-70 group-hover:opacity-100 transition-opacity">
-                            <div class="flex items-center justify-center gap-2">
-                                <a href="/Manager/EmployeeDetail/NV002" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shadow-sm" title="Xem chi tiết">
-                                    <i class="fas fa-eye text-xs"></i>
-                                </a>
-                                <button class="w-8 h-8 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-200 hover:text-gray-900 transition border border-gray-200" title="Chỉnh sửa">
-                                    <i class="fas fa-pen text-xs"></i>
-                                </button>
-                            </div>
-                        </td>
-                    </tr>
-
-                    <!-- Row 3 -->
-                    <tr class="hover:bg-gray-50/80 transition-colors group opacity-60">
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-4">
-                                <img src="https://i.pravatar.cc/150?u=a042581f4e29026704d" alt="Avatar" class="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100 shadow-sm grayscale" />
-                                <div>
-                                    <div class="font-bold text-gray-700 text-sm line-through decoration-gray-400">Lê Hoàng C</div>
-                                    <div class="text-[12px] text-gray-400 mt-0.5">hoang.le@huitmeal.com</div>
+                            </td>
+                            <td class="px-6 py-4 text-center opacity-70 group-hover:opacity-100 transition-opacity">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a :href="'/Manager/EmployeeDetail/' + emp.id" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shadow-sm" title="Xem chi tiết">
+                                        <i class="fas fa-eye text-xs"></i>
+                                    </a>
+                                    <button @@click="resetPassword(emp.id)" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-200 hover:text-gray-900 transition border border-gray-200" title="Đặt lại mật khẩu">
+                                        <i class="fas fa-key text-xs"></i>
+                                    </button>
+                                    <button x-show="emp.isActive" @@click="lockEmployee(emp.id)" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition border border-red-200" title="Khóa hồ sơ">
+                                        <i class="fas fa-lock text-xs"></i>
+                                    </button>
+                                    <button x-show="!emp.isActive" @@click="unlockEmployee(emp.id)" class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center hover:bg-green-600 hover:text-white transition border border-green-200" title="Khôi phục hồ sơ">
+                                        <i class="fas fa-unlock text-xs"></i>
+                                    </button>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-gray-400 font-medium tracking-wide">
-                            <span>#NV003</span>
-                        </td>
-                        <td class="px-6 py-4">
-                            <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-500 border border-gray-200">
-                                Kho Hậu Cần
-                            </span>
-                        </td>
-                        <td class="px-6 py-4 text-gray-400 font-medium">20/03/2026</td>
-                        <td class="px-6 py-4">
-                            <div class="flex items-center gap-2 text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 w-fit rounded-lg border border-red-100">
-                                <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div> Đã nghỉ việc
-                            </div>
-                        </td>
-                        <td class="px-6 py-4 text-center opacity-70 group-hover:opacity-100 transition-opacity">
-                            <div class="flex items-center justify-center gap-2">
-                                <a href="/Manager/EmployeeDetail/NV003" class="w-8 h-8 rounded-lg bg-gray-100 text-gray-600 flex items-center justify-center hover:bg-gray-300 transition shadow-sm" title="Khôi phục hồ sơ">
-                                    <i class="fas fa-folder-open text-xs"></i>
-                                </a>
-                            </div>
-                        </td>
-                    </tr>
+                            </td>
+                        </tr>
+                    </template>
                 </tbody>
             </table>
         </div>
@@ -297,3 +250,66 @@
         </div>
     </div>
 </div>
+@section Scripts {
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('employeeManager', () => ({
+                isModalOpen: false,
+                searchQuery: '',
+                roleFilter: 'Tất cả Bộ phận',
+                
+                employees: @Html.Raw(Json.Serialize(Model.Items.Where(u => u.RoleNames.Any(r => !r.Equals("Customer", StringComparison.OrdinalIgnoreCase) && !r.Equals("Organization", StringComparison.OrdinalIgnoreCase))).Select(u => new {
+                    id = u.Id,
+                    name = u.FullName,
+                    email = u.Email,
+                    code = u.Id.ToString("D3"), // Fallback if Code is null
+                    role = u.RoleNames.FirstOrDefault(r => !r.Equals("Customer") && !r.Equals("Organization")) ?? "Nhân viên",
+                    joinDate = "01/01/2026", // Fallback for demo
+                    isActive = u.IsActive,
+                    avatar = u.Id % 2 == 0 ? $"https://i.pravatar.cc/150?u={u.Id}" : null,
+                    initials = (u.FirstName?.Length > 0 ? u.FirstName[0].ToString() : "") + (u.LastName?.Length > 0 ? u.LastName[0].ToString() : "")
+                }))),
+
+                get filteredEmployees() {
+                    return this.employees.filter(emp => {
+                        const matchSearch = emp.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
+                                           emp.email.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                                           emp.code.includes(this.searchQuery);
+                        const matchRole = this.roleFilter === 'Tất cả Bộ phận' || emp.role === this.roleFilter;
+                        return matchSearch && matchRole;
+                    });
+                },
+
+                getRoleBadgeClass(role) {
+                    if (role === 'ChefStaff' || role === 'Bếp Trưởng') return 'bg-orange-50 text-orange-700 border-orange-100';
+                    if (role === 'WarehouseStaff' || role === 'Kho & Hậu cần') return 'bg-purple-50 text-purple-700 border-purple-100';
+                    if (role === 'SalesStaff' || role === 'Phục vụ') return 'bg-blue-50 text-blue-700 border-blue-100';
+                    return 'bg-gray-50 text-gray-700 border-gray-100';
+                },
+
+                lockEmployee(id) {
+                    if (confirm('Bạn có chắc chắn muốn khóa hồ sơ nhân viên này?')) {
+                        document.getElementById('lockId').value = id;
+                        document.getElementById('lockForm').submit();
+                    }
+                },
+
+                unlockEmployee(id) {
+                    if (confirm('Bạn có chắc chắn muốn khôi phục hồ sơ nhân viên này?')) {
+                        document.getElementById('unlockId').value = id;
+                        document.getElementById('unlockForm').submit();
+                    }
+                },
+
+                resetPassword(id) {
+                    const newPass = prompt('Nhập mật khẩu mới cho nhân viên này:');
+                    if (newPass) {
+                        document.getElementById('resetId').value = id;
+                        document.getElementById('resetNewPassword').value = newPass;
+                        document.getElementById('resetPasswordForm').submit();
+                    }
+                }
+            }));
+        });
+    </script>
+}

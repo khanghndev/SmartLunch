@@ -1,0 +1,233 @@
+@{
+    ViewData["Title"] = "Tạo Phiếu Đề Xuất";
+    Layout = "_LayoutWarehouse";
+}
+
+<div class="px-1 space-y-6"
+     x-data="{
+        requisitionType: 'import',
+        items: [{ id: 1, name: '', unit: 'kg', qty: '', note: '' }],
+        nextId: 2,
+        addItem() { this.items.push({ id: this.nextId++, name: '', unit: 'kg', qty: '', note: '' }); },
+        removeItem(id) { if (this.items.length > 1) this.items = this.items.filter(i => i.id !== id); },
+        submitting: false
+     }">
+
+    <!-- Page Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition">
+                    <i class="fas fa-home"></i>
+                </a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">Tạo Phiếu Đề Xuất</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Tạo Phiếu Đề Xuất NVL</h1>
+            <p class="text-sm text-gray-500 mt-1">Điền thông tin phiếu để gửi cho Quản lý phê duyệt</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="/WarehouseStaff/Requisition/History"
+               class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold transition">
+                <i class="fas fa-history text-gray-400"></i> Lịch sử phiếu
+            </a>
+        </div>
+    </div>
+
+    <form method="post" action="/WarehouseStaff/Requisition/Create" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Thông tin phiếu (cột trái) -->
+        <div class="lg:col-span-1 space-y-5">
+
+            <!-- Card Thông tin chung -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                <h3 class="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
+                    <div class="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center">
+                        <i class="fas fa-info-circle text-amber-600 text-xs"></i>
+                    </div>
+                    Thông Tin Phiếu
+                </h3>
+
+                <!-- Loại phiếu -->
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Loại Phiếu *</label>
+                    <div class="grid grid-cols-2 gap-2">
+                        <label class="cursor-pointer">
+                            <input type="radio" name="requisitionType" value="import" class="sr-only" x-model="requisitionType" />
+                            <div :class="requisitionType === 'import' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
+                                 class="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition text-center">
+                                <i class="fas fa-arrow-circle-down text-lg"></i>
+                                <span class="text-xs font-bold">Nhập Kho</span>
+                            </div>
+                        </label>
+                        <label class="cursor-pointer">
+                            <input type="radio" name="requisitionType" value="export" class="sr-only" x-model="requisitionType" />
+                            <div :class="requisitionType === 'export' ? 'border-amber-500 bg-amber-50 text-amber-700' : 'border-gray-200 text-gray-500 hover:border-gray-300'"
+                                 class="flex flex-col items-center gap-1.5 p-3 rounded-xl border-2 transition text-center">
+                                <i class="fas fa-arrow-circle-up text-lg"></i>
+                                <span class="text-xs font-bold">Xuất Kho</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Ngày đề xuất -->
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Ngày Đề Xuất *</label>
+                    <input type="date" name="requisitionDate"
+                           value="@DateTime.Now.ToString("yyyy-MM-dd")"
+                           class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition bg-gray-50" />
+                </div>
+
+                <!-- Nhà cung cấp (chỉ hiện khi nhập kho) -->
+                <div class="mb-4" x-show="requisitionType === 'import'" x-transition>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Nhà Cung Cấp</label>
+                    <select name="supplierId" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition bg-gray-50">
+                        <option value="">-- Chọn nhà cung cấp --</option>
+                        <option value="1">CP Vietnam Food</option>
+                        <option value="2">Vissan</option>
+                        <option value="3">Masan Consumer</option>
+                        <option value="4">Vinamilk</option>
+                        <option value="5">Metro Cash & Carry</option>
+                    </select>
+                </div>
+
+                <!-- Mục đích xuất (chỉ hiện khi xuất kho) -->
+                <div class="mb-4" x-show="requisitionType === 'export'" x-transition>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Mục Đích Xuất</label>
+                    <select name="exportPurpose" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition bg-gray-50">
+                        <option value="production">Sản xuất / Nấu ăn</option>
+                        <option value="return">Trả lại NCC</option>
+                        <option value="disposal">Hủy bỏ / Hết hạn</option>
+                        <option value="transfer">Chuyển kho</option>
+                    </select>
+                </div>
+
+                <!-- Độ ưu tiên -->
+                <div class="mb-4">
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Độ Ưu Tiên</label>
+                    <select name="priority" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition bg-gray-50">
+                        <option value="normal">Bình thường</option>
+                        <option value="high">Cao — Cần xử lý sớm</option>
+                        <option value="urgent">Khẩn cấp</option>
+                    </select>
+                </div>
+
+                <!-- Ghi chú -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Ghi Chú</label>
+                    <textarea name="note" rows="3"
+                              placeholder="Nhập ghi chú hoặc lý do đề xuất..."
+                              class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition bg-gray-50 resize-none"></textarea>
+                </div>
+            </div>
+
+            <!-- Submit buttons -->
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col gap-3">
+                <button type="submit" :disabled="submitting" x-on:click="submitting = true"
+                        class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white font-bold text-sm tracking-wide transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fas fa-paper-plane"></i>
+                    <span x-text="submitting ? 'Đang gửi...' : 'Gửi Phiếu Duyệt'"></span>
+                </button>
+                <a href="/WarehouseStaff/Home/Index"
+                   class="w-full py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold text-sm text-center transition">
+                    Hủy bỏ
+                </a>
+            </div>
+        </div>
+
+        <!-- Danh sách NVL (cột phải) -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2">
+                            <div class="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center">
+                                <i class="fas fa-list text-amber-600 text-xs"></i>
+                            </div>
+                            Danh Sách Nguyên Vật Liệu
+                        </h3>
+                        <p class="text-xs text-gray-400 mt-0.5 ml-8">Thêm các NVL cần nhập/xuất</p>
+                    </div>
+                    <button type="button" x-on:click="addItem()"
+                            class="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold transition border border-amber-200">
+                        <i class="fas fa-plus"></i> Thêm dòng
+                    </button>
+                </div>
+
+                <!-- Table header -->
+                <div class="hidden md:grid grid-cols-12 gap-2 px-5 py-3 bg-gray-50 border-b border-gray-100 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
+                    <div class="col-span-4">Tên Nguyên Vật Liệu</div>
+                    <div class="col-span-2">Đơn vị</div>
+                    <div class="col-span-2">Số lượng</div>
+                    <div class="col-span-3">Ghi chú dòng</div>
+                    <div class="col-span-1 text-center">Xóa</div>
+                </div>
+
+                <!-- Items -->
+                <div class="divide-y divide-gray-50 max-h-[480px] overflow-y-auto">
+                    <template x-for="item in items" :key="item.id">
+                        <div class="grid grid-cols-12 gap-2 px-5 py-4 items-center hover:bg-gray-50/50 transition">
+                            <div class="col-span-12 md:col-span-4">
+                                <input type="text" :name="'items[' + item.id + '].name'" x-model="item.name"
+                                       placeholder="VD: Thịt heo ba chỉ..."
+                                       class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
+                            </div>
+                            <div class="col-span-4 md:col-span-2">
+                                <select :name="'items[' + item.id + '].unit'" x-model="item.unit"
+                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition bg-white">
+                                    <option value="kg">kg</option>
+                                    <option value="g">gram</option>
+                                    <option value="lit">lít</option>
+                                    <option value="hop">hộp</option>
+                                    <option value="tui">túi</option>
+                                    <option value="thung">thùng</option>
+                                    <option value="cai">cái</option>
+                                </select>
+                            </div>
+                            <div class="col-span-4 md:col-span-2">
+                                <input type="number" :name="'items[' + item.id + '].qty'" x-model="item.qty"
+                                       placeholder="0"
+                                       min="0.1" step="0.1"
+                                       class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
+                            </div>
+                            <div class="col-span-3 md:col-span-3">
+                                <input type="text" :name="'items[' + item.id + '].note'" x-model="item.note"
+                                       placeholder="Ghi chú thêm..."
+                                       class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
+                            </div>
+                            <div class="col-span-1 flex justify-center">
+                                <button type="button" x-on:click="removeItem(item.id)"
+                                        :disabled="items.length === 1"
+                                        class="w-8 h-8 flex items-center justify-center rounded-lg text-gray-300 hover:text-red-500 hover:bg-red-50 disabled:opacity-30 disabled:cursor-not-allowed transition">
+                                    <i class="fas fa-trash-alt text-sm"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <!-- Footer tổng kết -->
+                <div class="px-6 py-4 bg-amber-50/50 border-t border-amber-100 flex items-center justify-between">
+                    <p class="text-xs text-gray-500 font-medium">
+                        Tổng cộng <span class="font-bold text-amber-700" x-text="items.length"></span> mặt hàng
+                    </p>
+                    <button type="button" x-on:click="addItem()"
+                            class="text-xs font-bold text-amber-600 hover:text-amber-700 transition flex items-center gap-1">
+                        <i class="fas fa-plus-circle"></i> Thêm mặt hàng
+                    </button>
+                </div>
+            </div>
+
+            <!-- Info box -->
+            <div class="mt-4 flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                <i class="fas fa-info-circle text-blue-500 mt-0.5 shrink-0"></i>
+                <div class="text-xs text-blue-700 font-medium leading-relaxed">
+                    <strong>Lưu ý:</strong> Sau khi gửi, phiếu sẽ được chuyển đến Quản lý để phê duyệt.
+                    Bạn có thể theo dõi trạng thái tại <a href="/WarehouseStaff/Requisition/History" class="underline font-bold">Lịch sử Phiếu Duyệt</a>.
+                    Chỉ khi phiếu được duyệt, bạn mới có thể thực hiện nhập/xuất kho thực tế.
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

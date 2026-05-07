@@ -1,9 +1,10 @@
+@model Khoa_Luan_KS_Web.Services.GetPartnersResponse
 @{
     ViewData["Title"] = "Danh mục Nhà Cung Cấp";
     Layout = "_LayoutManager";
 }
 
-<div class="px-4 py-6 md:p-8 space-y-8" x-data="{ isModalOpen: false, search: '' }">
+<div class="px-4 py-6 md:p-8 space-y-8" x-data="supplierManager()">
     
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -35,131 +36,64 @@
 
     <!-- Grid Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        
-        <!-- Card 1 -->
-        <a href="/Manager/SupplierDetail/CP001" class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all p-5 group flex flex-col relative overflow-hidden">
-            <div class="absolute right-0 top-0 w-16 h-16 bg-gradient-to-bl from-green-50 to-transparent z-0"></div>
-            
-            <!-- Logo & Status -->
-            <div class="flex justify-between items-start mb-4 relative z-10">
-                <div class="w-12 h-12 rounded-xl bg-orange-50 border border-orange-100 flex items-center justify-center shadow-sm">
-                    <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/cd/Logo-cp-1-.png/800px-Logo-cp-1-.png" alt="Logo" class="w-8 h-8 object-contain mix-blend-multiply" />
+        <template x-for="vendor in filteredSuppliers" :key="vendor.id">
+            <a :href="'/Manager/Catalog/SupplierDetail/' + vendor.id" class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all p-5 group flex flex-col relative overflow-hidden" :class="!vendor.isActive ? 'opacity-60' : ''">
+                <div class="absolute right-0 top-0 w-16 h-16 bg-gradient-to-bl from-green-50 to-transparent z-0"></div>
+                
+                <!-- Logo & Status -->
+                <div class="flex justify-between items-start mb-4 relative z-10">
+                    <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm">
+                        <div class="font-bold text-blue-800 text-lg" x-text="vendor.name ? vendor.name[0] : 'P'"></div>
+                    </div>
+                    <span x-show="vendor.isActive" class="px-2.5 py-1 bg-green-50 border border-green-100 text-green-700 rounded-lg text-[10px] font-bold tracking-wide uppercase">
+                        Đang hợp tác
+                    </span>
+                    <span x-show="!vendor.isActive" class="px-2.5 py-1 bg-red-50 border border-red-100 text-red-700 rounded-lg text-[10px] font-bold tracking-wide uppercase">
+                        Ngừng cung cấp
+                    </span>
                 </div>
-                <span class="px-2.5 py-1 bg-green-50 border border-green-100 text-green-700 rounded-lg text-[10px] font-bold tracking-wide uppercase">
-                    Đang hợp tác
-                </span>
-            </div>
-            
-            <h3 class="font-extrabold text-gray-900 text-lg group-hover:text-green-600 transition truncate">CP Foods Việt Nam</h3>
-            
-            <!-- Small metadata -->
-            <div class="flex items-center gap-4 text-xs font-medium text-gray-500 mt-2">
-                <div class="flex items-center gap-1"><i class="fas fa-barcode text-gray-400"></i> MST: 010192837</div>
-                <div class="flex items-center gap-1 text-yellow-500 font-bold"><i class="fas fa-star"></i> 5.0</div>
-            </div>
-
-            <!-- Tags -->
-            <div class="mt-5 mb-4 flex flex-wrap gap-1.5">
-                <span class="bg-red-50 text-red-700 border border-red-100 px-2 py-0.5 rounded text-[11px] font-bold">Thịt Xông khói</span>
-                <span class="bg-orange-50 text-orange-700 border border-orange-100 px-2 py-0.5 rounded text-[11px] font-bold">Thịt Heo/Gà</span>
-            </div>
-            
-            <!-- Bottom Line -->
-            <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between text-sm">
-                <div class="flex items-center gap-2 text-gray-500 font-medium text-xs">
-                    <i class="fas fa-user-circle"></i> Anh Dũng (Sales KD)
+                
+                <h3 class="font-extrabold text-gray-900 text-lg group-hover:text-green-600 transition truncate" x-text="vendor.name"></h3>
+                
+                <!-- Small metadata -->
+                <div class="flex items-center gap-4 text-xs font-medium text-gray-500 mt-2">
+                    <div class="flex items-center gap-1"><i class="fas fa-barcode text-gray-400"></i> MST: <span x-text="vendor.taxId || 'N/A'"></span></div>
+                    <div class="flex items-center gap-1 font-bold" :class="vendor.rating >= 4 ? 'text-yellow-500' : 'text-gray-400'">
+                        <i class="fas fa-star"></i> <span x-text="vendor.rating > 0 ? vendor.rating.toFixed(1) : 'Mới'"></span>
+                    </div>
                 </div>
-                <i class="fas fa-arrow-right text-gray-300 group-hover:text-green-600 transition-colors transform group-hover:translate-x-1"></i>
-            </div>
-        </a>
 
-        <!-- Card 2 -->
-        <a href="/Manager/SupplierDetail/MET001" class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all p-5 group flex flex-col relative overflow-hidden">
-            <div class="absolute right-0 top-0 w-16 h-16 bg-gradient-to-bl from-green-50 to-transparent z-0"></div>
-            
-            <!-- Logo & Status -->
-            <div class="flex justify-between items-start mb-4 relative z-10">
-                <div class="w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shadow-sm">
-                    <div class="font-bold text-blue-800 text-lg">M</div>
+                <!-- Contact Info -->
+                <div class="mt-3 text-xs text-gray-500 space-y-1">
+                    <div class="flex items-center gap-2"><i class="fas fa-map-marker-alt w-3"></i> <span class="truncate" x-text="vendor.address || 'Chưa cập nhật địa chỉ'"></span></div>
+                    <div class="flex items-center gap-2"><i class="fas fa-phone w-3"></i> <span x-text="vendor.phone || 'Chưa có SĐT'"></span></div>
                 </div>
-                <span class="px-2.5 py-1 bg-green-50 border border-green-100 text-green-700 rounded-lg text-[10px] font-bold tracking-wide uppercase">
-                    Đang hợp tác
-                </span>
-            </div>
-            
-            <h3 class="font-extrabold text-gray-900 text-lg group-hover:text-green-600 transition truncate">Metro Cash & Carry</h3>
-            
-            <!-- Small metadata -->
-            <div class="flex items-center gap-4 text-xs font-medium text-gray-500 mt-2">
-                <div class="flex items-center gap-1"><i class="fas fa-barcode text-gray-400"></i> MST: 0310239912</div>
-                <div class="flex items-center gap-1 text-yellow-500 font-bold"><i class="fas fa-star"></i> 4.8</div>
-            </div>
 
-            <!-- Tags -->
-            <div class="mt-5 mb-4 flex flex-wrap gap-1.5">
-                <span class="bg-gray-100 text-gray-700 border border-gray-200 px-2 py-0.5 rounded text-[11px] font-bold">Đồ Tạp Hóa</span>
-                <span class="bg-amber-50 text-amber-700 border border-amber-100 px-2 py-0.5 rounded text-[11px] font-bold">Gia Vị Tổng Hợp</span>
-                <span class="bg-blue-50 text-blue-700 border border-blue-100 px-2 py-0.5 rounded text-[11px] font-bold">Hóa chất Tẩy Rửa</span>
-            </div>
-            
-            <!-- Bottom Line -->
-            <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between text-sm">
-                <div class="flex items-center gap-2 text-gray-500 font-medium text-xs">
-                    <i class="fas fa-user-circle"></i> Chị Lan (Chi nhánh Q12)
+                <!-- Tags -->
+                <div class="mt-4 mb-4 flex flex-wrap gap-1.5">
+                    <template x-for="tag in vendor.tags" :key="tag">
+                        <span class="bg-gray-50 text-gray-600 border border-gray-200 px-2 py-0.5 rounded text-[10px] font-bold" x-text="tag"></span>
+                    </template>
                 </div>
-                <i class="fas fa-arrow-right text-gray-300 group-hover:text-green-600 transition-colors transform group-hover:translate-x-1"></i>
-            </div>
-        </a>
-
-        <!-- Card 3 -->
-        <a href="/Manager/SupplierDetail/VIN001" class="bg-white border border-gray-100 rounded-2xl shadow-sm hover:shadow-lg transition-all p-5 group flex flex-col relative overflow-hidden opacity-60 hover:opacity-100">
-            <div class="absolute right-0 top-0 w-16 h-16 bg-gradient-to-bl from-red-50 to-transparent z-0"></div>
-            
-            <!-- Logo & Status -->
-            <div class="flex justify-between items-start mb-4 relative z-10">
-                <div class="w-12 h-12 rounded-xl bg-purple-50 border border-purple-100 flex items-center justify-center shadow-sm">
-                    <div class="font-bold text-purple-800 text-lg">W</div>
+                
+                <!-- Bottom Line -->
+                <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between text-sm">
+                    <div class="flex items-center gap-2 text-gray-500 font-medium text-xs">
+                        <i class="fas fa-user-circle"></i> <span x-text="vendor.contactPerson || 'Đang chờ xử lý'"></span>
+                    </div>
+                    <i class="fas fa-arrow-right text-gray-300 group-hover:text-green-600 transition-colors transform group-hover:translate-x-1"></i>
                 </div>
-                <span class="px-2.5 py-1 bg-red-50 border border-red-100 text-red-700 rounded-lg text-[10px] font-bold tracking-wide uppercase">
-                    Chờ duyệt HĐ
-                </span>
-            </div>
-            
-            <h3 class="font-extrabold text-gray-900 text-lg group-hover:text-green-600 transition truncate">WinEco Organic </h3>
-            
-            <!-- Small metadata -->
-            <div class="flex items-center gap-4 text-xs font-medium text-gray-500 mt-2">
-                <div class="flex items-center gap-1"><i class="fas fa-barcode text-gray-400"></i> MST: 0107771234</div>
-                <div class="flex items-center gap-1 text-gray-400 font-bold"><i class="fas fa-star"></i> Mới</div>
-            </div>
-
-            <!-- Tags -->
-            <div class="mt-5 mb-4 flex flex-wrap gap-1.5">
-                <span class="bg-green-50 text-green-700 border border-green-100 px-2 py-0.5 rounded text-[11px] font-bold">Rau Sạch VietGAP</span>
-                <span class="bg-emerald-50 text-emerald-700 border border-emerald-100 px-2 py-0.5 rounded text-[11px] font-bold">Củ / Quả</span>
-            </div>
-            
-            <!-- Bottom Line -->
-            <div class="mt-auto pt-4 border-t border-gray-100 flex items-center justify-between text-sm">
-                <div class="flex items-center gap-2 text-gray-500 font-medium text-xs">
-                    <i class="fas fa-user-circle"></i> Đang chờ xử lý
-                </div>
-                <i class="fas fa-arrow-right text-gray-300 group-hover:text-green-600 transition-colors transform group-hover:translate-x-1"></i>
-            </div>
-        </a>
-
+            </a>
+        </template>
     </div>
-
 
     <!-- MODAL: Thêm Nhà Cung Cấp -->
     <div x-show="isModalOpen" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4" x-transition.opacity.duration.300ms>
-        
         <!-- Backdrop -->
         <div x-on:click="isModalOpen = false" class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"></div>
         
         <!-- Modal Content -->
         <div class="bg-white rounded-2xl shadow-2xl w-full max-w-4xl z-10 overflow-hidden transform transition-all flex flex-col max-h-[90vh]" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-            
             <!-- Modal Header -->
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50 shrink-0">
                 <div class="flex items-center gap-3">
@@ -176,10 +110,9 @@
                 </button>
             </div>
 
-            <!-- Modal Body (Scrollable) -->
+            <!-- Modal Body -->
             <div class="px-6 py-6 overflow-y-auto custom-scrollbar flex-1 bg-white">
-                <form class="space-y-8">
-                    
+                <form id="addSupplierForm" method="post" asp-action="CreateSupplier" class="space-y-8">
                     <!-- Khối 1: Thông tin Doanh Nghiệp -->
                     <div>
                         <h4 class="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4 flex items-center gap-2">
@@ -189,15 +122,23 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Tên Đơn vị/Công ty <span class="text-red-500">*</span></label>
-                                <input type="text" placeholder="CTY TNHH MTV..." class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
+                                <input type="text" name="LegalName" required placeholder="CTY TNHH MTV..." class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Mã số thuế Doanh nghiệp <span class="text-red-500">*</span></label>
-                                <input type="text" placeholder="0312..." class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm font-mono tracking-wider" />
+                                <input type="text" name="TaxId" required placeholder="0312..." class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm font-mono tracking-wider" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Số Đăng ký kinh doanh</label>
+                                <input type="text" name="BusinessRegistrationNumber" placeholder="MSDN..." class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Người đại diện pháp luật</label>
+                                <input type="text" name="LegalRepresentative" placeholder="Ông/Bà..." class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
                             </div>
                             <div class="md:col-span-2">
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Địa chỉ trụ sở xuất hóa đơn</label>
-                                <input type="text" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
+                                <input type="text" name="Address" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
                             </div>
                         </div>
                     </div>
@@ -211,19 +152,18 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Người đại diện (Sales)</label>
-                                <input type="text" placeholder="Nguyễn Văn A" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
+                                <input type="text" name="ContactPerson" placeholder="Nguyễn Văn A" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">SĐT Đặt Hàng / Zalo</label>
-                                <input type="text" placeholder="090..." class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
+                                <input type="text" name="Phone" placeholder="090..." class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
                             </div>
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Email nhận yêu cầu (PO)</label>
-                                <input type="email" placeholder="orders@brand.com" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
+                                <input type="email" name="Email" placeholder="orders@brand.com" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
                             </div>
                         </div>
                     </div>
-
                     <!-- Khối 3: Mặt hàng & Chứng từ -->
                     <div>
                         <h4 class="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4 flex items-center gap-2">
@@ -234,27 +174,33 @@
                             <!-- Left: Checkboxes -->
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">Mảng Cung ứng (Chọn nhiều)</label>
-                                <div class="space-y-3 p-4 bg-gray-50 rounded-xl border border-gray-200">
+                                <input type="hidden" name="ComplianceInfo" id="categoriesInput" />
+                                <div class="space-y-3 p-4 bg-gray-50 rounded-xl border border-gray-200" x-data="{ 
+                                        selectedTags: [],
+                                        updateTags() {
+                                            document.getElementById('categoriesInput').value = this.selectedTags.join(', ');
+                                        }
+                                     }">
                                     <label class="flex items-center gap-3 cursor-pointer group">
-                                        <input type="checkbox" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500">
+                                        <input type="checkbox" value="Thực phẩm tươi sống" x-model="selectedTags" x-on:change="updateTags()" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500">
                                         <span class="text-sm font-medium text-gray-800 group-hover:text-green-600 transition">Thực phẩm Tươi sống (Thịt bò, Heo, Gà)</span>
                                     </label>
                                     <label class="flex items-center gap-3 cursor-pointer group">
-                                        <input type="checkbox" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500">
+                                        <input type="checkbox" value="Rau nông sản" x-model="selectedTags" x-on:change="updateTags()" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500">
                                         <span class="text-sm font-medium text-gray-800 group-hover:text-green-600 transition">Rau Nông sản & Trái cây Sạch</span>
                                     </label>
                                     <label class="flex items-center gap-3 cursor-pointer group">
-                                        <input type="checkbox" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500">
+                                        <input type="checkbox" value="Đồ khô/Gia vị" x-model="selectedTags" x-on:change="updateTags()" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500">
                                         <span class="text-sm font-medium text-gray-800 group-hover:text-green-600 transition">Đồ khô, Gạo, Gia vị đóng gói</span>
                                     </label>
                                     <label class="flex items-center gap-3 cursor-pointer group">
-                                        <input type="checkbox" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500">
+                                        <input type="checkbox" value="Nhu yếu phẩm" x-model="selectedTags" x-on:change="updateTags()" class="w-4 h-4 text-green-600 bg-white border-gray-300 rounded focus:ring-green-500">
                                         <span class="text-sm font-medium text-gray-800 group-hover:text-green-600 transition">Nhu yếu phẩm, Cồn, Chế phẩm màng xốp</span>
                                     </label>
                                 </div>
                             </div>
 
-                            <!-- Right: Uploader -->
+                            <!-- Right: Uploader Placeholder -->
                             <div>
                                 <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-3">Upload File Chứng nhận (PDF/Zip)</label>
                                 <div class="relative group">
@@ -270,20 +216,51 @@
                             </div>
                         </div>
                     </div>
-
                 </form>
             </div>
-            
+
             <!-- Modal Footer -->
             <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3 shrink-0">
                 <button type="button" x-on:click="isModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 transition shadow-sm">
                     Hủy thao tác
                 </button>
-                <button type="button" class="px-6 py-2.5 text-sm font-bold text-white bg-green-600 rounded-xl hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 transition shadow-md flex items-center gap-2">
+                <button type="submit" form="addSupplierForm" class="px-6 py-2.5 text-sm font-bold text-white bg-green-600 rounded-xl hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 transition shadow-md flex items-center gap-2">
                     <i class="fas fa-check-circle"></i> Lưu Đối Tác
                 </button>
             </div>
-
         </div>
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('supplierManager', () => ({
+                isModalOpen: false,
+                search: '',
+                
+                suppliers: @Html.Raw(Json.Serialize(Model.Items.Select(p => new {
+                    id = p.Id,
+                    name = p.LegalName,
+                    taxId = p.TaxId,
+                    contactPerson = p.ContactPerson,
+                    phone = p.Phone,
+                    email = p.Email,
+                    address = p.Address,
+                    rating = (float)(p.PerformanceRating ?? 0),
+                    isActive = p.IsActive,
+                    tags = new[] { "Thực phẩm", "Nguyên liệu" }
+                }))),
+
+                get filteredSuppliers() {
+                    if (!this.search) return this.suppliers;
+                    const q = this.search.toLowerCase();
+                    return this.suppliers.filter(s => 
+                        s.name.toLowerCase().includes(q) || 
+                        (s.taxId && s.taxId.toLowerCase().includes(q))
+                    );
+                }
+            }));
+        });
+    </script>
+}

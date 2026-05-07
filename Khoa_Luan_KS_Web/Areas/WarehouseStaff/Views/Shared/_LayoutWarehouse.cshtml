@@ -1,0 +1,192 @@
+@{
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var action     = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var isRequisition = controller == "Requisition";
+    var isWarehouse   = controller == "Warehouse";
+    var userName = Context.Session.GetString("user_name") ?? "Warehouse Staff";
+    var initials = userName.Length > 0 ? userName[0].ToString().ToUpper() : "W";
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - HuitMeal Kho</title>
+    <link rel="icon" type="image/png" href="/assets/images/Logo_tròn.png" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        [x-cloak] { display: none !important; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #fde68a; border-radius: 4px; }
+        .custom-scrollbar:hover::-webkit-scrollbar-thumb { background: #fcd34d; }
+    </style>
+</head>
+<body class="flex flex-col h-screen overflow-hidden bg-gray-50 text-gray-800" x-data="{ sidebarOpen: false }">
+
+    <!-- HEADER -->
+    <header class="bg-white shadow-sm px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between z-20 relative shrink-0 border-b border-amber-100">
+        <div class="flex items-center gap-3">
+            <button class="md:hidden p-2 text-amber-600 rounded shadow bg-amber-50" x-on:click="sidebarOpen = !sidebarOpen">
+                <i class="fas fa-bars"></i>
+            </button>
+            <a href="/WarehouseStaff/Home/Index" class="block">
+                <img src="/assets/images/Logo.jpg" alt="HUIT MEAL" class="h-10 w-auto object-contain rounded hover:opacity-90 transition-opacity" />
+            </a>
+            <!-- Role badge -->
+            <span class="hidden sm:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-50 border border-amber-200 text-amber-700 text-[10px] font-bold uppercase tracking-wide">
+                <i class="fas fa-warehouse text-[9px]"></i>
+                Nhân viên Kho
+            </span>
+        </div>
+
+        <div class="flex items-center gap-2 sm:gap-4 relative" x-data="{ profileOpen: false }">
+            <i class="fas fa-lock text-amber-500 text-lg"></i>
+            <button x-on:click="profileOpen = !profileOpen" class="flex items-center gap-2 px-3 py-1 rounded hover:bg-amber-50 transition bg-white relative">
+                <div class="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-amber-700 font-bold text-sm">@initials</div>
+                <span class="font-medium text-gray-700 hidden sm:block">@userName</span>
+                <i class="fas fa-chevron-down text-gray-500 text-sm"></i>
+            </button>
+            <!-- Dropdown -->
+            <div x-show="profileOpen" x-on:click.outside="profileOpen = false" x-cloak class="absolute right-0 top-full mt-2 w-52 bg-white shadow-lg rounded-xl py-2 z-50 border border-gray-100">
+                <div class="px-4 py-2 border-b border-gray-100 mb-1">
+                    <p class="text-xs font-bold text-gray-500 uppercase tracking-wide">Tài khoản</p>
+                    <p class="text-sm font-semibold text-gray-800 truncate">@userName</p>
+                </div>
+                <a href="#" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-amber-50 hover:text-amber-700 transition">
+                    <i class="fas fa-user w-4"></i> Cập nhật thông tin
+                </a>
+                <a href="/Auth/LogOut" class="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-red-50 hover:text-red-600 transition">
+                    <i class="fas fa-sign-out-alt w-4"></i> Đăng xuất
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <div class="flex flex-1 flex-col md:flex-row overflow-hidden relative">
+        <!-- OVERLAY MOBILE -->
+        <div x-show="sidebarOpen" x-on:click="sidebarOpen = false" x-cloak class="fixed inset-0 bg-black/30 z-30 md:hidden"></div>
+
+        <!-- SIDEBAR -->
+        <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
+               class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-100 shadow-xl transform transition-transform duration-300 md:relative md:translate-x-0 overflow-y-auto custom-scrollbar">
+            <nav class="flex flex-col gap-1.5 p-4 min-h-full text-[14px] font-medium text-gray-600">
+
+                <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-3 mt-1">Bảng Điều Khiển</div>
+
+                <!-- 1. Dashboard -->
+                <a href="/WarehouseStaff/Home/Index"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Home" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-home w-5 text-center @(controller == "Home" ? "text-amber-600" : "text-gray-400")"></i>
+                    <span>Tổng quan Kho</span>
+                </a>
+
+                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Nghiệp vụ Kho</div>
+
+                <!-- 2. Tạo Phiếu Đề Xuất -->
+                <a href="/WarehouseStaff/Requisition/Create"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Requisition" && action == "Create" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-file-circle-plus w-5 text-center @(controller == "Requisition" && action == "Create" ? "text-amber-600" : "text-gray-400")"></i>
+                    <span>Tạo Phiếu Đề Xuất</span>
+                </a>
+
+                <!-- 3. Lịch sử Phiếu Duyệt -->
+                <a href="/WarehouseStaff/Requisition/History"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Requisition" && action == "History" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-history w-5 text-center @(controller == "Requisition" && action == "History" ? "text-amber-600" : "text-gray-400")"></i>
+                    <span>Lịch Sử Phiếu Duyệt</span>
+                </a>
+
+                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Quản lý Tồn Kho</div>
+
+                <!-- 4. Nhập Kho Thực Tế -->
+                <a href="/WarehouseStaff/Warehouse/Receive"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Warehouse" && action == "Receive" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-truck-loading w-5 text-center @(controller == "Warehouse" && action == "Receive" ? "text-amber-600" : "text-gray-400")"></i>
+                    <span>Nhập Kho Thực Tế</span>
+                    <!-- Notification badge -->
+                    <span class="ml-auto bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">3</span>
+                </a>
+
+                <!-- 5. Tồn Kho Hiện Tại -->
+                <a href="/WarehouseStaff/Warehouse/Stock"
+                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Warehouse" && action == "Stock" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-boxes w-5 text-center @(controller == "Warehouse" && action == "Stock" ? "text-amber-600" : "text-gray-400")"></i>
+                    <span>Tồn Kho Hiện Tại</span>
+                </a>
+
+                <!-- Divider bottom -->
+                <div class="mt-auto pt-4 border-t border-gray-100">
+                    <div class="flex items-center gap-3 px-3 py-2.5 rounded-xl bg-amber-50 border border-amber-100">
+                        <div class="w-8 h-8 rounded-full bg-amber-200 flex items-center justify-center text-amber-800 font-bold text-sm shrink-0">@initials</div>
+                        <div class="overflow-hidden">
+                            <p class="text-xs font-bold text-gray-800 truncate">@userName</p>
+                            <p class="text-[10px] text-amber-600 font-semibold">Nhân viên Kho</p>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="flex-1 p-4 sm:p-6 overflow-y-auto bg-gray-50">
+            @RenderBody()
+        </main>
+    </div>
+
+    <!-- Notification Toast -->
+    @{
+        var _toastMsg  = (TempData["Success"] as string) ?? (TempData["Error"] as string) ?? "";
+        var _toastType = TempData["Success"] != null ? "success" : "error";
+    }
+    @if (!string.IsNullOrEmpty(_toastMsg))
+    {
+        <div id="toast-root"
+             data-msg="@Html.Encode(_toastMsg)"
+             data-type="@_toastType">
+        </div>
+        <script>
+            (function () {
+                var el   = document.getElementById('toast-root');
+                var msg  = el ? el.getAttribute('data-msg')  : '';
+                var type = el ? el.getAttribute('data-type') : 'success';
+                if (!msg) return;
+
+                var toast = document.createElement('div');
+                toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;align-items:center;gap:12px;padding:14px 20px;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.12);border:1px solid;min-width:300px;max-width:440px;background:#fff;transition:opacity .3s,transform .3s;';
+                toast.style.borderColor  = type === 'success' ? '#fde68a' : '#fecaca';
+                toast.style.color        = type === 'success' ? '#92400e' : '#991b1b';
+
+                var icon  = type === 'success' ? '✔' : '✖';
+                var iconBg = type === 'success' ? '#fffbeb' : '#fff1f2';
+                var title  = type === 'success' ? 'Thông báo' : 'Lỗi hệ thống';
+
+                toast.innerHTML =
+                    '<div style="width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;background:' + iconBg + '">' + icon + '</div>' +
+                    '<div style="flex:1;">' +
+                        '<p style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.08em;opacity:.5;margin:0 0 2px;">' + title + '</p>' +
+                        '<p style="font-size:13px;font-weight:700;margin:0;">' + msg + '</p>' +
+                    '</div>' +
+                    '<button onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;opacity:.4;font-size:14px;padding:0;line-height:1;">✕</button>';
+
+                document.body.appendChild(toast);
+                setTimeout(function () {
+                    toast.style.opacity = '0';
+                    toast.style.transform = 'translateY(8px)';
+                    setTimeout(function () { toast.remove(); }, 300);
+                }, 5000);
+            })();
+        </script>
+    }
+
+    <script>lucide.createIcons();</script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

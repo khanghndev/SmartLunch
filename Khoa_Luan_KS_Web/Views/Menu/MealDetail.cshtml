@@ -65,7 +65,7 @@
         <div class="absolute inset-0 bg-gradient-to-t from-gray-900 via-gray-900/30 to-transparent"></div>
 
         <!-- Back button -->
-        <a href="/Customer/SchoolMenu?level=@level&day=@day"
+        <a href="/Menu/SchoolMenu?level=@level&day=@day"
            class="absolute top-6 left-6 z-20 flex items-center gap-2 bg-white/10 backdrop-blur-md border border-white/20 text-white px-4 py-2 rounded-full text-sm font-bold hover:bg-white/20 transition-all">
             <i data-lucide="arrow-left" class="w-4 h-4"></i> Quay lại thực đơn
         </a>
@@ -102,7 +102,7 @@
             <div class="flex items-center gap-2 overflow-x-auto py-3 no-scrollbar">
                 @foreach (var (d,label) in days)
                 {
-                    <a href="/Customer/MealDetail?level=@level&day=@d"
+                    <a href="/Menu/MealDetail?level=@level&day=@d"
                        class="flex-shrink-0 px-5 py-2 rounded-full text-sm font-bold transition-all @(d==day?"bg-orange-500 text-white shadow":"bg-gray-100 text-gray-600 hover:bg-gray-200")">
                         @label
                     </a>
@@ -257,7 +257,7 @@
                 @foreach (var (d, label) in days)
                 {
                     var m = meals[d];
-                    <a href="/Customer/MealDetail?level=@level&day=@d"
+                    <a href="/Menu/MealDetail?level=@level&day=@d"
                        class="group rounded-[20px] overflow-hidden border @(d==day?"border-orange-400 ring-2 ring-orange-200":"border-gray-100") bg-white hover:shadow-lg transition-all hover:-translate-y-1">
                         <div class="relative h-28 overflow-hidden">
                             <img src="@m.Img" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />

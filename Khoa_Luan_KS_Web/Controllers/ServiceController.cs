@@ -14,9 +14,10 @@ namespace Khoa_Luan_KS_Web.Controllers
                     .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role)
                     .Select(c => c.Value);
 
-                bool isCustomer = roles.Any(r =>
-                    string.Equals(r, "Khách hàng doanh nghiệp", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(r, "Khách hàng cá nhân", StringComparison.OrdinalIgnoreCase));
+                bool isCustomer = User.IsInRole("Customer") || 
+                                 User.IsInRole("Organization") ||
+                                 User.IsInRole("Khách hàng doanh nghiệp") || 
+                                 User.IsInRole("Khách hàng cá nhân");
 
                 if (!isCustomer)
                 {

@@ -1,6 +1,8 @@
+@model Khoa_Luan_KS_Web.Services.UserProfileResponse
 @{
     ViewData["Title"] = "Hồ sơ doanh nghiệp";
     Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+    var unit = Model.Unit;
 }
 
 <div class="max-w-7xl mx-auto px-6 py-12">
@@ -29,11 +31,11 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-full">
                 <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
                     <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xl shadow-sm">
-                        K
+                        @(string.IsNullOrEmpty(unit?.Name) ? "U" : unit.Name.Substring(0, 1).ToUpper())
                     </div>
                     <div>
-                        <h3 class="font-bold text-gray-900">TRƯỜNG THPT HOÀNG VĂN THỤ</h3>
-                        <p class="text-xs text-gray-500">Khách hàng Doanh nghiệp</p>
+                        <h3 class="font-bold text-gray-900">@(unit?.Name ?? Model.FullName)</h3>
+                        <p class="text-xs text-gray-500">@(Model.Roles.Contains("Organization") ? "Khách hàng Doanh nghiệp" : "Khách hàng Cá nhân")</p>
                     </div>
                 </div>
 
@@ -57,16 +59,16 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                         <div class="space-y-6">
                             <div>
-                                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tên Doanh Nghiệp</label>
-                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">CTRƯỜNG THPT HOÀNG VĂN THỤ</div>
+                                <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Tên Doanh Nghiệp / Khách Hàng</label>
+                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">@(unit?.Name ?? Model.FullName)</div>
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Mã Số Thuế (MST)</label>
-                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">0312345678</div>
+                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">@(unit?.TaxCode ?? "Chưa cập nhật")</div>
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Người Đại Diện</label>
-                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">Nguyễn Văn Khang - Giám đốc</div>
+                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">@(unit?.LegalRepresentative ?? Model.FullName)</div>
                             </div>
                         </div>
 
@@ -74,16 +76,16 @@
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Địa chỉ Giao Dịch / Giao Suất Ăn</label>
                                 <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200 leading-relaxed">
-                                    Tòa tháp 1, Lô A, KCN Tân Tạo, Phường Tân Tạo A, Quận Bình Tân, TP Hồ Chí Minh
+                                    @(unit?.Address ?? Model.Address ?? "Chưa cập nhật")
                                 </div>
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Điện Thoại Liên Hệ</label>
-                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">0909 123 456</div>
+                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">@(unit?.Phone ?? Model.PhoneNumber ?? "Chưa cập nhật")</div>
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-1.5">Email Hỗ Trợ Đơn Hàng</label>
-                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">contact@congtyk.com</div>
+                                <div class="text-sm font-medium text-gray-900 bg-gray-50 px-4 py-3 rounded-lg border border-gray-200">@(unit?.ContactEmail ?? Model.Email)</div>
                             </div>
                         </div>
                     </div>

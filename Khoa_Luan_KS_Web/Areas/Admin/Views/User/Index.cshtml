@@ -1,3 +1,4 @@
+@model Khoa_Luan_KS_Web.Services.AdminGetUsersResponse
 @{
     ViewData["Title"] = "SSO Identity";
     Layout = "_LayoutAdmin";
@@ -45,6 +46,18 @@
         </div>
     </div>
 
+    <!-- Actions Forms -->
+    <form id="lockForm" method="post" asp-action="Lock" style="display:none">
+        <input type="hidden" name="id" id="lockId" />
+    </form>
+    <form id="unlockForm" method="post" asp-action="Unlock" style="display:none">
+        <input type="hidden" name="id" id="unlockId" />
+    </form>
+    <form id="resetPasswordForm" method="post" asp-action="ResetPassword" style="display:none">
+        <input type="hidden" name="id" id="resetId" />
+        <input type="hidden" name="newPassword" id="resetNewPassword" />
+    </form>
+
     <!-- Data Table -->
     <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
         <div class="overflow-x-auto">
@@ -91,11 +104,17 @@
                             
                             <td class="p-5 pr-6 text-right">
                                 <div class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <button class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-blue-600 hover:border-blue-300 hover:bg-blue-50 flex items-center justify-center transition-all" title="Đặt lại mật khẩu" @@click="resetPassword(user.id)">
+                                        <i class="fas fa-key text-xs"></i>
+                                    </button>
                                     <button class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-green-600 hover:border-green-300 hover:bg-green-50 flex items-center justify-center transition-all" title="Sửa thông tin" @@click="openModal(user)">
                                         <i class="fas fa-edit text-xs"></i>
                                     </button>
-                                    <button class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-300 hover:bg-red-50 flex items-center justify-center transition-all" title="Khóa tài khoản" x-show="user.role !== 'Admin'">
+                                    <button x-show="user.isActive" @@click="lockUser(user.id)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-red-600 hover:border-red-300 hover:bg-red-50 flex items-center justify-center transition-all" title="Khóa tài khoản" x-show="user.role !== 'Admin'">
                                         <i class="fas fa-lock text-xs"></i>
+                                    </button>
+                                    <button x-show="!user.isActive" @@click="unlockUser(user.id)" class="w-8 h-8 rounded-lg bg-white border border-slate-200 text-slate-400 hover:text-green-600 hover:border-green-300 hover:bg-green-50 flex items-center justify-center transition-all" title="Mở khóa tài khoản">
+                                        <i class="fas fa-lock-open text-xs"></i>
                                     </button>
                                 </div>
                             </td>
@@ -224,13 +243,16 @@
                 isModalOpen: false,
                 currentUser: null,
                 
-                users: [
-                    { id: 1, name: 'Trần Văn Quản Trị', email: 'admin@huitmeal.com', phone: '0901234567', role: 'Admin', status: 'Active', lastLogin: 'Vừa xong' },
-                    { id: 2, name: 'Lê Thị Bếp Trưởng', email: 'manager.bep@huitmeal.com', phone: '0912345678', role: 'Manager', status: 'Active', lastLogin: '2 giờ trước' },
-                    { id: 3, name: 'Nguyễn Kế Toán', email: 'finance@huitmeal.com', phone: '0987654321', role: 'Manager', status: 'Active', lastLogin: '1 ngày trước' },
-                    { id: 4, name: 'Công ty Samsung (B2B)', email: 'contact@samsung.vn', phone: '0283123456', role: 'Customer', status: 'Active', lastLogin: '3 ngày trước' },
-                    { id: 5, name: 'Tài xế Nguyễn Văn A', email: 'driver01@huitmeal.com', phone: '0933334444', role: 'Customer', status: 'Locked', lastLogin: '1 tháng trước' }
-                ],
+                users: @Html.Raw(Json.Serialize(Model.Items.Select(u => new {
+                    id = u.Id,
+                    name = u.FullName,
+                    email = u.Email,
+                    phone = u.PhoneNumber ?? "N/A",
+                    role = u.RoleNames.FirstOrDefault() ?? "No Role",
+                    status = u.IsActive ? "Active" : "Locked",
+                    isActive = u.IsActive,
+                    lastLogin = u.LastLoginAt?.ToString("dd/MM/yyyy HH:mm") ?? "Chưa đăng nhập"
+                }))),
                 
                 get filteredUsers() {
                     return this.users.filter(user => {
@@ -268,6 +290,29 @@
                 submitUser() {
                     alert('Đã lưu thông tin tài khoản thành công!');
                     this.closeModal();
+                },
+
+                lockUser(id) {
+                    if (confirm('Bạn có chắc chắn muốn khóa tài khoản này?')) {
+                        document.getElementById('lockId').value = id;
+                        document.getElementById('lockForm').submit();
+                    }
+                },
+
+                unlockUser(id) {
+                    if (confirm('Bạn có chắc chắn muốn mở khóa tài khoản này?')) {
+                        document.getElementById('unlockId').value = id;
+                        document.getElementById('unlockForm').submit();
+                    }
+                },
+
+                resetPassword(id) {
+                    const newPass = prompt('Nhập mật khẩu mới cho người dùng này:');
+                    if (newPass) {
+                        document.getElementById('resetId').value = id;
+                        document.getElementById('resetNewPassword').value = newPass;
+                        document.getElementById('resetPasswordForm').submit();
+                    }
                 }
             }));
         });

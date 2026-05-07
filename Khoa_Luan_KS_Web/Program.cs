@@ -69,14 +69,30 @@ builder.Services.AddAuthorization(options =>
             ctx.User.IsInRole("Admin") || ctx.User.IsInRole("Super Admin")));
 
     options.AddPolicy("ManagerArea", policy =>
-        policy.RequireRole("Quản lý công ty"));
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole("Manager") || 
+            ctx.User.IsInRole("WarehouseStaff") || 
+            ctx.User.IsInRole("ChefStaff") || 
+            ctx.User.IsInRole("SalesStaff") || 
+            ctx.User.IsInRole("Shipper") ||
+            ctx.User.IsInRole("Quản lý công ty")));
 
     options.AddPolicy("CustomerArea", policy =>
         policy.RequireAssertion(ctx =>
-            ctx.User.IsInRole("Khách hàng doanh nghiệp") || ctx.User.IsInRole("Khách hàng cá nhân")));
+            ctx.User.IsInRole("Customer") || 
+            ctx.User.IsInRole("Organization") ||
+            ctx.User.IsInRole("Khách hàng doanh nghiệp") || 
+            ctx.User.IsInRole("Khách hàng cá nhân")));
 });
 
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendAuthClient>();
+builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendMasterDataClient>();
+builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendMenuSuggestionClient>();
+
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "RequestVerificationToken";
+});
 
 var app = builder.Build();
 
@@ -94,6 +110,24 @@ app.UseStaticFiles();
 app.UseRouting();
 
 app.UseSession();
+
+// Restore token from persistent cookie into Session when Session is empty
+// (happens after server restart or session expiry while the auth cookie is still valid)
+app.Use(async (ctx, next) =>
+{
+    if (string.IsNullOrEmpty(ctx.Session.GetString("access_token")))
+    {
+        var tokenFromCookie = ctx.Request.Cookies["hm_access_token"];
+        if (!string.IsNullOrEmpty(tokenFromCookie))
+        {
+            ctx.Session.SetString("access_token",  tokenFromCookie);
+            ctx.Session.SetString("refresh_token", ctx.Request.Cookies["hm_refresh_token"] ?? "");
+            ctx.Session.SetString("user_email",    ctx.Request.Cookies["hm_user_email"]    ?? "");
+            ctx.Session.SetString("user_name",     ctx.Request.Cookies["hm_user_name"]     ?? "");
+        }
+    }
+    await next();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
@@ -117,6 +151,11 @@ app.MapAreaControllerRoute(
     name: "ManagerArea",
     areaName: "Manager",
     pattern: "manager/{controller=Home}/{action=Index}/{id?}");
+
+app.MapAreaControllerRoute(
+    name: "WarehouseStaffArea",
+    areaName: "WarehouseStaff",
+    pattern: "WarehouseStaff/{controller=Home}/{action=Index}/{id?}");
 
 app.MapControllerRoute(
     name: "default",

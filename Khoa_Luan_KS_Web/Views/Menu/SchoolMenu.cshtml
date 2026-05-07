@@ -1,4 +1,4 @@
-﻿@{
+@{
     ViewData["Title"] = "Thực đơn Trường học - HuitMeal";
     Layout = "_LayoutCustomer";
     string level = ViewData["Level"] as string ?? Context.Request.Query["level"].ToString();
@@ -14,23 +14,18 @@
     string pageTitle = "Mầm Non (3–5 tuổi)";
     string pageDesc  = "Thức ăn cắt nhỏ, hầm mềm, màu sắc tự nhiên — kích thích trẻ ăn ngon, tuyệt đối không dùng xương vụn.";
     string heroImg   = "https://images.unsplash.com/photo-1516627145497-ae6968895b74?q=80&w=1920";
-    string accentColor = "green";
-
     if (level == "tieuhoc") {
         pageTitle = "Tiểu Học (6–11 tuổi)";
         pageDesc  = "Đa dạng nhóm chất, khuyến khích ăn rau củ quả, cân bằng năng lượng cho vận động và học tập cả ngày.";
         heroImg   = "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?q=80&w=1920";
-        accentColor = "blue";
     } else if (level == "thcs") {
         pageTitle = "THCS (12–15 tuổi)";
         pageDesc  = "Tăng cường Protein & Canxi cho giai đoạn dậy thì, duy trì năng lượng học tập và phát triển chiều cao.";
         heroImg   = "https://images.unsplash.com/photo-1509062522246-3755977927d7?q=80&w=1920";
-        accentColor = "purple";
     } else if (level == "thpt") {
         pageTitle = "THPT (16–18 tuổi)";
         pageDesc  = "Khẩu phần lớn, đa dạng ẩm thực Á–Âu, giúp học sinh minh mẫn trong mùa thi cử áp lực.";
         heroImg   = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=1920";
-        accentColor = "orange";
     }
 
     // ===== MOCK MENU DATA (5 days × 3 meals) =====
@@ -122,7 +117,7 @@
             <div class="flex items-center gap-2 overflow-x-auto py-4 no-scrollbar">
                 @foreach (var lv in levels)
                 {
-                    <a href="/Customer/SchoolMenu?level=@lv.Id"
+                    <a href="/Menu/SchoolMenu?level=@lv.Id"
                        class="flex-shrink-0 px-5 py-2.5 rounded-full text-sm font-bold transition-all @(lv.Id == level ? "bg-orange-500 text-white shadow-md" : "bg-gray-100 text-gray-600 hover:bg-gray-200")">
                         @lv.Label <span class="text-[10px] font-semibold opacity-70 ml-1">@lv.Age</span>
                     </a>
@@ -219,7 +214,7 @@
                                         </div>
                                         <span class="text-xs text-gray-400 font-medium">HuitMeal ✓</span>
                                     </div>
-                                    <a href="/Customer/MealDetail?level=@level&day=@dayKey"
+                                    <a href="/Menu/MealDetail?level=@level&day=@dayKey"
                                        class="flex items-center justify-center gap-2 w-full py-2.5 bg-orange-500 text-white rounded-xl font-bold text-sm hover:bg-orange-400 transition-all hover:gap-3">
                                         Xem chi tiết thực đơn
                                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
@@ -291,7 +286,7 @@
                            class="px-10 py-4 bg-orange-500 text-white rounded-full font-bold hover:bg-orange-400 hover:-translate-y-0.5 transition-all shadow-lg shadow-orange-500/25 text-sm">
                             Đăng ký tư vấn miễn phí
                         </a>
-                        <a href="/Customer/School"
+                        <a href="/Service/School"
                            class="px-10 py-4 bg-white/10 text-white border border-white/20 rounded-full font-bold hover:bg-white/20 transition-all text-sm">
                             Quay lại trang học đường
                         </a>

@@ -60,11 +60,25 @@ namespace Khoa_Luan_KS_Web.Controllers
 
                 var principal = BuildPrincipalFromJwt(login.AccessToken);
 
-                // Persist access/refresh tokens for server-side API calls
-                HttpContext.Session.SetString("access_token", login.AccessToken);
+                // Persist access/refresh tokens — store in long-lived cookies AND session
+                var tokenCookieOpts = new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure   = true,
+                    SameSite = SameSiteMode.Lax,
+                    Expires  = DateTimeOffset.UtcNow.AddDays(7)
+                };
+                Response.Cookies.Append("hm_access_token",  login.AccessToken,  tokenCookieOpts);
+                Response.Cookies.Append("hm_refresh_token", login.RefreshToken, tokenCookieOpts);
+                Response.Cookies.Append("hm_user_email",    login.Email,
+                    new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Lax, Expires = DateTimeOffset.UtcNow.AddDays(7) });
+                Response.Cookies.Append("hm_user_name",     login.FullName,
+                    new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Lax, Expires = DateTimeOffset.UtcNow.AddDays(7) });
+
+                HttpContext.Session.SetString("access_token",  login.AccessToken);
                 HttpContext.Session.SetString("refresh_token", login.RefreshToken);
-                HttpContext.Session.SetString("user_email", login.Email);
-                HttpContext.Session.SetString("user_name", login.Username);
+                HttpContext.Session.SetString("user_email",    login.Email);
+                HttpContext.Session.SetString("user_name",     login.FullName);
 
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
@@ -80,7 +94,8 @@ namespace Khoa_Luan_KS_Web.Controllers
 
                 // Redirect by effective area role derived from JWT claims
                 if (IsAdmin(principal)) return Redirect("/admin");
-                if (IsManager(principal)) return Redirect("/manager");
+                if (IsWarehouseStaff(principal)) return Redirect("/WarehouseStaff");
+                if (IsStaff(principal)) return Redirect("/manager");
                 return RedirectToAction("Index", "Customer");
             }
             catch (Exception ex)
@@ -97,7 +112,7 @@ namespace Khoa_Luan_KS_Web.Controllers
             // Identify role before clearing session/auth cookie
             string? roleHint = null;
             if (IsAdmin(User)) roleHint = "Admin";
-            else if (IsManager(User)) roleHint = "Manager";
+            else if (IsStaff(User)) roleHint = "Manager";
 
             var accessToken = HttpContext.Session.GetString("access_token");
 
@@ -112,6 +127,9 @@ namespace Khoa_Luan_KS_Web.Controllers
             }
 
             HttpContext.Session.Clear();
+            // Remove persistent token cookies
+            foreach (var key in new[] { "hm_access_token", "hm_refresh_token", "hm_user_email", "hm_user_name" })
+                Response.Cookies.Delete(key);
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             if (!string.IsNullOrEmpty(roleHint))
@@ -120,7 +138,31 @@ namespace Khoa_Luan_KS_Web.Controllers
             return RedirectToAction("Index", "Customer");
         }
 
+        [HttpGet]
         public IActionResult Register() => View();
+
+        [HttpPost]
+        public async Task<IActionResult> Register(string FullName, string Email, string Phone, string Password, string ConfirmPassword, CancellationToken cancellationToken)
+        {
+            if (Password != ConfirmPassword)
+            {
+                TempData["Error"] = "Mật khẩu xác nhận không khớp.";
+                return RedirectToAction("Register");
+            }
+
+            try
+            {
+                await _backendAuthClient.RegisterAsync(Email, Password, ConfirmPassword, null, cancellationToken);
+                TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                return RedirectToAction("Login", new { role = "CUSTOMER" });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction("Register");
+            }
+        }
+
         public IActionResult ForgotPassword() => View();
 
         private static string NormalizeAdminUsername(string input)
@@ -141,19 +183,33 @@ namespace Khoa_Luan_KS_Web.Controllers
             var handler = new JwtSecurityTokenHandler();
             var token = handler.ReadJwtToken(jwt);
 
-            var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+            // Use the constructor that specifies name and role claim types
+            var identity = new ClaimsIdentity(
+                token.Claims, 
+                CookieAuthenticationDefaults.AuthenticationScheme,
+                ClaimTypes.Name,
+                ClaimTypes.Role);
 
-            foreach (var claim in token.Claims)
+            // Ensure Name is set correctly for UI usage if not already in standard claim
+            if (!identity.HasClaim(c => c.Type == ClaimTypes.Name))
             {
-                identity.AddClaim(claim);
+                var name = token.Claims.FirstOrDefault(c => c.Type == "FullName")?.Value
+                           ?? token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value
+                           ?? token.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value
+                           ?? token.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
+                if (!string.IsNullOrWhiteSpace(name))
+                    identity.AddClaim(new Claim(ClaimTypes.Name, name));
             }
 
-            // Ensure Name is set for UI usage
-            var name = token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value
-                       ?? token.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value
-                       ?? token.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
-            if (!string.IsNullOrWhiteSpace(name))
-                identity.AddClaim(new Claim(ClaimTypes.Name, name));
+            // Ensure Role is set correctly for IsInRole usage
+            var roles = token.Claims.Where(c => c.Type == "role" || c.Type == "roles" || c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
+            foreach (var roleName in roles)
+            {
+                if (!identity.HasClaim(ClaimTypes.Role, roleName))
+                {
+                    identity.AddClaim(new Claim(ClaimTypes.Role, roleName));
+                }
+            }
 
             return new ClaimsPrincipal(identity);
         }
@@ -161,7 +217,15 @@ namespace Khoa_Luan_KS_Web.Controllers
         private static bool IsAdmin(ClaimsPrincipal principal) =>
             principal.IsInRole("Admin") || principal.IsInRole("Super Admin");
 
-        private static bool IsManager(ClaimsPrincipal principal) =>
+        private static bool IsWarehouseStaff(ClaimsPrincipal principal) =>
+            principal.IsInRole("WarehouseStaff");
+
+        private static bool IsStaff(ClaimsPrincipal principal) =>
+            principal.IsInRole("Manager") || 
+            principal.IsInRole("WarehouseStaff") || 
+            principal.IsInRole("ChefStaff") || 
+            principal.IsInRole("SalesStaff") || 
+            principal.IsInRole("Shipper") ||
             principal.IsInRole("Quản lý công ty");
     }
 }

@@ -12,11 +12,12 @@
         .Select(c => c.Value)
         .ToList() ?? new List<string>();
 
-    bool isCustomerRole = roles.Any(r =>
-        string.Equals(r, "Khách hàng doanh nghiệp", StringComparison.OrdinalIgnoreCase) ||
-        string.Equals(r, "Khách hàng cá nhân", StringComparison.OrdinalIgnoreCase));
+    bool isCustomerRole = user != null && (user.IsInRole("Customer") || 
+                         user.IsInRole("Organization") || 
+                         user.IsInRole("Khách hàng doanh nghiệp") || 
+                         user.IsInRole("Khách hàng cá nhân"));
 
-    bool isLoggedIn = user?.Identity?.IsAuthenticated == true && isCustomerRole;
+    bool isLoggedIn = user.Identity?.IsAuthenticated == true && isCustomerRole;
     
     var currentPath = Context.Request.Path.Value?.ToLower() ?? "";
     bool IsActive(string path) => currentPath.Equals(path.ToLower(), StringComparison.OrdinalIgnoreCase) || (path == "/Customer/Index" && (currentPath == "/customer" || currentPath == "/"));
@@ -31,18 +32,29 @@
     <link rel="icon" type="image/png" href="/assets/images/Logo_tròn.png" />
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Montserrat', 'sans-serif'],
+            }
+          }
+        }
+      }
+    </script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Alpine JS for interactions -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
         /* ===== BASE ===== */
-        body { font-family: 'Outfit', sans-serif; }
+        body { font-family: 'Montserrat', sans-serif; }
 
         /* ===== PAGE LOAD OVERLAY ===== */
         #page-loader {
@@ -142,7 +154,7 @@
     </div>
     
     <!-- ===== TOP BAR (Hidden on Mobile) ===== -->
-    <div class="hidden md:flex w-full bg-[#0F172A] text-white/70 text-[10px] font-bold uppercase tracking-widest px-8 justify-between items-center relative z-[60] border-b border-white/5" style="padding: 7px">
+    <div class="hidden md:flex w-full bg-[#0F172A] text-white/70 text-[10px] font-bold uppercase tracking-widest px-8 justify-between items-center relative z-[60] border-b border-white/5">
         <div class="flex gap-8">
           <a href="tel:0966741866" class="flex items-center gap-2 hover:text-red-500 transition-colors">
             <i data-lucide="phone" class="w-3.5 h-3.5 text-red-500"></i>
@@ -153,9 +165,38 @@
             contact@HuitMeal.com
           </a>
         </div>
-        <div class="flex gap-4">
-            <a href="#" class="hover:text-white transition-colors"><i data-lucide="facebook" class="w-3.5 h-3.5"></i></a>
-            <a href="#" class="hover:text-white transition-colors"><i data-lucide="youtube" class="w-3.5 h-3.5"></i></a>
+        <div class="flex items-center gap-6">
+            <!-- Language Switcher -->
+            <div x-data="{ langOpen: false }" 
+                 @@mouseenter="langOpen = true" 
+                 @@mouseleave="langOpen = false" 
+                 class="relative flex items-center cursor-pointer z-[100] py-2">
+                <div class="flex items-center gap-1.5 hover:text-white transition-colors">
+                    <img src="https://flagcdn.com/w40/vn.png" alt="VN" class="w-4 h-4 rounded-full object-cover border border-white/20 shadow-sm">
+                    <span class="text-[9px] font-bold">VN</span>
+                    <i data-lucide="chevron-down" class="w-3 h-3 opacity-70"></i>
+                </div>
+                <!-- Dropdown wrapper with top padding to bridge the gap -->
+                <div x-show="langOpen" 
+                     x-transition:enter="transition ease-out duration-200"
+                     x-transition:enter-start="opacity-0 translate-y-2"
+                     x-transition:enter-end="opacity-100 translate-y-0"
+                     class="absolute right-0 top-full pt-1 w-36" style="display: none;">
+                    <div class="bg-white rounded-xl shadow-xl py-2 border border-gray-100 text-slate-800">
+                        <a href="?lang=vi" class="flex items-center gap-3 px-4 py-2 text-xs font-bold text-orange-600 bg-orange-50/50 hover:bg-orange-50 transition-colors">
+                            <img src="https://flagcdn.com/w40/vn.png" alt="VN" class="w-4 h-4 rounded-full object-cover shadow-sm"> Tiếng Việt
+                        </a>
+                        <a href="?lang=en" class="flex items-center gap-3 px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition-colors">
+                            <img src="https://flagcdn.com/w40/gb.png" alt="EN" class="w-4 h-4 rounded-full object-cover shadow-sm"> English
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex gap-4 border-l border-white/10 pl-6">
+                <a href="#" class="hover:text-white transition-colors"><i data-lucide="facebook" class="w-3.5 h-3.5"></i></a>
+                <a href="#" class="hover:text-white transition-colors"><i data-lucide="youtube" class="w-3.5 h-3.5"></i></a>
+            </div>
         </div>
     </div>
 
@@ -174,39 +215,40 @@
 
           <!-- DESKTOP MENU -->
           <nav class="hidden lg:flex flex-1 items-center justify-center gap-6 xl:gap-8 h-full">
-            <!-- GIỚI THIỆU -->
             <div class="group relative flex items-center h-full cursor-pointer">
-              <span class="text-[15px] font-bold @(IsActivePrefix("/Customer/About") || IsActivePrefix("/Customer/Achievements") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") group-hover:text-orange-600 transition-colors flex items-center gap-1 h-full">
-                GIỚI THIỆU <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-hover:-rotate-180"></i>
+              <span class="text-[13px] font-semibold @(IsActivePrefix("/Customer/About") || IsActivePrefix("/Customer/Achievements") ? "text-orange-600" : "text-gray-800") group-hover:text-orange-600 transition-colors flex items-center gap-1 h-full">
+                <span class="h-full flex items-center @(IsActivePrefix("/Customer/About") || IsActivePrefix("/Customer/Achievements") ? "border-b-2 border-orange-600" : "")">GIỚI THIỆU</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-hover:-rotate-180"></i>
               </span>
               <div class="absolute top-[75px] left-0 w-60 bg-white shadow-xl rounded-xl py-3 border border-gray-100 opacity-0 invisible translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50">
-                <a href="/Customer/About" class="block px-5 py-2.5 font-bold @(IsActive("/Customer/About") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Về chúng tôi</a>
-                <a href="/Customer/Achievements" class="block px-5 py-2.5 font-bold @(IsActive("/Customer/Achievements") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Thành tựu</a>
+                <a href="/Customer/About" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Customer/About") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Về chúng tôi</a>
+                <a href="/Customer/Achievements" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Customer/Achievements") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Thành tựu</a>
               </div>
             </div>
 
-            <a href="/Customer/Reviews" class="text-[15px] font-bold @(IsActive("/Customer/Reviews") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center">ĐÁNH GIÁ</a>
-            <a href="/Customer/ChooseHuitMeal" class="text-[15px] font-bold @(IsActive("/Customer/ChooseHuitMeal") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center">CHỌN HUITMEAL</a>
+            <a href="/Customer/Reviews" class="text-[13px] font-semibold @(IsActive("/Customer/Reviews") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center">ĐÁNH GIÁ</a>
+            <a href="/Customer/ChooseHuitMeal" class="text-[13px] font-semibold @(IsActive("/Customer/ChooseHuitMeal") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center">CHỌN HUITMEAL</a>
 
             <!-- DỊCH VỤ -->
             <div class="group relative flex items-center h-full cursor-pointer">
-              <span class="text-[15px] font-bold @(IsActivePrefix("/Service") || IsActivePrefix("/Menu") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") group-hover:text-orange-600 transition-colors flex items-center gap-1 h-full">
-                DỊCH VỤ <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-hover:-rotate-180"></i>
+              <span class="text-[13px] font-semibold @(IsActivePrefix("/Service") || IsActivePrefix("/Menu") ? "text-orange-600" : "text-gray-800") group-hover:text-orange-600 transition-colors flex items-center gap-1 h-full">
+                <span class="h-full flex items-center @(IsActivePrefix("/Service") || IsActivePrefix("/Menu") ? "border-b-2 border-orange-600" : "")">DỊCH VỤ</span>
+                <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-hover:-rotate-180"></i>
               </span>
               <div class="absolute top-[75px] left-0 w-[280px] bg-white shadow-xl rounded-xl py-3 border border-gray-100 opacity-0 invisible translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50">
-                <a href="/Service/Safety" class="block px-5 py-2.5 font-bold @(IsActive("/Service/Safety") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn sạch</a>
-                <a href="/Service/MenuSuggestions" class="block px-5 py-2.5 font-bold @(IsActive("/Service/MenuSuggestions") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Gợi ý thực đơn</a>
-                <a href="/Menu/Index" class="block px-5 py-2.5 font-bold @(IsActive("/Menu/Index") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all border-t mt-1 pt-3">Thực đơn</a>
-                <a href="/Service/School" class="block px-5 py-2.5 font-bold @(IsActive("/Service/School") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn trường học</a>
-                <a href="/Service/Office" class="block px-5 py-2.5 font-bold @(IsActive("/Service/Office") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn văn phòng</a>
-                <a href="/Service/Factory" class="block px-5 py-2.5 font-bold @(IsActive("/Service/Factory") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn nhà máy</a>
+                <a href="/Service/Safety" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/Safety") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn sạch</a>
+                <a href="/Service/MenuSuggestions" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/MenuSuggestions") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Gợi ý thực đơn</a>
+                <a href="/Menu/Index" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Menu/Index") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all border-t mt-1 pt-3">Thực đơn</a>
+                <a href="/Service/School" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/School") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn trường học</a>
+                <a href="/Service/Office" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/Office") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn văn phòng</a>
+                <a href="/Service/Factory" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/Factory") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn nhà máy</a>
               </div>
             </div>
 
-            <a href="/Customer/Partners" class="text-[15px] font-bold @(IsActive("/Customer/Partners") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center">ĐỐI TÁC</a>
-            <a href="/Customer/HuitMeal" class="text-[15px] font-bold @(IsActive("/Customer/HuitMeal") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center uppercase">BẢN TIN</a>
-            <a href="/Customer/Recruitment" class="text-[15px] font-bold @(IsActive("/Customer/Recruitment") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center uppercase">TUYỂN DỤNG</a>
-            <a href="/Customer/Contact" class="text-[15px] font-bold @(IsActive("/Customer/Contact") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center uppercase">LIÊN HỆ</a>
+            <a href="/Customer/Partners" class="text-[13px] font-semibold @(IsActive("/Customer/Partners") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center">ĐỐI TÁC</a>
+            <a href="/Customer/HuitMeal" class="text-[13px] font-semibold @(IsActive("/Customer/HuitMeal") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center uppercase">BẢN TIN</a>
+            <a href="/Customer/Recruitment" class="text-[13px] font-semibold @(IsActive("/Customer/Recruitment") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center uppercase">TUYỂN DỤNG</a>
+            <a href="/Customer/Contact" class="text-[13px] font-semibold @(IsActive("/Customer/Contact") ? "text-orange-600 border-b-2 border-orange-600" : "text-gray-800") hover:text-orange-600 transition-colors h-full flex items-center uppercase">LIÊN HỆ</a>
           </nav>
 
           <!-- PROFILE / ACTIONS -->
@@ -220,7 +262,7 @@
               @if (!isLoggedIn)
               {
                   <a href="/Auth/Login"
-                     class="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white text-xs font-bold uppercase tracking-widest rounded-full hover:bg-orange-600 transition-all shadow-sm active:scale-95">
+                     class="flex items-center gap-2 px-6 py-2.5 bg-slate-900 text-white text-xs font-semibold uppercase tracking-widest rounded-full hover:bg-orange-600 transition-all shadow-sm active:scale-95">
                       <i data-lucide="user" class="w-4 h-4"></i>
                       Đăng nhập
                   </a>
@@ -616,7 +658,7 @@
                 <h2 class="text-3xl md:text-5xl font-black text-white tracking-tight">Bạn đang tìm kiếm gì?</h2>
             </div>
 
-            <form action="/Customer/Search" method="GET" class="relative">
+            <form action="/Menu/Index" method="GET" class="relative">
                 <input x-ref="searchInput" 
                        type="text" name="q" 
                        placeholder="Nhập từ khóa tìm kiếm..." 
@@ -631,7 +673,7 @@
                 <span class="text-white/40 text-[10px] font-bold uppercase tracking-widest w-full text-center mb-2">Tìm kiếm phổ biến:</span>
                 @foreach(var tag in new[]{"Suất ăn nhà máy", "Tuyển dụng", "Thực đơn tuần", "Dịch vụ", "Đối tác"})
                 {
-                    <a href="/Customer/Search?q=@tag" class="px-5 py-2.5 bg-white/5 hover:bg-orange-600 border border-white/10 rounded-full text-white/70 hover:text-white text-xs font-bold transition-all duration-300">
+                    <a href="/Menu/Index?q=@tag" class="px-5 py-2.5 bg-white/5 hover:bg-orange-600 border border-white/10 rounded-full text-white/70 hover:text-white text-xs font-bold transition-all duration-300">
                         @tag
                     </a>
                 }

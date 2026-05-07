@@ -1,214 +1,346 @@
+@model Khoa_Luan_KS_Web.Services.DishDetailResponse
 @{
-    ViewData["Title"] = "Hồ sơ Dinh dưỡng Thực Đơn";
+    ViewData["Title"] = Model.Dish.Name + " - Chi tiết Thực đơn";
     Layout = "_LayoutManager";
+    var d = Model.Dish;
+
+    string CategoryLabel(string? cat) => cat?.ToLower() switch {
+        "man"         => "Món chính",
+        "xao"         => "Xào / Chiên",
+        "canh"        => "Canh / Súp",
+        "trang_mieng" => "Tráng miệng",
+        _             => cat ?? "Khác"
+    };
+
+    string CategoryBadge(string? cat) => cat?.ToLower() switch {
+        "man"         => "bg-orange-100 text-orange-700 border-orange-200",
+        "xao"         => "bg-yellow-100 text-yellow-700 border-yellow-200",
+        "canh"        => "bg-blue-100 text-blue-700 border-blue-200",
+        "trang_mieng" => "bg-pink-100 text-pink-700 border-pink-200",
+        _             => "bg-slate-100 text-slate-600 border-slate-200"
+    };
+
+    // Compute a simple "nutrition score" 0–100
+    decimal score = 0;
+    int factors = 0;
+    if (d.Calories.HasValue)  { score += Math.Min(d.Calories.Value / 10, 100); factors++; }
+    if (d.Protein.HasValue)   { score += Math.Min(d.Protein.Value * 2, 100);   factors++; }
+    if (d.Carbs.HasValue)     { score += Math.Min(d.Carbs.Value, 100);          factors++; }
+    if (factors > 0) score = score / factors;
+    var nutritionScore = (int)Math.Min(score, 100);
 }
 
-<div class="px-4 py-6 md:p-8 space-y-6">
-    <!-- Breadcrumb -->
-    <nav class="flex text-sm text-gray-500 font-medium" aria-label="Breadcrumb">
-        <ol class="inline-flex items-center space-x-1 md:space-x-3">
-            <li class="inline-flex items-center">
-                <a href="/Manager/CatalogMeals" class="hover:text-green-600 transition flex items-center gap-2">
-                    <i class="fas fa-utensils"></i> Danh mục Menu
-                </a>
-            </li>
-            <li>
-                <div class="flex items-center">
-                    <i class="fas fa-chevron-right text-gray-400 text-xs mx-1"></i>
-                    <span class="ml-1 md:ml-2 text-gray-900 font-bold">Mã Số: MNU-8821 (Văn phòng)</span>
-                </div>
-            </li>
-        </ol>
+<div class="space-y-6 animate-in fade-in duration-500">
+
+    <!-- ── Breadcrumb ── -->
+    <nav class="flex items-center gap-2 text-xs font-bold text-slate-400">
+        <a href="/Manager/Catalog/Meals" class="hover:text-green-600 transition-colors flex items-center gap-1">
+            <i class="fas fa-utensils"></i> Thực đơn
+        </a>
+        <i class="fas fa-chevron-right text-[9px]"></i>
+        <span class="text-slate-700">@d.Name</span>
     </nav>
 
-    <!-- Header Action -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-3">
-                Menu Văn Phòng Chuẩn Kèm Trà Đá
-            </h1>
-            <p class="text-sm font-bold text-green-600 border border-green-200 bg-green-50 px-3 py-1 rounded w-fit mt-3 uppercase tracking-wider">
-                Active Catalog (Đang kinh doanh)
-            </p>
+    <!-- ── Top Section: Hero + Quick Info ── -->
+    <div class="grid grid-cols-1 lg:grid-cols-5 gap-6">
+
+        <!-- Image Card -->
+        <div class="lg:col-span-2">
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden h-full">
+                @if (!string.IsNullOrEmpty(d.ImageUrl))
+                {
+                    <div class="relative h-64 lg:h-80 bg-slate-50">
+                        <img id="main-dish-image" src="@d.ImageUrl" alt="@d.Name" class="w-full h-full object-cover transition-all duration-300" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
+                        <!-- Status pill -->
+                        <div class="absolute top-4 right-4">
+                            @if (d.IsActive)
+                            {
+                                <span class="flex items-center gap-1.5 px-3 py-1 bg-emerald-500 text-white text-[10px] font-black rounded-full uppercase tracking-widest">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Đang phục vụ
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="flex items-center gap-1.5 px-3 py-1 bg-red-500/90 text-white text-[10px] font-black rounded-full">
+                                    <i class="fas fa-eye-slash text-[9px]"></i> Đã ẩn
+                                </span>
+                            }
+                        </div>
+                        <!-- Category bottom-left -->
+                        <div class="absolute bottom-4 left-4">
+                            <span class="text-[10px] font-black px-3 py-1 rounded-full border @CategoryBadge(d.Category) backdrop-blur-sm">
+                                @CategoryLabel(d.Category)
+                            </span>
+                        </div>
+                    </div>
+
+                    @if (d.Images != null && d.Images.Count > 1)
+                    {
+                        <div class="p-3 border-t border-slate-50 flex items-center gap-2 overflow-x-auto">
+                            @foreach (var img in d.Images.OrderByDescending(x => x.Role == "cover").ThenBy(x => x.SortOrder))
+                            {
+                                <button onclick="document.getElementById('main-dish-image').src = '@img.Url'"
+                                        class="w-12 h-12 rounded-lg border border-slate-200 overflow-hidden shrink-0 hover:ring-2 hover:ring-green-500 transition-all focus:ring-2 focus:ring-green-500 outline-none">
+                                    <img src="@img.Url" class="w-full h-full object-cover" />
+                                </button>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="h-64 lg:h-80 bg-slate-50 flex flex-col items-center justify-center text-slate-300 gap-3">
+                        <i class="fas fa-image text-6xl"></i>
+                        <p class="text-xs font-bold text-slate-400">Chưa có hình ảnh</p>
+                    </div>
+                }
+
+                <!-- Price + Actions bar -->
+                <div class="p-5 border-t border-slate-50 flex items-center justify-between gap-4">
+                    <div>
+                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Đơn giá / suất</p>
+                        <p class="text-2xl font-black text-green-600">@d.Price.ToString("N0") <span class="text-sm">₫</span></p>
+                    </div>
+                    <div class="flex gap-2">
+                        <a href="/Manager/Catalog/MealEdit/@d.Id"
+                           class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-100">
+                            <i class="fas fa-pen"></i> Chỉnh sửa
+                        </a>
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="flex items-center gap-3">
-            <button class="bg-white border border-gray-300 text-gray-700 font-bold px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-50 transition flex items-center gap-2 text-sm">
-                <i class="fas fa-print"></i> In Nhãn Dinh Dưỡng
-            </button>
-            <a href="/Manager/MealEdit/M001" class="bg-gray-800 hover:bg-gray-900 text-white font-bold px-6 py-2.5 rounded-xl shadow-sm transition flex items-center gap-2 text-sm">
-                <i class="fas fa-edit"></i> Edit Thực Đơn
-            </a>
+
+        <!-- Quick Info + Nutrition -->
+        <div class="lg:col-span-3 flex flex-col gap-5">
+
+            <!-- Title Card -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <div class="flex items-start justify-between gap-4 mb-3">
+                    <div>
+                        @if (!string.IsNullOrEmpty(d.Code))
+                        {
+                            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">@d.Code</p>
+                        }
+                        <h1 class="text-2xl font-black text-slate-900 leading-snug">@d.Name</h1>
+                    </div>
+                    @if (!string.IsNullOrEmpty(d.DietaryLabel))
+                    {
+                        <span class="shrink-0 px-3 py-1 bg-green-100 text-green-700 border border-green-200 text-[10px] font-black rounded-full uppercase tracking-widest">
+                            @d.DietaryLabel
+                        </span>
+                    }
+                </div>
+                @if (!string.IsNullOrEmpty(d.Description))
+                {
+                    <p class="text-sm text-slate-500 font-medium leading-relaxed">@d.Description</p>
+                }
+                <div class="mt-4 pt-4 border-t border-slate-50 flex items-center gap-4 text-xs text-slate-400 font-medium">
+                    <span><i class="fas fa-calendar-alt mr-1"></i>Tạo: @d.CreatedAt.ToString("dd/MM/yyyy")</span>
+                    @if (d.UpdatedAt.HasValue)
+                    {
+                        <span><i class="fas fa-pen mr-1"></i>Cập nhật: @d.UpdatedAt.Value.ToString("dd/MM/yyyy")</span>
+                    }
+                </div>
+            </div>
+
+            <!-- Nutrition Dashboard -->
+            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+                <div class="flex items-center justify-between mb-5">
+                    <h2 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                        <i class="fas fa-chart-pie text-green-500"></i> Thành phần Dinh dưỡng / suất ăn
+                    </h2>
+                    <!-- Nutrition score ring -->
+                    <div class="flex items-center gap-2">
+                        <div class="relative w-12 h-12">
+                            <svg viewBox="0 0 36 36" class="w-12 h-12 -rotate-90">
+                                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#f1f5f9" stroke-width="3" />
+                                <circle cx="18" cy="18" r="15.9" fill="none" stroke="#16a34a" stroke-width="3"
+                                        stroke-dasharray="@nutritionScore, 100"
+                                        stroke-linecap="round" />
+                            </svg>
+                            <span class="absolute inset-0 flex items-center justify-center text-[10px] font-black text-green-700">@nutritionScore</span>
+                        </div>
+                        <div>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Nutrition</p>
+                            <p class="text-[9px] font-black text-slate-400 uppercase tracking-wider">Score</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <!-- Calories -->
+                    <div class="bg-gradient-to-br from-orange-50 to-orange-100/50 rounded-xl p-4 border border-orange-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-fire-flame-curved text-orange-500 text-sm"></i>
+                            <span class="text-[9px] font-black text-orange-400 uppercase tracking-widest">Năng lượng</span>
+                        </div>
+                        <p class="text-2xl font-black text-orange-700">@(d.Calories?.ToString("N0") ?? "—")</p>
+                        <p class="text-[10px] font-bold text-orange-500 mt-0.5">kcal</p>
+                        @if (d.Calories.HasValue)
+                        {
+                            <div class="mt-2 h-1 bg-orange-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-orange-500 rounded-full" style="width: @Math.Min((double)d.Calories.Value / 800 * 100, 100)%"></div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Protein -->
+                    <div class="bg-gradient-to-br from-blue-50 to-blue-100/50 rounded-xl p-4 border border-blue-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-dumbbell text-blue-500 text-sm"></i>
+                            <span class="text-[9px] font-black text-blue-400 uppercase tracking-widest">Protein</span>
+                        </div>
+                        <p class="text-2xl font-black text-blue-700">@(d.Protein?.ToString("N1") ?? "—")</p>
+                        <p class="text-[10px] font-bold text-blue-500 mt-0.5">gram</p>
+                        @if (d.Protein.HasValue)
+                        {
+                            <div class="mt-2 h-1 bg-blue-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-blue-500 rounded-full" style="width: @Math.Min((double)d.Protein.Value / 60 * 100, 100)%"></div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Carbs -->
+                    <div class="bg-gradient-to-br from-amber-50 to-amber-100/50 rounded-xl p-4 border border-amber-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-wheat-awn text-amber-500 text-sm"></i>
+                            <span class="text-[9px] font-black text-amber-400 uppercase tracking-widest">Carbs</span>
+                        </div>
+                        <p class="text-2xl font-black text-amber-700">@(d.Carbs?.ToString("N1") ?? "—")</p>
+                        <p class="text-[10px] font-bold text-amber-500 mt-0.5">gram</p>
+                        @if (d.Carbs.HasValue)
+                        {
+                            <div class="mt-2 h-1 bg-amber-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-amber-500 rounded-full" style="width: @Math.Min((double)d.Carbs.Value / 100 * 100, 100)%"></div>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Fat -->
+                    <div class="bg-gradient-to-br from-purple-50 to-purple-100/50 rounded-xl p-4 border border-purple-100">
+                        <div class="flex items-center justify-between mb-2">
+                            <i class="fas fa-droplet text-purple-500 text-sm"></i>
+                            <span class="text-[9px] font-black text-purple-400 uppercase tracking-widest">Chất béo</span>
+                        </div>
+                        <p class="text-2xl font-black text-purple-700">@(d.Fat?.ToString("N1") ?? "—")</p>
+                        <p class="text-[10px] font-bold text-purple-500 mt-0.5">gram</p>
+                        @if (d.Fat.HasValue)
+                        {
+                            <div class="mt-2 h-1 bg-purple-200 rounded-full overflow-hidden">
+                                <div class="h-full bg-purple-500 rounded-full" style="width: @Math.Min((double)d.Fat.Value / 50 * 100, 100)%"></div>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @if (!d.Calories.HasValue && !d.Protein.HasValue && !d.Carbs.HasValue && !d.Fat.HasValue)
+                {
+                    <div class="mt-4 flex items-center gap-3 p-3 bg-yellow-50 border border-yellow-100 rounded-xl text-xs text-yellow-700 font-bold">
+                        <i class="fas fa-triangle-exclamation"></i>
+                        Chưa cập nhật thông tin dinh dưỡng. <a href="/Manager/Catalog/MealEdit/@d.Id" class="underline hover:text-yellow-900">Cập nhật ngay</a>
+                    </div>
+                }
+            </div>
         </div>
     </div>
 
-    <!-- Main Content -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
-        <!-- Cột Trái: Ảnh lớn và Bảng dinh dưỡng (Span 5) -->
-        <div class="lg:col-span-5 space-y-6">
-            
-            <!-- Food Hero Image -->
-            <div class="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden relative group">
-                <div class="absolute right-4 top-4 z-10 w-12 h-12 bg-white/30 backdrop-blur-md rounded-full flex items-center justify-center cursor-pointer hover:bg-white/50 transition">
-                    <i class="fas fa-expand text-white text-xl"></i>
-                </div>
-                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80" class="w-full h-80 object-cover group-hover:scale-105 transition-transform duration-700" alt="Menu" />
-            </div>
-
-            <!-- Tổng quan Vận hành -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
-                <div>
-                    <div class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1">Giá niên yết hệ thống</div>
-                    <h3 class="text-3xl font-black text-green-600">35,000 <span class="text-sm">VND</span></h3>
-                </div>
-                <div class="w-px h-12 bg-gray-200"></div>
-                <div class="text-right">
-                    <div class="text-[11px] font-bold text-gray-400 uppercase tracking-widest mb-1">Cost NS/NL Tạm tính</div>
-                    <h3 class="text-xl font-bold text-gray-800">~ 21,500 <span class="text-xs">VND</span></h3>
-                </div>
-            </div>
-
-            <!-- Nutrition Facts Card -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="bg-gray-900 text-white p-4">
-                    <h3 class="font-black text-xl tracking-wide border-b-4 border-white pb-2 inline-block">Nutrition Facts</h3>
-                    <p class="text-xs text-gray-300 mt-2 font-medium">Bảng phân tích Dinh dưỡng theo chuẩn FDA (Cho 1 phần 400g)</p>
-                </div>
-                
-                <div class="p-6 space-y-5">
-                    <!-- Calories -->
-                    <div class="flex items-end justify-between border-b-[8px] border-black pb-2">
-                        <div class="font-black text-3xl">Calories</div>
-                        <div class="font-black text-4xl text-orange-500">650</div>
-                    </div>
-
-                    <!-- Macro List -->
-                    <div class="space-y-3 font-semibold text-sm text-gray-800">
-                        
-                        <div class="flex justify-between border-b border-gray-200 pb-2">
-                            <span><span class="font-black">Total Fat</span> (Lipid)</span>
-                            <span class="font-black">15g</span>
-                        </div>
-                        <div class="pl-4 flex justify-between text-gray-500 border-b border-gray-200 pb-2 text-xs">
-                            <span>Saturated Fat</span>
-                            <span>4g</span>
-                        </div>
-                        
-                        <div class="flex justify-between border-b border-gray-200 pb-2">
-                            <span><span class="font-black">Total Carbohydrate</span> (Tinh bột)</span>
-                            <span class="font-black">80g</span>
-                        </div>
-                        <div class="pl-4 flex justify-between text-gray-500 border-b border-gray-200 pb-2 text-xs">
-                            <span>Dietary Fiber</span>
-                            <span>8g</span>
-                        </div>
-
-                        <div class="flex justify-between border-b border-gray-200 pb-2 text-lg">
-                            <span><span class="font-black text-blue-800">Protein</span> (Chất Đạm)</span>
-                            <span class="font-black text-blue-600">30g</span>
-                        </div>
-                    </div>
-
-                    <!-- Warning Tags -->
-                    <div class="pt-2">
-                        <div class="text-[11px] font-black text-gray-500 uppercase tracking-widest mb-2">Thẻ Cảnh Báo Phụ Gia (Allergy)</div>
-                        <div class="flex flex-wrap gap-2">
-                            <span class="bg-amber-100 text-amber-800 px-3 py-1 rounded text-xs font-bold border border-amber-200">Đậu nành</span>
-                            <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded text-xs font-bold border border-gray-200">Trứng gà</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            
+    <!-- ── Ingredient Quotas Table ── -->
+    <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-slate-50">
+            <h2 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                <i class="fas fa-list-check text-green-500"></i>
+                Định mức Nguyên liệu
+                <span class="ml-1 bg-slate-100 text-slate-600 text-[10px] font-black px-2 py-0.5 rounded-full">
+                    @Model.IngredientQuotas.Count nguyên liệu
+                </span>
+            </h2>
+            <a href="#" class="flex items-center gap-1.5 text-xs font-bold text-green-600 hover:text-green-700 transition-colors">
+                <i class="fas fa-plus text-[10px]"></i> Thêm nguyên liệu
+            </a>
         </div>
 
-        <!-- Cột Phải: Thành phần và Mô tả (Span 7) -->
-        <div class="lg:col-span-7 space-y-6">
-            
-            <!-- Description Block -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 md:p-8">
-                <h3 class="text-sm font-black text-gray-900 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <i class="fas fa-quote-left text-gray-300"></i> Miêu tả Khẩu phần
-                </h3>
-                <p class="text-gray-600 font-medium leading-relaxed text-[15px]">
-                    Thực đơn thiết kế dành riêng cho nhóm nhân viên văn phòng có mức vận động nhẹ nhàng. Hàm lượng Canxi và Vitamin E được cân bằng để chống nhức mỏi. Phần chất tạo ngọt từ đường hóa học được cắt giảm hoàn toàn, thay thế bằng vị ngọt tự nhiên từ rau củ luộc chậm. Món best-seller trong 3 quý liên tiếp.
+        @if (!Model.IngredientQuotas.Any())
+        {
+            <div class="flex flex-col items-center justify-center py-16 text-center gap-3">
+                <div class="w-14 h-14 rounded-xl bg-slate-50 flex items-center justify-center text-slate-300">
+                    <i class="fas fa-seedling text-2xl"></i>
+                </div>
+                <p class="text-sm font-bold text-slate-700">Chưa có định mức nguyên liệu</p>
+                <p class="text-xs text-slate-400">Thêm nguyên liệu để tính toán chi phí và kiểm soát kho.</p>
+            </div>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left">
+                    <thead>
+                        <tr class="bg-slate-50/50">
+                            <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">#</th>
+                            <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Nguyên liệu</th>
+                            <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest text-right">Định lượng</th>
+                            <th class="px-6 py-3 text-[10px] font-black text-slate-400 uppercase tracking-widest">Đơn vị</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50">
+                        @{int idx = 1;}
+                        @foreach (var q in Model.IngredientQuotas)
+                        {
+                            <tr class="hover:bg-slate-50/50 transition-colors group">
+                                <td class="px-6 py-3.5">
+                                    <span class="w-6 h-6 rounded-lg bg-slate-100 text-slate-500 text-[10px] font-black flex items-center justify-center">@idx</span>
+                                </td>
+                                <td class="px-6 py-3.5">
+                                    <p class="text-sm font-bold text-slate-800">@q.IngredientName</p>
+                                    <p class="text-[10px] text-slate-400 font-medium">ID: @q.IngredientId</p>
+                                </td>
+                                <td class="px-6 py-3.5 text-right">
+                                    <span class="text-base font-black text-slate-900">@q.Quantity.ToString("G29")</span>
+                                </td>
+                                <td class="px-6 py-3.5">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 bg-slate-100 text-slate-600 text-xs font-bold rounded-lg">
+                                        @(q.Unit ?? "—")
+                                    </span>
+                                </td>
+                            </tr>
+                            idx++;
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Total estimated cost row -->
+            <div class="px-6 py-3 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between">
+                <p class="text-xs font-bold text-slate-500">
+                    Tổng cộng: <span class="text-slate-900">@Model.IngredientQuotas.Count nguyên liệu</span>
                 </p>
+                <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Chi phí nguyên liệu sẽ được cập nhật theo bảng giá nhập</span>
             </div>
+        }
+    </div>
 
-            <!-- Components Detail (Danh sách món con) -->
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-                <div class="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                    <h3 class="font-black text-gray-900 text-lg border-l-4 border-green-500 pl-3">Khung Cấu Trúc Bữa Ăn</h3>
-                    <div class="bg-green-100 text-green-700 text-xs font-bold px-3 py-1 rounded">5 Món Tách Biệt</div>
-                </div>
-                
-                <div class="p-2 space-y-1">
-                    <!-- Item 1 -->
-                    <div class="p-4 hover:bg-gray-50 rounded-xl transition flex items-center gap-4">
-                        <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-lg flex items-center justify-center text-xl shrink-0">🍲</div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-gray-900">Thịt Ba chỉ Rang Cháy Cạnh</h4>
-                            <p class="text-xs text-gray-500 font-medium mt-0.5">Món chính • Nguồn: CP Foods (Thịt ba rọi rút sườn)</p>
-                        </div>
-                        <div class="text-[11px] font-bold text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">150g</div>
-                    </div>
-                    
-                    <!-- Item 2 -->
-                    <div class="p-4 hover:bg-gray-50 rounded-xl transition flex items-center gap-4">
-                        <div class="w-12 h-12 bg-yellow-100 text-yellow-600 rounded-lg flex items-center justify-center text-xl shrink-0">🍳</div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-gray-900">Trứng Gà Ốp la Lòng Đào</h4>
-                            <p class="text-xs text-gray-500 font-medium mt-0.5">Món ăn kèm bổ sung đạm • Nguồn: Ba Huân</p>
-                        </div>
-                        <div class="text-[11px] font-bold text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">1 Quả</div>
-                    </div>
-
-                    <!-- Item 3 -->
-                    <div class="p-4 hover:bg-gray-50 rounded-xl transition flex items-center gap-4">
-                        <div class="w-12 h-12 bg-green-100 text-green-600 rounded-lg flex items-center justify-center text-xl shrink-0">🥗</div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-gray-900">Salad Xà lách Dầu Dấm</h4>
-                            <p class="text-xs text-gray-500 font-medium mt-0.5">Rau xanh cung cấp chất xơ • Xà lách mỡ, Cà chua bi</p>
-                        </div>
-                        <div class="text-[11px] font-bold text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">100g</div>
-                    </div>
-
-                    <!-- Item 4 -->
-                    <div class="p-4 hover:bg-gray-50 rounded-xl transition flex items-center gap-4">
-                        <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center text-xl shrink-0">🥣</div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-gray-900">Canh Chua Nấu Nghiêu Xưa</h4>
-                            <p class="text-xs text-gray-500 font-medium mt-0.5">Canh chan nước thanh mát • Nghêu, dứa, cà chua</p>
-                        </div>
-                        <div class="text-[11px] font-bold text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">Bát bé</div>
-                    </div>
-
-                    <!-- Item 5 -->
-                    <div class="p-4 hover:bg-gray-50 rounded-xl transition flex items-center gap-4">
-                        <div class="w-12 h-12 bg-gray-100 text-gray-600 rounded-lg flex items-center justify-center text-xl shrink-0">🍚</div>
-                        <div class="flex-1">
-                            <h4 class="font-bold text-gray-900">Cơm Trắng Niêu Thơm</h4>
-                            <p class="text-xs text-gray-500 font-medium mt-0.5">Gạo ST25 chuẩn độ mềm</p>
-                        </div>
-                        <div class="text-[11px] font-bold text-gray-400 bg-white border border-gray-200 px-2 py-1 rounded shadow-sm">Phiếu tự do</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Notes System -->
-            <div class="bg-gray-50 border border-gray-200 rounded-2xl p-6">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center text-gray-400 shadow-sm">
-                        <i class="fas fa-info"></i>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-gray-900 text-sm">Giao thức Chuẩn bị</h4>
-                        <p class="text-xs text-gray-500 mt-0.5 font-medium">Bếp trưởng cần lưu ý ướp thịt ba rọi trước tổi thiểu 2 giờ để thịt lên màu đẹp nhất.</p>
-                    </div>
-                </div>
-            </div>
-
-        </div> <!-- End right col -->
-
+    <!-- ── Bottom Actions ── -->
+    <div class="flex items-center justify-between pt-2">
+        <a href="/Manager/Catalog/Meals"
+           class="flex items-center gap-2 px-5 py-2.5 bg-slate-50 text-slate-600 hover:bg-slate-100 rounded-xl font-bold text-sm transition-all">
+            <i class="fas fa-arrow-left text-xs"></i> Quay lại danh sách
+        </a>
+        <div class="flex gap-3">
+            <form method="post" action="/Manager/Catalog/ToggleMealStatus"
+                  onsubmit="return confirm('Xác nhận thay đổi trạng thái món ăn?')">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@d.Id" />
+                <button type="submit"
+                        class="flex items-center gap-2 px-5 py-2.5 @(d.IsActive ? "bg-red-50 text-red-600 hover:bg-red-100" : "bg-emerald-50 text-emerald-600 hover:bg-emerald-100") rounded-xl font-bold text-sm transition-all">
+                    <i class="fas @(d.IsActive ? "fa-eye-slash" : "fa-eye") text-xs"></i>
+                    @(d.IsActive ? "Ẩn khỏi Thực đơn" : "Hiện lại")
+                </button>
+            </form>
+            <a href="/Manager/Catalog/MealEdit/@d.Id"
+               class="flex items-center gap-2 px-6 py-2.5 bg-green-600 hover:bg-green-700 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-green-100 active:scale-95">
+                <i class="fas fa-pen text-xs"></i> Chỉnh sửa Thực đơn
+            </a>
+        </div>
     </div>
 </div>
