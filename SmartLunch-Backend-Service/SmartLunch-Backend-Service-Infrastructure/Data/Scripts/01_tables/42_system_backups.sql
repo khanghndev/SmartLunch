@@ -1,7 +1,8 @@
 CREATE TABLE system_backups (
     Id INT NOT NULL AUTO_INCREMENT COMMENT 'Auto-increment Primary Key',
     FileName VARCHAR(255) NOT NULL,
-    FilePath VARCHAR(1024) NOT NULL,
+    StorageBucket VARCHAR(255) NOT NULL,
+    StorageObjectName VARCHAR(1024) NOT NULL,
     SizeBytes BIGINT NOT NULL DEFAULT 0,
     CreatedAtUtc DATETIME NOT NULL,
     RestoredAtUtc DATETIME NULL,

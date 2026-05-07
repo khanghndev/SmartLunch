@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Systems;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Systems;
+using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Application.Queries.Systems.GetSystemLogs;
 using SmartLunch.Backend.Service.Application.Queries.Systems.BackupSystem;
 using SmartLunch.Backend.Service.Application.Queries.Systems.GetSystemBackups;
@@ -122,7 +123,7 @@ public class SystemController : ControllerBase
     public async Task<IActionResult> DownloadBackup([FromRoute] int id)
     {
         var meta = await _mediator.Send(new GetSystemBackupFileQuery(id));
-        return PhysicalFile(meta.FilePath, "application/octet-stream", meta.FileName);
+        return Redirect(meta.DownloadUrl);
     }
 
     /// <summary>

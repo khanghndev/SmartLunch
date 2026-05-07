@@ -1,8 +1,10 @@
 using System.Diagnostics;
 using System.Globalization;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using System.Net.Http;
 
 namespace SmartLunch.Backend.Service.Infrastructure.Services;
 
@@ -11,15 +13,20 @@ public class DatabaseBackupService : IDatabaseBackupService
     private readonly IConfiguration _configuration;
     private readonly ILogger<DatabaseBackupService> _logger;
     private readonly ISystemBackupRepository _systemBackupRepository;
+    private readonly IStorageService _storage;
+    private readonly HttpClient _httpClient;
 
     public DatabaseBackupService(
         IConfiguration configuration,
         ISystemBackupRepository systemBackupRepository,
+        IStorageService storage,
         ILogger<DatabaseBackupService> logger)
     {
         _configuration = configuration;
         _systemBackupRepository = systemBackupRepository;
+        _storage = storage;
         _logger = logger;
+        _httpClient = new HttpClient();
     }
 
     public async Task<(string FilePath, long SizeBytes, DateTime CreatedAtUtc)> CreateBackupAsync(CancellationToken cancellationToken = default)
@@ -66,12 +73,21 @@ public class DatabaseBackupService : IDatabaseBackupService
         var size = new FileInfo(filePath).Length;
         _logger.LogInformation("Database backup completed. File={FilePath} SizeBytes={SizeBytes}", filePath, size);
 
+        // Upload to Appwrite immediately (do not keep local backups).
+        var bucketId = _configuration["Appwrite:BucketId"] ?? string.Empty;
+        var objectName = $"backups/{createdAt:yyyy}/{createdAt:MM}/{fileName}";
+        await using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            await _storage.UploadObjectAsync(objectName, fs, "application/sql", cancellationToken);
+        }
+
         try
         {
             await _systemBackupRepository.CreateAsync(new Domain.Entities.SystemBackup
             {
                 FileName = fileName,
-                FilePath = filePath,
+                StorageBucket = bucketId,
+                StorageObjectName = objectName,
                 SizeBytes = size,
                 CreatedAtUtc = createdAt,
                 IsDeleted = false
@@ -82,6 +98,16 @@ public class DatabaseBackupService : IDatabaseBackupService
             _logger.LogWarning(ex, "Failed to persist system backup metadata for {FilePath}", filePath);
         }
 
+        // Delete local file after upload to storage
+        try
+        {
+            File.Delete(filePath);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Failed to delete local backup file {FilePath}", filePath);
+        }
+
         await CleanupOldBackupsAsync(cancellationToken);
 
         return (filePath, size, createdAt);
@@ -89,16 +115,28 @@ public class DatabaseBackupService : IDatabaseBackupService
 
     public async Task<(string FilePath, DateTime RestoredAtUtc)> RestoreLatestAsync(CancellationToken cancellationToken = default)
     {
-        var latest = await GetLatestBackupFileAsync(cancellationToken);
+        var latest = await _systemBackupRepository.GetLatestAsync();
         if (latest == null)
             throw new InvalidOperationException("No backup file found to restore.");
 
-        return await RestoreAsync(latest, cancellationToken);
+        return await RestoreFromStorageAsync(latest, cancellationToken);
     }
 
     public async Task<(string FilePath, DateTime RestoredAtUtc)> RestoreAsync(string filePath, CancellationToken cancellationToken = default)
     {
         var opts = ReadOptions();
+        if (filePath.StartsWith("storage://", StringComparison.OrdinalIgnoreCase))
+        {
+            var objectName = filePath["storage://".Length..];
+            var backup = new Domain.Entities.SystemBackup
+            {
+                FileName = Path.GetFileName(objectName),
+                StorageBucket = _configuration["Appwrite:BucketId"] ?? string.Empty,
+                StorageObjectName = objectName
+            };
+            return await RestoreFromStorageAsync(backup, cancellationToken);
+        }
+
         if (!File.Exists(filePath))
             throw new FileNotFoundException("Backup file not found.", filePath);
 
@@ -139,7 +177,7 @@ public class DatabaseBackupService : IDatabaseBackupService
             // Mark restored time if we have a record
             // (best-effort; do not fail restore on metadata update)
             var latest = await _systemBackupRepository.GetLatestAsync();
-            if (latest != null && string.Equals(latest.FilePath, filePath, StringComparison.OrdinalIgnoreCase))
+            if (latest != null && File.Exists(filePath) && string.Equals(latest.FileName, Path.GetFileName(filePath), StringComparison.OrdinalIgnoreCase))
             {
                 latest.RestoredAtUtc = restoredAt;
                 await _systemBackupRepository.UpdateAsync(latest);
@@ -155,19 +193,8 @@ public class DatabaseBackupService : IDatabaseBackupService
 
     public Task<string?> GetLatestBackupFileAsync(CancellationToken cancellationToken = default)
     {
-        var opts = ReadOptions();
-        if (!Directory.Exists(opts.OutputDirectory))
-            return Task.FromResult<string?>(null);
-
-        var extension = string.IsNullOrWhiteSpace(opts.FileExtension) ? "sql" : opts.FileExtension.Trim().TrimStart('.');
-
-        var latest = Directory
-            .EnumerateFiles(opts.OutputDirectory, $"{opts.FilePrefix}-*.{extension}", SearchOption.TopDirectoryOnly)
-            .Select(p => new FileInfo(p))
-            .OrderByDescending(fi => fi.CreationTimeUtc)
-            .FirstOrDefault();
-
-        return Task.FromResult(latest?.FullName);
+        // Local backups are not retained. Kept for backward compatibility.
+        return Task.FromResult<string?>(null);
     }
 
     public Task<int> CleanupOldBackupsAsync(CancellationToken cancellationToken = default)
@@ -212,6 +239,40 @@ public class DatabaseBackupService : IDatabaseBackupService
             _logger.LogInformation("Deleted {Count} old backup files", deleted);
 
         return Task.FromResult(deleted);
+    }
+
+    private async Task<(string FilePath, DateTime RestoredAtUtc)> RestoreFromStorageAsync(
+        Domain.Entities.SystemBackup backup,
+        CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(backup.StorageObjectName))
+            throw new InvalidOperationException("Backup storage object name is missing.");
+
+        // Download to temp, restore, then cleanup temp file
+        var signed = await _storage.CreateSignedUrlAsync(
+            backup.StorageObjectName,
+            HttpMethod.Get,
+            contentType: null,
+            expiresIn: TimeSpan.FromMinutes(15));
+
+        var tempPath = Path.Combine(Path.GetTempPath(), backup.FileName);
+        _logger.LogWarning("Downloading backup from storage to temp {TempPath}", tempPath);
+
+        using (var res = await _httpClient.GetAsync(signed.Url, cancellationToken))
+        {
+            res.EnsureSuccessStatusCode();
+            await using var fs = new FileStream(tempPath, FileMode.Create, FileAccess.Write, FileShare.None);
+            await res.Content.CopyToAsync(fs, cancellationToken);
+        }
+
+        try
+        {
+            return await RestoreAsync(tempPath, cancellationToken);
+        }
+        finally
+        {
+            try { File.Delete(tempPath); } catch { /* ignore */ }
+        }
     }
 
     private DatabaseBackupOptions ReadOptions()

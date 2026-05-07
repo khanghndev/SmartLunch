@@ -12,8 +12,8 @@ public class ShoppingCartDto
 public class ShoppingCartLineDto
 {
     public int Id { get; set; }
-    public int DishId { get; set; }
-    public string DishName { get; set; } = string.Empty;
+    public int WeeklyMenuId { get; set; }
+    public string WeeklyMenuName { get; set; } = string.Empty;
     public decimal UnitPrice { get; set; }
     public int Quantity { get; set; }
     public decimal LineTotal { get; set; }

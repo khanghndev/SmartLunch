@@ -6,6 +6,8 @@ CREATE TABLE deliveries (
     DeliveryAddress VARCHAR(255) NOT NULL,
     DeliveryStatus VARCHAR(20) NOT NULL DEFAULT 'pending',
     DeliveredAt DATETIME NULL,
+    ProofImageUrl VARCHAR(500) NULL,
+    ProofCapturedAt DATETIME NULL,
     Notes VARCHAR(255) NULL,
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (Id),

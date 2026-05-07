@@ -22,6 +22,14 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
+    public async Task<WeeklyMenu?> GetByIdWithSchedulesAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.WeeklyMenus
+            .Include(wm => wm.MenuSchedules)
+                .ThenInclude(ms => ms.Dish)
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+    }
+
     public async Task<(List<WeeklyMenu> WeeklyMenus, int TotalCount)> GetWeeklyMenusAsync(int page, int pageSize, string? searchTerm = null)
     {
         var query = _context.WeeklyMenus.AsQueryable();

@@ -21,6 +21,19 @@ public class ContractRepository : IContractRepository
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
+    public async Task<Contract?> GetActiveForOrganizationAsync(int organizationId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Contracts
+            .Include(c => c.Partner)
+            .Where(c =>
+                c.OrganizationId == organizationId &&
+                c.Status == "active" &&
+                c.StartDate.Date <= DateTime.UtcNow.Date &&
+                (c.EndDate == null || c.EndDate.Value.Date >= DateTime.UtcNow.Date))
+            .OrderByDescending(c => c.StartDate)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<(List<Contract> Contracts, int TotalCount)> GetContractsAsync(
         int page,
         int pageSize,

@@ -12,6 +12,8 @@ public class Delivery
     public string DeliveryAddress { get; set; } = string.Empty;
     public string DeliveryStatus { get; set; } = "pending"; // pending|in_transit|completed|failed
     public DateTime? DeliveredAt { get; set; }
+    public string? ProofImageUrl { get; set; }
+    public DateTime? ProofCapturedAt { get; set; }
     public string? Notes { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 

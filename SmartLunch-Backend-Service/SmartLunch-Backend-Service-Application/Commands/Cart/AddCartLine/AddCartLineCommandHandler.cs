@@ -10,27 +10,25 @@ public class AddCartLineCommandHandler : IRequestHandler<AddCartLineCommand, Get
 {
     private const int MinimumOrderQuantity = 20;
     private readonly ICartCacheService _cartCache;
-    private readonly IDishRepository _dishRepository;
+    private readonly IWeeklyMenuRepository _weeklyMenuRepository;
 
-    public AddCartLineCommandHandler(ICartCacheService cartCache, IDishRepository dishRepository)
+    public AddCartLineCommandHandler(ICartCacheService cartCache, IWeeklyMenuRepository weeklyMenuRepository)
     {
         _cartCache = cartCache;
-        _dishRepository = dishRepository;
+        _weeklyMenuRepository = weeklyMenuRepository;
     }
 
     public async Task<GetShoppingCartResponse> Handle(AddCartLineCommand command, CancellationToken cancellationToken)
     {
         var req = command.Request;
-        if (req.DishId <= 0)
-            throw new ArgumentException("DishId is required.");
+        if (req.WeeklyMenuId <= 0)
+            throw new ArgumentException("WeeklyMenuId is required.");
         if (req.Quantity < MinimumOrderQuantity)
             throw new ArgumentException($"Quantity must be at least {MinimumOrderQuantity}.");
 
-        var dish = await _dishRepository.GetByIdAsync(req.DishId);
-        if (dish == null)
-            throw new KeyNotFoundException("Dish was not found.");
-        if (!dish.IsActive)
-            throw new InvalidOperationException("Dish is not available.");
+        var weeklyMenu = await _weeklyMenuRepository.GetByIdAsync(req.WeeklyMenuId);
+        if (weeklyMenu == null)
+            throw new KeyNotFoundException("WeeklyMenu was not found.");
 
         var cart = await LoadOrCreateAsync(command.UserId, cancellationToken);
 
@@ -41,21 +39,21 @@ public class AddCartLineCommandHandler : IRequestHandler<AddCartLineCommand, Get
             cart.OrganizationId ??= req.OrganizationId;
         }
 
-        var existing = cart.Items.FirstOrDefault(i => i.DishId == req.DishId);
+        var existing = cart.Items.FirstOrDefault(i => i.WeeklyMenuId == req.WeeklyMenuId);
         if (existing != null)
         {
             existing.Quantity += req.Quantity;
-            existing.UnitPrice = dish.Price;
-            existing.DishName = dish.Name;
+            existing.UnitPrice = 0;
+            existing.WeeklyMenuName = weeklyMenu.Description ?? weeklyMenu.Code ?? $"WeeklyMenu#{weeklyMenu.Id}";
         }
         else
         {
             cart.Items.Add(new ShoppingCartLineDto
             {
                 Id = cart.Items.Any() ? cart.Items.Max(i => i.Id) + 1 : 1,
-                DishId = dish.Id,
-                DishName = dish.Name,
-                UnitPrice = dish.Price,
+                WeeklyMenuId = weeklyMenu.Id,
+                WeeklyMenuName = weeklyMenu.Description ?? weeklyMenu.Code ?? $"WeeklyMenu#{weeklyMenu.Id}",
+                UnitPrice = 0,
                 Quantity = req.Quantity,
                 LineTotal = 0
             });

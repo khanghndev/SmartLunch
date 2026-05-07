@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartLunch.Backend.Service.Application.Commands.MasterData.Contracts.CreateContract;
 using SmartLunch.Backend.Service.Application.Commands.MasterData.Contracts.DeleteContract;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Contracts.SignContract;
 using SmartLunch.Backend.Service.Application.Commands.MasterData.Contracts.UpdateContract;
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Contracts;
@@ -10,6 +11,7 @@ using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Contracts;
 using SmartLunch.Backend.Service.Application.Queries.Contracts.GetContract;
 using SmartLunch.Backend.Service.Application.Queries.Contracts.GetContracts;
 using System.Net;
+using System.Security.Claims;
 
 namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 
@@ -173,5 +175,47 @@ public class ContractController : ControllerBase
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<DeleteContractResponse>.ErrorResult("An error occurred while deleting contract", new[] { ex.Message }));
         }
+    }
+
+    /// <summary>
+    /// Ký số hợp đồng (lưu chữ ký số + ảnh chữ ký nếu có).
+    /// </summary>
+    [HttpPost("{id:int}/sign")]
+    [Authorize(Policy = "permission:contracts.update")]
+    public async Task<ActionResult<BaseApiResponse<GetContractResponse>>> SignContract(int id, [FromBody] SignContractRequest request)
+    {
+        try
+        {
+            var actorId = RequireUserId();
+            var response = await _mediator.Send(new SignContractCommand(id, actorId, request));
+            return Ok(BaseApiResponse<GetContractResponse>.SuccessResult(response, "Contract signed successfully"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetContractResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetContractResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return Conflict(BaseApiResponse<GetContractResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error signing contract {ContractId}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetContractResponse>.ErrorResult("An error occurred while signing contract", new[] { ex.Message }));
+        }
+    }
+
+    private int RequireUserId()
+    {
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
+            throw new UnauthorizedAccessException("Invalid user context.");
+        return userId;
     }
 }

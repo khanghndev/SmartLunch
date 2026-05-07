@@ -1,6 +1,7 @@
 using MediatR;
 using Microsoft.Extensions.Logging;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Systems;
+using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Application.Interfaces;
 
 namespace SmartLunch.Backend.Service.Application.Commands.Systems.DeleteSystemBackup;
@@ -8,11 +9,16 @@ namespace SmartLunch.Backend.Service.Application.Commands.Systems.DeleteSystemBa
 public class DeleteSystemBackupCommandHandler : IRequestHandler<DeleteSystemBackupCommand, DeleteSystemBackupResponse>
 {
     private readonly ISystemBackupRepository _systemBackupRepository;
+    private readonly IStorageService _storage;
     private readonly ILogger<DeleteSystemBackupCommandHandler> _logger;
 
-    public DeleteSystemBackupCommandHandler(ISystemBackupRepository systemBackupRepository, ILogger<DeleteSystemBackupCommandHandler> logger)
+    public DeleteSystemBackupCommandHandler(
+        ISystemBackupRepository systemBackupRepository,
+        IStorageService storage,
+        ILogger<DeleteSystemBackupCommandHandler> logger)
     {
         _systemBackupRepository = systemBackupRepository;
+        _storage = storage;
         _logger = logger;
     }
 
@@ -31,15 +37,13 @@ public class DeleteSystemBackupCommandHandler : IRequestHandler<DeleteSystemBack
         {
             try
             {
-                if (!string.IsNullOrWhiteSpace(backup.FilePath) && File.Exists(backup.FilePath))
-                {
-                    File.Delete(backup.FilePath);
-                    physicalDeleted = true;
-                }
+                if (!string.IsNullOrWhiteSpace(backup.StorageObjectName))
+                    await _storage.DeleteObjectAsync(backup.StorageObjectName);
+                physicalDeleted = true;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to delete physical backup file {FilePath}", backup.FilePath);
+                _logger.LogWarning(ex, "Failed to delete backup object {ObjectName}", backup.StorageObjectName);
             }
         }
 
@@ -56,7 +60,7 @@ public class DeleteSystemBackupCommandHandler : IRequestHandler<DeleteSystemBack
             IsDeleted = true,
             PhysicalFileDeleted = physicalDeleted,
             DeletedAtUtc = deletedAt,
-            FilePath = backup.FilePath
+            FilePath = backup.StorageObjectName
         };
     }
 }

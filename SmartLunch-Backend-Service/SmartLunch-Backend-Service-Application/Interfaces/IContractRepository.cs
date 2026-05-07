@@ -10,6 +10,7 @@ public interface IContractRepository
         int pageSize,
         string? searchTerm = null,
         int? partnerId = null);
+    Task<Contract?> GetActiveForOrganizationAsync(int organizationId, CancellationToken cancellationToken = default);
     Task<bool> ExistsContractNumberForPartnerAsync(int partnerId, string contractNumber, int? excludeContractId = null);
     Task<int> CountPartnerPaymentsAsync(int contractId);
     Task<Contract> CreateAsync(Contract contract);

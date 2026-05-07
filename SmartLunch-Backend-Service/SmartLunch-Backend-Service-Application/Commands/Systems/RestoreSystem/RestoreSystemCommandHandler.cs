@@ -34,7 +34,9 @@ public class RestoreSystemCommandHandler : IRequestHandler<RestoreSystemCommand,
             if (backup.IsDeleted)
                 throw new InvalidOperationException("Selected backup has been deleted.");
 
-            result = await _databaseBackupService.RestoreAsync(backup.FilePath, cancellationToken);
+            // Restore is performed from storage by resolving a signed URL internally.
+            // We pass the object name via a pseudo-path: "storage://<objectName>"
+            result = await _databaseBackupService.RestoreAsync($"storage://{backup.StorageObjectName}", cancellationToken);
         }
         else if (string.IsNullOrWhiteSpace(request.Request.FilePath))
         {

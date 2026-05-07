@@ -163,100 +163,22 @@ public class GenerateMenuSuggestionFromAiCommandHandler
                 g => g.Select(i => i.NameEnglish ?? i.Name).Distinct().ToList()
             );
 
-        // ── 6. Build AI request ───────────────────────────────────────────
-        // Map Vietnamese day names / slot labels sent by FE to AI enum values
-        var dayMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["Thứ 2"] = "Thu_2",  ["thu 2"] = "Thu_2",  ["Thu_2"] = "Thu_2",  ["Monday"] = "Thu_2",
-            ["Thứ 3"] = "Thu_3",  ["thu 3"] = "Thu_3",  ["Thu_3"] = "Thu_3",  ["Tuesday"] = "Thu_3",
-            ["Thứ 4"] = "Thu_4",  ["thu 4"] = "Thu_4",  ["Thu_4"] = "Thu_4",  ["Wednesday"] = "Thu_4",
-            ["Thứ 5"] = "Thu_5",  ["thu 5"] = "Thu_5",  ["Thu_5"] = "Thu_5",  ["Thursday"] = "Thu_5",
-            ["Thứ 6"] = "Thu_6",  ["thu 6"] = "Thu_6",  ["Thu_6"] = "Thu_6",  ["Friday"] = "Thu_6",
-            ["Thứ 7"] = "Thu_7",  ["thu 7"] = "Thu_7",  ["Thu_7"] = "Thu_7",  ["Saturday"] = "Thu_7",
-            ["Chủ nhật"] = "CN",  ["chu nhat"] = "CN",  ["CN"] = "CN",        ["Sunday"] = "CN",
-        };
-        var mealMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["Món chính"] = "main",      ["mon chinh"] = "main",     ["main"] = "main",
-            ["Món mặn"] = "main",        ["mon man"] = "main",
-            ["Món phụ"] = "side",        ["mon phu"] = "side",       ["side"] = "side",
-            ["Món xào"] = "side",        ["mon xao"] = "side",
-            ["Canh"] = "soup",           ["Món canh"] = "soup",      ["mon canh"] = "soup",      ["soup"] = "soup",
-            ["Món rau"] = "vegetable",   ["mon rau"] = "vegetable",  ["vegetable"] = "vegetable",
-            ["Rau xanh"] = "vegetable",
-            ["Món nước"] = "noodle_soup", ["noodle_soup"] = "noodle_soup",
-            ["Tráng miệng"] = "dessert", ["trang mieng"] = "dessert", ["dessert"] = "dessert",
-        };
-        var mappedDays = req.Days.Select(d => dayMap.TryGetValue(d.Trim(), out var mapped) ? mapped : d).Distinct().ToList();
-        var mappedMeal = req.MealStructure.Select(m => mealMap.TryGetValue(m.Trim(), out var mapped) ? mapped : m).Distinct().ToList();
-
-        // ── Ensure ingredient_groups has fallback protein/seafood keywords ──────────────
-        // AI rules.json uses these group names for constraints; if DB has no categories,
-        // we provide a broad keyword set to avoid INFEASIBLE solver.
-        var mergedGroups = new Dictionary<string, List<string>>(ingredientGroups, StringComparer.OrdinalIgnoreCase);
-
-        if (!mergedGroups.ContainsKey("protein"))
-        {
-            mergedGroups["protein"] = new List<string>
-            {
-                "pork", "chicken", "beef", "fish", "shrimp", "egg", "tofu",
-                "Thịt heo", "Thịt gà", "Thịt bò", "Cá", "Tôm", "Trứng", "Đậu hũ",
-                "Thịt heo nạc vai", "Thịt gà ta"
-            };
-        }
-        if (!mergedGroups.ContainsKey("seafood"))
-        {
-            mergedGroups["seafood"] = new List<string>
-            {
-                "shrimp", "fish", "crab", "squid", "clam",
-                "Tôm", "Cá", "Cua", "Mực", "Nghêu", "Tôm sú", "Cá basa", "Cá lóc"
-            };
-        }
-
-        // ── Detect if there are enough seafood-covered dishes to satisfy min_fish constraint ──
-        var seafoodKeywords = new HashSet<string>(mergedGroups["seafood"], StringComparer.OrdinalIgnoreCase);
-        int seafoodDishCount = aiDishes.Count(d =>
-            seafoodKeywords.Contains(d.MainIngredient) ||
-            d.SubIngredients.Any(s => seafoodKeywords.Contains(s))
-        );
-
-        // If fewer than 2 seafood dishes, pass explicit constraints that skip the seafood min requirement
-        AiConstraintsOverride? constraintsOverride = null;
-        if (seafoodDishCount < 2)
-        {
-            _logger.LogWarning(
-                "Only {SeafoodCount} seafood dish(es) found — relaxing min_fish constraint to avoid INFEASIBLE.",
-                seafoodDishCount);
-            constraintsOverride = new AiConstraintsOverride
-            {
-                GroupFrequencies = new List<AiGroupFrequencyConstraint>
-                {
-                    new() { GroupName = "protein", MaxCount = mappedDays.Count }
-                },
-                NoRepeatMainIngredientConsecutiveDays = true,
-                AlternateCookingMethods = false,  // relax to improve feasibility
-                PreferIngredientReuse = false,
-                MaxConsecutiveSameMainDish = 3,
-            };
-        }
-
         var aiReq = new AiIndustrialMenuPlansRequest
         {
             BudgetPerServing = req.BudgetPerServing,
-            Days = mappedDays,
-            MealStructure = mappedMeal,   // mapped from Vietnamese to AI enum values
+            Days = req.Days,
+            MealStructure = req.MealStructure,   // mapped from Vietnamese to AI enum values
             TopK = req.TopK,
             TimeLimitSeconds = req.TimeLimitSeconds,
             RulesKey = req.RulesKey,
             Dishes = aiDishes,
             AvailableIngredients = availableIngredients,
-            IngredientGroups = mergedGroups,
-            Constraints = constraintsOverride,
+            IngredientGroups = ingredientGroups
         };
 
         _logger.LogInformation(
             "Calling AI with {DishCount} dishes, {IngCount} available ingredients, {DayCount} days, slots: {Slots}",
-            aiDishes.Count, availableIngredients.Count, mappedDays.Count, string.Join(",", mappedMeal));
+            aiDishes.Count, availableIngredients.Count, req.Days.Count, string.Join(",", req.MealStructure));
 
         var aiRes = await _aiClient.RecommendIndustrialMenusAsync(aiReq, cancellationToken);
 

@@ -39,4 +39,28 @@ public class ReviewRepository : IReviewRepository
 
         return (reviews, totalCount);
     }
+
+    public async Task<bool> ExistsForUserAsync(
+        int userId,
+        int? dishId,
+        int? orderId,
+        CancellationToken cancellationToken = default)
+    {
+        var query = _context.Reviews.AsNoTracking().Where(r => r.UserId == userId);
+
+        if (dishId != null)
+            query = query.Where(r => r.DishId == dishId);
+
+        if (orderId != null)
+            query = query.Where(r => r.OrderId == orderId);
+
+        return await query.AnyAsync(cancellationToken);
+    }
+
+    public async Task<Review> CreateAsync(Review review, CancellationToken cancellationToken = default)
+    {
+        await _context.Reviews.AddAsync(review, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return review;
+    }
 }

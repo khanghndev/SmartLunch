@@ -9,6 +9,7 @@ public static class ContractDtoMapping
         Id = c.Id,
         PartnerId = c.PartnerId,
         PartnerLegalName = c.Partner?.LegalName,
+        OrganizationId = c.OrganizationId,
         ContractNumber = c.ContractNumber,
         Description = c.Description,
         SupplySchedule = c.SupplySchedule,
@@ -16,6 +17,10 @@ public static class ContractDtoMapping
         EndDate = c.EndDate,
         TotalValue = c.TotalValue,
         DepositAmount = c.DepositAmount,
+        IsDigitallySigned = c.IsDigitallySigned,
+        DigitalSignature = c.DigitalSignature,
+        DigitallySignedAt = c.DigitallySignedAt,
+        SignatureImage = c.SignatureImage,
         Status = c.Status,
         CreatedAt = c.CreatedAt,
         UpdatedAt = c.UpdatedAt

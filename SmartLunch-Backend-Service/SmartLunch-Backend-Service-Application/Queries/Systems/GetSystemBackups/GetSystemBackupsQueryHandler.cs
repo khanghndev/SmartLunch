@@ -27,7 +27,8 @@ public class GetSystemBackupsQueryHandler : IRequestHandler<GetSystemBackupsQuer
         {
             Id = e.Id,
             FileName = e.FileName,
-            FilePath = e.FilePath,
+            StorageBucket = e.StorageBucket,
+            StorageObjectName = e.StorageObjectName,
             SizeBytes = e.SizeBytes,
             CreatedAtUtc = e.CreatedAtUtc,
             RestoredAtUtc = e.RestoredAtUtc,

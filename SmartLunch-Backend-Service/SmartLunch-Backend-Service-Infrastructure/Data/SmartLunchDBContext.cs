@@ -213,7 +213,11 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                     .IsRequired()
                     .HasMaxLength(255);
 
-                entity.Property(e => e.FilePath)
+                entity.Property(e => e.StorageBucket)
+                    .IsRequired()
+                    .HasMaxLength(255);
+
+                entity.Property(e => e.StorageObjectName)
                     .IsRequired()
                     .HasMaxLength(1024);
 
