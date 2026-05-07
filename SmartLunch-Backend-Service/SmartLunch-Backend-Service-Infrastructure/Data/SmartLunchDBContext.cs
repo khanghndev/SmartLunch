@@ -668,6 +668,26 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
+            modelBuilder.Entity<DishImage>(entity =>
+            {
+                entity.ToTable("dish_images");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.HasIndex(e => new { e.DishId, e.SortOrder });
+                entity.HasIndex(e => e.MediaFileId);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Code).HasMaxLength(20);
+                entity.Property(e => e.Role).IsRequired().HasMaxLength(20).HasDefaultValue("gallery");
+                entity.HasOne(e => e.Dish)
+                    .WithMany(d => d.DishImages)
+                    .HasForeignKey(e => e.DishId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.MediaFile)
+                    .WithMany()
+                    .HasForeignKey(e => e.MediaFileId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
             modelBuilder.Entity<DishCategory>(entity =>
             {
                 entity.ToTable("dish_categories");
