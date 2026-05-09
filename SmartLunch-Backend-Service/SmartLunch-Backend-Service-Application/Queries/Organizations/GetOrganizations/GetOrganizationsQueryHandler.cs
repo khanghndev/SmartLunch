@@ -50,6 +50,8 @@ public class GetOrganizationsQueryHandler : IRequestHandler<GetOrganizationsQuer
                     ContactPerson = u.ContactPerson,
                     ContactEmail = u.ContactEmail,
                     Type = u.Type,
+                    IsSubscriptionActive = u.IsSubscriptionActive,
+                    DefaultDailyMeals = u.DefaultDailyMeals,
                     IsActive = u.IsActive,
                     CreatedAt = u.CreatedAt,
                     UpdatedAt = u.UpdatedAt

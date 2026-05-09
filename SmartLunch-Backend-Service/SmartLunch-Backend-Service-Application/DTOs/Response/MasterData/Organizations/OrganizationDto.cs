@@ -9,6 +9,8 @@ public class OrganizationDto
     public string? ContactPerson { get; set; }
     public string? ContactEmail { get; set; }
     public string? Type { get; set; }
+    public bool IsSubscriptionActive { get; set; }
+    public int DefaultDailyMeals { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
