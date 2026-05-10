@@ -13,4 +13,14 @@ public interface IFinanceAnalyticsRepository
         DateTime rangeEndExclusive,
         bool includeCancelledOrders,
         CancellationToken cancellationToken = default);
+
+    Task<ContractFinanceSettlementSnapshot?> GetContractFinanceSettlementSnapshotAsync(
+        int contractId,
+        DateTime? scheduledFromUtc,
+        DateTime? scheduledToExclusiveUtc,
+        DateTime? supplierPaymentFromUtc,
+        DateTime? supplierPaymentToExclusiveUtc,
+        bool includeCancelledOrders,
+        bool loadSupplierPayments = true,
+        CancellationToken cancellationToken = default);
 }

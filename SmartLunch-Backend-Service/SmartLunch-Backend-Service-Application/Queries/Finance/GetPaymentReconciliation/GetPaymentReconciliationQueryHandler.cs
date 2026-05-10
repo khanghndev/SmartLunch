@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Response.Finance;
+using SmartLunch.Backend.Service.Application.Helpers;
 using SmartLunch.Backend.Service.Application.Interfaces;
 
 namespace SmartLunch.Backend.Service.Application.Queries.Finance.GetPaymentReconciliation;
@@ -9,7 +10,6 @@ namespace SmartLunch.Backend.Service.Application.Queries.Finance.GetPaymentRecon
 public class GetPaymentReconciliationQueryHandler : IRequestHandler<GetPaymentReconciliationQuery, GetPaymentReconciliationResponse>
 {
     private const int MaxRangeDays = 800;
-    public const string DerivedOverpaid = "overpaid";
 
     private readonly IFinanceAnalyticsRepository _financeRepository;
     private readonly ILogger<GetPaymentReconciliationQueryHandler> _logger;
@@ -53,12 +53,12 @@ public class GetPaymentReconciliationQueryHandler : IRequestHandler<GetPaymentRe
                 .Where(p => string.Equals(p.Status, PaymentRecordStatus.Pending, StringComparison.OrdinalIgnoreCase))
                 .Sum(p => p.Amount);
 
-            var derived = DerivePaymentStatus(order.TotalAmount, paidAmount);
+            var derived = PaymentReconciliationDerivation.DerivePaymentStatus(order.TotalAmount, paidAmount);
             var recorded = order.PaymentStatus.Trim().ToLowerInvariant();
             var isAligned = string.Equals(recorded, derived, StringComparison.Ordinal);
             var difference = paidAmount - order.TotalAmount;
 
-            var issue = BuildIssue(isAligned, recorded, derived, pendingAmount, difference);
+            var issue = PaymentReconciliationDerivation.BuildIssue(isAligned, recorded, derived, pendingAmount, difference);
 
             lines.Add(new PaymentReconciliationLineDto
             {
@@ -94,37 +94,5 @@ public class GetPaymentReconciliationQueryHandler : IRequestHandler<GetPaymentRe
             MismatchCount = mismatchCount,
             Lines = lines
         };
-    }
-
-    private static string DerivePaymentStatus(decimal orderTotal, decimal paidAmount)
-    {
-        if (paidAmount <= 0)
-            return OrderPaymentStatus.Unpaid;
-        if (paidAmount < orderTotal)
-            return OrderPaymentStatus.Partial;
-        if (paidAmount == orderTotal)
-            return OrderPaymentStatus.Paid;
-        return DerivedOverpaid;
-    }
-
-    private static string? BuildIssue(
-        bool isAligned,
-        string recorded,
-        string derived,
-        decimal pendingAmount,
-        decimal difference)
-    {
-        if (!isAligned)
-        {
-            return
-                $"Trạng thái ghi trên đơn ({recorded}) không khớp với tổng thanh toán paid ({derived}); chênh lệch: {difference}.";
-        }
-
-        if (pendingAmount > 0 && string.Equals(recorded, OrderPaymentStatus.Paid, StringComparison.Ordinal))
-        {
-            return "Đơn đánh dấu đã thanh toán nhưng vẫn còn khoản thanh toán ở trạng thái pending.";
-        }
-
-        return null;
     }
 }

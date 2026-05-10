@@ -5,6 +5,7 @@ using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.WeeklyMenus;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.WeeklyMenus;
 using SmartLunch.Backend.Service.Application.Queries.WeeklyMenus.GetWeeklyMenu;
+using SmartLunch.Backend.Service.Application.Queries.WeeklyMenus.GetWeeklyMenuDetail;
 using SmartLunch.Backend.Service.Application.Queries.WeeklyMenus.GetWeeklyMenus;
 using System.Net;
 
@@ -32,7 +33,7 @@ public class WeeklyMenuController : ControllerBase
     /// Get list of weeklymenus with pagination
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "permission:weeklymenus.read")]
+    [Authorize(Policy = "permission:weekly_menus.read")]
     public async Task<ActionResult<BaseApiResponse<GetWeeklyMenusResponse>>> GetWeeklyMenus([FromQuery] GetWeeklyMenusRequest request)
     {
         try
@@ -58,7 +59,7 @@ public class WeeklyMenuController : ControllerBase
     /// Get weeklymenu by ID
     /// </summary>
     [HttpGet("{id}")]
-    [Authorize(Policy = "permission:weeklymenus.read")]
+    [Authorize(Policy = "permission:weekly_menus.read")]
     public async Task<ActionResult<BaseApiResponse<GetWeeklyMenuResponse>>> GetWeeklyMenu(int id)
     {
         try
@@ -78,6 +79,36 @@ public class WeeklyMenuController : ControllerBase
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetWeeklyMenuResponse>.ErrorResult("An error occurred while retrieving weeklymenu", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Chi tiết weekly menu: thông tin header + toàn bộ <c>MenuSchedule</c> (theo Dish), sắp xếp theo ngày và meal slot.
+    /// </summary>
+    [HttpGet("{id:int}/detail")]
+    [Authorize(Policy = "permission:weekly_menus.read")]
+    public async Task<ActionResult<BaseApiResponse<GetWeeklyMenuDetailResponse>>> GetWeeklyMenuDetail(int id)
+    {
+        try
+        {
+            var response = await _mediator.Send(new GetWeeklyMenuDetailQuery(id));
+
+            return Ok(BaseApiResponse<GetWeeklyMenuDetailResponse>.SuccessResult(
+                response,
+                "Weekly menu detail retrieved successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetWeeklyMenuDetailResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving weeklymenu detail with ID: {WeeklyMenuId}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetWeeklyMenuDetailResponse>.ErrorResult(
+                    "An error occurred while retrieving weeklymenu detail",
+                    new[] { ex.Message }));
         }
     }
 }

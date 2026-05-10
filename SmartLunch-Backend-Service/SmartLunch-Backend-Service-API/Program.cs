@@ -12,13 +12,13 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Serilog;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
+using SmartLunch.Backend.Service.Application.Integration.PayOS;
 using SmartLunch.Backend.Service.Infrastructure.ExternalServices;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -133,6 +133,10 @@ SmartLunch.Backend.Service.Application.DependencyInjection.DependencyInjection.C
 
 // Infrastructure Services - Register using Scrutor
 SmartLunch.Backend.Service.Infrastructure.DependencyInjection.DependencyInjection.ConfigureServices(builder.Services);
+
+// PayOS (thanh toán hợp đồng / payment link) — bật và điền key trong cấu hình hoặc User Secrets
+builder.Services.Configure<PayOSOptions>(builder.Configuration.GetSection(PayOSOptions.SectionKey));
+builder.Services.AddHttpClient<IPayOSClient, PayOSClient>();
 
 // RabbitMQ Messaging
 var rabbitHost = builder.Configuration["RabbitMQ:HostName"] ?? "localhost";

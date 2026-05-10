@@ -30,6 +30,18 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
+    public async Task<WeeklyMenu?> GetByIdWithSchedulesAndImagesAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.WeeklyMenus
+            .Include(wm => wm.WeeklyMenuImages)
+                .ThenInclude(img => img.MediaFile)
+            .Include(wm => wm.MenuSchedules)
+                .ThenInclude(ms => ms.Dish)
+                    .ThenInclude(d => d.DishDishCategories)
+                        .ThenInclude(ddc => ddc.DishCategory)
+            .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
+    }
+
     public async Task<(List<WeeklyMenu> WeeklyMenus, int TotalCount)> GetWeeklyMenusAsync(
         int page,
         int pageSize,

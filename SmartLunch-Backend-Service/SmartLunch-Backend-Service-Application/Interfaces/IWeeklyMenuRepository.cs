@@ -6,6 +6,11 @@ public interface IWeeklyMenuRepository
 {
     Task<WeeklyMenu?> GetByIdAsync(int id);
     Task<WeeklyMenu?> GetByIdWithSchedulesAsync(int id, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Weekly menu với ảnh (cover/gallery) và toàn bộ <see cref="MenuSchedule"/> kèm <see cref="Dish"/>.
+    /// </summary>
+    Task<WeeklyMenu?> GetByIdWithSchedulesAndImagesAsync(int id, CancellationToken cancellationToken = default);
     Task<(List<WeeklyMenu> WeeklyMenus, int TotalCount)> GetWeeklyMenusAsync(
         int page,
         int pageSize,

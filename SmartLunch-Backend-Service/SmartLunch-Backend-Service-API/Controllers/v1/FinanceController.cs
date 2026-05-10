@@ -8,6 +8,8 @@ using SmartLunch.Backend.Service.Application.Queries.Finance.GetCashflowSummary;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetPartnerPayables;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetPaymentHistory;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetPaymentReconciliation;
+using SmartLunch.Backend.Service.Application.Queries.Finance.GetContractPaymentReconciliation;
+using SmartLunch.Backend.Service.Application.Queries.Finance.GetContractPayments;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetOrganizationReceivables;
 using System.Net;
 
@@ -82,6 +84,81 @@ public class FinanceController : ControllerBase
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetPaymentReconciliationResponse>.ErrorResult("An error occurred while building payment reconciliation", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Thanh toán theo hợp đồng: tóm tắt &amp; chi tiết đơn (thu khách) + dòng chi nhà cung cấp (PartnerPayment).
+    /// </summary>
+    [HttpGet("contracts/{contractId:int}/payments")]
+    [Authorize(Policy = "permission:payments.read")]
+    [Authorize(Policy = "permission:orders.read")]
+    [Authorize(Policy = "permission:contracts.read")]
+    [Authorize(Policy = "permission:partnerpayments.read")]
+    public async Task<ActionResult<BaseApiResponse<GetContractPaymentsResponse>>> GetContractPayments(
+        int contractId,
+        [FromQuery] GetContractPaymentsRequest request)
+    {
+        try
+        {
+            var response = await _mediator.Send(new GetContractPaymentsQuery(contractId, request));
+            return Ok(BaseApiResponse<GetContractPaymentsResponse>.SuccessResult(
+                response,
+                "Contract payments retrieved successfully"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetContractPaymentsResponse>.NotFoundResult(ex.Message));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetContractPaymentsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading payments for contract {ContractId}", contractId);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetContractPaymentsResponse>.ErrorResult(
+                    "An error occurred while loading contract payments",
+                    new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Đối soát theo hợp đồng: so khớp Payment (paid) với tổng đơn và trạng thái PaymentStatus trên đơn.
+    /// </summary>
+    [HttpGet("contracts/{contractId:int}/payment-reconciliation")]
+    [Authorize(Policy = "permission:payments.read")]
+    [Authorize(Policy = "permission:orders.read")]
+    [Authorize(Policy = "permission:contracts.read")]
+    public async Task<ActionResult<BaseApiResponse<GetContractPaymentReconciliationResponse>>> GetContractPaymentReconciliation(
+        int contractId,
+        [FromQuery] GetContractPaymentReconciliationRequest request)
+    {
+        try
+        {
+            var response = await _mediator.Send(new GetContractPaymentReconciliationQuery(contractId, request));
+            return Ok(BaseApiResponse<GetContractPaymentReconciliationResponse>.SuccessResult(
+                response,
+                "Contract payment reconciliation retrieved successfully"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetContractPaymentReconciliationResponse>.NotFoundResult(ex.Message));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetContractPaymentReconciliationResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error building reconciliation for contract {ContractId}", contractId);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetContractPaymentReconciliationResponse>.ErrorResult(
+                    "An error occurred while building contract payment reconciliation",
+                    new[] { ex.Message }));
         }
     }
 
