@@ -148,9 +148,11 @@
                      x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
                      class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-xl" @@click.stop>
                     
+                    <form id="userForm" method="post" :action="currentUser ? '/Admin/User/Update' : '/Admin/User/Create'">
+                        <input type="hidden" name="id" :value="currentUser ? currentUser.id : ''" />
                     <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
                         <h3 class="text-xl font-black text-slate-800" x-text="currentUser ? 'Chỉnh sửa Tài khoản' : 'Cấp Tài khoản mới'"></h3>
-                        <button @@click="closeModal()" class="text-slate-400 hover:text-slate-600 bg-slate-200/50 hover:bg-slate-200 p-1.5 rounded-full transition-colors">
+                        <button type="button" @@click="closeModal()" class="text-slate-400 hover:text-slate-600 bg-slate-200/50 hover:bg-slate-200 p-1.5 rounded-full transition-colors">
                             <i class="fas fa-times w-4 text-center"></i>
                         </button>
                     </div>
@@ -158,18 +160,24 @@
                     <div class="p-6 space-y-5">
                         <div class="grid grid-cols-2 gap-5">
                             <div class="col-span-2 sm:col-span-1">
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Họ và Tên</label>
-                                <input type="text" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500 shadow-sm" placeholder="VD: Nguyễn Văn A" :value="currentUser ? currentUser.name : ''" />
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Họ (Tùy chọn)</label>
+                                <input type="text" name="LastName" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500 shadow-sm" placeholder="VD: Nguyễn Văn" :value="currentUser ? currentUser.lastName : ''" />
                             </div>
                             <div class="col-span-2 sm:col-span-1">
-                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Số điện thoại</label>
-                                <input type="text" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500 shadow-sm" placeholder="VD: 0901234567" :value="currentUser ? currentUser.phone : ''" />
+                                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Tên (Tùy chọn)</label>
+                                <input type="text" name="FirstName" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500 shadow-sm" placeholder="VD: A" :value="currentUser ? currentUser.firstName : ''" />
                             </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Số điện thoại</label>
+                            <input type="text" name="PhoneNumber" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500 shadow-sm" placeholder="VD: 0901234567" :value="currentUser ? currentUser.phone : ''" />
                         </div>
                         
                         <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Email đăng nhập (Identity)</label>
-                            <input type="email" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500 shadow-sm" placeholder="VD: admin@huitmeal.com" :value="currentUser ? currentUser.email : ''" :disabled="currentUser" />
+                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Email đăng nhập / Username (Identity)</label>
+                            <input type="email" name="Email" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500 shadow-sm" placeholder="VD: admin@huitmeal.com" :value="currentUser ? currentUser.email : ''" :readonly="currentUser != null" />
+                            <input type="hidden" name="Username" :value="currentUser ? currentUser.email : document.querySelector('input[name=Email]').value" x-effect="if(!currentUser) { $el.value = $el.previousElementSibling.value; }" />
                             <p class="text-[11px] text-slate-500 mt-1" x-show="currentUser">Không thể thay đổi email sau khi cấp.</p>
                         </div>
 
@@ -214,20 +222,20 @@
                         <div x-show="!currentUser">
                             <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Mật khẩu tạm thời</label>
                             <div class="relative">
-                                <input type="text" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold bg-slate-50 text-slate-600" value="HuitMeal@2026" readonly />
-                                <button class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-green-600 bg-green-50 px-2 py-1 rounded">Generate Random</button>
+                                <input type="text" name="Password" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold bg-slate-50 text-slate-600" value="HuitMeal@2026" readonly />
                             </div>
-                            <p class="text-[11px] text-slate-500 mt-1"><i class="fas fa-info-circle mr-1"></i>Người dùng sẽ được yêu cầu đổi mật khẩu ở lần đăng nhập đầu tiên.</p>
+                            <p class="text-[11px] text-slate-500 mt-1"><i class="fas fa-info-circle mr-1"></i>Mật khẩu mặc định.</p>
                         </div>
                     </div>
                     
                     <div class="px-6 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px]">
-                        <button @@click="closeModal()" class="px-5 py-2.5 rounded-xl text-slate-600 font-bold hover:bg-white border border-slate-200 transition-colors text-sm">Hủy</button>
-                        <button @@click="submitUser()" class="px-6 py-2.5 rounded-xl admin-gradient text-white font-bold hover:shadow-lg transition-all text-sm flex items-center gap-2">
+                        <button type="button" @@click="closeModal()" class="px-5 py-2.5 rounded-xl text-slate-600 font-bold hover:bg-white border border-slate-200 transition-colors text-sm">Hủy</button>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl admin-gradient text-white font-bold hover:shadow-lg transition-all text-sm flex items-center gap-2">
                             <i class="fas fa-check"></i>
                             <span x-text="currentUser ? 'Cập nhật' : 'Tạo Tài khoản'"></span>
                         </button>
                     </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -245,6 +253,8 @@
                 
                 users: @Html.Raw(Json.Serialize(Model.Items.Select(u => new {
                     id = u.Id,
+                    firstName = u.FirstName ?? "",
+                    lastName = u.LastName ?? "",
                     name = u.FullName,
                     email = u.Email,
                     phone = u.PhoneNumber ?? "N/A",
@@ -285,11 +295,6 @@
                 closeModal() {
                     this.isModalOpen = false;
                     document.body.style.overflow = '';
-                },
-                
-                submitUser() {
-                    alert('Đã lưu thông tin tài khoản thành công!');
-                    this.closeModal();
                 },
 
                 lockUser(id) {

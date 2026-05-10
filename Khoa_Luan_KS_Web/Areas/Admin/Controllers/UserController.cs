@@ -78,5 +78,37 @@ namespace Khoa_Luan_KS_Web.Areas.Admin.Controllers
             }
             return RedirectToAction(nameof(Index));
         }
+
+        [HttpPost]
+        public async Task<IActionResult> Create([FromForm] Services.CreateUserRequest request, CancellationToken ct)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            try
+            {
+                await _adminClient.CreateUserAsync(request, token!, ct);
+                TempData["Success"] = "Đã tạo tài khoản thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Update(int id, [FromForm] Services.UpdateUserRequest request, string? role, CancellationToken ct)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            try
+            {
+                await _adminClient.UpdateUserAsync(id, request, token!, ct);
+                TempData["Success"] = "Đã cập nhật tài khoản thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+            return RedirectToAction(nameof(Index));
+        }
     }
 }

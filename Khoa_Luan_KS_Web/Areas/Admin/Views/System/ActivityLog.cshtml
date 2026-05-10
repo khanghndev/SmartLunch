@@ -1,3 +1,4 @@
+@model Khoa_Luan_KS_Web.Services.GetSystemLogsResponse
 @{
     ViewData["Title"] = "Security Audit Log";
     Layout = "_LayoutAdmin";
@@ -80,7 +81,7 @@
                             </td>
                             
                             <td class="p-4">
-                                <div class="font-bold text-slate-800" x-text="log.event"></div>
+                                <div class="font-bold text-slate-800" x-text="log.eventName"></div>
                             </td>
                             
                             <td class="p-4 max-w-xs truncate text-slate-600 font-medium" x-text="log.desc"></td>
@@ -102,7 +103,7 @@
         
         <!-- Pagination Mock -->
         <div class="p-4 border-t border-slate-100 flex items-center justify-between text-sm text-slate-500 bg-slate-50/50">
-            <span>Hiển thị <span class="font-bold text-slate-800">1-10</span> trong số <span class="font-bold text-slate-800">1,248</span> bản ghi</span>
+            <span>Hiển thị <span class="font-bold text-slate-800">Trang @Model.Page</span> trong số <span class="font-bold text-slate-800">@Model.TotalCount</span> bản ghi</span>
             <div class="flex gap-1">
                 <button class="px-3 py-1 rounded bg-white border border-slate-200 hover:bg-slate-100 disabled:opacity-50">Trước</button>
                 <button class="px-3 py-1 rounded bg-green-600 text-white font-bold">1</button>
@@ -142,7 +143,7 @@
                                         <i :class="getSeverityIcon(selectedLog.severity)"></i>
                                     </div>
                                     <div>
-                                        <h4 class="text-lg font-black text-slate-800" x-text="selectedLog.event"></h4>
+                                        <h4 class="text-lg font-black text-slate-800" x-text="selectedLog.eventName"></h4>
                                         <p class="text-sm text-slate-500 font-medium mt-1" x-text="selectedLog.desc"></p>
                                     </div>
                                 </div>
@@ -172,23 +173,7 @@
                                 <div>
                                     <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Dữ liệu thô (Raw JSON Payload)</p>
                                     <div class="bg-slate-900 text-green-400 font-mono text-xs p-4 rounded-xl overflow-x-auto">
-<pre>{
-  "eventId": "EVT-20260426-8874",
-  "timestamp": "2026-04-26T15:02:44Z",
-  "actor": {
-    "id": "USR-001",
-    "email": "admin@huitmeal.com"
-  },
-  "action": "UPDATE_ROLE",
-  "target": {
-    "id": "USR-105",
-    "email": "tran.le@huitmeal.com",
-    "oldRole": "Customer",
-    "newRole": "Manager"
-  },
-  "clientIp": "14.224.135.22",
-  "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0"
-}</pre>
+<pre x-text="selectedLog.raw"></pre>
                                     </div>
                                 </div>
                             </div>
@@ -210,19 +195,24 @@
                 isDetailOpen: false,
                 selectedLog: null,
                 
-                logs: [
-                    { id: 1, date: '26/04/2026', time: '15:02:44', user: 'admin@huitmeal.com', ip: '14.224.135.22', event: 'Thay đổi Quyền người dùng', desc: 'Cấp quyền Manager cho tran.le@huitmeal.com', type: 'Bảo mật', severity: 'Warning' },
-                    { id: 2, date: '26/04/2026', time: '14:50:11', user: 'System', ip: '127.0.0.1', event: 'Đăng nhập thất bại (x5)', desc: 'Brute-force detected. IP Blocked temporarily.', type: 'Bảo mật', severity: 'Critical' },
-                    { id: 3, date: '26/04/2026', time: '14:00:00', user: 'System (Cron)', ip: '127.0.0.1', event: 'Auto Backup Thành công', desc: 'Sao lưu DB lên AWS S3 (45.2GB)', type: 'Hệ thống', severity: 'Info' },
-                    { id: 4, date: '26/04/2026', time: '12:30:15', user: 'manager.bep@huitmeal.com', ip: '113.161.88.10', event: 'Xóa Thực đơn Tuần', desc: 'Xóa dữ liệu thực đơn tuần 17', type: 'Dữ liệu', severity: 'Warning' },
-                    { id: 5, date: '26/04/2026', time: '09:15:00', user: 'manager.bep@huitmeal.com', ip: '113.161.88.10', event: 'Đăng nhập thành công', desc: 'Session ID: sess_87f9a...', type: 'Bảo mật', severity: 'Info' }
-                ],
+                logs: @Html.Raw(Json.Serialize(Model.Items.Select(l => new {
+                    id = l.Id,
+                    date = l.Timestamp?.ToString("dd/MM/yyyy") ?? "N/A",
+                    time = l.Timestamp?.ToString("HH:mm:ss") ?? "N/A",
+                    user = "System", // Log from BE doesn't have User info natively, usually in Properties
+                    ip = "N/A",
+                    eventName = l.Message ?? l.Template ?? "N/A",
+                    desc = l.Exception ?? "No exception",
+                    type = l.Level == "Error" || l.Level == "Fatal" ? "Bảo mật" : "Hệ thống",
+                    severity = l.Level == "Error" || l.Level == "Fatal" ? "Critical" : l.Level == "Warning" ? "Warning" : "Info",
+                    raw = l.Properties ?? "{}"
+                }))),
                 
                 get filteredLogs() {
                     return this.logs.filter(log => {
                         const matchSearch = log.user.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
                                             log.ip.includes(this.searchQuery) ||
-                                            log.event.toLowerCase().includes(this.searchQuery.toLowerCase());
+                                            log.eventName.toLowerCase().includes(this.searchQuery.toLowerCase());
                         const matchType = this.typeFilter === 'all' || log.type === this.typeFilter;
                         const matchSev = this.severityFilter === 'all' || log.severity === this.severityFilter;
                         return matchSearch && matchType && matchSev;

@@ -36,9 +36,116 @@ public class BackendMasterDataClient
         await PostAsync<object>($"/api/v1/master-data/User/{userId}/unlock", new { }, accessToken, ct);
     }
 
+    // --- Role & Permission ---
+    public async Task<GetRolesResponse> GetRolesAsync(string accessToken, bool? isActive = null, CancellationToken ct = default)
+    {
+        var query = isActive.HasValue ? $"?isActive={isActive.Value}" : "";
+        return await GetAsync<GetRolesResponse>($"/api/v1/master-data/Role{query}", accessToken, ct);
+    }
+
+    public async Task<GetPermissionsResponse> GetPermissionsAsync(string accessToken, bool? isActive = null, CancellationToken ct = default)
+    {
+        var query = isActive.HasValue ? $"?isActive={isActive.Value}" : "";
+        return await GetAsync<GetPermissionsResponse>($"/api/v1/master-data/Permission{query}", accessToken, ct);
+    }
+
+    public async Task<GetRolePermissionsResponse> GetRolePermissionsAsync(int roleId, string accessToken, CancellationToken ct = default)
+    {
+        return await GetAsync<GetRolePermissionsResponse>($"/api/v1/master-data/RolePermission?roleId={roleId}&page=1&pageSize=1000", accessToken, ct);
+    }
+
+    public async Task GrantPermissionToRoleAsync(int roleId, int permissionId, string accessToken, CancellationToken ct = default)
+    {
+        // Check if role permission already exists (active or inactive)
+        var allPermissions = await GetRolePermissionsAsync(roleId, accessToken, ct);
+        var existing = allPermissions.Items.FirstOrDefault(p => p.PermissionId == permissionId);
+
+        if (existing != null)
+        {
+            if (!existing.IsActive)
+            {
+                // Update existing record to be active
+                var updateRequest = new { Id = existing.Id, IsActive = true };
+                var client = CreateClient(accessToken);
+                var json = System.Text.Json.JsonSerializer.Serialize(updateRequest);
+                using var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
+                using var res = await client.PutAsync($"/api/v1/master-data/RolePermission/{existing.Id}", content, ct);
+                if (!res.IsSuccessStatusCode)
+                {
+                    var body = await res.Content.ReadAsStringAsync(ct);
+                    var msg = TryExtractBackendMessage(body) ?? $"Backend request failed ({(int)res.StatusCode})";
+                    throw new InvalidOperationException(msg);
+                }
+            }
+            return;
+        }
+
+        // Create new
+        var request = new { RoleId = roleId, PermissionId = permissionId };
+        await PostAsync<object>("/api/v1/master-data/RolePermission", request, accessToken, ct);
+    }
+
+    public async Task RevokePermissionFromRoleAsync(int roleId, int permissionId, string accessToken, CancellationToken ct = default)
+    {
+        var allPermissions = await GetRolePermissionsAsync(roleId, accessToken, ct);
+        var existing = allPermissions.Items.FirstOrDefault(p => p.PermissionId == permissionId);
+
+        if (existing != null)
+        {
+            var client = CreateClient(accessToken);
+            using var res = await client.DeleteAsync($"/api/v1/master-data/RolePermission/{existing.Id}", ct);
+            if (!res.IsSuccessStatusCode)
+            {
+                var body = await res.Content.ReadAsStringAsync(ct);
+                var msg = TryExtractBackendMessage(body) ?? $"Backend request failed ({(int)res.StatusCode})";
+                throw new InvalidOperationException(msg);
+            }
+        }
+    }
+
+
     public async Task ResetPasswordAsync(int userId, string newPassword, string accessToken, CancellationToken ct)
     {
         await PostAsync<object>($"/api/v1/master-data/User/{userId}/reset-password", newPassword, accessToken, ct);
+    }
+
+    public async Task<AdminUserDto> CreateUserAsync(CreateUserRequest request, string accessToken, CancellationToken ct = default)
+    {
+        return await PostAsync<AdminUserDto>("/api/v1/master-data/User", request, accessToken, ct);
+    }
+
+    public async Task<AdminUserDto> UpdateUserAsync(int id, UpdateUserRequest request, string accessToken, CancellationToken ct = default)
+    {
+        return await PutAsync<AdminUserDto>($"/api/v1/master-data/User/{id}", request, accessToken, ct);
+    }
+
+    // --- System Management ---
+    public async Task<GetSystemLogsResponse> GetSystemLogsAsync(string accessToken, int page = 1, int pageSize = 50, CancellationToken ct = default)
+    {
+        return await GetAsync<GetSystemLogsResponse>($"/api/v1/master-data/System/log?page={page}&pageSize={pageSize}", accessToken, ct);
+    }
+
+    public async Task<GetSystemBackupsResponse> GetSystemBackupsAsync(string accessToken, int page = 1, int pageSize = 10, bool includeDeleted = false, CancellationToken ct = default)
+    {
+        return await GetAsync<GetSystemBackupsResponse>($"/api/v1/master-data/System/backup?page={page}&pageSize={pageSize}&includeDeleted={includeDeleted}", accessToken, ct);
+    }
+
+    public async Task<SystemBackupDto> BackupSystemAsync(string accessToken, CancellationToken ct = default)
+    {
+        // Notice it's a POST, with empty body.
+        return await PostAsync<SystemBackupDto>("/api/v1/master-data/System/backup", new { }, accessToken, ct);
+    }
+
+    public async Task<object> RestoreSystemAsync(RestoreSystemRequest request, string accessToken, CancellationToken ct = default)
+    {
+        return await PostAsync<object>("/api/v1/master-data/System/restore", request, accessToken, ct);
+    }
+
+    public async Task<object> DeleteSystemBackupAsync(int backupId, bool deleteFile, string accessToken, CancellationToken ct = default)
+    {
+        var client = CreateClient(accessToken);
+        using var res = await client.DeleteAsync($"/api/v1/master-data/System/backup/{backupId}?deleteFile={deleteFile}", ct);
+        return await HandleResponse<object>(res, ct);
     }
 
     public async Task<GetPartnersResponse> GetPartnersAsync(string accessToken, int page = 1, int pageSize = 10, string? searchTerm = null, CancellationToken ct = default)
@@ -58,12 +165,12 @@ public class BackendMasterDataClient
     {
         var query = $"?Page={page}&PageSize={pageSize}";
         if (!string.IsNullOrEmpty(searchTerm)) query += $"&SearchTerm={Uri.EscapeDataString(searchTerm)}";
-        return await GetAsync<GetUnitsResponse>($"/api/v1/master-data/Unit{query}", accessToken, ct);
+        return await GetAsync<GetUnitsResponse>($"/api/v1/master-data/Organization{query}", accessToken, ct);
     }
 
     public async Task<GetUnitResponse> GetUnitAsync(int id, string accessToken, CancellationToken ct = default)
     {
-        return await GetAsync<GetUnitResponse>($"/api/v1/master-data/Unit/{id}", accessToken, ct);
+        return await GetAsync<GetUnitResponse>($"/api/v1/master-data/Organization/{id}", accessToken, ct);
     }
 
     public async Task<PartnerDto> CreatePartnerAsync(CreatePartnerRequest payload, string accessToken, CancellationToken ct = default)
@@ -238,6 +345,7 @@ public class UnitDto
     public string? TaxCode { get; set; }
     public string? LegalRepresentative { get; set; }
     public string? LogoUrl { get; set; }
+    [JsonPropertyName("type")]
     public string UnitType { get; set; } = "Office";
     public bool IsSubscriptionActive { get; set; }
     public int DefaultDailyMeals { get; set; }
@@ -297,6 +405,60 @@ public class AdminUserDto
     public bool IsActive { get; set; }
     public DateTime? LastLoginAt { get; set; }
     public List<string> RoleNames { get; set; } = new();
+}
+
+public class CreateUserRequest
+{
+    public string Username { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? PhoneNumber { get; set; }
+    public bool IsActive { get; set; } = true;
+    public int? InitialRoleId { get; set; }
+}
+
+public class UpdateUserRequest
+{
+    public string? Email { get; set; }
+    public string? FirstName { get; set; }
+    public string? LastName { get; set; }
+    public string? PhoneNumber { get; set; }
+    public bool? IsActive { get; set; }
+    public string? NewPassword { get; set; }
+}
+
+// ─── System Logs & Backups ──────────────────────────────────────────────────
+public class SystemLogDto
+{
+    public int Id { get; set; }
+    public DateTime? Timestamp { get; set; }
+    public string? Level { get; set; }
+    public string? Template { get; set; }
+    public string? Message { get; set; }
+    public string? Exception { get; set; }
+    public string? Properties { get; set; }
+}
+
+public class GetSystemLogsResponse : PaginationResponse<SystemLogDto> { }
+
+public class SystemBackupDto
+{
+    public int Id { get; set; }
+    public string FileName { get; set; } = string.Empty;
+    public string FilePath { get; set; } = string.Empty;
+    public long SizeBytes { get; set; }
+    public DateTime CreatedAtUtc { get; set; }
+    public DateTime? RestoredAtUtc { get; set; }
+    public bool IsDeleted { get; set; }
+}
+
+public class GetSystemBackupsResponse : PaginationResponse<SystemBackupDto> { }
+
+public class RestoreSystemRequest
+{
+    public int BackupId { get; set; }
 }
 
 // ─── Dish / Menu DTOs ───────────────────────────────────────────────────────
@@ -415,4 +577,50 @@ public sealed class AddDishImageRequest
 public sealed class AddDishImageResponse
 {
     public int Id { get; set; }
+}
+
+public class RoleDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public bool IsActive { get; set; }
+    public bool IsSystemRole { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+
+public class PermissionDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string Resource { get; set; } = string.Empty;
+    public string Action { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+
+public class RolePermissionDto
+{
+    public int Id { get; set; }
+    public int RoleId { get; set; }
+    public string RoleName { get; set; } = string.Empty;
+    public int PermissionId { get; set; }
+    public string PermissionName { get; set; } = string.Empty;
+    public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public class GetRolesResponse : PaginationResponse<RoleDto>
+{
+}
+
+public class GetPermissionsResponse : PaginationResponse<PermissionDto>
+{
+}
+
+public class GetRolePermissionsResponse : PaginationResponse<RolePermissionDto>
+{
 }

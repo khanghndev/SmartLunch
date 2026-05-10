@@ -1,3 +1,4 @@
+@model Khoa_Luan_KS_Web.Services.GetSystemBackupsResponse
 @{
     ViewData["Title"] = "Backup & Restore";
     Layout = "_LayoutAdmin";
@@ -12,10 +13,12 @@
         </div>
         
         <div class="flex items-center gap-3">
-            <button @@click="createBackup()" class="px-5 py-2.5 admin-gradient text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:shadow-green-600/50 transition-all text-sm flex items-center gap-2">
-                <i class="fas fa-save"></i>
-                Tạo Bản Sao lưu mới ngay
-            </button>
+            <form method="post" action="/Admin/System/CreateBackup">
+                <button type="submit" class="px-5 py-2.5 admin-gradient text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:shadow-green-600/50 transition-all text-sm flex items-center gap-2">
+                    <i class="fas fa-save"></i>
+                    Tạo Bản Sao lưu mới ngay
+                </button>
+            </form>
         </div>
     </div>
 
@@ -117,9 +120,13 @@
                             
                             <td class="p-5 pr-6 text-right">
                                 <div class="flex items-center justify-end gap-2">
-                                    <button class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-500 font-bold hover:text-green-600 hover:border-green-300 hover:bg-green-50 transition-all text-xs flex items-center gap-1.5">
-                                        <i class="fas fa-download"></i> Tải .BAK
-                                    </button>
+                                    <form method="post" action="/Admin/System/DeleteBackup" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bản sao lưu này?');">
+                                        <input type="hidden" name="id" :value="item.id" />
+                                        <input type="hidden" name="deleteFile" value="true" />
+                                        <button type="submit" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-500 font-bold hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-all text-xs flex items-center gap-1.5" title="Xóa bản sao lưu">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </form>
                                     <button @@click="openRestoreModal(item)" class="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 font-bold hover:bg-red-100 transition-all text-xs flex items-center gap-1.5 border border-red-100">
                                         <i class="fas fa-history"></i> Khôi phục
                                     </button>
@@ -176,12 +183,15 @@
                         </div>
                     </div>
                     
+                    <form id="restoreForm" method="post" action="/Admin/System/RestoreBackup">
+                        <input type="hidden" name="id" :value="selectedBackup ? selectedBackup.id : ''" />
                     <div class="px-6 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px]">
-                        <button @@click="closeRestoreModal()" class="px-5 py-2.5 rounded-xl text-slate-600 font-bold hover:bg-white border border-slate-200 transition-colors text-sm">Hủy bỏ</button>
-                        <button @@click="confirmRestore()" class="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-lg shadow-red-600/30 transition-all text-sm flex items-center gap-2">
+                        <button type="button" @@click="closeRestoreModal()" class="px-5 py-2.5 rounded-xl text-slate-600 font-bold hover:bg-white border border-slate-200 transition-colors text-sm">Hủy bỏ</button>
+                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-lg shadow-red-600/30 transition-all text-sm flex items-center gap-2">
                             <i class="fas fa-exclamation"></i> Tiến hành Khôi phục
                         </button>
                     </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -195,16 +205,15 @@
                 isRestoreModalOpen: false,
                 selectedBackup: null,
                 
-                backups: [
-                    { id: 1, filename: 'DB_HuitMeal_Full_20260426.bak', hash: 'a1b2c3d4e5f6', type: 'Tự động', size: '45.2 GB', date: '26/04/2026', time: '03:00:00' },
-                    { id: 2, filename: 'DB_HuitMeal_Full_20260425.bak', hash: 'f6e5d4c3b2a1', type: 'Tự động', size: '44.8 GB', date: '25/04/2026', time: '03:00:00' },
-                    { id: 3, filename: 'DB_HuitMeal_Manual_20260424.bak', hash: '9876543210ab', type: 'Thủ công', size: '44.5 GB', date: '24/04/2026', time: '14:30:22' },
-                    { id: 4, filename: 'DB_HuitMeal_Full_20260424.bak', hash: '1234567890cd', type: 'Tự động', size: '44.1 GB', date: '24/04/2026', time: '03:00:00' }
-                ],
-                
-                createBackup() {
-                    alert('Đang khởi tạo tiến trình Backup thủ công. Hệ thống sẽ tiếp tục chạy ngầm trên máy chủ.');
-                },
+                backups: @Html.Raw(Json.Serialize(Model.Items.Select(b => new {
+                    id = b.Id,
+                    filename = b.FileName,
+                    hash = "N/A",
+                    type = "Thủ công",
+                    size = (b.SizeBytes / 1024.0 / 1024.0).ToString("0.00") + " MB",
+                    date = b.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy"),
+                    time = b.CreatedAtUtc.ToLocalTime().ToString("HH:mm:ss")
+                }))),
                 
                 openRestoreModal(item) {
                     this.selectedBackup = item;
@@ -215,11 +224,6 @@
                 closeRestoreModal() {
                     this.isRestoreModalOpen = false;
                     document.body.style.overflow = '';
-                },
-                
-                confirmRestore() {
-                    alert('Yêu cầu Restore đã được gửi. Hệ thống đang tiến hành khôi phục...');
-                    this.closeRestoreModal();
                 }
             }));
         });
