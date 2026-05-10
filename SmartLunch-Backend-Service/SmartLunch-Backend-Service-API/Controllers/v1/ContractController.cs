@@ -178,7 +178,7 @@ public class ContractController : ControllerBase
     }
 
     /// <summary>
-    /// Ký số hợp đồng (lưu chữ ký số + ảnh chữ ký nếu có).
+    /// Ký số hợp đồng (Admin). Khách doanh nghiệp (Company) dùng <c>POST api/v1/company/contracts/{id}/sign</c> sau khi xem hợp đồng.
     /// </summary>
     [HttpPost("{id:int}/sign")]
     [Authorize(Policy = "permission:contracts.update")]

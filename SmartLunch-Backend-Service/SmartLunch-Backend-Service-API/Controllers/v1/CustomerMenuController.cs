@@ -31,11 +31,13 @@ public class CustomerMenuController : ControllerBase
     /// <param name="date">Optional date. Defaults to current UTC date if not provided.</param>
     /// <returns>Weekly Menu with detailed schedules and dishes</returns>
     [HttpGet("weekly")]
-    public async Task<ActionResult<BaseApiResponse<GetCustomerWeeklyMenuResponse>>> GetWeeklyMenu([FromQuery] DateTime? date)
+    public async Task<ActionResult<BaseApiResponse<GetCustomerWeeklyMenuResponse>>> GetWeeklyMenu(
+        [FromQuery] DateTime? date,
+        [FromQuery] int? customerTypeId)
     {
         try
         {
-            var query = new GetCustomerWeeklyMenuQuery(date);
+            var query = new GetCustomerWeeklyMenuQuery(date, customerTypeId);
             var response = await _mediator.Send(query);
             return Ok(BaseApiResponse<GetCustomerWeeklyMenuResponse>.SuccessResult(response, "Weekly menu retrieved successfully"));
         }

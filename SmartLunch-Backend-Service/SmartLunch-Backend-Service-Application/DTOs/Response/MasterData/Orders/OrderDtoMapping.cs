@@ -11,6 +11,8 @@ public static class OrderDtoMapping
         {
             Id = order.Id,
             UserId = order.UserId,
+            ContractId = order.ContractId,
+            ContractSummary = order.Contract == null ? null : ToContractSummary(order.Contract),
             OrganizationId = order.Contract?.OrganizationId,
             OrganizationName = order.Contract?.Organization?.Name,
             OrderDate = order.OrderDate,
@@ -37,6 +39,22 @@ public static class OrderDtoMapping
                 .ToList()
         };
     }
+
+    private static OrderContractSummaryDto ToContractSummary(Contract c) => new()
+    {
+        Id = c.Id,
+        ContractType = c.ContractType,
+        ContractNumber = c.ContractNumber,
+        Description = c.Description,
+        SupplySchedule = c.SupplySchedule,
+        StartDate = c.StartDate,
+        EndDate = c.EndDate,
+        Status = c.Status,
+        PartnerLegalName = c.Partner?.LegalName,
+        IsDigitallySigned = c.IsDigitallySigned,
+        DigitallySignedAt = c.DigitallySignedAt,
+        ContractFileUrl = c.ContractFileUrl
+    };
 
     private static string? FormatSalesStaffName(User? u)
     {

@@ -13,6 +13,7 @@ public class ContractDto
     public DateTime? EndDate { get; set; }
     public decimal? TotalValue { get; set; }
     public decimal? DepositAmount { get; set; }
+    public string? ContractFileUrl { get; set; }
     public bool IsDigitallySigned { get; set; }
     public string? DigitalSignature { get; set; }
     public DateTime? DigitallySignedAt { get; set; }

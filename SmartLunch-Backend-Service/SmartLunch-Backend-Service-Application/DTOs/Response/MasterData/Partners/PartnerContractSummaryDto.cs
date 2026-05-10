@@ -11,4 +11,5 @@ public class PartnerContractSummaryDto
     public DateTime? EndDate { get; set; }
     public string Status { get; set; } = string.Empty;
     public decimal? TotalValue { get; set; }
+    public string? ContractFileUrl { get; set; }
 }

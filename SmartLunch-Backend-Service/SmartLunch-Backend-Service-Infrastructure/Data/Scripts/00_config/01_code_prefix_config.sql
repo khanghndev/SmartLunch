@@ -54,4 +54,5 @@ INSERT INTO code_prefixes (TableName, Prefix, Description, LastSequence) VALUES
 ('ingredient_categories','ICAT','Danh mục nguyên liệu',0),
 ('dish_categories','DCT','Danh mục slot món',0),
 ('dish_dish_categories','DDC','Món — slot',0),
-('cooking_methods','CKM','Phương pháp chế biến',0);
+('cooking_methods','CKM','Phương pháp chế biến',0),
+('customer_types','CTY','Loại khách hàng / profile',0);

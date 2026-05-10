@@ -24,7 +24,8 @@ public class OrderRepository : IOrderRepository
     public async Task<Order?> GetByIdWithDetailsAsync(int id)
     {
         return await _context.Orders
-            .Include(o => o.Contract).ThenInclude(c => c.Organization)
+            .Include(o => o.Contract).ThenInclude(c => c!.Partner)
+            .Include(o => o.Contract).ThenInclude(c => c!.Organization)
             .Include(o => o.CreatedBySalesUser)
             .Include(o => o.OrderItems).ThenInclude(i => i.Dish)
             .Include(o => o.Deliveries)
@@ -39,7 +40,8 @@ public class OrderRepository : IOrderRepository
         string? status = null)
     {
         var query = _context.Orders
-            .Include(o => o.Contract).ThenInclude(c => c.Organization)
+            .Include(o => o.Contract).ThenInclude(c => c!.Partner)
+            .Include(o => o.Contract).ThenInclude(c => c!.Organization)
             .Include(o => o.OrderItems).ThenInclude(i => i.Dish)
             .AsQueryable();
 

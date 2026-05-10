@@ -32,6 +32,7 @@ public static class PartnerDtoMapping
         StartDate = c.StartDate,
         EndDate = c.EndDate,
         Status = c.Status,
-        TotalValue = c.TotalValue
+        TotalValue = c.TotalValue,
+        ContractFileUrl = c.ContractFileUrl
     };
 }

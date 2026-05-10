@@ -21,7 +21,7 @@ public class GetCustomerWeeklyMenuQueryHandler : IRequestHandler<GetCustomerWeek
     {
         var targetDate = request.Date ?? DateTime.UtcNow;
 
-        var weeklyMenu = await _weeklyMenuRepository.GetWeeklyMenuWithSchedulesByDateAsync(targetDate);
+        var weeklyMenu = await _weeklyMenuRepository.GetWeeklyMenuWithSchedulesByDateAsync(targetDate, request.CustomerTypeId);
 
         if (weeklyMenu == null)
         {

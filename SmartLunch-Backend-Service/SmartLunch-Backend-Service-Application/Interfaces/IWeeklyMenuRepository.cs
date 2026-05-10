@@ -6,6 +6,11 @@ public interface IWeeklyMenuRepository
 {
     Task<WeeklyMenu?> GetByIdAsync(int id);
     Task<WeeklyMenu?> GetByIdWithSchedulesAsync(int id, CancellationToken cancellationToken = default);
-    Task<(List<WeeklyMenu> WeeklyMenus, int TotalCount)> GetWeeklyMenusAsync(int page, int pageSize, string? searchTerm = null);
-    Task<WeeklyMenu?> GetWeeklyMenuWithSchedulesByDateAsync(DateTime date);
+    Task<(List<WeeklyMenu> WeeklyMenus, int TotalCount)> GetWeeklyMenusAsync(
+        int page,
+        int pageSize,
+        string? searchTerm = null,
+        int? customerTypeId = null);
+
+    Task<WeeklyMenu?> GetWeeklyMenuWithSchedulesByDateAsync(DateTime date, int? customerTypeId = null);
 }

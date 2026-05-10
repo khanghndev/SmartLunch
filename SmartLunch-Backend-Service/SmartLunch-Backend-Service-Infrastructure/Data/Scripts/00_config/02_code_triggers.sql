@@ -104,6 +104,9 @@ FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('weekly_
 CREATE TRIGGER trg_menu_schedule_code BEFORE INSERT ON menu_schedule
 FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('menu_schedule'); END IF; END //
 
+CREATE TRIGGER trg_customer_types_code BEFORE INSERT ON customer_types
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('customer_types'); END IF; END //
+
 CREATE TRIGGER trg_orders_code BEFORE INSERT ON orders
 FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('orders'); END IF; END //
 

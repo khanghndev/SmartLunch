@@ -27,7 +27,8 @@ public class GetWeeklyMenusQueryHandler : IRequestHandler<GetWeeklyMenusQuery, G
         var (weeklyMenus, totalCount) = await _weeklyMenuRepository.GetWeeklyMenusAsync(
             request.Page,
             request.PageSize,
-            request.SearchTerm);
+            request.SearchTerm,
+            request.CustomerTypeId);
 
         var weeklyMenuDtos = weeklyMenus.Select(weeklyMenu =>
         {

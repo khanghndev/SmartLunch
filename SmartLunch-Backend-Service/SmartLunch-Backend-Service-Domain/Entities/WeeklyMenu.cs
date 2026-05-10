@@ -10,12 +10,13 @@ public class WeeklyMenu
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public string MenuType { get; set; } = "General";
-    public string? EducationLevel { get; set; }
+    public int? CustomerTypeId { get; set; }
     public string? Description { get; set; }
     public int CreatedBy { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public virtual User CreatedByUser { get; set; } = null!;
+    public virtual CustomerType? CustomerType { get; set; }
     public virtual ICollection<MenuSchedule> MenuSchedules { get; set; } = new List<MenuSchedule>();
     public virtual ICollection<WeeklyMenuImage> WeeklyMenuImages { get; set; } = new List<WeeklyMenuImage>();
 }

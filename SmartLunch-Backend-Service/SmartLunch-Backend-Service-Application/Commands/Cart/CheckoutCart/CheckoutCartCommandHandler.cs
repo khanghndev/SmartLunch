@@ -17,6 +17,7 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
     private readonly IPartnerRepository _partnerRepository;
     private readonly IOrganizationRepository _organizationRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IContractPdfService _contractPdfService;
 
     public CheckoutCartCommandHandler(
         ICartCacheService cartCache,
@@ -26,7 +27,8 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
         IContractRepository contractRepository,
         IPartnerRepository partnerRepository,
         IOrganizationRepository organizationRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IContractPdfService contractPdfService)
     {
         _cartCache = cartCache;
         _orderRepository = orderRepository;
@@ -36,6 +38,7 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
         _partnerRepository = partnerRepository;
         _organizationRepository = organizationRepository;
         _unitOfWork = unitOfWork;
+        _contractPdfService = contractPdfService;
     }
 
     public async Task<GetOrderResponse> Handle(CheckoutCartCommand command, CancellationToken cancellationToken)
@@ -47,36 +50,46 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
         if (cart.Items.Any(i => i.Quantity < MinimumOrderQuantity))
             throw new ArgumentException($"Each item quantity must be at least {MinimumOrderQuantity}.");
 
-        var scheduledDate = command.Request.ScheduledDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
-        var scheduledUtc = DateTime.SpecifyKind(scheduledDate.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+        var excludedDays = command.Request.ExcludedDates.Count > 0
+            ? command.Request.ExcludedDates.Distinct().ToHashSet()
+            : new HashSet<DateOnly>();
 
-        // Build order items from weekly menu(s) for the scheduled date
+        // Aggregate dishes from weekly menu(s), skipping excluded calendar days on the schedule
         var weeklyMenuIds = cart.Items.Select(i => i.WeeklyMenuId).Distinct().ToList();
         if (weeklyMenuIds.Any(id => id <= 0))
             throw new ArgumentException("WeeklyMenuId is required.");
 
         var dishIdToQuantity = new Dictionary<int, int>();
+        DateTime? minIncludedScheduleUtc = null;
+
         foreach (var line in cart.Items)
         {
             var weeklyMenu = await _weeklyMenuRepository.GetByIdWithSchedulesAsync(line.WeeklyMenuId, cancellationToken);
             if (weeklyMenu == null)
                 throw new ArgumentException($"WeeklyMenu '{line.WeeklyMenuId}' is not available anymore.");
 
-            var schedules = weeklyMenu.MenuSchedules
-                .Where(ms => ms.Date.Date == scheduledUtc.Date)
-                .ToList();
-
-            if (schedules.Count == 0)
-                throw new InvalidOperationException(
-                    $"WeeklyMenu '{weeklyMenu.Id}' has no schedules for date {scheduledDate:yyyy-MM-dd}.");
-
-            foreach (var schedule in schedules)
+            foreach (var schedule in weeklyMenu.MenuSchedules)
             {
+                var calendarDay = DateOnly.FromDateTime(schedule.Date.Date);
+                if (excludedDays.Contains(calendarDay))
+                    continue;
+
+                var dayUtc = DateTime.SpecifyKind(calendarDay.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+                if (!minIncludedScheduleUtc.HasValue || dayUtc < minIncludedScheduleUtc.Value)
+                    minIncludedScheduleUtc = dayUtc;
+
                 if (!dishIdToQuantity.TryGetValue(schedule.DishId, out var q))
                     q = 0;
                 dishIdToQuantity[schedule.DishId] = q + line.Quantity;
             }
         }
+
+        if (dishIdToQuantity.Count == 0)
+            throw new InvalidOperationException(
+                "Nothing left to order after applying excluded dates. Check that at least one menu day stays included.");
+
+        var scheduledUtc = minIncludedScheduleUtc!.Value;
+        var scheduledDate = DateOnly.FromDateTime(scheduledUtc);
 
         var dishIds = dishIdToQuantity.Keys.Distinct().ToList();
         var dishes = await _dishRepository.GetByIdsAsync(dishIds, cancellationToken);
@@ -92,13 +105,14 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
 
         // If this cart is for an organization, bind to (or create) an order-based contract
         Contract? contract = null;
+        Organization? checkoutOrg = null;
         if (cart.OrganizationId.HasValue && cart.OrganizationId.Value > 0)
         {
-            var org = await _organizationRepository.GetByIdAsync(cart.OrganizationId.Value);
-            if (org == null || !org.IsActive)
+            checkoutOrg = await _organizationRepository.GetByIdAsync(cart.OrganizationId.Value);
+            if (checkoutOrg == null || !checkoutOrg.IsActive)
                 throw new ArgumentException("Organization is not available.");
 
-            contract = await _contractRepository.GetActiveForOrganizationAsync(org.Id, cancellationToken);
+            contract = await _contractRepository.GetActiveForOrganizationAsync(checkoutOrg.Id, cancellationToken);
             if (contract == null)
             {
                 var (partners, _) = await _partnerRepository.GetPartnersAsync(
@@ -113,7 +127,7 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
                 contract = new Contract
                 {
                     PartnerId = partner.Id,
-                    OrganizationId = org.Id,
+                    OrganizationId = checkoutOrg.Id,
                     ContractType = "Order-Based",
                     Description = $"Auto-created contract for order on {scheduledDate:yyyy-MM-dd}",
                     SupplySchedule = null,
@@ -157,6 +171,9 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
 
         order.TotalAmount = decimal.Round(total, 2, MidpointRounding.AwayFromZero);
 
+        var shouldGenerateContractPdfAfterInsert =
+            checkoutOrg != null && contract != null && contract.Id == 0;
+
         await _unitOfWork.BeginTransactionAsync();
         try
         {
@@ -174,6 +191,24 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
         {
             await _unitOfWork.RollbackAsync();
             throw;
+        }
+
+        if (shouldGenerateContractPdfAfterInsert && contract != null && checkoutOrg != null)
+        {
+            var forPdf = await _contractRepository.GetByIdAsync(contract.Id)
+                         ?? throw new InvalidOperationException("Contract created but reload failed before PDF.");
+
+            if (forPdf.Partner != null)
+            {
+                var url = await _contractPdfService.GenerateUploadAndResolveUrlAsync(
+                    forPdf,
+                    forPdf.Partner,
+                    checkoutOrg,
+                    cancellationToken);
+                forPdf.ContractFileUrl = url;
+                forPdf.UpdatedAt = DateTime.UtcNow;
+                await _contractRepository.UpdateAsync(forPdf);
+            }
         }
 
         // Non-DB side effect: remove cart only after DB commit succeeds

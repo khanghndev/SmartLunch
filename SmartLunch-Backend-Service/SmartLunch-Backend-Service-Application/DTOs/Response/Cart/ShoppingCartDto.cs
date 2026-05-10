@@ -14,6 +14,7 @@ public class ShoppingCartLineDto
     public int Id { get; set; }
     public int WeeklyMenuId { get; set; }
     public string WeeklyMenuName { get; set; } = string.Empty;
+    public string? WeeklyMenuImageUrl { get; set; }
     public decimal UnitPrice { get; set; }
     public int Quantity { get; set; }
     public decimal LineTotal { get; set; }

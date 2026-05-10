@@ -30,7 +30,11 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);
     }
 
-    public async Task<(List<WeeklyMenu> WeeklyMenus, int TotalCount)> GetWeeklyMenusAsync(int page, int pageSize, string? searchTerm = null)
+    public async Task<(List<WeeklyMenu> WeeklyMenus, int TotalCount)> GetWeeklyMenusAsync(
+        int page,
+        int pageSize,
+        string? searchTerm = null,
+        int? customerTypeId = null)
     {
         var query = _context.WeeklyMenus.AsQueryable();
         if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -38,6 +42,9 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
             query = query.Where(e =>
                 (e.Description != null && e.Description.Contains(searchTerm)));
         }
+
+        if (customerTypeId.HasValue)
+            query = query.Where(e => e.CustomerTypeId == customerTypeId.Value);
 
         var totalCount = await query.CountAsync();
 
@@ -52,14 +59,19 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
         return (weeklyMenus, totalCount);
     }
 
-    public async Task<WeeklyMenu?> GetWeeklyMenuWithSchedulesByDateAsync(DateTime date)
+    public async Task<WeeklyMenu?> GetWeeklyMenuWithSchedulesByDateAsync(DateTime date, int? customerTypeId = null)
     {
-        return await _context.WeeklyMenus
+        var query = _context.WeeklyMenus
             .Include(wm => wm.MenuSchedules)
                 .ThenInclude(ms => ms.Dish)
                     .ThenInclude(d => d.DishDishCategories)
                         .ThenInclude(ddc => ddc.DishCategory)
-            .Where(wm => wm.StartDate <= date && wm.EndDate >= date)
+            .Where(wm => wm.StartDate <= date && wm.EndDate >= date);
+
+        if (customerTypeId.HasValue)
+            query = query.Where(wm => wm.CustomerTypeId == customerTypeId.Value);
+
+        return await query
             .OrderByDescending(wm => wm.CreatedAt)
             .FirstOrDefaultAsync();
     }

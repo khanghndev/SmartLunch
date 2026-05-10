@@ -13,15 +13,18 @@ public class CreateContractCommandHandler : IRequestHandler<CreateContractComman
     private readonly IContractRepository _contractRepository;
     private readonly IPartnerRepository _partnerRepository;
     private readonly ICacheService _cacheService;
+    private readonly IContractPdfService _contractPdfService;
 
     public CreateContractCommandHandler(
         IContractRepository contractRepository,
         IPartnerRepository partnerRepository,
-        ICacheService cacheService)
+        ICacheService cacheService,
+        IContractPdfService contractPdfService)
     {
         _contractRepository = contractRepository;
         _partnerRepository = partnerRepository;
         _cacheService = cacheService;
+        _contractPdfService = contractPdfService;
     }
 
     public async Task<GetContractResponse> Handle(CreateContractCommand request, CancellationToken cancellationToken)
@@ -58,7 +61,20 @@ public class CreateContractCommandHandler : IRequestHandler<CreateContractComman
         await _contractRepository.CreateAsync(entity);
         await _cacheService.RemoveAsync(MasterDataCacheKeys.Partner(req.PartnerId), cancellationToken);
 
-        var reloaded = await _contractRepository.GetByIdAsync(entity.Id);
+        Contract? reloaded = await _contractRepository.GetByIdAsync(entity.Id);
+        if (reloaded?.Partner != null)
+        {
+            var pdfUrl = await _contractPdfService.GenerateUploadAndResolveUrlAsync(
+                reloaded,
+                reloaded.Partner,
+                buyer: null,
+                cancellationToken);
+            reloaded.ContractFileUrl = pdfUrl;
+            reloaded.UpdatedAt = DateTime.UtcNow;
+            await _contractRepository.UpdateAsync(reloaded);
+            reloaded = await _contractRepository.GetByIdAsync(entity.Id);
+        }
+
         return new GetContractResponse
         {
             Contract = reloaded != null ? ContractDtoMapping.ToDto(reloaded) : ContractDtoMapping.ToDto(entity)

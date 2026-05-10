@@ -54,6 +54,7 @@ public class AddCartLineCommandHandler : IRequestHandler<AddCartLineCommand, Get
                 WeeklyMenuId = weeklyMenu.Id,
                 WeeklyMenuName = weeklyMenu.Description ?? weeklyMenu.Code ?? $"WeeklyMenu#{weeklyMenu.Id}",
                 UnitPrice = 0,
+                WeeklyMenuImageUrl = weeklyMenu.WeeklyMenuImages?.FirstOrDefault()?.MediaFile?.ObjectName ?? string.Empty,
                 Quantity = req.Quantity,
                 LineTotal = 0
             });

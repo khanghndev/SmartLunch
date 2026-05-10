@@ -4,6 +4,8 @@ public class OrderDto
 {
     public int Id { get; set; }
     public int? UserId { get; set; }
+    public int? ContractId { get; set; }
+    public OrderContractSummaryDto? ContractSummary { get; set; }
     public int? OrganizationId { get; set; }
     public string? OrganizationName { get; set; }
     public DateTime OrderDate { get; set; }

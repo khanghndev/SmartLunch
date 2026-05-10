@@ -55,6 +55,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<DishIngredient> DishIngredients { get; set; }
         public DbSet<WeeklyMenu> WeeklyMenus { get; set; }
         public DbSet<WeeklyMenuImage> WeeklyMenuImages { get; set; }
+        public DbSet<CustomerType> CustomerTypes { get; set; }
         public DbSet<MenuSchedule> MenuSchedules { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
@@ -229,6 +230,53 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
 
                 entity.HasIndex(e => e.CreatedAtUtc);
                 entity.HasIndex(e => e.IsDeleted);
+            });
+
+            modelBuilder.Entity<WeeklyMenuImage>(entity =>
+            {
+                entity.ToTable("weekly_menu_images");
+                entity.HasKey(e => e.Id);
+
+                entity.Property(e => e.Code)
+                    .HasMaxLength(20);
+
+                entity.Property(e => e.Role)
+                    .IsRequired()
+                    .HasMaxLength(20)
+                    .HasDefaultValue("gallery");
+
+                entity.Property(e => e.SortOrder)
+                    .HasDefaultValue(0);
+
+                entity.Property(e => e.CreatedAt);
+                entity.Property(e => e.UpdatedAt);
+
+                entity.HasOne(e => e.WeeklyMenu)
+                    .WithMany(m => m.WeeklyMenuImages)
+                    .HasForeignKey(e => e.WeeklyMenuId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.MediaFile)
+                    .WithMany()
+                    .HasForeignKey(e => e.MediaFileId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasIndex(e => new { e.WeeklyMenuId, e.SortOrder });
+                entity.HasIndex(e => e.MediaFileId);
+            });
+
+            modelBuilder.Entity<CustomerType>(entity =>
+            {
+                entity.ToTable("customer_types");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Code).HasMaxLength(20);
+                entity.Property(e => e.ProfileKey).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.Description).HasMaxLength(1000);
+                entity.Property(e => e.CreatedAt);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.HasIndex(e => e.ProfileKey).IsUnique();
             });
        
             // Configure User entity
@@ -742,9 +790,11 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.StartDate, e.EndDate }).IsUnique();
                 entity.HasIndex(e => e.CreatedBy);
+                entity.HasIndex(e => e.CustomerTypeId);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Description).HasMaxLength(255);
                 entity.HasOne(e => e.CreatedByUser).WithMany(u => u.WeeklyMenusCreated).HasForeignKey(e => e.CreatedBy).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.CustomerType).WithMany(ct => ct.WeeklyMenus).HasForeignKey(e => e.CustomerTypeId).OnDelete(DeleteBehavior.SetNull);
             });
 
             // MenuSchedule

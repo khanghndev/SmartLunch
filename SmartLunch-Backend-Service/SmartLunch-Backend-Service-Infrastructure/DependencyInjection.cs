@@ -3,6 +3,7 @@ using Scrutor;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Infrastructure.ExternalServices;
+using SmartLunch.Backend.Service.Infrastructure.Pdf;
 using SmartLunch.Backend.Service.Infrastructure.Services;
 
 namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
@@ -22,6 +23,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<ICartCacheService, CartCacheService>();
             services.AddScoped<IStorageService, AppwriteStorageService>();
+            services.AddScoped<IContractPdfService, QuestPdfContractFileService>();
 
             var assembly = typeof(DependencyInjection).Assembly;
 

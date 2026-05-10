@@ -37,7 +37,7 @@ public class WeeklyMenuController : ControllerBase
     {
         try
         {
-            var query = new GetWeeklyMenusQuery(request.Page, request.PageSize, request.SearchTerm);
+            var query = new GetWeeklyMenusQuery(request.Page, request.PageSize, request.SearchTerm, request.CustomerTypeId);
             var response = await _mediator.Send(query);
             return Ok(BaseApiResponse<GetWeeklyMenusResponse>.SuccessResult(response, "WeeklyMenus retrieved successfully"));
         }
