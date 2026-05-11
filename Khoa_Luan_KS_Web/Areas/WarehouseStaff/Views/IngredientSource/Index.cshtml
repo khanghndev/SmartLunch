@@ -1,0 +1,122 @@
+@model Khoa_Luan_KS_Web.Services.GetIngredientSourcesClientResponse
+@{
+    ViewData["Title"] = "Lô Hàng / Nguồn Gốc Nguyên Liệu";
+    Layout = "_LayoutWarehouse";
+    var items = Model.Items ?? new();
+    int totalPages = Model.PageSize == 0 ? 1 : (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
+    int currentPage = ViewBag.Page ?? 1;
+    int pageSize = ViewBag.PageSize ?? 20;
+    string searchTerm = ViewBag.SearchTerm ?? "";
+}
+
+<div class="px-1 space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition"><i class="fas fa-home"></i></a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">Lô hàng / Nguồn gốc</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Lô Hàng / Nguồn Gốc Nguyên Liệu</h1>
+            <p class="text-sm text-gray-500 mt-1">Quản lý lô hàng & truy xuất nguồn gốc (@Model.TotalCount lô)</p>
+        </div>
+        <a href="/WarehouseStaff/IngredientSource/Create" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+            <i class="fas fa-plus"></i> Ghi Nhận Lô Mới
+        </a>
+    </div>
+
+    <form method="get" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col sm:flex-row gap-3 items-center">
+        <div class="relative flex-1 w-full">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input type="text" name="searchTerm" value="@searchTerm" placeholder="Tìm theo số lô, NCC hoặc tên nguyên liệu..." class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition bg-gray-50" />
+        </div>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+            <i class="fas fa-search"></i> Tìm kiếm
+        </button>
+    </form>
+
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Số Lô</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Nguyên Liệu</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">NCC</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Nguồn Gốc</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">NSX</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">HSD</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Chứng Nhận</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 text-gray-700">
+                    @if (!items.Any())
+                    {
+                        <tr><td colspan="8" class="text-center py-16 text-gray-400">
+                            <i class="fas fa-truck-fast text-4xl mb-3 block text-gray-200"></i>
+                            <p class="text-sm font-medium">Chưa có lô hàng nào được ghi nhận</p>
+                        </td></tr>
+                    }
+                    @foreach (var s in items)
+                    {
+                        bool isExpired = s.ExpirationDate.HasValue && s.ExpirationDate.Value < DateTime.Now;
+                        bool isSoon = s.ExpirationDate.HasValue && s.ExpirationDate.Value <= DateTime.Now.AddDays(14) && !isExpired;
+                        <tr class="hover:bg-amber-50/20 transition">
+                            <td class="px-5 py-3.5 font-mono font-semibold text-gray-800">@(s.BatchNumber ?? $"#{s.Id}")</td>
+                            <td class="px-5 py-3.5 text-gray-700 font-medium">@(s.IngredientName ?? $"#{s.IngredientId}")</td>
+                            <td class="px-5 py-3.5 text-gray-600">@(s.PartnerLegalName ?? "—")</td>
+                            <td class="px-5 py-3.5 text-gray-500 max-w-[200px] truncate">@(s.OriginDetails ?? "—")</td>
+                            <td class="px-5 py-3.5 text-gray-500">@(s.ProductionDate?.ToString("dd/MM/yyyy") ?? "—")</td>
+                            <td class="px-5 py-3.5">
+                                @if (s.ExpirationDate.HasValue)
+                                {
+                                    <div class="flex items-center gap-2">
+                                        <span class="text-gray-700">@s.ExpirationDate.Value.ToString("dd/MM/yyyy")</span>
+                                        @if (isExpired)
+                                        {
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-red-50 text-red-700 text-[10px] font-bold border border-red-100">Hết hạn</span>
+                                        }
+                                        else if (isSoon)
+                                        {
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded bg-yellow-50 text-yellow-700 text-[10px] font-bold border border-yellow-100">Sắp hết</span>
+                                        }
+                                    </div>
+                                }
+                                else { <text>—</text> }
+                            </td>
+                            <td class="px-5 py-3.5 text-gray-500 max-w-[160px] truncate">@(s.Certification ?? "—")</td>
+                            <td class="px-5 py-3.5 text-center">
+                                <div class="flex items-center justify-center gap-3">
+                                    <a href="/WarehouseStaff/IngredientSource/Edit/@s.Id" class="text-amber-600 hover:text-amber-800 text-xs font-semibold transition">Sửa</a>
+                                    <form method="post" action="/WarehouseStaff/IngredientSource/Delete/@s.Id" class="inline" onsubmit="return confirm('Bạn có chắc muốn xóa lô hàng này?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-semibold transition">Xóa</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-sm">
+                <p class="text-gray-500">Trang @currentPage / @totalPages</p>
+                <div class="flex gap-1">
+                    @if (currentPage > 1)
+                    {
+                        <a href="?page=@(currentPage - 1)&pageSize=@pageSize&searchTerm=@searchTerm" class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700">Trước</a>
+                    }
+                    @if (currentPage < totalPages)
+                    {
+                        <a href="?page=@(currentPage + 1)&pageSize=@pageSize&searchTerm=@searchTerm" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white">Sau</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

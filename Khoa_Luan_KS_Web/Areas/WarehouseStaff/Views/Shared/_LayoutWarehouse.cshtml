@@ -77,49 +77,90 @@
         <!-- SIDEBAR -->
         <aside :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full'"
                class="fixed inset-y-0 left-0 z-40 w-64 bg-white border-r border-gray-100 shadow-xl transform transition-transform duration-300 md:relative md:translate-x-0 overflow-y-auto custom-scrollbar">
-            <nav class="flex flex-col gap-1.5 p-4 min-h-full text-[14px] font-medium text-gray-600">
+            <nav class="flex flex-col gap-1 p-4 min-h-full text-[14px] font-medium text-gray-600">
 
                 <div class="text-[11px] font-bold text-gray-400 uppercase tracking-wider mb-2 px-3 mt-1">Bảng Điều Khiển</div>
 
-                <!-- 1. Dashboard -->
                 <a href="/WarehouseStaff/Home/Index"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Home" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "Home" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
                     <i class="fas fa-home w-5 text-center @(controller == "Home" ? "text-amber-600" : "text-gray-400")"></i>
                     <span>Tổng quan Kho</span>
                 </a>
 
-                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Nghiệp vụ Kho</div>
+                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Phiếu Đề Xuất</div>
 
-                <!-- 2. Tạo Phiếu Đề Xuất -->
+                <a href="/WarehouseStaff/Requisition/Index"
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "Requisition" && action == "Index" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-file-lines w-5 text-center @(controller == "Requisition" && action == "Index" ? "text-amber-600" : "text-gray-400")"></i>
+                    <span>Danh Sách Phiếu</span>
+                </a>
+
                 <a href="/WarehouseStaff/Requisition/Create"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Requisition" && action == "Create" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "Requisition" && action == "Create" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
                     <i class="fas fa-file-circle-plus w-5 text-center @(controller == "Requisition" && action == "Create" ? "text-amber-600" : "text-gray-400")"></i>
-                    <span>Tạo Phiếu Đề Xuất</span>
+                    <span>Tạo Phiếu Mới</span>
                 </a>
 
-                <!-- 3. Lịch sử Phiếu Duyệt -->
                 <a href="/WarehouseStaff/Requisition/History"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Requisition" && action == "History" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "Requisition" && action == "History" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
                     <i class="fas fa-history w-5 text-center @(controller == "Requisition" && action == "History" ? "text-amber-600" : "text-gray-400")"></i>
-                    <span>Lịch Sử Phiếu Duyệt</span>
+                    <span>Lịch Sử Duyệt</span>
                 </a>
 
-                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Quản lý Tồn Kho</div>
+                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Nhập / Xuất Kho</div>
 
-                <!-- 4. Nhập Kho Thực Tế -->
                 <a href="/WarehouseStaff/Warehouse/Receive"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Warehouse" && action == "Receive" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "Warehouse" && action == "Receive" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
                     <i class="fas fa-truck-loading w-5 text-center @(controller == "Warehouse" && action == "Receive" ? "text-amber-600" : "text-gray-400")"></i>
                     <span>Nhập Kho Thực Tế</span>
-                    <!-- Notification badge -->
-                    <span class="ml-auto bg-amber-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">3</span>
                 </a>
 
-                <!-- 5. Tồn Kho Hiện Tại -->
-                <a href="/WarehouseStaff/Warehouse/Stock"
-                   class="flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all @(controller == "Warehouse" && action == "Stock" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
-                    <i class="fas fa-boxes w-5 text-center @(controller == "Warehouse" && action == "Stock" ? "text-amber-600" : "text-gray-400")"></i>
+                <a href="/WarehouseStaff/InternalIssue/Index"
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "InternalIssue" && action == "Index" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-dolly w-5 text-center @(controller == "InternalIssue" && action == "Index" ? "text-amber-600" : "text-gray-400")"></i>
+                    <span>Phiếu Xuất Nội Bộ</span>
+                </a>
+
+                <a href="/WarehouseStaff/InternalIssue/Create"
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "InternalIssue" && action == "Create" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-plus-circle w-5 text-center @(controller == "InternalIssue" && action == "Create" ? "text-amber-600" : "text-gray-400")"></i>
+                    <span>Tạo Phiếu Xuất</span>
+                </a>
+
+                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Tồn Kho</div>
+
+                <a href="/WarehouseStaff/Inventory/Index"
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "Inventory" && action == "Index" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-boxes w-5 text-center @(controller == "Inventory" && action == "Index" ? "text-amber-600" : "text-gray-400")"></i>
                     <span>Tồn Kho Hiện Tại</span>
+                </a>
+
+                <a href="/WarehouseStaff/Inventory/LowStock"
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "Inventory" && action == "LowStock" ? "bg-red-50 text-red-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-triangle-exclamation w-5 text-center @(controller == "Inventory" && action == "LowStock" ? "text-red-600" : "text-gray-400")"></i>
+                    <span>Cảnh Báo Sắp Hết</span>
+                </a>
+
+                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Danh Mục</div>
+
+                <a href="/WarehouseStaff/Ingredient/Index"
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "Ingredient" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-carrot w-5 text-center @(controller == "Ingredient" ? "text-amber-600" : "text-gray-400")"></i>
+                    <span>Nguyên Liệu</span>
+                </a>
+
+                <a href="/WarehouseStaff/IngredientSource/Index"
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "IngredientSource" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-truck-fast w-5 text-center @(controller == "IngredientSource" ? "text-amber-600" : "text-gray-400")"></i>
+                    <span>Lô Hàng / Nguồn</span>
+                </a>
+
+                <div class="mt-4 mb-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider px-3">Tài Chính</div>
+
+                <a href="/WarehouseStaff/Finance/SupplierPayables"
+                   class="flex items-center gap-3 px-3 py-2 rounded-xl transition-all @(controller == "Finance" ? "bg-amber-50 text-amber-700 font-bold" : "hover:bg-gray-50 hover:text-gray-900")">
+                    <i class="fas fa-file-invoice-dollar w-5 text-center @(controller == "Finance" ? "text-amber-600" : "text-gray-400")"></i>
+                    <span>Công Nợ Phải Trả NCC</span>
                 </a>
 
                 <!-- Divider bottom -->

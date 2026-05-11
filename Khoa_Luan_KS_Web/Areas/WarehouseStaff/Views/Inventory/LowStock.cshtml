@@ -1,0 +1,93 @@
+@model Khoa_Luan_KS_Web.Services.GetLowStockAlertsClientResponse
+@{
+    ViewData["Title"] = "Cảnh Báo Tồn Thấp";
+    Layout = "_LayoutWarehouse";
+    var alerts = Model.Alerts ?? new();
+}
+
+<div class="px-1 space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition"><i class="fas fa-home"></i></a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <a href="/WarehouseStaff/Inventory/Index" class="text-gray-500 hover:text-gray-700 text-sm">Tồn kho</a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">Cảnh báo</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Cảnh Báo Tồn Thấp</h1>
+            <p class="text-sm text-gray-500 mt-1">Nguyên liệu có tồn kho ≤ ngưỡng tái đặt — cần đặt hàng bổ sung</p>
+        </div>
+        <a href="/WarehouseStaff/Requisition/Create" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+            <i class="fas fa-plus"></i> Tạo Phiếu Đề Xuất
+        </a>
+    </div>
+
+    @if (!alerts.Any())
+    {
+        <div class="bg-white rounded-2xl border border-green-100 shadow-sm p-12 text-center">
+            <div class="w-16 h-16 rounded-2xl bg-green-50 flex items-center justify-center mx-auto mb-4">
+                <i class="fas fa-check-double text-green-500 text-2xl"></i>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mb-1">Tồn kho ổn định!</h3>
+            <p class="text-sm text-gray-500">Hiện tại không có nguyên liệu nào dưới ngưỡng cảnh báo.</p>
+        </div>
+    }
+    else
+    {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            @foreach (var a in alerts)
+            {
+                bool isOut = a.QuantityAvailable <= 0;
+                <div class="bg-white rounded-2xl border @(isOut ? "border-gray-300" : "border-red-200") shadow-sm overflow-hidden hover:shadow-md transition">
+                    <div class="px-5 py-4 border-b @(isOut ? "border-gray-100 bg-gray-50/50" : "border-red-100 bg-red-50/50") flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-10 h-10 rounded-xl @(isOut ? "bg-gray-200" : "bg-red-100") flex items-center justify-center">
+                                <i class="fas @(isOut ? "fa-ban text-gray-500" : "fa-triangle-exclamation text-red-600")"></i>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-bold @(isOut ? "text-gray-500" : "text-red-600") uppercase tracking-wide">
+                                    @(isOut ? "Hết hàng" : "Tồn thấp")
+                                </p>
+                                <p class="font-bold text-gray-900 text-sm">@a.IngredientName</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="p-5 space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-500 font-medium">Hiện có:</span>
+                            <span class="font-bold @(isOut ? "text-gray-400" : "text-red-700")">@a.QuantityAvailable @a.Unit</span>
+                        </div>
+                        @if (a.ReorderLevel.HasValue)
+                        {
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-500 font-medium">Ngưỡng:</span>
+                                <span class="font-semibold text-gray-700">@a.ReorderLevel.Value @a.Unit</span>
+                            </div>
+                        }
+                        @if (a.Shortage.HasValue && a.Shortage.Value > 0)
+                        {
+                            <div class="flex justify-between text-sm bg-amber-50 border border-amber-100 rounded-lg px-3 py-2">
+                                <span class="text-amber-700 font-medium">Cần đặt thêm:</span>
+                                <span class="font-bold text-amber-700">@a.Shortage.Value @a.Unit</span>
+                            </div>
+                        }
+                        <p class="text-[11px] text-gray-400 pt-2 border-t border-gray-100">
+                            Cập nhật: @a.LastUpdated.ToString("dd/MM/yyyy HH:mm")
+                        </p>
+                        <div class="flex gap-2 pt-2">
+                            <a href="/WarehouseStaff/Inventory/Detail/@a.IngredientId" class="flex-1 py-2 text-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 text-xs font-semibold transition">
+                                Chi tiết
+                            </a>
+                            <a href="/WarehouseStaff/Requisition/Create" class="flex-1 py-2 text-center rounded-lg bg-amber-500 hover:bg-amber-600 text-white text-xs font-bold transition">
+                                Đặt hàng
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>

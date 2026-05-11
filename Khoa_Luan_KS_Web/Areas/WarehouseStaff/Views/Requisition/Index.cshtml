@@ -1,0 +1,153 @@
+@model Khoa_Luan_KS_Web.Services.GetIntakeProposalsClientResponse
+@{
+    ViewData["Title"] = "Danh Sách Phiếu Đề Xuất";
+    Layout = "_LayoutWarehouse";
+
+    string StatusLabel(string s) => s?.ToLowerInvariant() switch
+    {
+        "submitted" => "Chờ duyệt", "approved" => "Đã duyệt",
+        "rejected" => "Từ chối", "cancelled" => "Đã hủy",
+        "fulfilled" => "Đã nhập kho", _ => s ?? ""
+    };
+    (string cls, string icon) StatusBadge(string s) => s?.ToLowerInvariant() switch
+    {
+        "submitted" => ("bg-yellow-50 text-yellow-700 border-yellow-100", "fa-hourglass-half"),
+        "approved" => ("bg-green-50 text-green-700 border-green-100", "fa-check"),
+        "rejected" => ("bg-red-50 text-red-600 border-red-100", "fa-times"),
+        "cancelled" => ("bg-gray-100 text-gray-500 border-gray-200", "fa-ban"),
+        "fulfilled" => ("bg-blue-50 text-blue-700 border-blue-100", "fa-box"),
+        _ => ("bg-gray-100 text-gray-500 border-gray-200", "fa-circle")
+    };
+
+    var items = Model.Data ?? new();
+    int totalPages = Model.PageSize == 0 ? 1 : (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
+    int currentPage = ViewBag.Page ?? 1;
+    int pageSize = ViewBag.PageSize ?? 20;
+}
+
+<div class="px-1 space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition">
+                    <i class="fas fa-home"></i>
+                </a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">Danh sách phiếu đề xuất</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Danh Sách Phiếu Đề Xuất Nhập</h1>
+            <p class="text-sm text-gray-500 mt-1">Tổng cộng @Model.TotalCount phiếu</p>
+        </div>
+        <a href="/WarehouseStaff/Requisition/Create" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+            <i class="fas fa-plus"></i> Tạo Phiếu Mới
+        </a>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-3">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-4 py-3">
+            <div class="text-2xl font-bold text-gray-900">@items.Count</div>
+            <div class="text-xs text-gray-500 font-medium">Trên trang này</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-yellow-100 shadow-sm px-4 py-3">
+            <div class="text-2xl font-bold text-yellow-600">@items.Count(i => i.Status?.ToLower() == "submitted")</div>
+            <div class="text-xs text-gray-500 font-medium">Chờ duyệt</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-green-100 shadow-sm px-4 py-3">
+            <div class="text-2xl font-bold text-green-600">@items.Count(i => i.Status?.ToLower() == "approved")</div>
+            <div class="text-xs text-gray-500 font-medium">Đã duyệt</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-blue-100 shadow-sm px-4 py-3">
+            <div class="text-2xl font-bold text-blue-600">@items.Count(i => i.Status?.ToLower() == "fulfilled" || i.HasActualReceipt)</div>
+            <div class="text-xs text-gray-500 font-medium">Đã nhập kho</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-red-100 shadow-sm px-4 py-3">
+            <div class="text-2xl font-bold text-red-500">@items.Count(i => i.Status?.ToLower() == "rejected")</div>
+            <div class="text-xs text-gray-500 font-medium">Từ chối</div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Mã Phiếu</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Người Tạo</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Ngày Tạo</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Ghi Chú</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Trạng Thái</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 text-gray-700">
+                    @if (!items.Any())
+                    {
+                        <tr><td colspan="6" class="text-center py-16 text-gray-400">
+                            <i class="fas fa-inbox text-4xl mb-3 block text-gray-200"></i>
+                            <p class="text-sm font-medium">Chưa có phiếu đề xuất nào</p>
+                        </td></tr>
+                    }
+                    @foreach (var p in items)
+                    {
+                        var (cls, icon) = StatusBadge(p.Status);
+                        <tr class="hover:bg-amber-50/20 transition">
+                            <td class="px-5 py-3.5">
+                                <span class="font-mono font-semibold text-gray-800">#@p.ProposalCode</span>
+                            </td>
+                            <td class="px-5 py-3.5 text-gray-600">@(p.CreatedByDisplayName ?? $"User#{p.CreatedByUserId}")</td>
+                            <td class="px-5 py-3.5 text-gray-500">@p.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="px-5 py-3.5 text-gray-500 max-w-[220px]">
+                                <span class="truncate block">@(p.HeaderNote ?? "—")</span>
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <div class="flex flex-col gap-1">
+                                    <span class="inline-flex w-fit items-center gap-1 px-2.5 py-1 rounded-full @cls text-[11px] font-bold border">
+                                        <i class="fas @icon text-[9px]"></i> @StatusLabel(p.Status)
+                                    </span>
+                                    @if (p.HasActualReceipt)
+                                    {
+                                        <span class="inline-flex w-fit items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[10px] font-bold border border-blue-100">
+                                            <i class="fas fa-box text-[8px]"></i> Đã nhập kho
+                                        </span>
+                                    }
+                                </div>
+                            </td>
+                            <td class="px-5 py-3.5 text-center">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a href="/WarehouseStaff/Requisition/Detail/@p.Id" class="text-amber-600 hover:text-amber-800 text-xs font-semibold transition hover:underline">Chi tiết</a>
+                                    @if (p.Status?.ToLower() == "approved" && !p.HasActualReceipt)
+                                    {
+                                        <a href="/WarehouseStaff/Warehouse/Receive" class="text-white bg-amber-500 hover:bg-amber-600 text-[11px] font-bold px-2.5 py-1 rounded-lg transition">
+                                            Nhập kho
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-sm">
+                <p class="text-gray-500">Trang @currentPage / @totalPages</p>
+                <div class="flex gap-1">
+                    @if (currentPage > 1)
+                    {
+                        <a href="?page=@(currentPage - 1)&pageSize=@pageSize" class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700">Trước</a>
+                    }
+                    @if (currentPage < totalPages)
+                    {
+                        <a href="?page=@(currentPage + 1)&pageSize=@pageSize" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white">Sau</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

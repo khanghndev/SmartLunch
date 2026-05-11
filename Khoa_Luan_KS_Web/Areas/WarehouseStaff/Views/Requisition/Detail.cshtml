@@ -1,0 +1,179 @@
+@model Khoa_Luan_KS_Web.Services.IntakeProposalDetailClientDto
+@{
+    ViewData["Title"] = $"Phiếu #{Model.ProposalCode}";
+    Layout = "_LayoutWarehouse";
+
+    string StatusLabel(string s) => s?.ToLowerInvariant() switch
+    {
+        "submitted" => "Chờ duyệt", "approved" => "Đã duyệt",
+        "rejected" => "Từ chối", "cancelled" => "Đã hủy",
+        "fulfilled" => "Đã nhập kho", _ => s ?? ""
+    };
+    (string cls, string icon) StatusBadge(string s) => s?.ToLowerInvariant() switch
+    {
+        "submitted" => ("bg-yellow-50 text-yellow-700 border-yellow-100", "fa-hourglass-half"),
+        "approved" => ("bg-green-50 text-green-700 border-green-100", "fa-check"),
+        "rejected" => ("bg-red-50 text-red-600 border-red-100", "fa-times"),
+        "cancelled" => ("bg-gray-100 text-gray-500 border-gray-200", "fa-ban"),
+        "fulfilled" => ("bg-blue-50 text-blue-700 border-blue-100", "fa-box"),
+        _ => ("bg-gray-100 text-gray-500 border-gray-200", "fa-circle")
+    };
+
+    var (cls, icon) = StatusBadge(Model.Status);
+}
+
+<div class="px-1 space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition"><i class="fas fa-home"></i></a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <a href="/WarehouseStaff/Requisition/Index" class="text-gray-500 hover:text-gray-700 text-sm">Phiếu đề xuất</a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">#@Model.ProposalCode</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Phiếu #@Model.ProposalCode</h1>
+            <p class="text-sm text-gray-500 mt-1">Chi tiết phiếu đề xuất nhập nguyên liệu</p>
+        </div>
+        <div class="flex gap-2">
+            @if (Model.Status?.ToLower() == "approved" && !Model.HasActualReceipt)
+            {
+                <a href="/WarehouseStaff/Warehouse/Receive" class="px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+                    <i class="fas fa-truck-loading mr-1"></i> Nhập kho ngay
+                </a>
+            }
+            <a href="/WarehouseStaff/Requisition/Index" class="px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold transition">
+                <i class="fas fa-arrow-left mr-1"></i> Quay lại
+            </a>
+        </div>
+    </div>
+
+    <!-- Info cards -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="lg:col-span-2 space-y-4">
+            <!-- Header info -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
+                <div class="flex items-center justify-between flex-wrap gap-3 mb-5">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center">
+                            <i class="fas fa-file-invoice text-amber-600 text-lg"></i>
+                        </div>
+                        <div>
+                            <div class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Mã phiếu</div>
+                            <div class="font-mono font-bold text-lg text-gray-900">#@Model.ProposalCode</div>
+                        </div>
+                    </div>
+                    <span class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full @cls text-xs font-bold border">
+                        <i class="fas @icon"></i> @StatusLabel(Model.Status)
+                    </span>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Người tạo</p>
+                        <p class="font-semibold text-gray-800">@(Model.CreatedByDisplayName ?? $"User#{Model.CreatedByUserId}")</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Ngày tạo</p>
+                        <p class="font-semibold text-gray-800">@Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Số dòng</p>
+                        <p class="font-semibold text-gray-800">@Model.Lines.Count dòng NVL</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-xl p-3">
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Nhập kho?</p>
+                        <p class="font-semibold @(Model.HasActualReceipt ? "text-blue-700" : "text-gray-500")">
+                            @if (Model.HasActualReceipt)
+                            {
+                                <text><i class="fas fa-check-circle"></i> Đã nhập: @Model.ActualReceiptCode</text>
+                            }
+                            else { <text>Chưa nhập</text> }
+                        </p>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrWhiteSpace(Model.HeaderNote))
+                {
+                    <div class="mt-4 bg-amber-50 rounded-xl p-3 border border-amber-100">
+                        <p class="text-[10px] font-bold text-amber-600 uppercase tracking-wide mb-1">Ghi chú phiếu</p>
+                        <p class="text-sm text-amber-900">@Model.HeaderNote</p>
+                    </div>
+                }
+            </div>
+
+            <!-- Lines -->
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100">
+                    <h3 class="font-bold text-gray-900 text-sm">Chi Tiết Nguyên Liệu Đề Xuất</h3>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm text-left whitespace-nowrap">
+                        <thead class="bg-gray-50 text-[11px] text-gray-500 uppercase font-bold tracking-wider">
+                            <tr>
+                                <th class="px-5 py-3 border-b border-gray-100 w-12">#</th>
+                                <th class="px-5 py-3 border-b border-gray-100">Tên Nguyên Liệu</th>
+                                <th class="px-5 py-3 border-b border-gray-100">Đơn vị</th>
+                                <th class="px-5 py-3 border-b border-gray-100 text-right">Số lượng</th>
+                                <th class="px-5 py-3 border-b border-gray-100">Ghi chú</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-50 text-gray-700">
+                            @{ var idx = 0; }
+                            @foreach (var line in Model.Lines)
+                            {
+                                idx++;
+                                <tr class="hover:bg-gray-50/50 transition">
+                                    <td class="px-5 py-3 text-gray-400 font-mono">@idx</td>
+                                    <td class="px-5 py-3 font-medium text-gray-800">@line.IngredientName</td>
+                                    <td class="px-5 py-3 text-gray-500">@line.Unit</td>
+                                    <td class="px-5 py-3 text-right font-semibold text-amber-700">@line.Quantity @line.Unit</td>
+                                    <td class="px-5 py-3 text-gray-500">@(line.LineNote ?? "—")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Review info -->
+        <div class="lg:col-span-1">
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 space-y-4">
+                <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2">
+                    <i class="fas fa-clipboard-check text-amber-600"></i> Thông tin Duyệt
+                </h3>
+
+                @if (Model.ReviewedAt.HasValue)
+                {
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Người duyệt</p>
+                        <p class="font-semibold text-gray-800 text-sm">@(Model.ReviewedByDisplayName ?? $"User#{Model.ReviewedByUserId}")</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Thời gian duyệt</p>
+                        <p class="font-semibold text-gray-800 text-sm">@Model.ReviewedAt.Value.ToString("dd/MM/yyyy HH:mm")</p>
+                    </div>
+                    @if (!string.IsNullOrWhiteSpace(Model.ReviewNote))
+                    {
+                        var noteCls = Model.Status?.ToLower() == "rejected" ? "bg-red-50 border-red-100 text-red-800" : "bg-green-50 border-green-100 text-green-800";
+                        <div>
+                            <p class="text-[10px] font-bold text-gray-400 uppercase tracking-wide mb-1">Ghi chú duyệt</p>
+                            <div class="p-3 rounded-xl @noteCls border">
+                                <p class="text-sm font-medium">@Model.ReviewNote</p>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-center py-6 text-gray-400">
+                        <i class="fas fa-hourglass-half text-3xl mb-2 block text-yellow-200"></i>
+                        <p class="text-sm font-medium">Đang chờ Manager duyệt...</p>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>

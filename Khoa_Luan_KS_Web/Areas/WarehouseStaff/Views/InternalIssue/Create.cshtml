@@ -1,21 +1,17 @@
 @{
-    ViewData["Title"] = "Tạo Phiếu Đề Xuất";
+    ViewData["Title"] = "Tạo Phiếu Xuất Kho Nội Bộ";
     Layout = "_LayoutWarehouse";
     var ingredients = ViewBag.Ingredients as List<Khoa_Luan_KS_Web.Services.IngredientClientDto> ?? new();
 }
 
-@functions {
-    public static string JsEscape(string? s) => System.Text.Json.JsonSerializer.Serialize(s ?? "");
-}
-
 <div class="px-1 space-y-6"
      x-data='{
-        headerNote: "",
-        items: [{ id: 1, ingredientId: 0, name: "", unit: "", quantity: "", lineNote: "" }],
+        reason: "",
+        items: [{ id: 1, ingredientId: 0, name: "", unit: "", quantity: "" }],
         nextId: 2,
         submitting: false,
         ingredients: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ingredients.Select(i => new { id = i.Id, name = i.Name, unit = i.Unit }))),
-        addItem() { this.items.push({ id: this.nextId++, ingredientId: 0, name: "", unit: "", quantity: "", lineNote: "" }); },
+        addItem() { this.items.push({ id: this.nextId++, ingredientId: 0, name: "", unit: "", quantity: "" }); },
         removeItem(id) { if (this.items.length > 1) this.items = this.items.filter(i => i.id !== id); },
         onSelectIngredient(item, ev) {
             const id = parseInt(ev.target.value || 0);
@@ -26,8 +22,8 @@
         },
         submit(e) {
             const valid = this.items.filter(i => i.ingredientId > 0 && parseFloat(i.quantity) > 0);
-            if (valid.length === 0) { alert("Vui lòng thêm ít nhất một dòng nguyên liệu hợp lệ."); e.preventDefault(); return; }
-            const lines = valid.map(i => ({ IngredientId: i.ingredientId, Quantity: parseFloat(i.quantity), LineNote: i.lineNote }));
+            if (valid.length === 0) { alert("Vui lòng thêm ít nhất một dòng hợp lệ."); e.preventDefault(); return; }
+            const lines = valid.map(i => ({ IngredientId: i.ingredientId, Quantity: parseFloat(i.quantity) }));
             document.getElementById("linesJson").value = JSON.stringify(lines);
             this.submitting = true;
         }
@@ -37,27 +33,31 @@
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
             <div class="flex items-center gap-2 mb-1">
-                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition">
-                    <i class="fas fa-home"></i>
-                </a>
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition"><i class="fas fa-home"></i></a>
                 <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
-                <a href="/WarehouseStaff/Requisition/Index" class="text-gray-500 hover:text-gray-700 text-sm">Phiếu đề xuất</a>
+                <a href="/WarehouseStaff/InternalIssue/Index" class="text-gray-500 hover:text-gray-700 text-sm">Xuất kho nội bộ</a>
                 <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
                 <span class="text-sm font-medium text-gray-500">Tạo mới</span>
             </div>
-            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Tạo Phiếu Đề Xuất Nhập NVL</h1>
-            <p class="text-sm text-gray-500 mt-1">Điền thông tin để gửi Manager phê duyệt</p>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Tạo Phiếu Xuất Kho Nội Bộ</h1>
+            <p class="text-sm text-gray-500 mt-1">Xuất nguyên liệu để nấu ăn / sản xuất — tồn kho sẽ trừ trực tiếp</p>
         </div>
-        <a href="/WarehouseStaff/Requisition/History" class="flex items-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold transition">
-            <i class="fas fa-history text-gray-400"></i> Lịch sử duyệt
-        </a>
     </div>
 
-    <form method="post" action="/WarehouseStaff/Requisition/Create" x-on:submit="submit($event)" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+    <!-- Warning -->
+    <div class="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-2xl">
+        <i class="fas fa-triangle-exclamation text-red-600 mt-0.5 shrink-0 text-lg"></i>
+        <div class="text-sm text-red-800 font-medium leading-relaxed">
+            <strong>Lưu ý:</strong> Phiếu xuất kho nội bộ <strong>sẽ trừ tồn kho ngay lập tức</strong>, không cần Manager duyệt.
+            Vui lòng kiểm tra kỹ số lượng trước khi xác nhận.
+        </div>
+    </div>
+
+    <form method="post" action="/WarehouseStaff/InternalIssue/Create" x-on:submit="submit($event)" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         @Html.AntiForgeryToken()
         <input type="hidden" name="linesJson" id="linesJson" />
 
-        <!-- Thông tin phiếu (cột trái) -->
+        <!-- Info -->
         <div class="lg:col-span-1 space-y-5">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                 <h3 class="font-bold text-gray-900 text-sm mb-4 flex items-center gap-2">
@@ -68,23 +68,15 @@
                 </h3>
 
                 <div class="mb-4">
-                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Loại Phiếu</label>
-                    <div class="p-3 rounded-xl border-2 border-amber-200 bg-amber-50 text-amber-700 text-center">
-                        <i class="fas fa-arrow-circle-down"></i>
-                        <span class="ml-2 text-sm font-bold">Đề xuất Nhập kho NVL</span>
-                    </div>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Ngày Tạo</label>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Thời điểm xuất</label>
                     <input type="text" readonly value="@DateTime.Now.ToString("dd/MM/yyyy HH:mm")"
                            class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 bg-gray-50" />
                 </div>
 
                 <div>
-                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Ghi Chú</label>
-                    <textarea name="headerNote" x-model="headerNote" rows="4"
-                              placeholder="Nhập ghi chú hoặc lý do đề xuất..."
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Lý Do Xuất *</label>
+                    <textarea name="reason" x-model="reason" rows="4" required
+                              placeholder="VD: Xuất nguyên liệu cho bếp ăn trưa ngày 11/05/2026..."
                               class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition bg-gray-50 resize-none"></textarea>
                 </div>
             </div>
@@ -92,17 +84,17 @@
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col gap-3">
                 <button type="submit" :disabled="submitting"
                         class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 disabled:opacity-60 text-white font-bold text-sm tracking-wide transition flex items-center justify-center gap-2 shadow-sm">
-                    <i class="fas fa-paper-plane"></i>
-                    <span x-text="submitting ? 'Đang gửi...' : 'Gửi Phiếu Duyệt'"></span>
+                    <i class="fas fa-dolly"></i>
+                    <span x-text="submitting ? 'Đang xử lý...' : 'Xác Nhận Xuất Kho'"></span>
                 </button>
-                <a href="/WarehouseStaff/Requisition/Index"
+                <a href="/WarehouseStaff/InternalIssue/Index"
                    class="w-full py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold text-sm text-center transition">
                     Hủy bỏ
                 </a>
             </div>
         </div>
 
-        <!-- Danh sách NVL (cột phải) -->
+        <!-- Lines -->
         <div class="lg:col-span-2">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
@@ -111,9 +103,9 @@
                             <div class="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center">
                                 <i class="fas fa-list text-amber-600 text-xs"></i>
                             </div>
-                            Danh Sách Nguyên Liệu Đề Xuất
+                            Danh Sách Nguyên Liệu Xuất
                         </h3>
-                        <p class="text-xs text-gray-400 mt-0.5 ml-8">Chọn nguyên liệu từ danh mục và nhập số lượng cần</p>
+                        <p class="text-xs text-gray-400 mt-0.5 ml-8">Chọn nguyên liệu và nhập số lượng cần xuất</p>
                     </div>
                     <button type="button" x-on:click="addItem()"
                             class="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 hover:bg-amber-100 text-amber-700 text-xs font-bold transition border border-amber-200">
@@ -122,19 +114,17 @@
                 </div>
 
                 <div class="hidden md:grid grid-cols-12 gap-2 px-5 py-3 bg-gray-50 border-b border-gray-100 text-[11px] font-bold text-gray-500 uppercase tracking-wide">
-                    <div class="col-span-5">Nguyên Liệu</div>
+                    <div class="col-span-7">Nguyên Liệu</div>
                     <div class="col-span-2">Đơn vị</div>
                     <div class="col-span-2">Số lượng</div>
-                    <div class="col-span-2">Ghi chú</div>
                     <div class="col-span-1 text-center">Xóa</div>
                 </div>
 
                 <div class="divide-y divide-gray-50 max-h-[560px] overflow-y-auto">
                     <template x-for="item in items" :key="item.id">
                         <div class="grid grid-cols-12 gap-2 px-5 py-4 items-center hover:bg-gray-50/50 transition">
-                            <div class="col-span-12 md:col-span-5">
-                                <select x-on:change="onSelectIngredient(item, $event)"
-                                        :value="item.ingredientId"
+                            <div class="col-span-12 md:col-span-7">
+                                <select x-on:change="onSelectIngredient(item, $event)" :value="item.ingredientId"
                                         class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition bg-white">
                                     <option value="0">-- Chọn nguyên liệu --</option>
                                     <template x-for="g in ingredients" :key="g.id">
@@ -146,12 +136,8 @@
                                 <input type="text" readonly x-bind:value="item.unit" placeholder="—"
                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm bg-gray-50 text-gray-600" />
                             </div>
-                            <div class="col-span-4 md:col-span-2">
+                            <div class="col-span-7 md:col-span-2">
                                 <input type="number" x-model="item.quantity" placeholder="0" min="0.01" step="0.01"
-                                       class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
-                            </div>
-                            <div class="col-span-3 md:col-span-2">
-                                <input type="text" x-model="item.lineNote" placeholder="Ghi chú..."
                                        class="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition" />
                             </div>
                             <div class="col-span-1 flex justify-center">
@@ -166,20 +152,8 @@
 
                 <div class="px-6 py-4 bg-amber-50/50 border-t border-amber-100 flex items-center justify-between">
                     <p class="text-xs text-gray-500 font-medium">
-                        Tổng cộng <span class="font-bold text-amber-700" x-text="items.length"></span> dòng
+                        Tổng <span class="font-bold text-amber-700" x-text="items.length"></span> dòng
                     </p>
-                    <button type="button" x-on:click="addItem()"
-                            class="text-xs font-bold text-amber-600 hover:text-amber-700 transition flex items-center gap-1">
-                        <i class="fas fa-plus-circle"></i> Thêm dòng
-                    </button>
-                </div>
-            </div>
-
-            <div class="mt-4 flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
-                <i class="fas fa-info-circle text-blue-500 mt-0.5 shrink-0"></i>
-                <div class="text-xs text-blue-700 font-medium leading-relaxed">
-                    <strong>Lưu ý:</strong> Sau khi gửi, phiếu sẽ chuyển sang trạng thái <em>chờ duyệt</em>.
-                    Manager sẽ duyệt hoặc từ chối. Chỉ khi phiếu được <strong>duyệt</strong>, bạn mới có thể tiến hành nhập kho thực tế tại trang <a href="/WarehouseStaff/Warehouse/Receive" class="underline font-bold">Nhập Kho Thực Tế</a>.
                 </div>
             </div>
         </div>

@@ -7,40 +7,41 @@ namespace Khoa_Luan_KS_Web.Areas.WarehouseStaff.Controllers
 {
     [Area("WarehouseStaff")]
     [Authorize(Policy = "ManagerArea")]
-    public class RequisitionController : Controller
+    public class InternalIssueController : Controller
     {
         private readonly BackendWarehouseClient _client;
-        public RequisitionController(BackendWarehouseClient client) { _client = client; }
+        public InternalIssueController(BackendWarehouseClient client) { _client = client; }
 
-        public async Task<IActionResult> Index(int page = 1, int pageSize = 20, CancellationToken ct = default)
+        public async Task<IActionResult> Index(int page = 1, int pageSize = 20, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default)
         {
-            ViewData["Title"] = "Danh Sách Phiếu Đề Xuất";
+            ViewData["Title"] = "Phiếu Xuất Kho Nội Bộ";
             var token = HttpContext.Session.GetString("access_token");
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
 
             try
             {
-                var response = await _client.GetIntakeProposalsAsync(token, page, pageSize, ct);
+                var response = await _client.GetInternalIssuesAsync(token, page, pageSize, from, to, ct);
                 ViewBag.Page = page;
                 ViewBag.PageSize = pageSize;
+                ViewBag.FromDate = from;
+                ViewBag.ToDate = to;
                 return View(response);
             }
             catch (Exception ex)
             {
                 TempData["Error"] = ex.Message;
-                return View(new GetIntakeProposalsClientResponse());
+                return View(new GetInternalIssuesClientResponse());
             }
         }
 
         public async Task<IActionResult> Create(CancellationToken ct = default)
         {
-            ViewData["Title"] = "Tạo Phiếu Đề Xuất";
+            ViewData["Title"] = "Tạo Phiếu Xuất Kho Nội Bộ";
             var token = HttpContext.Session.GetString("access_token");
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
 
             try
             {
-                // Pull active ingredients to allow selection
                 var ingredients = await _client.GetIngredientsAsync(token, 1, 500, isActive: true, ct: ct);
                 ViewBag.Ingredients = ingredients.Items;
             }
@@ -49,19 +50,20 @@ namespace Khoa_Luan_KS_Web.Areas.WarehouseStaff.Controllers
                 TempData["Error"] = ex.Message;
                 ViewBag.Ingredients = new List<IngredientClientDto>();
             }
+
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create(string? headerNote, string linesJson, CancellationToken ct = default)
+        public async Task<IActionResult> Create(string? reason, string linesJson, CancellationToken ct = default)
         {
             var token = HttpContext.Session.GetString("access_token");
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
 
             try
             {
-                var lines = JsonSerializer.Deserialize<List<CreateIntakeProposalLineClientRequest>>(linesJson ?? "[]",
+                var lines = JsonSerializer.Deserialize<List<CreateInternalIssueLineClientRequest>>(linesJson ?? "[]",
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true }) ?? new();
 
                 lines = lines.Where(l => l.IngredientId > 0 && l.Quantity > 0).ToList();
@@ -71,15 +73,16 @@ namespace Khoa_Luan_KS_Web.Areas.WarehouseStaff.Controllers
                     return RedirectToAction(nameof(Create));
                 }
 
-                var request = new CreateIntakeProposalClientRequest
+                var request = new CreateInternalIssueClientRequest
                 {
-                    HeaderNote = headerNote,
+                    IssuedAtUtc = DateTime.UtcNow,
+                    Reason = reason,
                     Lines = lines
                 };
 
-                var created = await _client.CreateIntakeProposalAsync(request, token, ct);
-                TempData["Success"] = $"Đã tạo phiếu đề xuất #{created.Proposal.ProposalCode} thành công. Đang chờ Manager duyệt.";
-                return RedirectToAction(nameof(Detail), new { id = created.Proposal.Id });
+                var result = await _client.CreateInternalIssueAsync(request, token, ct);
+                TempData["Success"] = $"Đã tạo phiếu xuất kho nội bộ #{result.Issue.IssueCode}. Tồn kho đã được trừ tự động.";
+                return RedirectToAction(nameof(Detail), new { id = result.Issue.Id });
             }
             catch (Exception ex)
             {
@@ -90,39 +93,19 @@ namespace Khoa_Luan_KS_Web.Areas.WarehouseStaff.Controllers
 
         public async Task<IActionResult> Detail(int id, CancellationToken ct = default)
         {
-            ViewData["Title"] = "Chi Tiết Phiếu Đề Xuất";
+            ViewData["Title"] = "Chi Tiết Phiếu Xuất Kho";
             var token = HttpContext.Session.GetString("access_token");
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
 
             try
             {
-                var detail = await _client.GetIntakeProposalAsync(id, token, ct);
+                var detail = await _client.GetInternalIssueAsync(id, token, ct);
                 return View(detail);
             }
             catch (Exception ex)
             {
                 TempData["Error"] = ex.Message;
                 return RedirectToAction(nameof(Index));
-            }
-        }
-
-        public async Task<IActionResult> History(int page = 1, int pageSize = 20, CancellationToken ct = default)
-        {
-            ViewData["Title"] = "Lịch Sử Duyệt Phiếu";
-            var token = HttpContext.Session.GetString("access_token");
-            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
-
-            try
-            {
-                var response = await _client.GetIntakeProposalReviewHistoryAsync(token, page, pageSize, ct);
-                ViewBag.Page = page;
-                ViewBag.PageSize = pageSize;
-                return View(response);
-            }
-            catch (Exception ex)
-            {
-                TempData["Error"] = ex.Message;
-                return View(new GetIntakeReviewHistoryClientResponse());
             }
         }
     }

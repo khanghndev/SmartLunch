@@ -1,0 +1,139 @@
+@model Khoa_Luan_KS_Web.Services.SupplierPayablesClientResponse
+@{
+    ViewData["Title"] = "Công Nợ Phải Trả Nhà Cung Cấp";
+    Layout = "_LayoutWarehouse";
+    var lines = Model.Lines ?? new();
+    bool onlyOutstanding = ViewBag.OnlyOutstanding ?? true;
+}
+
+<div class="px-1 space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition"><i class="fas fa-home"></i></a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">Tài chính / Công nợ NCC</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Công Nợ Phải Trả Nhà Cung Cấp</h1>
+            <p class="text-sm text-gray-500 mt-1">Tổng quan tình hình công nợ với các nhà cung cấp nguyên liệu</p>
+        </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl shadow-sm p-6 text-white">
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-bold uppercase tracking-wider opacity-80">Tổng công nợ còn phải trả</p>
+                <i class="fas fa-file-invoice-dollar text-2xl opacity-50"></i>
+            </div>
+            <h3 class="text-3xl font-bold">@Model.GrandTotalOutstanding.ToString("N0") đ</h3>
+            <p class="text-xs opacity-80 mt-2">Tổng từ @lines.Count NCC</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-bold uppercase tracking-wider text-gray-500">Tổng giá trị hợp đồng</p>
+                <i class="fas fa-handshake text-2xl text-gray-300"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-700">@lines.Sum(l => l.TotalContractValue).ToString("N0") đ</h3>
+            <p class="text-xs text-gray-500 mt-2">Cộng tất cả hợp đồng đang hiệu lực</p>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+            <div class="flex items-center justify-between mb-3">
+                <p class="text-xs font-bold uppercase tracking-wider text-gray-500">Tổng đã thanh toán</p>
+                <i class="fas fa-money-bill-wave text-2xl text-green-300"></i>
+            </div>
+            <h3 class="text-2xl font-bold text-green-700">@lines.Sum(l => l.TotalPaid).ToString("N0") đ</h3>
+            <p class="text-xs text-gray-500 mt-2">Đã chi trả cho các NCC</p>
+        </div>
+    </div>
+
+    <!-- Filter -->
+    <form method="get" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center gap-3">
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" name="onlyOutstanding" value="true" checked="@onlyOutstanding" class="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500" />
+            <span class="text-sm font-medium text-gray-700">Chỉ hiển thị NCC còn phải trả</span>
+        </label>
+        <button type="submit" class="ml-auto px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+            <i class="fas fa-filter"></i> Áp dụng
+        </button>
+    </form>
+
+    <!-- Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="font-bold text-gray-900 text-sm">Chi Tiết Công Nợ Theo Nhà Cung Cấp</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                        <th class="px-5 py-3.5 border-b border-gray-100 w-16">ID</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Nhà Cung Cấp</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-right">Giá Trị Hợp Đồng</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-right">Đã Thanh Toán</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-right">Còn Phải Trả</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 w-32">% Đã Trả</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 text-gray-700">
+                    @if (!lines.Any())
+                    {
+                        <tr><td colspan="6" class="text-center py-16 text-gray-400">
+                            <i class="fas fa-check-double text-4xl mb-3 block text-green-200"></i>
+                            <p class="text-sm font-medium">Không có công nợ nào</p>
+                        </td></tr>
+                    }
+                    @foreach (var l in lines)
+                    {
+                        decimal pct = l.TotalContractValue == 0 ? 100 : Math.Min(100, (l.TotalPaid / l.TotalContractValue) * 100);
+                        string barCls = pct >= 100 ? "bg-green-500" : pct >= 50 ? "bg-amber-500" : "bg-red-500";
+                        <tr class="hover:bg-amber-50/20 transition">
+                            <td class="px-5 py-3.5 font-mono text-gray-500">#@l.PartnerId</td>
+                            <td class="px-5 py-3.5">
+                                <div class="font-semibold text-gray-900">@l.PartnerLegalName</div>
+                            </td>
+                            <td class="px-5 py-3.5 text-right font-medium text-gray-700">@l.TotalContractValue.ToString("N0") đ</td>
+                            <td class="px-5 py-3.5 text-right font-medium text-green-700">@l.TotalPaid.ToString("N0") đ</td>
+                            <td class="px-5 py-3.5 text-right">
+                                <span class="font-bold @(l.Outstanding > 0 ? "text-red-700" : "text-gray-400")">
+                                    @l.Outstanding.ToString("N0") đ
+                                </span>
+                            </td>
+                            <td class="px-5 py-3.5 w-32">
+                                <div class="flex items-center gap-2">
+                                    <div class="flex-1 bg-gray-100 rounded-full h-1.5">
+                                        <div class="@barCls h-1.5 rounded-full transition-all" style="width: @pct%"></div>
+                                    </div>
+                                    <span class="text-[10px] font-bold text-gray-500 w-8 text-right">@pct.ToString("0")%</span>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                @if (lines.Any())
+                {
+                    <tfoot class="bg-amber-50/50 border-t-2 border-amber-200">
+                        <tr>
+                            <td colspan="2" class="px-5 py-3 font-bold text-amber-900 text-sm">TỔNG CỘNG</td>
+                            <td class="px-5 py-3 text-right font-bold text-gray-800">@lines.Sum(l => l.TotalContractValue).ToString("N0") đ</td>
+                            <td class="px-5 py-3 text-right font-bold text-green-700">@lines.Sum(l => l.TotalPaid).ToString("N0") đ</td>
+                            <td class="px-5 py-3 text-right font-bold text-red-700">@Model.GrandTotalOutstanding.ToString("N0") đ</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                }
+            </table>
+        </div>
+    </div>
+
+    <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+        <i class="fas fa-info-circle text-blue-500 mt-0.5 shrink-0"></i>
+        <div class="text-xs text-blue-700 font-medium leading-relaxed">
+            <strong>Nguồn dữ liệu:</strong> Công nợ phải trả được tính từ <em>tổng giá trị hợp đồng đang hiệu lực</em> trừ đi <em>các khoản đã thanh toán (PartnerPayment)</em>.
+            Báo cáo cập nhật theo thời gian thực từ hệ thống tài chính.
+        </div>
+    </div>
+</div>

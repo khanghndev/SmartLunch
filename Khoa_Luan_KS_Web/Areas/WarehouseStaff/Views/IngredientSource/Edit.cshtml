@@ -1,0 +1,103 @@
+@model Khoa_Luan_KS_Web.Services.IngredientSourceClientDto
+@{
+    ViewData["Title"] = "Cập Nhật Lô Hàng";
+    Layout = "_LayoutWarehouse";
+    var ingredients = ViewBag.Ingredients as List<Khoa_Luan_KS_Web.Services.IngredientClientDto> ?? new();
+    var partners = ViewBag.Partners as List<Khoa_Luan_KS_Web.Services.PartnerDto> ?? new();
+    int sourceId = ViewBag.SourceId ?? Model.Id;
+}
+
+<div class="px-1 space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition"><i class="fas fa-home"></i></a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <a href="/WarehouseStaff/IngredientSource/Index" class="text-gray-500 hover:text-gray-700 text-sm">Lô hàng</a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">@(Model.BatchNumber ?? $"#{Model.Id}")</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Cập Nhật Lô Hàng</h1>
+            <p class="text-sm text-gray-500 mt-1">Sửa thông tin lô hàng @(Model.BatchNumber ?? Model.Id.ToString())</p>
+        </div>
+    </div>
+
+    <form method="post" action="/WarehouseStaff/IngredientSource/Edit/@sourceId" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        @Html.AntiForgeryToken()
+
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+            <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center">
+                    <i class="fas fa-edit text-amber-600 text-xs"></i>
+                </div>
+                Thông Tin Lô Hàng
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Nguyên Liệu *</label>
+                    <select name="IngredientId" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+                        @foreach (var i in ingredients)
+                        {
+                            <option value="@i.Id" selected="@(Model.IngredientId == i.Id)">@i.Name (@i.Unit)</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Nhà Cung Cấp</label>
+                    <select name="PartnerId" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+                        <option value="">-- Không chọn --</option>
+                        @foreach (var p in partners)
+                        {
+                            <option value="@p.Id" selected="@(Model.PartnerId == p.Id)">@p.LegalName</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Số Lô (LOT)</label>
+                    <input type="text" name="BatchNumber" value="@Model.BatchNumber" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Chứng Nhận / Tiêu Chuẩn</label>
+                    <input type="text" name="Certification" value="@Model.Certification" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Ngày Sản Xuất</label>
+                    <input type="date" name="ProductionDate" value="@(Model.ProductionDate?.ToString("yyyy-MM-dd"))" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Hạn Sử Dụng</label>
+                    <input type="date" name="ExpirationDate" value="@(Model.ExpirationDate?.ToString("yyyy-MM-dd"))" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Chi Tiết Nguồn Gốc</label>
+                <textarea name="OriginDetails" rows="3" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 resize-none">@Model.OriginDetails</textarea>
+            </div>
+        </div>
+
+        <div class="lg:col-span-1 space-y-4">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col gap-3">
+                <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm tracking-wide transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fas fa-save"></i> Lưu Thay Đổi
+                </button>
+                <a href="/WarehouseStaff/IngredientSource/Index" class="w-full py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold text-sm text-center transition">
+                    Hủy bỏ
+                </a>
+            </div>
+
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5">
+                <h4 class="font-bold text-gray-900 text-xs uppercase tracking-wide mb-3">Thông tin hệ thống</h4>
+                <p class="text-xs text-gray-500"><strong>Mã:</strong> #@Model.Id</p>
+                <p class="text-xs text-gray-500 mt-1"><strong>Ghi nhận:</strong> @Model.CreatedAt.ToString("dd/MM/yyyy HH:mm")</p>
+            </div>
+        </div>
+    </form>
+</div>

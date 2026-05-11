@@ -1,0 +1,123 @@
+@model Khoa_Luan_KS_Web.Services.GetIngredientsClientResponse
+@{
+    ViewData["Title"] = "Danh Mục Nguyên Liệu";
+    Layout = "_LayoutWarehouse";
+    string searchTerm = ViewBag.SearchTerm ?? "";
+    bool? isActiveFilter = ViewBag.IsActiveFilter as bool?;
+    int currentPage = ViewBag.Page ?? 1;
+    int pageSize = ViewBag.PageSize ?? 20;
+    int totalPages = Model.PageSize == 0 ? 1 : (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
+    var items = Model.Items ?? new();
+}
+
+<div class="px-1 space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition"><i class="fas fa-home"></i></a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">Danh mục nguyên liệu</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Danh Mục Nguyên Liệu</h1>
+            <p class="text-sm text-gray-500 mt-1">Tổng cộng @Model.TotalCount nguyên liệu trong hệ thống</p>
+        </div>
+    </div>
+
+    <!-- Filter & Search -->
+    <form method="get" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col sm:flex-row gap-3 items-center">
+        <div class="relative flex-1 w-full">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input type="text" name="searchTerm" value="@searchTerm" placeholder="Tìm nguyên liệu theo tên..." class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition bg-gray-50" />
+        </div>
+        <select name="isActive" class="px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50">
+            <option value="">— Tất cả trạng thái —</option>
+            <option value="true" selected="@(isActiveFilter == true)">Đang hoạt động</option>
+            <option value="false" selected="@(isActiveFilter == false)">Ngừng hoạt động</option>
+        </select>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+            <i class="fas fa-filter"></i> Lọc
+        </button>
+    </form>
+
+    <!-- Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                        <th class="px-5 py-3.5 border-b border-gray-100 w-16">ID</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Tên Nguyên Liệu</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Đơn vị</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Mô tả</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-right">Giá / Đơn vị</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Trạng Thái</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 text-gray-700">
+                    @if (!items.Any())
+                    {
+                        <tr><td colspan="7" class="text-center py-16 text-gray-400">
+                            <i class="fas fa-carrot text-4xl mb-3 block text-gray-200"></i>
+                            <p class="text-sm font-medium">Không tìm thấy nguyên liệu phù hợp</p>
+                        </td></tr>
+                    }
+                    @foreach (var i in items)
+                    {
+                        <tr class="hover:bg-amber-50/20 transition">
+                            <td class="px-5 py-3.5 font-mono text-gray-500">#@i.Id</td>
+                            <td class="px-5 py-3.5">
+                                <div class="font-semibold text-gray-900">@i.Name</div>
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <span class="px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-xs font-bold">@i.Unit</span>
+                            </td>
+                            <td class="px-5 py-3.5 text-gray-500 max-w-[260px]">
+                                <span class="truncate block">@(i.Description ?? "—")</span>
+                            </td>
+                            <td class="px-5 py-3.5 text-right font-semibold text-gray-700">
+                                @(i.CostPerUnit.HasValue ? i.CostPerUnit.Value.ToString("N0") + " đ" : "—")
+                            </td>
+                            <td class="px-5 py-3.5">
+                                @if (i.IsActive)
+                                {
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-[11px] font-bold border border-green-100">
+                                        <i class="fas fa-check text-[9px]"></i> Hoạt động
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 text-[11px] font-bold border border-gray-200">
+                                        <i class="fas fa-ban text-[9px]"></i> Ngừng
+                                    </span>
+                                }
+                            </td>
+                            <td class="px-5 py-3.5 text-center">
+                                <a href="/WarehouseStaff/Ingredient/Detail/@i.Id" class="text-amber-600 hover:text-amber-800 text-xs font-semibold transition">Chi tiết →</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-sm">
+                <p class="text-gray-500">Trang @currentPage / @totalPages</p>
+                <div class="flex gap-1">
+                    @if (currentPage > 1)
+                    {
+                        <a href="?page=@(currentPage - 1)&pageSize=@pageSize&searchTerm=@searchTerm" class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700">Trước</a>
+                    }
+                    @if (currentPage < totalPages)
+                    {
+                        <a href="?page=@(currentPage + 1)&pageSize=@pageSize&searchTerm=@searchTerm" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white">Sau</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

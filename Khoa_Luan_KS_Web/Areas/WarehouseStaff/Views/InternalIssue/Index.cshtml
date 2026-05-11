@@ -1,0 +1,110 @@
+@model Khoa_Luan_KS_Web.Services.GetInternalIssuesClientResponse
+@{
+    ViewData["Title"] = "Phiếu Xuất Kho Nội Bộ";
+    Layout = "_LayoutWarehouse";
+    var items = Model.Data ?? new();
+    int totalPages = Model.PageSize == 0 ? 1 : (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
+    int currentPage = ViewBag.Page ?? 1;
+    int pageSize = ViewBag.PageSize ?? 20;
+    DateOnly? from = ViewBag.FromDate as DateOnly?;
+    DateOnly? to = ViewBag.ToDate as DateOnly?;
+}
+
+<div class="px-1 space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition"><i class="fas fa-home"></i></a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">Phiếu xuất kho nội bộ</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Phiếu Xuất Kho Nội Bộ</h1>
+            <p class="text-sm text-gray-500 mt-1">Tổng cộng @Model.TotalCount phiếu xuất nội bộ</p>
+        </div>
+        <a href="/WarehouseStaff/InternalIssue/Create" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+            <i class="fas fa-plus"></i> Tạo Phiếu Xuất
+        </a>
+    </div>
+
+    <!-- Filter -->
+    <form method="get" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col sm:flex-row gap-3 items-end">
+        <div class="flex-1">
+            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">Từ ngày</label>
+            <input type="date" name="from" value="@(from?.ToString("yyyy-MM-dd"))" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+        </div>
+        <div class="flex-1">
+            <label class="block text-[10px] font-bold text-gray-500 uppercase tracking-wide mb-1">Đến ngày</label>
+            <input type="date" name="to" value="@(to?.ToString("yyyy-MM-dd"))" class="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm bg-gray-50" />
+        </div>
+        <button type="submit" class="px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+            <i class="fas fa-filter"></i> Lọc
+        </button>
+        <a href="/WarehouseStaff/InternalIssue/Index" class="px-5 py-2 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 text-sm font-semibold transition">
+            Xóa lọc
+        </a>
+    </form>
+
+    <!-- Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Mã Phiếu</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Ngày Xuất</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Người Tạo</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Lý Do</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-center">Số NVL</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 text-gray-700">
+                    @if (!items.Any())
+                    {
+                        <tr><td colspan="6" class="text-center py-16 text-gray-400">
+                            <i class="fas fa-dolly text-4xl mb-3 block text-gray-200"></i>
+                            <p class="text-sm font-medium">Chưa có phiếu xuất kho nội bộ nào</p>
+                        </td></tr>
+                    }
+                    @foreach (var i in items)
+                    {
+                        <tr class="hover:bg-amber-50/20 transition">
+                            <td class="px-5 py-3.5 font-mono font-semibold text-gray-800">#@i.IssueCode</td>
+                            <td class="px-5 py-3.5 text-gray-600">@i.IssuedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="px-5 py-3.5 text-gray-600">@(i.CreatedByDisplayName ?? (i.CreatedByUserId.HasValue ? $"User#{i.CreatedByUserId}" : "—"))</td>
+                            <td class="px-5 py-3.5 text-gray-500 max-w-[260px]">
+                                <span class="truncate block">@(i.Reason ?? "—")</span>
+                            </td>
+                            <td class="px-5 py-3.5 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded-md bg-amber-50 text-amber-700 text-xs font-bold border border-amber-100">
+                                    @i.LineCount NVL
+                                </span>
+                            </td>
+                            <td class="px-5 py-3.5 text-center">
+                                <a href="/WarehouseStaff/InternalIssue/Detail/@i.Id" class="text-amber-600 hover:text-amber-800 text-xs font-semibold transition">Chi tiết →</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-sm">
+                <p class="text-gray-500">Trang @currentPage / @totalPages</p>
+                <div class="flex gap-1">
+                    @if (currentPage > 1)
+                    {
+                        <a href="?page=@(currentPage - 1)&pageSize=@pageSize" class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700">Trước</a>
+                    }
+                    @if (currentPage < totalPages)
+                    {
+                        <a href="?page=@(currentPage + 1)&pageSize=@pageSize" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white">Sau</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

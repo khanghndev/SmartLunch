@@ -1,0 +1,162 @@
+@model Khoa_Luan_KS_Web.Areas.WarehouseStaff.Controllers.InventoryIndexViewModel
+@{
+    ViewData["Title"] = "Tồn Kho Hiện Tại";
+    Layout = "_LayoutWarehouse";
+    int totalPages = Model.PageSize == 0 ? 1 : (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
+}
+
+<div class="px-1 space-y-6">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition"><i class="fas fa-home"></i></a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">Tồn kho hiện tại</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Tồn Kho Hiện Tại</h1>
+            <p class="text-sm text-gray-500 mt-1">Tổng quan tồn kho theo thời gian thực</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="/WarehouseStaff/Inventory/LowStock" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 border border-red-100 hover:bg-red-100 text-red-700 text-sm font-bold transition">
+                <i class="fas fa-triangle-exclamation"></i> Cảnh báo (@Model.LowStockCount)
+            </a>
+            <a href="/WarehouseStaff/Requisition/Create" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+                <i class="fas fa-plus"></i> Tạo Phiếu Đề Xuất
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-sm px-5 py-4">
+            <div class="text-2xl font-bold text-gray-900">@Model.TotalCount</div>
+            <div class="text-xs text-gray-500 font-medium mt-0.5">Tổng mặt hàng tồn kho</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-red-100 shadow-sm px-5 py-4">
+            <div class="text-2xl font-bold text-red-600">@Model.LowStockCount</div>
+            <div class="text-xs text-gray-500 font-medium mt-0.5">Sắp hết / hết hàng</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-green-100 shadow-sm px-5 py-4">
+            <div class="text-2xl font-bold text-green-600">@(Model.TotalCount - Model.LowStockCount)</div>
+            <div class="text-xs text-gray-500 font-medium mt-0.5">Tồn ổn định</div>
+        </div>
+        <div class="bg-white rounded-2xl border border-amber-100 shadow-sm px-5 py-4">
+            <div class="text-2xl font-bold text-amber-600">@Model.Inventories.Count</div>
+            <div class="text-xs text-gray-500 font-medium mt-0.5">Hiển thị trang này</div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <form method="get" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col sm:flex-row gap-3 items-center">
+        <div class="relative flex-1 w-full">
+            <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs"></i>
+            <input type="text" name="searchTerm" value="@Model.SearchTerm" placeholder="Tìm theo tên nguyên liệu..." class="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-transparent transition bg-gray-50" />
+        </div>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+            <i class="fas fa-search"></i> Tìm kiếm
+        </button>
+    </form>
+
+    <!-- Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm whitespace-nowrap">
+                <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-bold tracking-wider">
+                    <tr>
+                        <th class="px-5 py-3.5 border-b border-gray-100 w-16">ID</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Nguyên Liệu</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-right">Tồn Kho</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-right">Ngưỡng Tối Thiểu</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 w-44">Mức Tồn</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Cập Nhật</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100">Trạng Thái</th>
+                        <th class="px-5 py-3.5 border-b border-gray-100 text-center">Thao Tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50 text-gray-700">
+                    @if (!Model.Inventories.Any())
+                    {
+                        <tr><td colspan="8" class="text-center py-16 text-gray-400">
+                            <i class="fas fa-boxes text-4xl mb-3 block text-gray-200"></i>
+                            <p class="text-sm font-medium">Không có dữ liệu tồn kho</p>
+                        </td></tr>
+                    }
+                    @foreach (var i in Model.Inventories)
+                    {
+                        Model.IngredientMap.TryGetValue(i.IngredientId, out var ingredient);
+                        var unit = ingredient?.Unit ?? "";
+                        var name = ingredient?.Name ?? $"#{i.IngredientId}";
+                        bool isLow = i.ReorderLevel.HasValue && i.QuantityAvailable <= i.ReorderLevel.Value;
+                        bool isOut = i.QuantityAvailable <= 0;
+                        decimal pct = i.ReorderLevel.HasValue && i.ReorderLevel.Value > 0
+                            ? Math.Min(100, (i.QuantityAvailable / (i.ReorderLevel.Value * 3)) * 100)
+                            : 100;
+                        string barCls = isOut ? "bg-gray-400" : isLow ? "bg-red-500" : "bg-green-500";
+                        string qtyCls = isOut ? "text-gray-400" : isLow ? "text-red-600 font-bold" : "text-gray-800 font-semibold";
+
+                        <tr class="hover:bg-amber-50/20 transition">
+                            <td class="px-5 py-3.5 font-mono text-gray-500">#@i.IngredientId</td>
+                            <td class="px-5 py-3.5">
+                                <div class="font-semibold text-gray-900">@name</div>
+                            </td>
+                            <td class="px-5 py-3.5 text-right">
+                                <span class="@qtyCls">@i.QuantityAvailable @unit</span>
+                            </td>
+                            <td class="px-5 py-3.5 text-right text-gray-500">
+                                @(i.ReorderLevel.HasValue ? i.ReorderLevel.Value.ToString() + " " + unit : "—")
+                            </td>
+                            <td class="px-5 py-3.5">
+                                <div class="w-full bg-gray-100 rounded-full h-1.5">
+                                    <div class="@barCls h-1.5 rounded-full transition-all" style="width: @pct%"></div>
+                                </div>
+                            </td>
+                            <td class="px-5 py-3.5 text-gray-500 text-xs">@i.LastUpdated.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td class="px-5 py-3.5">
+                                @if (isOut)
+                                {
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-gray-100 text-gray-500 text-[11px] font-bold border border-gray-200">
+                                        <i class="fas fa-ban text-[9px]"></i> Hết hàng
+                                    </span>
+                                }
+                                else if (isLow)
+                                {
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-700 text-[11px] font-bold border border-red-100">
+                                        <i class="fas fa-exclamation text-[9px]"></i> Tồn thấp
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-[11px] font-bold border border-green-100">
+                                        <i class="fas fa-check text-[9px]"></i> Bình thường
+                                    </span>
+                                }
+                            </td>
+                            <td class="px-5 py-3.5 text-center">
+                                <a href="/WarehouseStaff/Inventory/Detail/@i.IngredientId" class="text-amber-600 hover:text-amber-800 text-xs font-semibold transition">Chi tiết</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (totalPages > 1)
+        {
+            <div class="px-5 py-3 border-t border-gray-100 flex items-center justify-between text-sm">
+                <p class="text-gray-500">Trang @Model.Page / @totalPages</p>
+                <div class="flex gap-1">
+                    @if (Model.Page > 1)
+                    {
+                        <a href="?page=@(Model.Page - 1)&pageSize=@Model.PageSize&searchTerm=@Model.SearchTerm" class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700">Trước</a>
+                    }
+                    @if (Model.Page < totalPages)
+                    {
+                        <a href="?page=@(Model.Page + 1)&pageSize=@Model.PageSize&searchTerm=@Model.SearchTerm" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white">Sau</a>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>

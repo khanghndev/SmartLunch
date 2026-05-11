@@ -1,0 +1,110 @@
+@model Khoa_Luan_KS_Web.Services.CreateIngredientSourceClientRequest
+@{
+    ViewData["Title"] = "Ghi Nhận Lô Hàng Mới";
+    Layout = "_LayoutWarehouse";
+    var ingredients = ViewBag.Ingredients as List<Khoa_Luan_KS_Web.Services.IngredientClientDto> ?? new();
+    var partners = ViewBag.Partners as List<Khoa_Luan_KS_Web.Services.PartnerDto> ?? new();
+    int? selectedId = ViewBag.SelectedIngredientId as int?;
+}
+
+<div class="px-1 space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition"><i class="fas fa-home"></i></a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <a href="/WarehouseStaff/IngredientSource/Index" class="text-gray-500 hover:text-gray-700 text-sm">Lô hàng</a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">Ghi nhận mới</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Ghi Nhận Lô Hàng Mới</h1>
+            <p class="text-sm text-gray-500 mt-1">Ghi nhận thông tin xuất xứ một lô hàng nguyên liệu từ NCC</p>
+        </div>
+    </div>
+
+    <form method="post" action="/WarehouseStaff/IngredientSource/Create" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        @Html.AntiForgeryToken()
+
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+            <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center">
+                    <i class="fas fa-truck-fast text-amber-600 text-xs"></i>
+                </div>
+                Thông Tin Lô Hàng
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Nguyên Liệu *</label>
+                    <select name="IngredientId" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition">
+                        <option value="">-- Chọn nguyên liệu --</option>
+                        @foreach (var i in ingredients)
+                        {
+                            <option value="@i.Id" selected="@(selectedId == i.Id)">@i.Name (@i.Unit)</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Nhà Cung Cấp</label>
+                    <select name="PartnerId" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition">
+                        <option value="">-- Không chọn --</option>
+                        @foreach (var p in partners)
+                        {
+                            <option value="@p.Id">@p.LegalName</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Số Lô (LOT)</label>
+                    <input type="text" name="BatchNumber" placeholder="VD: LOT-2025-001"
+                           class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Chứng Nhận / Tiêu Chuẩn</label>
+                    <input type="text" name="Certification" placeholder="VD: VietGAP, ISO 22000..."
+                           class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Ngày Sản Xuất (NSX)</label>
+                    <input type="date" name="ProductionDate"
+                           class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Hạn Sử Dụng (HSD)</label>
+                    <input type="date" name="ExpirationDate"
+                           class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition" />
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Chi Tiết Nguồn Gốc</label>
+                <textarea name="OriginDetails" rows="3" placeholder="Mô tả nguồn gốc, vùng trồng/nuôi, quy trình..."
+                          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:border-amber-400 transition resize-none"></textarea>
+            </div>
+        </div>
+
+        <div class="lg:col-span-1 space-y-4">
+            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col gap-3">
+                <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm tracking-wide transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fas fa-save"></i> Lưu Lô Hàng
+                </button>
+                <a href="/WarehouseStaff/IngredientSource/Index" class="w-full py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold text-sm text-center transition">
+                    Hủy bỏ
+                </a>
+            </div>
+
+            <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
+                <i class="fas fa-info-circle text-blue-500 mt-0.5 shrink-0"></i>
+                <div class="text-xs text-blue-700 font-medium leading-relaxed">
+                    <strong>Truy xuất nguồn gốc:</strong> Thông tin lô hàng giúp truy xuất xuất xứ NVL phục vụ kiểm định VSATTP và xử lý sự cố. Hãy nhập càng đầy đủ càng tốt.
+                </div>
+            </div>
+        </div>
+    </form>
+</div>

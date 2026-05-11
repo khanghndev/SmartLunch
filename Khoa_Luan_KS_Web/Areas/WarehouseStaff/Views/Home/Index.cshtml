@@ -1,19 +1,38 @@
+@model Khoa_Luan_KS_Web.Areas.WarehouseStaff.Controllers.WarehouseDashboardViewModel
 @{
     ViewData["Title"] = "Tổng quan Kho";
     Layout = "_LayoutWarehouse";
+
+    string StatusLabel(string s) => s?.ToLowerInvariant() switch
+    {
+        "submitted" => "Chờ duyệt",
+        "approved" => "Đã duyệt",
+        "rejected" => "Từ chối",
+        "cancelled" => "Đã hủy",
+        "fulfilled" => "Đã nhập",
+        _ => s ?? ""
+    };
+
+    (string cls, string icon) StatusBadge(string s) => s?.ToLowerInvariant() switch
+    {
+        "submitted" => ("bg-yellow-50 text-yellow-700 border-yellow-100", "fa-hourglass-half"),
+        "approved" => ("bg-green-50 text-green-700 border-green-100", "fa-check"),
+        "rejected" => ("bg-red-50 text-red-600 border-red-100", "fa-times"),
+        "cancelled" => ("bg-gray-100 text-gray-500 border-gray-200", "fa-ban"),
+        "fulfilled" => ("bg-blue-50 text-blue-700 border-blue-100", "fa-box"),
+        _ => ("bg-gray-100 text-gray-500 border-gray-200", "fa-circle")
+    };
 }
 
 <div class="px-1 space-y-6" x-data="{
-    currentTime: '',
-    currentDate: '',
+    currentTime: '', currentDate: '',
     init() {
         const update = () => {
             const now = new Date();
             this.currentTime = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
             this.currentDate = now.toLocaleDateString('vi-VN', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
         };
-        update();
-        setInterval(update, 1000);
+        update(); setInterval(update, 1000);
     }
 }">
 
@@ -49,21 +68,19 @@
     <!-- 4 KPI Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
 
-        <!-- Card 1: Tổng NVL -->
         <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col group hover:border-amber-200 transition">
             <div class="flex items-center justify-between mb-3">
-                <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Tổng Mặt Hàng NVL</div>
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Tổng Nguyên Liệu</div>
                 <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm group-hover:bg-amber-100 transition">
                     <i class="fas fa-boxes"></i>
                 </div>
             </div>
-            <h3 class="text-3xl font-bold text-gray-900">128</h3>
+            <h3 class="text-3xl font-bold text-gray-900">@Model.TotalIngredients</h3>
             <div class="mt-3 flex items-center gap-1.5 text-xs font-medium text-gray-500">
-                <i class="fas fa-arrow-up text-green-500"></i> 4 mặt hàng mới nhập tuần này
+                <i class="fas fa-database text-amber-400"></i> Mặt hàng đang hoạt động
             </div>
         </div>
 
-        <!-- Card 2: Phiếu chờ duyệt -->
         <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col group hover:border-blue-200 transition">
             <div class="flex items-center justify-between mb-3">
                 <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Phiếu Chờ Duyệt</div>
@@ -71,27 +88,25 @@
                     <i class="fas fa-clock"></i>
                 </div>
             </div>
-            <h3 class="text-3xl font-bold text-blue-600">5</h3>
+            <h3 class="text-3xl font-bold text-blue-600">@Model.PendingCount</h3>
             <div class="mt-3 flex items-center gap-1.5 text-xs font-medium text-blue-600">
                 <i class="fas fa-hourglass-half"></i> Đang chờ Manager duyệt
             </div>
         </div>
 
-        <!-- Card 3: Phiếu đã duyệt hôm nay -->
         <div class="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm flex flex-col group hover:border-green-200 transition">
             <div class="flex items-center justify-between mb-3">
-                <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Đã Duyệt Hôm Nay</div>
+                <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Sẵn Sàng Nhập Kho</div>
                 <div class="w-9 h-9 rounded-xl bg-green-50 text-green-600 flex items-center justify-center text-sm group-hover:bg-green-100 transition">
                     <i class="fas fa-check-circle"></i>
                 </div>
             </div>
-            <h3 class="text-3xl font-bold text-gray-900">3</h3>
+            <h3 class="text-3xl font-bold text-gray-900">@Model.ApprovedReadyCount</h3>
             <div class="mt-3 flex items-center gap-1.5 text-xs font-medium text-green-600">
-                <i class="fas fa-check"></i> Sẵn sàng nhập kho thực tế
+                <i class="fas fa-truck-loading"></i> Phiếu đã duyệt, chưa nhập
             </div>
         </div>
 
-        <!-- Card 4: Cảnh báo sắp hết -->
         <div class="bg-white p-6 rounded-2xl border border-red-100 shadow-sm flex flex-col group hover:border-red-200 transition">
             <div class="flex items-center justify-between mb-3">
                 <div class="text-xs font-bold text-gray-500 uppercase tracking-wide">Cảnh Báo Tồn Kho</div>
@@ -99,26 +114,26 @@
                     <i class="fas fa-exclamation-triangle"></i>
                 </div>
             </div>
-            <h3 class="text-3xl font-bold text-red-600">7</h3>
+            <h3 class="text-3xl font-bold text-red-600">@Model.LowStockAlerts.Count</h3>
             <div class="mt-3 flex items-center gap-1.5 text-xs font-medium text-red-600">
-                <i class="fas fa-bell"></i> Mặt hàng sắp hết / sắp hết hạn
+                <i class="fas fa-bell"></i> Nguyên liệu sắp / đã hết
             </div>
         </div>
 
     </div>
 
-    <!-- Phần chi tiết 2 cột -->
+    <!-- Detail 2 cột -->
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- Cột trái: Bảng phiếu đề xuất gần nhất -->
+        <!-- Phiếu đề xuất gần nhất -->
         <div class="lg:col-span-2 space-y-6">
             <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                     <div>
                         <h3 class="font-bold text-gray-900 text-[15px]">Phiếu Đề Xuất Gần Nhất</h3>
-                        <p class="text-xs text-gray-500 font-medium mt-0.5">Danh sách 10 phiếu mới nhất của bạn</p>
+                        <p class="text-xs text-gray-500 font-medium mt-0.5">10 phiếu mới nhất của bạn</p>
                     </div>
-                    <a href="/WarehouseStaff/Requisition/History"
+                    <a href="/WarehouseStaff/Requisition/Index"
                        class="text-amber-600 hover:text-amber-700 text-xs font-bold flex items-center gap-1 transition">
                         Xem tất cả <i class="fas fa-arrow-right text-[10px]"></i>
                     </a>
@@ -129,151 +144,109 @@
                         <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-bold tracking-wider">
                             <tr>
                                 <th class="px-5 py-3.5 border-b border-gray-100">Mã Phiếu</th>
-                                <th class="px-5 py-3.5 border-b border-gray-100">Loại</th>
                                 <th class="px-5 py-3.5 border-b border-gray-100">Ngày Tạo</th>
                                 <th class="px-5 py-3.5 border-b border-gray-100">Trạng Thái</th>
                                 <th class="px-5 py-3.5 border-b border-gray-100 text-center">Thao Tác</th>
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-gray-50 text-gray-700">
-                            <tr class="hover:bg-amber-50/30 transition">
-                                <td class="px-5 py-3.5 font-mono font-semibold text-gray-800">#PX-2405-007</td>
-                                <td class="px-5 py-3.5">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[11px] font-bold border border-blue-100">
-                                        <i class="fas fa-arrow-down text-[9px]"></i> Nhập kho
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5 text-gray-500">07/05/2026</td>
-                                <td class="px-5 py-3.5">
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-[11px] font-bold border border-green-100">
-                                        <i class="fas fa-check text-[9px]"></i> Đã duyệt
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5 text-center">
-                                    <a href="/WarehouseStaff/Warehouse/Receive" class="text-amber-600 hover:text-amber-800 text-xs font-semibold transition">Nhập kho →</a>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-amber-50/30 transition">
-                                <td class="px-5 py-3.5 font-mono font-semibold text-gray-800">#PX-2405-006</td>
-                                <td class="px-5 py-3.5">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-orange-50 text-orange-700 text-[11px] font-bold border border-orange-100">
-                                        <i class="fas fa-arrow-up text-[9px]"></i> Xuất kho
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5 text-gray-500">06/05/2026</td>
-                                <td class="px-5 py-3.5">
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-yellow-50 text-yellow-700 text-[11px] font-bold border border-yellow-100">
-                                        <i class="fas fa-hourglass-half text-[9px]"></i> Chờ duyệt
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5 text-center">
-                                    <span class="text-gray-400 text-xs font-medium">Đang chờ</span>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-amber-50/30 transition">
-                                <td class="px-5 py-3.5 font-mono font-semibold text-gray-800">#PX-2405-005</td>
-                                <td class="px-5 py-3.5">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[11px] font-bold border border-blue-100">
-                                        <i class="fas fa-arrow-down text-[9px]"></i> Nhập kho
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5 text-gray-500">05/05/2026</td>
-                                <td class="px-5 py-3.5">
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-red-50 text-red-600 text-[11px] font-bold border border-red-100">
-                                        <i class="fas fa-times text-[9px]"></i> Từ chối
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5 text-center">
-                                    <a href="/WarehouseStaff/Requisition/History" class="text-gray-500 hover:text-gray-700 text-xs font-semibold transition">Xem lý do</a>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-amber-50/30 transition">
-                                <td class="px-5 py-3.5 font-mono font-semibold text-gray-800">#PX-2405-004</td>
-                                <td class="px-5 py-3.5">
-                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-50 text-blue-700 text-[11px] font-bold border border-blue-100">
-                                        <i class="fas fa-arrow-down text-[9px]"></i> Nhập kho
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5 text-gray-500">04/05/2026</td>
-                                <td class="px-5 py-3.5">
-                                    <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-green-50 text-green-700 text-[11px] font-bold border border-green-100">
-                                        <i class="fas fa-check text-[9px]"></i> Đã duyệt
-                                    </span>
-                                </td>
-                                <td class="px-5 py-3.5 text-center">
-                                    <a href="/WarehouseStaff/Warehouse/Receive" class="text-amber-600 hover:text-amber-800 text-xs font-semibold transition">Nhập kho →</a>
-                                </td>
-                            </tr>
+                            @if (!Model.RecentProposals.Any())
+                            {
+                                <tr><td colspan="4" class="text-center py-12 text-gray-400">
+                                    <i class="fas fa-inbox text-3xl mb-2 block text-gray-200"></i>
+                                    <p class="text-sm font-medium">Chưa có phiếu đề xuất nào</p>
+                                </td></tr>
+                            }
+                            @foreach (var p in Model.RecentProposals)
+                            {
+                                var (cls, icon) = StatusBadge(p.Status);
+                                <tr class="hover:bg-amber-50/30 transition">
+                                    <td class="px-5 py-3.5 font-mono font-semibold text-gray-800">#@p.ProposalCode</td>
+                                    <td class="px-5 py-3.5 text-gray-500">@p.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                                    <td class="px-5 py-3.5">
+                                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full @cls text-[11px] font-bold border">
+                                            <i class="fas @icon text-[9px]"></i> @StatusLabel(p.Status)
+                                        </span>
+                                    </td>
+                                    <td class="px-5 py-3.5 text-center">
+                                        <a href="/WarehouseStaff/Requisition/Detail/@p.Id"
+                                           class="text-amber-600 hover:text-amber-800 text-xs font-semibold">Chi tiết →</a>
+                                    </td>
+                                </tr>
+                            }
                         </tbody>
                     </table>
                 </div>
             </div>
 
             <!-- Quick Actions -->
-            <div class="grid grid-cols-2 gap-4">
-                <a href="/WarehouseStaff/Requisition/Create"
-                   class="bg-white border border-gray-100 shadow-sm rounded-2xl p-5 flex items-center justify-between group hover:border-amber-300 hover:shadow-md transition">
-                    <div>
-                        <div class="text-[11px] font-semibold text-gray-400 mb-1">Nghiệp vụ Kho</div>
-                        <h4 class="font-bold text-sm text-gray-900">Tạo Phiếu Đề Xuất</h4>
-                    </div>
-                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition">
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <a href="/WarehouseStaff/Requisition/Create" class="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col items-center justify-center group hover:border-amber-300 hover:shadow-md transition text-center">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-2 group-hover:bg-amber-100 transition">
                         <i class="fas fa-file-circle-plus text-amber-500 text-lg"></i>
                     </div>
+                    <h4 class="font-bold text-xs text-gray-900">Tạo phiếu đề xuất</h4>
                 </a>
-                <a href="/WarehouseStaff/Warehouse/Stock"
-                   class="bg-white border border-gray-100 shadow-sm rounded-2xl p-5 flex items-center justify-between group hover:border-amber-300 hover:shadow-md transition">
-                    <div>
-                        <div class="text-[11px] font-semibold text-gray-400 mb-1">Kiểm soát Kho</div>
-                        <h4 class="font-bold text-sm text-gray-900">Xem Tồn Kho</h4>
+                <a href="/WarehouseStaff/Warehouse/Receive" class="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col items-center justify-center group hover:border-amber-300 hover:shadow-md transition text-center">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-2 group-hover:bg-amber-100 transition">
+                        <i class="fas fa-truck-loading text-amber-500 text-lg"></i>
                     </div>
-                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center group-hover:bg-amber-100 transition">
+                    <h4 class="font-bold text-xs text-gray-900">Nhập kho thực tế</h4>
+                </a>
+                <a href="/WarehouseStaff/InternalIssue/Create" class="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col items-center justify-center group hover:border-amber-300 hover:shadow-md transition text-center">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-2 group-hover:bg-amber-100 transition">
+                        <i class="fas fa-dolly text-amber-500 text-lg"></i>
+                    </div>
+                    <h4 class="font-bold text-xs text-gray-900">Xuất kho nội bộ</h4>
+                </a>
+                <a href="/WarehouseStaff/Inventory/Index" class="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 flex flex-col items-center justify-center group hover:border-amber-300 hover:shadow-md transition text-center">
+                    <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center mb-2 group-hover:bg-amber-100 transition">
                         <i class="fas fa-boxes text-amber-500 text-lg"></i>
                     </div>
+                    <h4 class="font-bold text-xs text-gray-900">Xem tồn kho</h4>
                 </a>
             </div>
         </div>
 
-        <!-- Cột phải: Timeline hoạt động -->
+        <!-- Cảnh báo tồn thấp -->
         <div class="lg:col-span-1">
-            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 h-full flex flex-col">
-                <div class="px-6 py-4 border-b border-gray-100 shrink-0">
-                    <h3 class="font-bold text-gray-900 text-[15px]">Nhật Ký Hoạt Động Hôm Nay</h3>
-                    <p class="text-xs text-gray-500 mt-1 font-medium">Cập nhật theo thời gian thực</p>
+            <div class="bg-white rounded-2xl shadow-sm border border-red-100 h-full flex flex-col">
+                <div class="px-6 py-4 border-b border-gray-100 shrink-0 flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-[15px] flex items-center gap-2">
+                            <i class="fas fa-triangle-exclamation text-red-500"></i> Cảnh Báo Tồn Thấp
+                        </h3>
+                        <p class="text-xs text-gray-500 mt-0.5 font-medium">Cần đặt hàng bổ sung</p>
+                    </div>
+                    <a href="/WarehouseStaff/Inventory/LowStock" class="text-red-600 hover:text-red-700 text-xs font-bold flex items-center gap-1 transition">
+                        Tất cả <i class="fas fa-arrow-right text-[10px]"></i>
+                    </a>
                 </div>
 
-                <div class="p-6 flex-1 overflow-auto">
-                    <div class="relative border-l-2 border-amber-100 ml-2 space-y-7">
-
-                        <div class="relative pl-6">
-                            <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-amber-500 border-2 border-white shadow"></div>
-                            <div class="text-[10px] font-bold text-amber-600 mb-1 uppercase tracking-wide">08:30 SA</div>
-                            <h4 class="text-sm font-semibold text-gray-900 mb-1">Nhập kho thịt heo tươi</h4>
-                            <p class="text-xs text-gray-500 leading-relaxed">Nhận 150kg thịt heo từ NCC CP Vietnam. Kiểm tra nhiệt độ và chứng nhận VSATTP đạt chuẩn.</p>
+                <div class="p-4 flex-1 overflow-auto space-y-2">
+                    @if (!Model.LowStockAlerts.Any())
+                    {
+                        <div class="text-center py-12 text-gray-400">
+                            <i class="fas fa-check-double text-3xl mb-2 block text-green-200"></i>
+                            <p class="text-sm font-medium">Tồn kho ổn định</p>
                         </div>
-
-                        <div class="relative pl-6">
-                            <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-blue-400 border-2 border-white shadow"></div>
-                            <div class="text-[10px] font-bold text-blue-600 mb-1 uppercase tracking-wide">07:15 SA</div>
-                            <h4 class="text-sm font-semibold text-gray-900 mb-1">Tạo phiếu đề xuất #PX-2405-007</h4>
-                            <p class="text-xs text-gray-500 leading-relaxed">Gửi phiếu đề xuất nhập 200kg gạo tẻ và 50kg đường tinh luyện cho Manager duyệt.</p>
-                        </div>
-
-                        <div class="relative pl-6">
-                            <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-green-500 border-2 border-white shadow"></div>
-                            <div class="text-[10px] font-bold text-green-600 mb-1 uppercase tracking-wide">06:00 SA</div>
-                            <h4 class="text-sm font-semibold text-gray-900 mb-1">Kiểm kê tồn kho đầu ngày</h4>
-                            <p class="text-xs text-gray-500 leading-relaxed">Hoàn tất kiểm kê 128 mặt hàng. Phát hiện 7 mặt hàng sắp hết ngưỡng tối thiểu.</p>
-                        </div>
-
-                        <div class="relative pl-6">
-                            <div class="absolute -left-[9px] top-1 w-4 h-4 rounded-full bg-gray-300 border-2 border-white shadow"></div>
-                            <div class="text-[10px] font-bold text-gray-400 mb-1 uppercase tracking-wide">05:30 SA</div>
-                            <h4 class="text-sm font-semibold text-gray-900 mb-1">Bắt đầu ca làm việc</h4>
-                            <p class="text-xs text-gray-500 leading-relaxed">Điểm danh và nhận bàn giao ca từ ca đêm. Bắt đầu sắp xếp khu vực nhận hàng.</p>
-                        </div>
-
-                    </div>
+                    }
+                    @foreach (var a in Model.LowStockAlerts.Take(8))
+                    {
+                        <a href="/WarehouseStaff/Inventory/Detail/@a.IngredientId"
+                           class="block p-3 rounded-xl border border-gray-100 hover:border-red-200 hover:bg-red-50/30 transition">
+                            <div class="flex items-center justify-between">
+                                <p class="font-semibold text-sm text-gray-800 truncate pr-2">@a.IngredientName</p>
+                                <span class="shrink-0 inline-flex items-center px-2 py-0.5 rounded-md bg-red-50 border border-red-100 text-red-700 text-[10px] font-bold">
+                                    Còn @a.QuantityAvailable @a.Unit
+                                </span>
+                            </div>
+                            @if (a.ReorderLevel.HasValue)
+                            {
+                                <p class="text-[11px] text-gray-500 mt-1">Ngưỡng: @a.ReorderLevel.Value @a.Unit</p>
+                            }
+                        </a>
+                    }
                 </div>
             </div>
         </div>
