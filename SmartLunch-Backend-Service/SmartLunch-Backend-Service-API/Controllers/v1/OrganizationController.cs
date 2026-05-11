@@ -2,6 +2,7 @@ using MediatR;
 using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartLunch.Backend.Service.Application.Commands.Organizations.UpdateOrganizationStatus;
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Organizations;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Organizations;
@@ -72,12 +73,43 @@ public class OrganizationController : ControllerBase
         {
             return BadRequest(BaseApiResponse<GetOrganizationResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
         }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetOrganizationResponse>.NotFoundResult(ex.Message));
+        }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error retrieving organization with ID: {OrganizationId}", id);
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetOrganizationResponse>.ErrorResult("An error occurred while retrieving organization", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Chỉ cập nhật trạng thái hoạt động (IsActive). Không thay đổi thông tin liên hệ hay dữ liệu người dùng.
+    /// </summary>
+    [HttpPatch("{id:int}/status")]
+    [Authorize(Policy = "permission:organizations.update")]
+    public async Task<ActionResult<BaseApiResponse<GetOrganizationResponse>>> UpdateOrganizationStatus(
+        int id,
+        [FromBody] UpdateOrganizationStatusRequest request)
+    {
+        try
+        {
+            var response = await _mediator.Send(new UpdateOrganizationStatusCommand(id, request.IsActive));
+            return Ok(BaseApiResponse<GetOrganizationResponse>.SuccessResult(response, "Organization status updated successfully"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetOrganizationResponse>.NotFoundResult(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating organization status {OrganizationId}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetOrganizationResponse>.ErrorResult("An error occurred while updating organization status", new[] { ex.Message }));
         }
     }
 }

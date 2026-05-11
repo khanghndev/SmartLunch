@@ -12,7 +12,8 @@ public interface IOrderRepository
         int pageSize,
         string? searchTerm = null,
         DateOnly? scheduledOn = null,
-        string? status = null);
+        string? status = null,
+        int? restrictToUserId = null);
 
     Task<List<MealStatisticItemDto>> GetMealStatisticsAsync(
         DateTime? startDate,

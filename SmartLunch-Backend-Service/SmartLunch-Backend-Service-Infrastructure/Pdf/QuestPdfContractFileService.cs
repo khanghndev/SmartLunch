@@ -64,16 +64,20 @@ public sealed class QuestPdfContractFileService : IContractPdfService
                 page.Margin(40);
                 page.DefaultTextStyle(x => x.FontSize(11));
 
-                page.Header().Column(h =>
-                {
-                    h.Spacing(4);
-                    h.Item().AlignCenter().Text("HỢP ĐỒNG / BIÊN BẢN HỢP ĐỒNG CUNG CẤP SUẤT ĂN")
-                        .SemiBold().FontSize(16);
-                    h.Item().AlignCenter().Text($"Hệ thống Smart Lunch — được tự động tạo lúc {Dt(DateTime.UtcNow)} (UTC)")
-                        .FontSize(9).Italic();
-                });
+                page.Header().Element(h => VietnameseFormalPdfHeader.ComposeHeader(h,
+                    "HỢP ĐỒNG / BIÊN BẢN HỢP ĐỒNG CUNG CẤP SUẤT ĂN",
+                    $"Văn bản điện tử — lập lúc {Dt(DateTime.UtcNow)} (UTC) — Mã hồ sơ hợp đồng: {contract.Id}"));
 
-                page.Content().PaddingVertical(16).Column(col =>
+                page.Footer().AlignCenter().PaddingTop(6).DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Grey.Medium))
+                    .Text(t =>
+                    {
+                        t.Span("Trang ");
+                        t.CurrentPageNumber();
+                        t.Span(" / ");
+                        t.TotalPages();
+                    });
+
+                page.Content().PaddingVertical(12).Column(col =>
                 {
                     col.Spacing(10);
 
@@ -171,8 +175,85 @@ public sealed class QuestPdfContractFileService : IContractPdfService
                     col.Item().PaddingTop(24).AlignCenter().Text(
                         "Đây là bản được hệ thống xuất tự động. Văn bản pháp lý cuối cùng có thể được chỉnh sửa / ký tay / ký số điện tử theo quy trình của hai bên.")
                         .Italic().FontSize(9).AlignCenter();
+
+                    col.Item().PaddingTop(28).LineHorizontal(1);
+                    col.Item().PaddingTop(10).Text("Chữ ký xác nhận").SemiBold().FontSize(12);
+                    col.Item().PaddingTop(8).Row(row =>
+                    {
+                        row.RelativeItem().Padding(10).Border(1).BorderColor(Colors.Grey.Lighten2).Column(left =>
+                        {
+                            left.Item().Text("Đại diện Bên A (HuitMeal)").SemiBold().FontSize(10);
+                            left.Item().PaddingTop(10).AlignCenter().Column(st =>
+                            {
+                                st.Item().AlignCenter().Width(100).Border(2).BorderColor(Colors.Red.Medium)
+                                    .Padding(10).Column(inner =>
+                                    {
+                                        inner.Item().AlignCenter().Text("APPROVED").Bold()
+                                            .FontColor(Colors.Red.Medium).FontSize(8);
+                                        inner.Item().AlignCenter().Text("HUITMEAL").Bold()
+                                            .FontColor(Colors.Red.Medium).FontSize(7);
+                                    });
+                                st.Item().PaddingTop(4).AlignCenter().Text("Đã xác thực hệ thống")
+                                    .FontSize(8).FontColor(Colors.Grey.Darken1);
+                            });
+                        });
+
+                        row.RelativeItem().Padding(10).Border(1).BorderColor(Colors.Grey.Lighten2).Column(right =>
+                        {
+                            right.Item().Text("Đại diện Bên B (Khách hàng)").SemiBold().FontSize(10);
+                            var sigPng = TryDecodeSignaturePng(contract);
+                            if (sigPng is { Length: > 0 })
+                            {
+                                right.Item().PaddingTop(6).AlignCenter().Height(90)
+                                    .Image(sigPng).FitArea();
+                            }
+                            else if (contract.IsDigitallySigned)
+                            {
+                                right.Item().PaddingTop(24).AlignCenter().Text("Đã ký số điện tử")
+                                    .Italic().FontSize(10).FontColor(Colors.Green.Medium);
+                            }
+                            else
+                            {
+                                right.Item().PaddingTop(28).AlignCenter().Text("CHỜ BẠN KÝ")
+                                    .FontSize(11).Italic().FontColor(Colors.Grey.Medium);
+                            }
+
+                            if (contract.IsDigitallySigned && contract.DigitallySignedAt.HasValue)
+                            {
+                                right.Item().PaddingTop(6).AlignCenter()
+                                    .Text($"Thời điểm ký: {Dt(contract.DigitallySignedAt.Value)} (UTC)")
+                                    .FontSize(8).FontColor(Colors.Grey.Darken1);
+                            }
+
+                            if (buyer != null)
+                                right.Item().PaddingTop(4).AlignCenter().Text(buyer.Name).FontSize(9).SemiBold();
+                        });
+                    });
                 });
             });
         }).GeneratePdf();
+    }
+
+    private static byte[]? TryDecodeSignaturePng(Contract contract)
+    {
+        var dataUrl = contract.DigitalSignature;
+        if (string.IsNullOrWhiteSpace(dataUrl))
+            dataUrl = contract.SignatureImage;
+        if (string.IsNullOrWhiteSpace(dataUrl))
+            return null;
+        dataUrl = dataUrl.Trim();
+        if (!dataUrl.StartsWith("data:image", StringComparison.OrdinalIgnoreCase))
+            return null;
+        var comma = dataUrl.IndexOf(',', StringComparison.Ordinal);
+        if (comma <= 0 || comma >= dataUrl.Length - 1)
+            return null;
+        try
+        {
+            return Convert.FromBase64String(dataUrl[(comma + 1)..]);
+        }
+        catch
+        {
+            return null;
+        }
     }
 }

@@ -36,7 +36,7 @@ public class GetOrganizationQueryHandler : IRequestHandler<GetOrganizationQuery,
                 if (organization == null)
                 {
                     _logger.LogWarning("Organization not found with ID: {OrganizationId}", request.OrganizationId);
-                    return new GetOrganizationResponse { Organization = new OrganizationDto() };
+                    throw new KeyNotFoundException($"Organization with ID {request.OrganizationId} was not found.");
                 }
 
                 return new GetOrganizationResponse
@@ -44,11 +44,17 @@ public class GetOrganizationQueryHandler : IRequestHandler<GetOrganizationQuery,
                     Organization = new OrganizationDto
                     {
                         Id = organization.Id,
+                        Code = organization.Code,
                         Name = organization.Name,
                         Address = organization.Address,
                         Phone = organization.Phone,
                         ContactPerson = organization.ContactPerson,
                         ContactEmail = organization.ContactEmail,
+                        TaxCode = organization.TaxCode,
+                        LegalRepresentative = organization.LegalRepresentative,
+                        LogoUrl = organization.LogoUrl,
+                        Website = organization.Website,
+                        EducationLevel = organization.EducationLevel,
                         Type = organization.Type,
                         IsSubscriptionActive = organization.IsSubscriptionActive,
                         DefaultDailyMeals = organization.DefaultDailyMeals,

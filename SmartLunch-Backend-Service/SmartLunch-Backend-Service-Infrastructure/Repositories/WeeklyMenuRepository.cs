@@ -1,3 +1,4 @@
+using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
@@ -51,8 +52,18 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
         var query = _context.WeeklyMenus.AsQueryable();
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
-            query = query.Where(e =>
-                (e.Description != null && e.Description.Contains(searchTerm)));
+            var term = searchTerm.Trim();
+            if (int.TryParse(term, NumberStyles.Integer, CultureInfo.InvariantCulture, out var idMatch))
+            {
+                query = query.Where(e =>
+                    e.Id == idMatch
+                    || (e.Description != null && e.Description.Contains(term)));
+            }
+            else
+            {
+                query = query.Where(e =>
+                    (e.Description != null && e.Description.Contains(term)));
+            }
         }
 
         if (customerTypeId.HasValue)

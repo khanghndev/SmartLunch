@@ -480,6 +480,31 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.FinancialTerms).HasMaxLength(1000);
             });
 
+            modelBuilder.Entity<PartnerDocument>(entity =>
+            {
+                entity.ToTable("partner_documents");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.HasIndex(e => new { e.PartnerId, e.CreatedAt });
+                entity.HasIndex(e => e.MediaFileId);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Code).HasMaxLength(20);
+                entity.Property(e => e.DocumentType).IsRequired().HasMaxLength(50).HasDefaultValue("other");
+                entity.Property(e => e.IsVerified).HasDefaultValue(false);
+                entity.Property(e => e.CreatedAt);
+                entity.Property(e => e.UpdatedAt);
+
+                entity.HasOne(e => e.Partner)
+                    .WithMany(p => p.PartnerDocuments)
+                    .HasForeignKey(e => e.PartnerId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(e => e.MediaFile)
+                    .WithMany()
+                    .HasForeignKey(e => e.MediaFileId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
             // Contract
             modelBuilder.Entity<Contract>(entity =>
             {
@@ -825,6 +850,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.TotalAmount).HasPrecision(12, 2);
                 entity.Property(e => e.PaymentStatus).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.InvoiceCode).HasMaxLength(40);
+                entity.Property(e => e.AnnexPdfUrl).HasMaxLength(2048);
                 entity.HasOne(e => e.User).WithMany(u => u.Orders).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.SetNull);
                 entity.HasOne(e => e.Contract).WithMany(c => c.Orders).HasForeignKey(e => e.ContractId).OnDelete(DeleteBehavior.SetNull);
                 entity.HasOne(e => e.CreatedBySalesUser).WithMany(u => u.SalesOrdersCreated).HasForeignKey(e => e.CreatedBySalesUserId).OnDelete(DeleteBehavior.SetNull);

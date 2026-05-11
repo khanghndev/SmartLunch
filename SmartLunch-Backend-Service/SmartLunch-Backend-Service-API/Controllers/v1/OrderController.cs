@@ -1,6 +1,10 @@
+using System.Net;
+using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.CreateCustomerMealOrder;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.SignOrderAnnex;
 using SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.UpdateOrderStatus;
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Orders;
@@ -9,7 +13,6 @@ using SmartLunch.Backend.Service.Application.Queries.Orders.GetOrder;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetOrders;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetMealStatistics;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetDetailedMealStatistics;
-using System.Net;
 
 namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 
@@ -19,7 +22,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-[Authorize(Policy = "roles:Admin,Sales")]
+[Authorize]
 public class OrderController : ControllerBase
 {
     private readonly ILogger<OrderController> _logger;
@@ -40,12 +43,17 @@ public class OrderController : ControllerBase
     {
         try
         {
+            int? restrictUser = null;
+            if (User.IsInRole("Customer") && !User.IsInRole("Admin") && !User.IsInRole("Manager"))
+                restrictUser = RequireUserId();
+
             var query = new GetOrdersQuery(
                 request.Page,
                 request.PageSize,
                 request.SearchTerm,
                 request.ScheduledOn,
-                request.Status);
+                request.Status,
+                restrictUser);
             var response = await _mediator.Send(query);
             return Ok(BaseApiResponse<GetOrdersResponse>.SuccessResult(response, "Orders retrieved successfully"));
         }
@@ -73,6 +81,16 @@ public class OrderController : ControllerBase
         {
             var query = new GetOrderQuery(id);
             var response = await _mediator.Send(query);
+
+            if (response.Order.Id == 0)
+                return NotFound(BaseApiResponse<GetOrderResponse>.ErrorResult("Order not found", new[] { "Order not found" }));
+
+            if (!User.IsInRole("Admin") && !User.IsInRole("Manager"))
+            {
+                var uid = RequireUserId();
+                if (response.Order.UserId != uid)
+                    return Forbid();
+            }
 
             return Ok(BaseApiResponse<GetOrderResponse>.SuccessResult(response, "Order retrieved successfully"));
         }
@@ -118,6 +136,76 @@ public class OrderController : ControllerBase
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetOrderResponse>.ErrorResult("An error occurred while updating order status", new[] { ex.Message }));
         }
+    }
+
+    /// <summary>Ký phụ lục đặt hàng (mô phỏng): ghép chữ ký vào PDF, upload cloud, cập nhật AnnexPdfUrl.</summary>
+    [HttpPost("{id:int}/sign-annex")]
+    [Authorize(Policy = "roles:Customer,Organization,Company,Khách hàng cá nhân,Khách hàng doanh nghiệp")]
+    [Authorize(Policy = "permission:orders.create")]
+    public async Task<ActionResult<BaseApiResponse<GetOrderResponse>>> SignOrderAnnex(int id, [FromBody] SignOrderAnnexRequest request)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var response = await _mediator.Send(new SignOrderAnnexCommand(id, request, userId));
+            return Ok(BaseApiResponse<GetOrderResponse>.SuccessResult(response, "Order annex signed and PDF stored."));
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetOrderResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetOrderResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error signing order annex for {OrderId}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetOrderResponse>.ErrorResult("An error occurred while signing the order annex", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Đặt món trực tuyến (B2C + B2B đại diện đơn vị): tạo đơn chờ xác nhận.</summary>
+    [HttpPost("customer")]
+    [Authorize(Policy = "roles:Customer,Organization,Company,Khách hàng cá nhân,Khách hàng doanh nghiệp")]
+    [Authorize(Policy = "permission:orders.create")]
+    public async Task<ActionResult<BaseApiResponse<GetOrderResponse>>> CreateCustomerOrder([FromBody] CreateCustomerMealOrderRequest request)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var response = await _mediator.Send(new CreateCustomerMealOrderCommand(request, userId));
+            return Ok(BaseApiResponse<GetOrderResponse>.SuccessResult(response, "Order created successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetOrderResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(BaseApiResponse<GetOrderResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating customer order");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetOrderResponse>.ErrorResult("An error occurred while creating the order", new[] { ex.Message }));
+        }
+    }
+
+    private int RequireUserId()
+    {
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
+            throw new UnauthorizedAccessException("Invalid user context.");
+        return userId;
     }
 
     /// <summary>

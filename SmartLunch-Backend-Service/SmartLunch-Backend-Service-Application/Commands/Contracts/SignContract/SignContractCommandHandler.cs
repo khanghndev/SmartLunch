@@ -7,10 +7,14 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Contracts.S
 public class SignContractCommandHandler : IRequestHandler<SignContractCommand, GetContractResponse>
 {
     private readonly IContractRepository _contractRepository;
+    private readonly IContractPdfService _contractPdfService;
 
-    public SignContractCommandHandler(IContractRepository contractRepository)
+    public SignContractCommandHandler(
+        IContractRepository contractRepository,
+        IContractPdfService contractPdfService)
     {
         _contractRepository = contractRepository;
+        _contractPdfService = contractPdfService;
     }
 
     public async Task<GetContractResponse> Handle(SignContractCommand request, CancellationToken cancellationToken)
@@ -23,7 +27,6 @@ public class SignContractCommandHandler : IRequestHandler<SignContractCommand, G
         if (entity == null)
             throw new KeyNotFoundException($"Contract with ID {request.ContractId} was not found.");
 
-        // Idempotent: if already signed, do not allow overwrite by default
         if (entity.IsDigitallySigned)
             throw new InvalidOperationException("Contract is already digitally signed.");
 
@@ -37,8 +40,21 @@ public class SignContractCommandHandler : IRequestHandler<SignContractCommand, G
 
         await _contractRepository.UpdateAsync(entity);
 
+        var signed = await _contractRepository.GetByIdAsync(request.ContractId);
+        if (signed?.Partner == null)
+            throw new InvalidOperationException("Partner not loaded for contract PDF.");
+
+        var pdfUrl = await _contractPdfService.GenerateUploadAndResolveUrlAsync(
+            signed,
+            signed.Partner,
+            signed.Organization,
+            cancellationToken);
+
+        signed.ContractFileUrl = pdfUrl;
+        signed.UpdatedAt = DateTime.UtcNow;
+        await _contractRepository.UpdateAsync(signed);
+
         var reloaded = await _contractRepository.GetByIdAsync(entity.Id);
-        return new GetContractResponse { Contract = ContractDtoMapping.ToDto(reloaded ?? entity) };
+        return new GetContractResponse { Contract = ContractDtoMapping.ToDto(reloaded ?? signed) };
     }
 }
-

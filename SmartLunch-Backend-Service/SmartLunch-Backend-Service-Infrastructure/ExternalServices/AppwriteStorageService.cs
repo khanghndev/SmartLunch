@@ -106,11 +106,14 @@ public class AppwriteStorageService : IStorageService
         CancellationToken cancellationToken = default)
     {
         var fileId = ToFileId(objectName);
+        if (content.CanSeek)
+            content.Position = 0;
+
         using var ms = new MemoryStream();
         await content.CopyToAsync(ms, cancellationToken);
         var payload = ms.ToArray();
         var uploadUrl = $"{_endpoint}/storage/buckets/{_bucketId}/files";
-        
+
         using var firstForm = BuildUploadForm(fileId, objectName, contentType, payload, isPublic: true);
         using var res = await _httpClient.PostAsync(uploadUrl, firstForm, cancellationToken);
         if (res.StatusCode == HttpStatusCode.Conflict)
@@ -119,11 +122,34 @@ public class AppwriteStorageService : IStorageService
             await DeleteObjectAsync(objectName);
             using var retryForm = BuildUploadForm(fileId, objectName, contentType, payload, isPublic: true);
             using var retryRes = await _httpClient.PostAsync(uploadUrl, retryForm, cancellationToken);
-            retryRes.EnsureSuccessStatusCode();
+            await EnsureUploadSuccessAsync(retryRes, fileId, objectName, cancellationToken);
             return;
         }
 
-        res.EnsureSuccessStatusCode();
+        await EnsureUploadSuccessAsync(res, fileId, objectName, cancellationToken);
+    }
+
+    private async Task EnsureUploadSuccessAsync(
+        HttpResponseMessage res,
+        string fileId,
+        string objectName,
+        CancellationToken cancellationToken)
+    {
+        if (res.IsSuccessStatusCode)
+            return;
+
+        var body = await res.Content.ReadAsStringAsync(cancellationToken);
+        _logger.LogError(
+            "Appwrite upload failed: {StatusCode} fileId={FileId} objectName={ObjectName} body={Body}",
+            (int)res.StatusCode,
+            fileId,
+            objectName,
+            body);
+
+        throw new HttpRequestException(
+            $"Appwrite storage upload failed ({(int)res.StatusCode}): {body}",
+            null,
+            res.StatusCode);
     }
 
     public async Task DeleteObjectAsync(string objectName)
@@ -180,8 +206,9 @@ public class AppwriteStorageService : IStorageService
 
         if (isPublic)
         {
-            // Set public read permissions for Appwrite
-            form.Add(new StringContent("read(\"any\")"), "permissions[]");
+            // Same as Appwrite Web SDK multipart: one part per entry, value is Permission.read(Role.any()) i.e. read("any").
+            // Do not send a JSON array as the value — the server validates each string must start with read|update|delete|write.
+            form.Add(new StringContent("""read("any")"""), "permissions[]");
         }
 
         return form;

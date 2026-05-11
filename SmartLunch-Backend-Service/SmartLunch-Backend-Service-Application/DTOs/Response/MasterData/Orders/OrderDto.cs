@@ -18,5 +18,11 @@ public class OrderDto
     public string? InvoiceCode { get; set; }
     public int? CreatedBySalesUserId { get; set; }
     public string? CreatedBySalesDisplayName { get; set; }
+
+    /// <summary>PDF phụ lục / biên bản đặt hàng đã ký (lưu object storage).</summary>
+    public string? AnnexPdfUrl { get; set; }
+
+    public DateTime? AnnexSignedAt { get; set; }
+
     public List<OrderItemLineDto> Items { get; set; } = new();
 }

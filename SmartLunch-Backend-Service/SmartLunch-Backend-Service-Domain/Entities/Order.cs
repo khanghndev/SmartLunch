@@ -22,6 +22,12 @@ public class Order
 
     /// <summary>Nhân viên bán tạo hóa đơn (POS).</summary>
     public int? CreatedBySalesUserId { get; set; }
+
+    /// <summary>URL (signed) PDF phụ lục đặt hàng sau khi đại diện đơn vị ký (mô phỏng ký số + lưu cloud).</summary>
+    public string? AnnexPdfUrl { get; set; }
+
+    public DateTime? AnnexSignedAt { get; set; }
+
     public virtual User? User { get; set; }
     public virtual Contract? Contract { get; set; }
     public virtual User? CreatedBySalesUser { get; set; }

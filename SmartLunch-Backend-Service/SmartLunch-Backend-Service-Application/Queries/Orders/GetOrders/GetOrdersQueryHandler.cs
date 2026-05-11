@@ -23,7 +23,8 @@ public class GetOrdersQueryHandler : IRequestHandler<GetOrdersQuery, GetOrdersRe
             request.PageSize,
             request.SearchTerm,
             request.ScheduledOn,
-            request.Status);
+            request.Status,
+            request.RestrictToUserId);
 
         var orderDtos = orders.Select(OrderDtoMapping.ToDto).ToList();
 

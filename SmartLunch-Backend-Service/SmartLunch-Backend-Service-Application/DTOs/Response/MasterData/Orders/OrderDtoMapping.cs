@@ -14,7 +14,7 @@ public static class OrderDtoMapping
             ContractId = order.ContractId,
             ContractSummary = order.Contract == null ? null : ToContractSummary(order.Contract),
             OrganizationId = order.Contract?.OrganizationId,
-            OrganizationName = order.Contract?.Organization?.Name,
+            OrganizationName = ResolveOrganizationName(order),
             OrderDate = order.OrderDate,
             ScheduledDate = order.ScheduledDate,
             Status = order.Status,
@@ -25,6 +25,8 @@ public static class OrderDtoMapping
             InvoiceCode = order.InvoiceCode,
             CreatedBySalesUserId = order.CreatedBySalesUserId,
             CreatedBySalesDisplayName = FormatSalesStaffName(order.CreatedBySalesUser),
+            AnnexPdfUrl = order.AnnexPdfUrl,
+            AnnexSignedAt = order.AnnexSignedAt,
             Items = order.OrderItems
                 .OrderBy(i => i.Dish?.Name)
                 .Select(i => new OrderItemLineDto
@@ -55,6 +57,18 @@ public static class OrderDtoMapping
         DigitallySignedAt = c.DigitallySignedAt,
         ContractFileUrl = c.ContractFileUrl
     };
+
+    private static string? ResolveOrganizationName(Order order)
+    {
+        var fromContract = order.Contract?.Organization?.Name;
+        if (!string.IsNullOrWhiteSpace(fromContract))
+            return fromContract;
+
+        return order.User?.UserOrganizations?
+            .Where(uo => uo.IsActive)
+            .Select(uo => uo.Organization?.Name)
+            .FirstOrDefault(n => !string.IsNullOrWhiteSpace(n));
+    }
 
     private static string? FormatSalesStaffName(User? u)
     {

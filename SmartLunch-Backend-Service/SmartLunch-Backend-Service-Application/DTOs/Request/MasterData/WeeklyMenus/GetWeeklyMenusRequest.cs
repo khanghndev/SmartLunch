@@ -6,4 +6,7 @@ public class GetWeeklyMenusRequest
     public int PageSize { get; set; } = 10;
     public string? SearchTerm { get; set; }
     public int? CustomerTypeId { get; set; }
+
+    /// <summary>Lọc theo <c>customer_types.ProfileKey</c> (ví dụ org_primary_school, industrial, org_company).</summary>
+    public string? CustomerProfileKey { get; set; }
 }

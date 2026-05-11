@@ -13,7 +13,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/WeeklyMenu/{weeklyMenuId:int}/images")]
-[Authorize(Policy = "roles:Admin")]
+[Authorize(Policy = "roles:Admin,Manager")]
 public class WeeklyMenuImagesController : ControllerBase
 {
     private readonly ILogger<WeeklyMenuImagesController> _logger;
@@ -26,7 +26,7 @@ public class WeeklyMenuImagesController : ControllerBase
     }
 
     [HttpPost]
-    [Authorize(Policy = "permission:weeklymenus.update")]
+    [Authorize(Policy = "permission:weekly_menus.update")]
     public async Task<ActionResult<BaseApiResponse<object>>> AddImage(int weeklyMenuId, [FromBody] AddWeeklyMenuImageRequest request)
     {
         try
@@ -72,7 +72,7 @@ public class WeeklyMenuImagesController : ControllerBase
     }
 
     [HttpDelete("{weeklyMenuImageId:int}")]
-    [Authorize(Policy = "permission:weeklymenus.update")]
+    [Authorize(Policy = "permission:weekly_menus.update")]
     public async Task<ActionResult<BaseApiResponse<object>>> DeleteImage(int weeklyMenuId, int weeklyMenuImageId)
     {
         try

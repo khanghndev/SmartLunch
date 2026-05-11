@@ -24,6 +24,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
             services.AddScoped<ICartCacheService, CartCacheService>();
             services.AddScoped<IStorageService, AppwriteStorageService>();
             services.AddScoped<IContractPdfService, QuestPdfContractFileService>();
+            services.AddScoped<IOrderAnnexPdfService, QuestPdfOrderAnnexPdfService>();
 
             var assembly = typeof(DependencyInjection).Assembly;
 

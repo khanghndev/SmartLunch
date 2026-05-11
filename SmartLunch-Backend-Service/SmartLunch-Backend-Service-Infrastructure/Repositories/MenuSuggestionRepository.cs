@@ -36,7 +36,7 @@ public class MenuSuggestionRepository : IMenuSuggestionRepository
         var totalCount = await query.CountAsync();
 
         var menuSuggestions = await query
-            .OrderBy(e => e.GeneratedAt)
+            .OrderByDescending(e => e.GeneratedAt)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();

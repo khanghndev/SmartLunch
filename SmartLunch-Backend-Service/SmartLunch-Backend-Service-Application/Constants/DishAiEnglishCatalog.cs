@@ -19,6 +19,25 @@ public static class DishAiEnglishCatalog
 
     public static IReadOnlyCollection<string> CookingMethodValues => CookingMethods;
 
+    /// <summary>Returns the canonical lowercase slot key if <paramref name="value"/> matches a known AI meal slot.</summary>
+    public static bool TryGetCanonicalCategorySlot(string? value, out string canonical)
+    {
+        canonical = string.Empty;
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+        var t = value.Trim();
+        foreach (var s in CategorySlots)
+        {
+            if (string.Equals(s, t, StringComparison.OrdinalIgnoreCase))
+            {
+                canonical = s;
+                return true;
+            }
+        }
+
+        return false;
+    }
+
     public static void ValidateCategoryEnglishOrThrow(string? value, string fieldName = "CategoryEnglish")
     {
         if (string.IsNullOrWhiteSpace(value))

@@ -1,3 +1,4 @@
+using System.Linq;
 using MediatR;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -12,23 +13,39 @@ namespace SmartLunch.Backend.Service.Application.Queries.WeeklyMenus.GetWeeklyMe
 public class GetWeeklyMenusQueryHandler : IRequestHandler<GetWeeklyMenusQuery, GetWeeklyMenusResponse>
 {
     private readonly IWeeklyMenuRepository _weeklyMenuRepository;
+    private readonly ICustomerTypeRepository _customerTypeRepository;
     private readonly ILogger<GetWeeklyMenusQueryHandler> _logger;
     private readonly IConfiguration _configuration;
 
-    public GetWeeklyMenusQueryHandler(IWeeklyMenuRepository weeklyMenuRepository, ILogger<GetWeeklyMenusQueryHandler> logger, IConfiguration configuration)
+    public GetWeeklyMenusQueryHandler(
+        IWeeklyMenuRepository weeklyMenuRepository,
+        ICustomerTypeRepository customerTypeRepository,
+        ILogger<GetWeeklyMenusQueryHandler> logger,
+        IConfiguration configuration)
     {
         _weeklyMenuRepository = weeklyMenuRepository;
+        _customerTypeRepository = customerTypeRepository;
         _logger = logger;
         _configuration = configuration;
     }
 
     public async Task<GetWeeklyMenusResponse> Handle(GetWeeklyMenusQuery request, CancellationToken cancellationToken)
     {
+        var customerTypeId = request.CustomerTypeId;
+        if (!customerTypeId.HasValue && !string.IsNullOrWhiteSpace(request.CustomerProfileKey))
+        {
+            var types = await _customerTypeRepository.GetAllAsync(cancellationToken);
+            var key = request.CustomerProfileKey.Trim();
+            var match = types.FirstOrDefault(t =>
+                string.Equals(t.ProfileKey, key, StringComparison.OrdinalIgnoreCase));
+            customerTypeId = match?.Id;
+        }
+
         var (weeklyMenus, totalCount) = await _weeklyMenuRepository.GetWeeklyMenusAsync(
             request.Page,
             request.PageSize,
             request.SearchTerm,
-            request.CustomerTypeId);
+            customerTypeId);
 
         var weeklyMenuDtos = weeklyMenus.Select(weeklyMenu =>
         {
@@ -49,6 +66,22 @@ public class GetWeeklyMenusQueryHandler : IRequestHandler<GetWeeklyMenusQuery, G
 
             if (cover?.MediaFile != null)
                 dto.ImageUrl = ResolveUrl(cover.MediaFile);
+
+            if (weeklyMenu.WeeklyMenuImages is { Count: > 0 } imgs)
+            {
+                dto.Images = imgs
+                    .OrderByDescending(i => string.Equals(i.Role, "cover", StringComparison.OrdinalIgnoreCase))
+                    .ThenBy(i => i.SortOrder)
+                    .Select(i => new WeeklyMenuImageDto
+                    {
+                        Id = i.Id,
+                        MediaFileId = i.MediaFileId,
+                        Role = i.Role,
+                        SortOrder = i.SortOrder,
+                        Url = i.MediaFile != null ? ResolveUrl(i.MediaFile) : string.Empty
+                    })
+                    .ToList();
+            }
 
             return dto;
         }).ToList();

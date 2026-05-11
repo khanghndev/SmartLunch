@@ -7,6 +7,7 @@ using SmartLunch.Backend.Service.Application.Commands.CompanyContracts.SignOrgan
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Contracts;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Contracts;
+using SmartLunch.Backend.Service.Application.Queries.CompanyContracts.GetMyOrganizationContracts;
 using SmartLunch.Backend.Service.Application.Queries.CompanyContracts.GetOrganizationContract;
 
 namespace SmartLunch.Backend.Service.API.Controllers;
@@ -17,7 +18,7 @@ namespace SmartLunch.Backend.Service.API.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/company/contracts")]
-[Authorize(Policy = "roles:Company")]
+[Authorize(Policy = "roles:Company,Organization,Khách hàng doanh nghiệp")]
 public class CompanyContractController : ControllerBase
 {
     private readonly ILogger<CompanyContractController> _logger;
@@ -27,6 +28,35 @@ public class CompanyContractController : ControllerBase
     {
         _logger = logger;
         _mediator = mediator;
+    }
+
+    /// <summary>Danh sách hợp đồng gắn các tổ chức mà user đang thuộc (active membership).</summary>
+    [HttpGet]
+    public async Task<ActionResult<BaseApiResponse<GetMyOrganizationContractsResponse>>> GetMyContracts()
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var response = await _mediator.Send(new GetMyOrganizationContractsQuery(userId));
+            return Ok(BaseApiResponse<GetMyOrganizationContractsResponse>.SuccessResult(
+                response,
+                "Contracts retrieved successfully"));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            if (IsInvalidUserContext(ex))
+                return Unauthorized(BaseApiResponse<GetMyOrganizationContractsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            return StatusCode((int)HttpStatusCode.Forbidden, BaseApiResponse<GetMyOrganizationContractsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Company list contracts");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetMyOrganizationContractsResponse>.ErrorResult(
+                    "An error occurred while listing contracts",
+                    new[] { ex.Message }));
+        }
     }
 
     /// <summary>Lấy hợp đồng nếu user thuộc đúng tổ chức của hợp đồng (để xem lại trước / sau ký).</summary>

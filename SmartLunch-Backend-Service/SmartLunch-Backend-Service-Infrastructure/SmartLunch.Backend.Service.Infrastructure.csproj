@@ -27,4 +27,10 @@
         <ProjectReference Include="..\..\SmartLunch-Shared-MessageQueue-Dotnet\SmartLunch.Shared.MessageQueue.Dotnet.csproj" />
         <ProjectReference Include="..\SmartLunch-Backend-Service-Application\SmartLunch.Backend.Service.Application.csproj" />
     </ItemGroup>
+
+    <ItemGroup>
+        <Content Include="Pdf\Assets\**\*">
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
 </Project>

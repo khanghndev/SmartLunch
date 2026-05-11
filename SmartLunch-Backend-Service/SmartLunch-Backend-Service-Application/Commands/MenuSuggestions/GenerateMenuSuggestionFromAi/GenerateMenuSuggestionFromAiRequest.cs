@@ -15,8 +15,8 @@ public class GenerateMenuSuggestionFromAiRequest
     public List<string> Days { get; set; } = new();
 
     /// <summary>
-    /// Khung bữa ăn theo enum AI Service: main | side | soup | vegetable | noodle_soup | dessert.
-    /// FE có thể truyền tiếng Việt ("Cơm phần", "Canh", ...) hoặc enum tiếng Anh — BE sẽ tự map.
+    /// Khung bữa ăn: tiếng Việt (Món chính, Món canh, …) hoặc khóa enum AI (main, soup, vegetable, side, noodle_soup, dessert).
+    /// Backend chuẩn hóa trước khi gọi AI và kiểm tra mỗi slot có ít nhất một món trong danh sách DishIds có category tương ứng.
     /// </summary>
     public List<string> MealStructure { get; set; } = new();
 

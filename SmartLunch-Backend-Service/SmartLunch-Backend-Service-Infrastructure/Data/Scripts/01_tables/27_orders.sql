@@ -9,6 +9,8 @@ CREATE TABLE orders (
     TotalAmount DECIMAL(12,2) NOT NULL,
     PaymentStatus VARCHAR(20) NOT NULL DEFAULT 'unpaid',
     InvoiceCode VARCHAR(40) NULL,
+    AnnexPdfUrl VARCHAR(2048) NULL COMMENT 'URL signed PDF phụ lục đơn',
+    AnnexSignedAt DATETIME NULL COMMENT 'Thời điểm ký phụ lục (UTC)',
     CreatedBySalesUserId INT NULL,
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UpdatedAt DATETIME NULL DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,

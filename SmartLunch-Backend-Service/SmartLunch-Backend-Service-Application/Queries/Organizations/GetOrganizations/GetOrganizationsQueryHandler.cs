@@ -44,11 +44,17 @@ public class GetOrganizationsQueryHandler : IRequestHandler<GetOrganizationsQuer
                 var organizationDtos = organizations.Select(u => new OrganizationDto
                 {
                     Id = u.Id,
+                    Code = u.Code,
                     Name = u.Name,
                     Address = u.Address,
                     Phone = u.Phone,
                     ContactPerson = u.ContactPerson,
                     ContactEmail = u.ContactEmail,
+                    TaxCode = u.TaxCode,
+                    LegalRepresentative = u.LegalRepresentative,
+                    LogoUrl = u.LogoUrl,
+                    Website = u.Website,
+                    EducationLevel = u.EducationLevel,
                     Type = u.Type,
                     IsSubscriptionActive = u.IsSubscriptionActive,
                     DefaultDailyMeals = u.DefaultDailyMeals,

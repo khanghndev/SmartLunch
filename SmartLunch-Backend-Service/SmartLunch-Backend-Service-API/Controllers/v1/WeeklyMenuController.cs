@@ -17,7 +17,8 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-[Authorize(Policy = "roles:Admin,Organization")]
+/// <remarks>Manager quản lý thực đơn tuần toàn hệ thống; Organization (B2B) có thể xem theo quyền weekly_menus.read.</remarks>
+[Authorize(Policy = "roles:Admin,Manager,Organization,Customer")]
 public class WeeklyMenuController : ControllerBase
 {
     private readonly ILogger<WeeklyMenuController> _logger;
@@ -38,7 +39,12 @@ public class WeeklyMenuController : ControllerBase
     {
         try
         {
-            var query = new GetWeeklyMenusQuery(request.Page, request.PageSize, request.SearchTerm, request.CustomerTypeId);
+            var query = new GetWeeklyMenusQuery(
+                request.Page,
+                request.PageSize,
+                request.SearchTerm,
+                request.CustomerTypeId,
+                request.CustomerProfileKey);
             var response = await _mediator.Send(query);
             return Ok(BaseApiResponse<GetWeeklyMenusResponse>.SuccessResult(response, "WeeklyMenus retrieved successfully"));
         }

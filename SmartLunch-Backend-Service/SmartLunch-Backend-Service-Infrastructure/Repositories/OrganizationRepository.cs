@@ -62,4 +62,10 @@ public class OrganizationRepository : IOrganizationRepository
             .Where(u => idList.Contains(u.Id))
             .ToDictionaryAsync(u => u.Id, u => u.Name, cancellationToken);
     }
+
+    public async Task UpdateAsync(Organization organization, CancellationToken cancellationToken = default)
+    {
+        _context.Organizations.Update(organization);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
 }

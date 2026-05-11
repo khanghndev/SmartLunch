@@ -53,27 +53,50 @@ public class GenerateMenuSuggestionFromAiCommandHandler
         var weekStartUtc = DateTime.SpecifyKind(req.WeekStartUtc.Date, DateTimeKind.Utc);
         var nextVersion = await _menuSuggestionRepository.GetNextVersionAsync(weekStartUtc, createdBy);
 
+        var requestedDishIds = req.DishIds.Distinct().ToList();
+
         // ── 1. Fetch dishes with ingredients from DB ──────────────────────
-        var dishes = await _dishRepository.GetByIdsWithIngredientsAsync(req.DishIds, cancellationToken);
+        var dishes = await _dishRepository.GetByIdsWithIngredientsAsync(requestedDishIds, cancellationToken);
         if (dishes.Count == 0)
             throw new ArgumentException("No active dishes found for the provided DishIds.");
+
+        var foundIds = dishes.Select(d => d.Id).ToHashSet();
+        var missingDishIds = requestedDishIds.Where(id => !foundIds.Contains(id)).ToList();
+        if (missingDishIds.Count > 0)
+            throw new ArgumentException(
+                $"Không tìm thấy món hoạt động cho id: {string.Join(", ", missingDishIds)}. Kiểm tra DishIds hoặc trạng thái IsActive.");
+
+        var mealStructureSlots = MealStructureEnglishNormalizer.NormalizeOrThrow(req.MealStructure);
 
         var missingSlots = dishes
             .Where(d => DishAiEnglishCatalog.BuildSlotKeysFromJunction(d).Count == 0)
             .Select(d => d.Name)
             .ToList();
         if (missingSlots.Count > 0)
-            throw new InvalidOperationException(
-                $"The following dishes have no meal slots (dish_dish_categories): {string.Join(", ", missingSlots)}. " +
-                "Assign at least one dish_categories.SlotKey per dish (e.g. main, soup, noodle_soup).");
+            throw new ArgumentException(
+                $"Các món sau chưa gán danh mục slot (dish_dish_categories / dish_categories.SlotKey): {string.Join(", ", missingSlots)}. " +
+                "Gán ít nhất một slot (main, soup, vegetable, side, noodle_soup, dessert) cho mỗi món.");
 
         var missingMethod = dishes
             .Where(d => d.CookingMethod == null || string.IsNullOrWhiteSpace(d.CookingMethod.MethodKey))
             .Select(d => d.Name)
             .ToList();
         if (missingMethod.Count > 0)
-            throw new InvalidOperationException(
-                $"The following dishes have no cooking method (cooking_methods / CookingMethodId): {string.Join(", ", missingMethod)}.");
+            throw new ArgumentException(
+                $"Các món sau chưa có cooking method (cooking_methods.MethodKey): {string.Join(", ", missingMethod)}.");
+
+        var poolSlots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var d in dishes)
+        {
+            foreach (var s in DishAiEnglishCatalog.BuildSlotKeysFromJunction(d))
+                poolSlots.Add(s);
+        }
+
+        var uncoveredSlots = mealStructureSlots.Where(s => !poolSlots.Contains(s)).ToList();
+        if (uncoveredSlots.Count > 0)
+            throw new ArgumentException(
+                "Mỗi thành phần trong cấu trúc bữa phải có ít nhất một món trong kho được gán category tương ứng (junction dish_categories). " +
+                $"Thiếu món cho slot: {string.Join(", ", uncoveredSlots)}. Hãy thêm món hoặc bỏ slot khỏi cấu trúc bữa.");
 
         // ── 2. Compute popularity scores (4-week rolling window) ──────────
         var popularityMap = await _dishRepository.GetPopularityScoresAsync(
@@ -167,7 +190,7 @@ public class GenerateMenuSuggestionFromAiCommandHandler
         {
             BudgetPerServing = req.BudgetPerServing,
             Days = req.Days,
-            MealStructure = req.MealStructure,   // mapped from Vietnamese to AI enum values
+            MealStructure = mealStructureSlots,
             TopK = req.TopK,
             TimeLimitSeconds = req.TimeLimitSeconds,
             RulesKey = req.RulesKey,
@@ -178,7 +201,7 @@ public class GenerateMenuSuggestionFromAiCommandHandler
 
         _logger.LogInformation(
             "Calling AI with {DishCount} dishes, {IngCount} available ingredients, {DayCount} days, slots: {Slots}",
-            aiDishes.Count, availableIngredients.Count, req.Days.Count, string.Join(",", req.MealStructure));
+            aiDishes.Count, availableIngredients.Count, req.Days.Count, string.Join(",", mealStructureSlots));
 
         var aiRes = await _aiClient.RecommendIndustrialMenusAsync(aiReq, cancellationToken);
 

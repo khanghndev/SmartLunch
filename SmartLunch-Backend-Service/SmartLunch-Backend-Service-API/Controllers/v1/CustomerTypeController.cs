@@ -14,7 +14,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/customer-types")]
-[Authorize(Policy = "roles:Admin,Manager")]
+[Authorize(Policy = "roles:Admin,Manager,Organization,Customer")]
 public class CustomerTypeController : ControllerBase
 {
     private readonly ILogger<CustomerTypeController> _logger;
@@ -27,7 +27,6 @@ public class CustomerTypeController : ControllerBase
     }
 
     [HttpGet]
-    [Authorize(Policy = "permission:customer_types.read")]
     public async Task<ActionResult<BaseApiResponse<GetCustomerTypesResponse>>> GetAll()
     {
         try

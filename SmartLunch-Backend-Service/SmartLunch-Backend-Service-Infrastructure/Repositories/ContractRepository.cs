@@ -18,7 +18,24 @@ public class ContractRepository : IContractRepository
     {
         return await _context.Contracts
             .Include(c => c.Partner)
+            .Include(c => c.Organization)
             .FirstOrDefaultAsync(e => e.Id == id);
+    }
+
+    public async Task<List<Contract>> GetByOrganizationIdsAsync(
+        IReadOnlyList<int> organizationIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (organizationIds.Count == 0)
+            return new List<Contract>();
+
+        return await _context.Contracts
+            .Include(c => c.Partner)
+            .Include(c => c.Organization)
+            .Where(c => c.OrganizationId.HasValue && organizationIds.Contains(c.OrganizationId.Value))
+            .OrderByDescending(c => c.StartDate)
+            .Take(50)
+            .ToListAsync(cancellationToken);
     }
 
     public async Task<Contract?> GetActiveForOrganizationAsync(int organizationId, CancellationToken cancellationToken = default)
