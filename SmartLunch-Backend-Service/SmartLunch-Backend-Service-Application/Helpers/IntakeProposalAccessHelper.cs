@@ -10,12 +10,14 @@ public static class IntakeProposalAccessHelper
         {
             if (string.Equals(n, "Admin", StringComparison.OrdinalIgnoreCase))
                 return true;
+            if (string.Equals(n, SystemCatalogRoles.Manager, StringComparison.OrdinalIgnoreCase))
+                return true;
         }
 
         return false;
     }
 
-    /// <summary>Nhân viên kho / Staff có thể lập phiếu đề xuất.</summary>
+    /// <summary>Nhân viên kho / bếp / Staff có thể lập phiếu đề xuất.</summary>
     public static bool CanCreateIntakeProposal(IEnumerable<string> roleNames)
     {
         if (IsElevatedReviewer(roleNames))
@@ -26,6 +28,12 @@ public static class IntakeProposalAccessHelper
             if (string.Equals(n, SystemCatalogRoles.Staff, StringComparison.OrdinalIgnoreCase))
                 return true;
             if (string.Equals(n, SystemCatalogRoles.NhanVien, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (string.Equals(n, SystemCatalogRoles.WarehouseStaff, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (string.Equals(n, SystemCatalogRoles.ChefStaff, StringComparison.OrdinalIgnoreCase))
+                return true;
+            if (string.Equals(n, SystemCatalogRoles.SalesStaff, StringComparison.OrdinalIgnoreCase))
                 return true;
         }
 

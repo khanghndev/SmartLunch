@@ -50,6 +50,11 @@ public class GenerateMenuSuggestionFromAiCommandHandler
         var createdBy = request.CreatedByUserId
             ?? throw new ArgumentException("CreatedByUserId is required.");
 
+        // Align with rules.json profile keys (lowercase), e.g. Org_elementary → org_elementary
+        var rulesKeyNormalized = string.IsNullOrWhiteSpace(req.RulesKey)
+            ? "industrial"
+            : req.RulesKey.Trim().ToLowerInvariant();
+
         var weekStartUtc = DateTime.SpecifyKind(req.WeekStartUtc.Date, DateTimeKind.Utc);
         var nextVersion = await _menuSuggestionRepository.GetNextVersionAsync(weekStartUtc, createdBy);
 
@@ -193,7 +198,7 @@ public class GenerateMenuSuggestionFromAiCommandHandler
             MealStructure = mealStructureSlots,
             TopK = req.TopK,
             TimeLimitSeconds = req.TimeLimitSeconds,
-            RulesKey = req.RulesKey,
+            RulesKey = rulesKeyNormalized,
             Dishes = aiDishes,
             AvailableIngredients = availableIngredients,
             IngredientGroups = ingredientGroups
@@ -211,7 +216,7 @@ public class GenerateMenuSuggestionFromAiCommandHandler
             WeekStart = weekStartUtc,
             GeneratedAt = DateTime.UtcNow,
             Version = nextVersion,
-            RulesKey = req.RulesKey,
+            RulesKey = rulesKeyNormalized,
             BudgetPerServing = req.BudgetPerServing,
             TopK = req.TopK,
             TimeLimitSeconds = req.TimeLimitSeconds,

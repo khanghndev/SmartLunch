@@ -19,7 +19,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-[Authorize(Policy = "roles:Admin")]
+[Authorize(Policy = "roles:Admin,WarehouseStaff,Manager")]
 public class IngredientSourceController : ControllerBase
 {
     private readonly ILogger<IngredientSourceController> _logger;
@@ -35,7 +35,7 @@ public class IngredientSourceController : ControllerBase
     /// Get list of ingredientsources with pagination
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "permission:ingredientsources.read")]
+    [Authorize(Policy = "permission:ingredient_sources.read")]
     public async Task<ActionResult<BaseApiResponse<GetIngredientSourcesResponse>>> GetIngredientSources([FromQuery] GetIngredientSourcesRequest request)
     {
         try
@@ -66,7 +66,7 @@ public class IngredientSourceController : ControllerBase
     /// Get ingredientsource by ID
     /// </summary>
     [HttpGet("{id}")]
-    [Authorize(Policy = "permission:ingredientsources.read")]
+    [Authorize(Policy = "permission:ingredient_sources.read")]
     public async Task<ActionResult<BaseApiResponse<GetIngredientSourceResponse>>> GetIngredientSource(int id)
     {
         try
@@ -93,7 +93,7 @@ public class IngredientSourceController : ControllerBase
     /// Ghi nhận nguồn / lô nguyên liệu và nhà cung cấp (đối tác).
     /// </summary>
     [HttpPost]
-    [Authorize(Policy = "permission:ingredientsources.update")]
+    [Authorize(Policy = "permission:ingredient_sources.create")]
     public async Task<ActionResult<BaseApiResponse<GetIngredientSourceResponse>>> CreateIngredientSource(
         [FromBody] CreateIngredientSourceRequest request)
     {
@@ -116,7 +116,7 @@ public class IngredientSourceController : ControllerBase
     }
 
     [HttpPut("{id:int}")]
-    [Authorize(Policy = "permission:ingredientsources.update")]
+    [Authorize(Policy = "permission:ingredient_sources.update")]
     public async Task<ActionResult<BaseApiResponse<GetIngredientSourceResponse>>> UpdateIngredientSource(
         int id,
         [FromBody] UpdateIngredientSourceRequest request)
@@ -140,7 +140,7 @@ public class IngredientSourceController : ControllerBase
     }
 
     [HttpDelete("{id:int}")]
-    [Authorize(Policy = "permission:ingredientsources.update")]
+    [Authorize(Policy = "permission:ingredient_sources.delete")]
     public async Task<ActionResult<BaseApiResponse<DeleteIngredientSourceResponse>>> DeleteIngredientSource(int id)
     {
         try

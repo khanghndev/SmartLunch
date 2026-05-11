@@ -101,6 +101,8 @@ SOURCE 04_seed_data/16_seed_orders.sql;
 SOURCE 04_seed_data/17_seed_remaining_tables.sql;
 
 -- Step 5: Maintenance
+SOURCE 05_maintenance/02_orders_annex_columns.sql;
+SOURCE 05_maintenance/03_warehousestaff_grant_partner_perms.sql;
 SOURCE 05_maintenance/01_analyze_optimize.sql;
 
 SELECT 'SmartLunch database setup completed!' AS Status;

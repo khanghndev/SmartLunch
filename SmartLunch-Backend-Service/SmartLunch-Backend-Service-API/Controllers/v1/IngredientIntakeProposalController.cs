@@ -21,7 +21,7 @@ namespace SmartLunch.Backend.Service.API.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/ingredient-intake-proposals")]
-[Authorize(Policy = "roles:Staff,Admin")]
+[Authorize(Policy = "roles:Staff,Admin,WarehouseStaff,Manager")]
 public class IngredientIntakeProposalController : ControllerBase
 {
     private readonly ILogger<IngredientIntakeProposalController> _logger;
@@ -39,7 +39,7 @@ public class IngredientIntakeProposalController : ControllerBase
     /// Danh sách phiếu: nhân viên chỉ thấy phiếu của mình; Admin thấy tất cả.
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "permission:intakeproposals.read")]
+    [Authorize(Policy = "permission:ingredient_intake_proposals.read")]
     public async Task<ActionResult<BaseApiResponse<GetIngredientIntakeProposalsResponse>>> GetProposals(
         [FromQuery] GetIngredientIntakeProposalsRequest request)
     {
@@ -75,7 +75,7 @@ public class IngredientIntakeProposalController : ControllerBase
     /// Nhân viên kho chỉ thấy phiếu do mình tạo; Admin thấy toàn hệ thống.
     /// </summary>
     [HttpGet("review-history")]
-    [Authorize(Policy = "permission:intakeproposals.read")]
+    [Authorize(Policy = "permission:ingredient_intake_proposals.read")]
     public async Task<ActionResult<BaseApiResponse<GetIntakeProposalReviewHistoryResponse>>> GetReviewHistory(
         [FromQuery] GetIntakeProposalReviewHistoryRequest request)
     {
@@ -110,8 +110,8 @@ public class IngredientIntakeProposalController : ControllerBase
     /// Quản lý duyệt / từ chối phiếu đề xuất (trạng thái submitted).
     /// </summary>
     [HttpPost("{proposalId:int}/review")]
-    [Authorize(Policy = "roles:Admin")]
-    [Authorize(Policy = "permission:intakeproposals.review")]
+    [Authorize(Policy = "roles:Admin,Manager")]
+    [Authorize(Policy = "permission:ingredient_intake_proposals.update")]
     public async Task<ActionResult<BaseApiResponse<ReviewIngredientIntakeProposalResponse>>> ReviewProposal(
         int proposalId,
         [FromBody] ReviewIngredientIntakeProposalRequest request)
@@ -151,7 +151,7 @@ public class IngredientIntakeProposalController : ControllerBase
     /// Phiếu nhập kho thực tế từ phiếu đã duyệt: xác nhận đạt chuẩn, cộng tồn kho, đánh dấu fulfilled.
     /// </summary>
     [HttpPost("{proposalId:int}/actual-receipt")]
-    [Authorize(Policy = "permission:intakeproposals.fulfill")]
+    [Authorize(Policy = "permission:ingredient_actual_intakes.create")]
     public async Task<ActionResult<BaseApiResponse<CreateActualIntakeFromProposalResponse>>> CreateActualReceipt(
         int proposalId,
         [FromBody] CreateActualIntakeFromProposalRequest request)
@@ -195,7 +195,7 @@ public class IngredientIntakeProposalController : ControllerBase
     /// Chi tiết một phiếu (nhân viên chỉ xem được phiếu của chính mình).
     /// </summary>
     [HttpGet("{id:int}")]
-    [Authorize(Policy = "permission:intakeproposals.read")]
+    [Authorize(Policy = "permission:ingredient_intake_proposals.read")]
     public async Task<ActionResult<BaseApiResponse<IngredientIntakeProposalDetailDto>>> GetProposal(int id)
     {
         try
@@ -231,7 +231,7 @@ public class IngredientIntakeProposalController : ControllerBase
     /// Tạo phiếu đề xuất nhập nguyên liệu (trạng thái submitted).
     /// </summary>
     [HttpPost]
-    [Authorize(Policy = "permission:intakeproposals.create")]
+    [Authorize(Policy = "permission:ingredient_intake_proposals.create")]
     public async Task<ActionResult<BaseApiResponse<CreateIngredientIntakeProposalResponse>>> CreateProposal(
         [FromBody] CreateIngredientIntakeProposalRequest request)
     {

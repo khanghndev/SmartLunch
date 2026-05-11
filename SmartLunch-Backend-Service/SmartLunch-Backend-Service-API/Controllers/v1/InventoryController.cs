@@ -16,7 +16,7 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-[Authorize(Policy = "roles:Admin")]
+[Authorize(Policy = "roles:Admin,WarehouseStaff,Manager")]
 public class InventoryController : ControllerBase
 {
     private readonly ILogger<InventoryController> _logger;
@@ -32,7 +32,7 @@ public class InventoryController : ControllerBase
     /// Get list of inventories with pagination
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "permission:inventories.read")]
+    [Authorize(Policy = "permission:inventory.read")]
     public async Task<ActionResult<BaseApiResponse<GetInventoriesResponse>>> GetInventories([FromQuery] GetInventoriesRequest request)
     {
         try
@@ -58,7 +58,7 @@ public class InventoryController : ControllerBase
     /// Get inventory by ID
     /// </summary>
     [HttpGet("{id}")]
-    [Authorize(Policy = "permission:inventories.read")]
+    [Authorize(Policy = "permission:inventory.read")]
     public async Task<ActionResult<BaseApiResponse<GetInventoryResponse>>> GetInventory(int id)
     {
         try

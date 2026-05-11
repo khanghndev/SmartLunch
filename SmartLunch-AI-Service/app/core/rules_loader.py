@@ -61,9 +61,14 @@ class RulesLoader:
             
             profiles = raw.get("profiles", {})
             default_raw = profiles.get("default", {})
-            profile_raw = profiles.get(profile_key, {}) if profile_key != "default" else {}
+            # Profile keys in rules.json are lowercase; UI may send Org_elementary, etc.
+            key = (profile_key or "default").strip()
+            lookup_key = key.lower() if key != "default" else "default"
+            profile_raw = profiles.get(lookup_key, {}) if lookup_key != "default" else {}
+            if not profile_raw and lookup_key != "default" and key != lookup_key:
+                profile_raw = profiles.get(key, {})
             
-            if not profile_raw and profile_key != "default":
+            if not profile_raw and lookup_key != "default":
                 # If profile not found, fallback to default
                 profile_raw = default_raw
 

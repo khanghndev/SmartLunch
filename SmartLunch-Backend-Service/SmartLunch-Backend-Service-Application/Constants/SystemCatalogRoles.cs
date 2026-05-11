@@ -17,4 +17,12 @@ public static class SystemCatalogRoles
     public const string CongTy = "Công ty";
     /// <summary>Khách hàng (có thể trùng tên role trong DB).</summary>
     public const string KhachHang = "Khách hàng";
+    /// <summary>Nhân viên kho (lập phiếu nhập, xuất kho nội bộ).</summary>
+    public const string WarehouseStaff = "WarehouseStaff";
+    /// <summary>Nhân viên bếp.</summary>
+    public const string ChefStaff = "ChefStaff";
+    /// <summary>Nhân viên bán hàng (Sales tách riêng).</summary>
+    public const string SalesStaff = "SalesStaff";
+    /// <summary>Quản lý công ty.</summary>
+    public const string Manager = "Manager";
 }

@@ -20,7 +20,7 @@ namespace SmartLunch.Backend.Service.API.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/ingredient-inventory")]
-[Authorize(Policy = "roles:Admin")]
+[Authorize(Policy = "roles:Admin,WarehouseStaff,Manager")]
 public class IngredientInventoryController : ControllerBase
 {
     private readonly ILogger<IngredientInventoryController> _logger;
@@ -36,7 +36,7 @@ public class IngredientInventoryController : ControllerBase
     /// Cảnh báo tồn kho thấp: nguyên liệu đang hoạt động có QuantityAvailable &lt;= ReorderLevel.
     /// </summary>
     [HttpGet("low-stock-alerts")]
-    [Authorize(Policy = "permission:inventories.read")]
+    [Authorize(Policy = "permission:inventory.read")]
     [Authorize(Policy = "permission:ingredients.read")]
     public async Task<ActionResult<BaseApiResponse<GetLowStockIngredientAlertsResponse>>> GetLowStockAlerts()
     {
@@ -62,7 +62,7 @@ public class IngredientInventoryController : ControllerBase
     /// Chi tiết tồn kho một nguyên liệu (tồn hiện tại, ngưỡng, lô gần đây).
     /// </summary>
     [HttpGet("detail/{ingredientId:int}")]
-    [Authorize(Policy = "permission:inventories.read")]
+    [Authorize(Policy = "permission:inventory.read")]
     [Authorize(Policy = "permission:ingredients.read")]
     public async Task<ActionResult<BaseApiResponse<GetIngredientInventoryDetailResponse>>> GetDetail(
         int ingredientId,
@@ -94,7 +94,7 @@ public class IngredientInventoryController : ControllerBase
     /// Danh sách phiếu xuất kho nội bộ (có lọc theo ngày phát hành).
     /// </summary>
     [HttpGet("internal-issues")]
-    [Authorize(Policy = "permission:inventories.read")]
+    [Authorize(Policy = "permission:internal_stock_issues.read")]
     public async Task<ActionResult<BaseApiResponse<GetInternalStockIssuesResponse>>> GetInternalIssues(
         [FromQuery] GetInternalStockIssuesRequest request)
     {
@@ -124,7 +124,7 @@ public class IngredientInventoryController : ControllerBase
     /// Chi tiết một phiếu xuất kho nội bộ.
     /// </summary>
     [HttpGet("internal-issues/{id:int}")]
-    [Authorize(Policy = "permission:inventories.read")]
+    [Authorize(Policy = "permission:internal_stock_issues.read")]
     public async Task<ActionResult<BaseApiResponse<InternalStockIssueDetailDto>>> GetInternalIssue(int id)
     {
         try
@@ -155,7 +155,7 @@ public class IngredientInventoryController : ControllerBase
     /// Lập phiếu xuất kho nội bộ và trừ tồn kho theo từng dòng nguyên liệu.
     /// </summary>
     [HttpPost("internal-issues")]
-    [Authorize(Policy = "permission:inventories.update")]
+    [Authorize(Policy = "permission:internal_stock_issues.create")]
     public async Task<ActionResult<BaseApiResponse<CreateInternalStockIssueResponse>>> CreateInternalIssue(
         [FromBody] CreateInternalStockIssueRequest request)
     {

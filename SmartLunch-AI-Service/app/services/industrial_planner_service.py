@@ -154,9 +154,7 @@ class IndustrialPlannerService:
             for name, keywords in request_ingredient_groups.items():
                 kw_sets[name] = frozenset(k.lower() for k in keywords)
 
-        dishes_by_cat: dict[DishCategory, list[int]] = defaultdict(list)
-        for idx, dish in enumerate(dishes):
-            dishes_by_cat[dish.category].append(idx)
+        dishes_by_cat = self._dishes_by_covered_categories(dishes)
 
         for slot_cat in meal_structure:
             if not dishes_by_cat.get(slot_cat):
@@ -213,6 +211,23 @@ class IndustrialPlannerService:
         if not covers:
             covers.add(dish.category)
         return covers
+
+    @classmethod
+    def _dishes_by_covered_categories(
+        cls, dishes: list[IndustrialDish]
+    ) -> dict[DishCategory, list[int]]:
+        """
+        Index dishes by every slot category they can fill (primary + covers_categories).
+
+        Important: the backend sends many dishes with primary shelf `main` while
+        junction data lists extra slots in `covers_categories`. Using only
+        `dish.category` leaves soup/vegetable/side pools empty and yields 0 plans.
+        """
+        dishes_by_cat: dict[DishCategory, list[int]] = defaultdict(list)
+        for idx, dish in enumerate(dishes):
+            for cat in cls._dish_covers(dish):
+                dishes_by_cat[cat].append(idx)
+        return dishes_by_cat
 
     def _build_week_menu_multi_cover(
         self,

@@ -21,7 +21,7 @@ namespace SmartLunch.Backend.Service.API.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/finance")]
-[Authorize(Policy = "roles:Admin")]
+[Authorize(Policy = "roles:Admin,Manager,WarehouseStaff")]
 public class FinanceController : ControllerBase
 {
     private readonly ILogger<FinanceController> _logger;
@@ -94,7 +94,7 @@ public class FinanceController : ControllerBase
     [Authorize(Policy = "permission:payments.read")]
     [Authorize(Policy = "permission:orders.read")]
     [Authorize(Policy = "permission:contracts.read")]
-    [Authorize(Policy = "permission:partnerpayments.read")]
+    [Authorize(Policy = "permission:partner_payments.read")]
     public async Task<ActionResult<BaseApiResponse<GetContractPaymentsResponse>>> GetContractPayments(
         int contractId,
         [FromQuery] GetContractPaymentsRequest request)
@@ -194,7 +194,7 @@ public class FinanceController : ControllerBase
     /// Công nợ nhà cung cấp (Partner): tổng giá trị hợp đồng (chưa hủy) − đã chi (PartnerPayment completed).
     /// </summary>
     [HttpGet("supplier-payables")]
-    [Authorize(Policy = "permission:partnerpayments.read")]
+    [Authorize(Policy = "permission:partner_payments.read")]
     [Authorize(Policy = "permission:partners.read")]
     [Authorize(Policy = "permission:contracts.read")]
     public async Task<ActionResult<BaseApiResponse<GetPartnerPayablesResponse>>> GetSupplierPayables(
@@ -223,7 +223,7 @@ public class FinanceController : ControllerBase
     /// </summary>
     [HttpGet("payment-history")]
     [Authorize(Policy = "permission:payments.read")]
-    [Authorize(Policy = "permission:partnerpayments.read")]
+    [Authorize(Policy = "permission:partner_payments.read")]
     public async Task<ActionResult<BaseApiResponse<GetPaymentHistoryResponse>>> GetPaymentHistory(
         [FromQuery] GetPaymentHistoryRequest request)
     {
