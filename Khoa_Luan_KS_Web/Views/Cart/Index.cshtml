@@ -1,0 +1,208 @@
+@using Khoa_Luan_KS_Web.Models
+@model CartIndexViewModel
+@{
+    ViewData["Title"] = CartViewText.PageTitle;
+    Layout = "_LayoutCustomer";
+}
+
+<div class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
+    <nav class="mb-6 text-sm text-slate-500">
+        <a href="/Customer/Index" class="hover:text-orange-600">Trang chủ</a>
+        <span class="mx-2">/</span>
+        <span class="font-medium text-slate-800">@CartViewText.PageTitle</span>
+    </nav>
+
+    <h1 class="mb-2 text-2xl font-black text-slate-900">@CartViewText.PageTitle</h1>
+    <p class="mb-8 text-sm text-slate-600">@CartViewText.Lead</p>
+
+    @if (TempData["CartSuccess"] is string cartOk && !string.IsNullOrEmpty(cartOk))
+    {
+        <div class="mb-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">
+            <span class="text-lg leading-none">&#10003;</span>
+            @cartOk
+        </div>
+    }
+
+    @if (TempData["CartError"] is string err && !string.IsNullOrEmpty(err))
+    {
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">@err</div>
+    }
+
+    @if (Model.IsEmpty)
+    {
+        <div class="rounded-2xl border border-slate-100 bg-white p-10 text-center shadow-sm">
+            <p class="mb-4 text-slate-600">@CartViewText.EmptyTitle</p>
+            <a asp-controller="Menu" asp-action="Index" class="inline-flex rounded-xl bg-orange-500 px-6 py-3 text-sm font-bold text-white hover:bg-orange-600">@CartViewText.EmptyCta</a>
+        </div>
+    }
+    else
+    {
+        <div class="space-y-6">
+            @foreach (var bundle in Model.State.MenuBundles)
+            {
+                var selectedSlots = bundle.Slots.Where(s => s.Selected).ToList();
+                var bundleUnit = selectedSlots.Sum(s => s.Price);
+                var bundleSubtotal = bundleUnit * bundle.BundleQuantity;
+                var byDay = bundle.Slots.OrderBy(s => s.ScheduleDate).GroupBy(s => s.ScheduleDate.Date).ToList();
+
+                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
+                    <div class="mb-4 flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
+                        <div>
+                            <p class="text-[10px] font-black uppercase tracking-wider text-orange-600">@CartViewText.BundleKicker</p>
+                            <p class="text-lg font-black text-slate-900">@bundle.Label</p>
+                            <p class="mt-1 text-xs text-slate-500">
+                                @(selectedSlots.Count) suất / bộ · @bundleUnit.ToString("N0") đ / bộ
+                            </p>
+                        </div>
+                        <div class="text-left sm:text-right">
+                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">@CartViewText.SubtotalLabel</p>
+                            <p class="text-xl font-black text-orange-600">@bundleSubtotal.ToString("N0") đ</p>
+                        </div>
+                    </div>
+
+                    <form asp-action="UpdateBundle" method="post" class="cart-bundle-form space-y-4">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="bundleId" value="@bundle.BundleId" />
+
+                        <div class="flex flex-wrap items-end gap-3">
+                            <div>
+                                <label class="mb-1 block text-xs font-bold text-slate-600">@CartViewText.BundleQtyLabel</label>
+                                <input type="number" name="quantity" value="@bundle.BundleQuantity" min="1" max="999"
+                                       class="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold" />
+                            </div>
+                            <button type="submit" class="rounded-xl bg-orange-500 px-4 py-2 text-sm font-black text-white shadow hover:bg-orange-600">
+                                @CartViewText.BtnUpdateBundle
+                            </button>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                                        onclick="cartPresetWorkdays(this.closest('form'))">
+                                    @CartViewText.BtnWorkdays
+                                </button>
+                                <button type="button" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100"
+                                        onclick="cartPresetAll(this.closest('form'))">
+                                    @CartViewText.BtnAllDays
+                                </button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p class="mb-2 text-xs font-bold text-slate-700">@CartViewText.BundleDayHint</p>
+                            <div class="max-h-72 space-y-4 overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/50 p-3 sm:p-4">
+                                @foreach (var day in byDay)
+                                {
+                                    <div>
+                                        <p class="mb-2 text-[11px] font-black uppercase tracking-wide text-emerald-800">
+                                            @CartViewText.DayShortVi(day.Key) @day.Key.ToString("dd/MM")
+                                        </p>
+                                        <ul class="space-y-2">
+                                            @foreach (var slot in day.OrderBy(s => s.MealSlot))
+                                            {
+                                                var cbId = "cb_" + bundle.BundleId + "_" + slot.ScheduleId;
+                                                <li class="rounded-lg border border-slate-100 bg-white px-3 py-2">
+                                                    <label for="@cbId" class="flex cursor-pointer gap-3">
+                                                        @if (slot.Selected)
+                                                        {
+                                                            <input id="@cbId" type="checkbox"
+                                                                   name="selectedScheduleIds"
+                                                                   value="@slot.ScheduleId"
+                                                                   data-weekday="@((int)slot.ScheduleDate.DayOfWeek)"
+                                                                   checked="checked"
+                                                                   class="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-orange-600 focus:ring-orange-500" />
+                                                        }
+                                                        else
+                                                        {
+                                                            <input id="@cbId" type="checkbox"
+                                                                   name="selectedScheduleIds"
+                                                                   value="@slot.ScheduleId"
+                                                                   data-weekday="@((int)slot.ScheduleDate.DayOfWeek)"
+                                                                   class="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-orange-600 focus:ring-orange-500" />
+                                                        }
+                                                        <span class="min-w-0 flex-1 text-sm leading-snug">
+                                                            <span class="font-bold text-slate-900">@MenuViewText.SlotLabel(slot.MealSlot)</span>
+                                                            <span class="text-slate-600"> — @slot.Name</span>
+                                                            <span class="mt-0.5 block text-xs font-bold text-emerald-700">@slot.Price.ToString("N0") đ</span>
+                                                        </span>
+                                                    </label>
+                                                </li>
+                                            }
+                                        </ul>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </form>
+
+                    <form asp-action="RemoveBundle" method="post" class="mt-4 border-t border-slate-100 pt-4" onsubmit="return confirm('Xóa gói menu tuần này khỏi giỏ?');">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="bundleId" value="@bundle.BundleId" />
+                        <button type="submit" class="text-xs font-bold text-red-600 hover:text-red-700 hover:underline">
+                            @CartViewText.BtnRemoveBundle
+                        </button>
+                    </form>
+                </div>
+            }
+
+            @if (Model.State.LooseLines.Any())
+            {
+                <div>
+                    <p class="mb-3 text-[10px] font-black uppercase tracking-wider text-slate-400">@CartViewText.LooseKicker</p>
+                    <div class="space-y-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-6">
+                        @foreach (var line in Model.State.LooseLines)
+                        {
+                            <div class="flex flex-col gap-4 border-b border-slate-100 py-4 last:border-0 sm:flex-row sm:items-center">
+                                <div class="min-w-0 flex-1">
+                                    <p class="font-bold text-slate-900">@line.Name</p>
+                                    <p class="text-xs text-slate-500">@line.Price.ToString("N0") đ / suất</p>
+                                </div>
+                                <form asp-action="UpdateLoose" method="post" class="flex items-center gap-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="dishId" value="@line.DishId" />
+                                    <input type="hidden" name="menuScheduleId" value="@line.MenuScheduleId" />
+                                    <label class="text-xs font-bold text-slate-500">@CartViewText.QtyShort</label>
+                                    <input type="number" name="quantity" value="@line.Quantity" min="0" max="999"
+                                           class="w-20 rounded-lg border border-slate-200 px-2 py-1.5 text-sm font-bold" />
+                                    <button type="submit" class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-200">@CartViewText.BtnUpdateBundle</button>
+                                </form>
+                                <p class="text-right text-sm font-black text-orange-600 sm:w-28">
+                                    @((line.Price * line.Quantity).ToString("N0")) đ
+                                </p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="mt-6 flex flex-col justify-between gap-4 rounded-2xl border border-orange-100 bg-orange-50/50 p-4 sm:flex-row sm:items-center sm:p-6">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-wider text-orange-700">@CartViewText.SubtotalLabel</p>
+                <p class="text-2xl font-black text-slate-900">@Model.TotalAmount.ToString("N0") đ</p>
+            </div>
+            <div class="flex flex-wrap gap-2">
+                <form asp-action="Clear" method="post" onsubmit="return confirm('Xóa toàn bộ giỏ?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">@CartViewText.BtnClearCart</button>
+                </form>
+                <a asp-action="Checkout" class="inline-flex items-center justify-center rounded-xl bg-orange-500 px-6 py-2.5 text-sm font-black text-white shadow-md hover:bg-orange-600">@CartViewText.BtnCheckout</a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function cartPresetWorkdays(form) {
+            if (!form) return;
+            form.querySelectorAll('input[type="checkbox"][name="selectedScheduleIds"]').forEach(function (cb) {
+                var wd = parseInt(cb.getAttribute('data-weekday'), 10);
+                cb.checked = wd >= 1 && wd <= 5;
+            });
+        }
+        function cartPresetAll(form) {
+            if (!form) return;
+            form.querySelectorAll('input[type="checkbox"][name="selectedScheduleIds"]').forEach(function (cb) {
+                cb.checked = true;
+            });
+        }
+    </script>
+}

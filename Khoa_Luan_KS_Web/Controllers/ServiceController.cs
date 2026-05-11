@@ -1,3 +1,4 @@
+using Khoa_Luan_KS_Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -6,6 +7,13 @@ namespace Khoa_Luan_KS_Web.Controllers
 {
     public class ServiceController : Controller
     {
+        private readonly BackendMasterDataClient _masterDataClient;
+
+        public ServiceController(BackendMasterDataClient masterDataClient)
+        {
+            _masterDataClient = masterDataClient;
+        }
+
         public override async Task OnActionExecutionAsync(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context, Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate next)
         {
             if (User.Identity?.IsAuthenticated == true)
@@ -29,10 +37,47 @@ namespace Khoa_Luan_KS_Web.Controllers
             }
             await next();
         }
-        public IActionResult Factory() => View();
-        public IActionResult Office() => View();
-        public IActionResult School() => View();
+
+        public async Task<IActionResult> Factory(CancellationToken ct)
+        {
+            await LoadSegmentMenusAsync("industrial", ct);
+            return View();
+        }
+
+        public async Task<IActionResult> Office(CancellationToken ct)
+        {
+            await LoadSegmentMenusAsync("org_company", ct);
+            return View();
+        }
+
+        public async Task<IActionResult> School(CancellationToken ct)
+        {
+            await LoadSegmentMenusAsync("org_primary_school", ct);
+            return View();
+        }
+
         public IActionResult Safety() => View();
         public IActionResult MenuSuggestions() => View();
+
+        private async Task LoadSegmentMenusAsync(string profileKey, CancellationToken ct)
+        {
+            ViewBag.SegmentProfileKey = profileKey;
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token))
+            {
+                ViewBag.SegmentMenuLoginRequired = true;
+                return;
+            }
+
+            try
+            {
+                var res = await _masterDataClient.GetWeeklyMenusAsync(token, 1, 8, customerProfileKey: profileKey, ct: ct);
+                ViewBag.SegmentMenus = res.Items;
+            }
+            catch (Exception ex)
+            {
+                ViewBag.SegmentMenuError = ex.Message;
+            }
+        }
     }
 }

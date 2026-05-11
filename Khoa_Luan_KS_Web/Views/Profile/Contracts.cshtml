@@ -1,404 +1,394 @@
+@using System.Globalization
+@using System.Text.Json
+@using System.Text.Encodings.Web
+@model Khoa_Luan_KS_Web.Models.CustomerContractsPageVm
 @{
-    ViewData["Title"] = "Quản lý Hợp đồng - HuitMeal";
+    ViewData["Title"] = "Cổng ký số HuitMeal";
     Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+    var contractsJson = JsonSerializer.Serialize(
+        Model.Contracts,
+        new JsonSerializerOptions(JsonSerializerDefaults.Web) { Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping });
+    var orderAnnexRaw = string.IsNullOrEmpty(Model.PendingOrderAnnexJson) ? "null" : Model.PendingOrderAnnexJson;
 }
-
 <style>
-    .sig-canvas {
-        border: 1px solid #e5e7eb;
-        border-radius: 12px;
-        background: #ffffff;
-        cursor: crosshair;
-    }
-    
-    .paper-sheet {
-        background: white;
-        box-shadow: 0 4px 25px rgba(0,0,0,0.06);
-        border: 1px solid #f3f4f6;
-        width: 100%;
-        max-width: 850px;
-        margin: 0 auto;
-        min-height: 1100px;
-        padding: 60px md:padding-80px;
-        font-family: 'Times New Roman', Times, serif;
-    }
-
-    .full-screen-sign {
-        position: fixed;
-        inset: 0;
-        z-index: 9999;
-        background: #f8fafc;
-        overflow-y: auto;
-    }
-
-    .stamp-ink {
-        width: 100px;
-        height: 100px;
-        border: 3px solid #ef4444;
-        border-radius: 50%;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        color: #ef4444;
-        font-weight: 800;
-        font-size: 9px;
-        text-transform: uppercase;
-        transform: rotate(-12deg);
-        opacity: 0.7;
-        border-style: double;
-        padding: 4px;
-    }
-
-    .modern-toolbar {
-        background: white;
-        border-bottom: 1px solid #f1f5f9;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-    }
+    [x-cloak] { display: none !important; }
+    .esign-paper { font-family: 'Times New Roman', Times, serif; }
+    .esign-full { position: fixed; inset: 0; z-index: 60; background: #f8fafc; overflow-y: auto; }
 </style>
 
-<div x-data="eSignFlow()" class="max-w-7xl mx-auto px-6 pt-10 pb-20">
-    <!-- Breadcrumb (Synced) -->
-    <nav class="flex text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
-        <ol class="inline-flex items-center space-x-1 md:space-x-3">
-            <li class="inline-flex items-center">
-                <a href="/Customer/Index" class="hover:text-orange-500 font-medium transition flex items-center gap-1">
-                    <i data-lucide="home" class="w-4 h-4"></i> Trang chủ
-                </a>
-            </li>
-            <li>
-                <div class="flex items-center">
-                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
-                    <span class="ml-1 md:ml-2 font-medium text-gray-700">Hợp đồng điện tử</span>
-                </div>
-            </li>
-        </ol>
+<script>window.__HM_CONTRACTS = @Html.Raw(contractsJson);</script>
+<script>window.__HM_ORDER_ANNEX = @Html.Raw(orderAnnexRaw);</script>
+<div class="mx-auto max-w-5xl px-4 py-10 sm:px-6" x-data="esignPortal()" x-init="init()">
+    <nav class="mb-6 flex text-sm text-slate-500">
+        <a href="/Customer/Index" class="hover:text-orange-600">Trang chủ</a>
+        <span class="mx-2">/</span>
+        <span class="font-medium text-slate-800">Hợp đồng điện tử</span>
     </nav>
 
-    <div class="flex items-center justify-between mb-8">
-        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Hợp đồng & Văn bản</h1>
-        <div x-show="!isSigned" class="flex items-center gap-2 bg-blue-50 px-3 py-1 rounded-full border border-blue-100">
-            <div class="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
-            <span class="text-[10px] font-bold text-blue-700 uppercase">01 Văn bản mới</span>
-        </div>
-    </div>
+    <h1 class="mb-2 text-2xl font-black text-slate-900">Cổng ký số HuitMeal</h1>
+    <p class="mb-6 text-sm text-slate-600">Rà soát phụ lục đặt hàng (menu, tổng tiền) và/hoặc hợp đồng khung. Ký mô phỏng trên canvas; hệ thống tạo PDF và lưu trên cloud giống quy trình thật.</p>
 
-    <div class="flex flex-col md:flex-row gap-8 items-stretch">
-        <!-- Sidebar Navigation -->
-        <div class="w-full md:w-64 flex-shrink-0">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-full">
-                <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
-                    <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xl shadow-sm">
-                        K
-                    </div>
+    @if (TempData["ContractSuccess"] is string ok && !string.IsNullOrEmpty(ok))
+    {
+        <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">@ok</div>
+    }
+    @if (TempData["ContractError"] is string bad && !string.IsNullOrEmpty(bad))
+    {
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">@bad</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.PostCheckoutBanner))
+    {
+        <div class="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
+            <p class="font-medium">@Model.PostCheckoutBanner</p>
+            <p class="mt-1 text-sky-900">Vui lòng hoàn tất ký phụ lục đặt hàng (cổng toàn màn hình đã mở nếu đơn còn chờ ký). Chữ ký xác nhận trên giỏ vẫn được lưu kèm đơn.</p>
+            @if (Model.PostCheckoutOrderId is int ocId)
+            {
+                <p class="mt-2"><a href="@Url.Action("OrderDetail", "Profile", new { id = ocId })" class="font-semibold text-orange-700 underline hover:text-orange-800">Xem chi tiết đơn vừa tạo</a></p>
+            }
+        </div>
+    }
+
+    <template x-if="orderAnnex && !annexOpen">
+        <div class="mb-6 rounded-2xl border border-orange-200 bg-orange-50/80 p-5 shadow-sm">
+            <p class="text-sm font-bold text-orange-950">Phụ lục đặt hàng đang chờ ký</p>
+            <p class="mt-1 text-xs text-orange-900/90">Đơn <span class="font-mono" x-text="orderAnnex.invoiceCode || ('#' + orderAnnex.id)"></span> — tổng <span class="font-bold" x-text="money(orderAnnex.totalAmount)"></span></p>
+            <button type="button" @@click="openAnnexFlow()" class="mt-3 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-black text-white hover:bg-orange-600">Mở cổng ký phụ lục</button>
+        </div>
+    </template>
+
+    @if (!string.IsNullOrEmpty(Model.InfoMessage))
+    {
+        <div class="rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-950">@Model.InfoMessage</div>
+    }
+    else if (!string.IsNullOrEmpty(Model.ApiError))
+    {
+        <div class="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-900">Không tải được danh sách: <strong>@Model.ApiError</strong></div>
+    }
+    else if (Model.Contracts.Count == 0)
+    {
+        <div class="rounded-2xl border border-slate-200 bg-white p-10 text-center text-slate-600 shadow-sm">
+            Chưa có hợp đồng khung nào gắn đơn vị của bạn. Bạn vẫn có thể ký phụ lục theo từng đơn đặt hàng (nút phía trên). Liên hệ quản trị HuitMeal để được cấp hợp đồng khung nếu cần.
+        </div>
+    }
+    else
+    {
+        <div class="space-y-4">
+            @foreach (var c in Model.Contracts)
+            {
+                <div class="flex flex-col gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h3 class="font-bold text-gray-900">TRƯỜNG THPT HOÀNG VĂN THỤ</h3>
-                        <p class="text-xs text-gray-500">Khách hàng Doanh nghiệp</p>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-orange-600">Hợp đồng #@c.Id</p>
+                        <p class="text-lg font-black text-slate-900">@(c.ContractNumber ?? "Khung cung cấp suất")</p>
+                        <p class="mt-1 text-xs text-slate-500">@c.OrganizationName · @c.StartDate.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("vi-VN"))@(c.EndDate.HasValue ? " – " + c.EndDate.Value.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("vi-VN")) : "")</p>
+                        @if (c.TotalValue.HasValue)
+                        {
+                            <p class="mt-1 text-sm font-bold text-emerald-700">Giá trị tham chiếu: @c.TotalValue.Value.ToString("N0") đ</p>
+                        }
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        @if (!string.IsNullOrEmpty(c.ContractFileUrl))
+                        {
+                            <a href="@c.ContractFileUrl" target="_blank" rel="noopener" class="rounded-xl border border-slate-200 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50">Xem / tải PDF</a>
+                        }
+                        @if (!c.IsDigitallySigned)
+                        {
+                            <button type="button" @@click="openFlow(@c.Id)" class="rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-black text-white shadow hover:bg-orange-600">Ký xác nhận</button>
+                        }
+                        else
+                        {
+                            <span class="inline-flex items-center rounded-xl bg-emerald-50 px-4 py-2.5 text-xs font-black text-emerald-800">Đã ký @(c.DigitallySignedAt?.ToString("dd/MM/yyyy HH:mm") ?? "")</span>
+                        }
                     </div>
                 </div>
-
-                <nav class="space-y-1 text-sm font-medium">
-                    <a href="/Profile/Index" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
-                        <i data-lucide="user" class="w-4 h-4 text-gray-400"></i> Hồ sơ doanh nghiệp
-                    </a>
-                    <a href="/Profile/Orders" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
-                        <i data-lucide="shopping-bag" class="w-4 h-4 text-gray-400"></i> Lịch sử đơn hàng
-                    </a>
-                    <a href="/Profile/Contracts" class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg transition-colors">
-                        <i data-lucide="file-signature" class="w-4 h-4"></i> Hợp đồng điện tử
-                    </a>
-                </nav>
-            </div>
+            }
         </div>
+    }
 
-
-        <div class="flex-1">
-
-            <div class="space-y-4">
-                <!-- PENDING ITEM -->
-                <div x-show="!isSigned" class="bg-white rounded-xl p-6 border border-gray-100 hover:border-orange-300 shadow-sm transition-all group">
-                    <div class="flex flex-col md:flex-row md:items-center gap-6">
-                        <div class="w-14 h-14 rounded-xl bg-orange-50 text-orange-600 flex items-center justify-center shrink-0 group-hover:bg-orange-600 group-hover:text-white transition-colors">
-                            <i data-lucide="file-edit" class="w-7 h-7"></i>
-                        </div>
-                        <div class="flex-1">
-                            <h3 class="font-bold text-gray-900 text-lg">Phụ lục Điều chỉnh Suất ăn Dự phòng T05/2026</h3>
-                            <p class="text-[10px] text-gray-400 mt-1 uppercase tracking-wider font-bold">Mã văn bản: PL-2026-001</p>
-                        </div>
-                        <button @@click="startSigning()" class="px-8 py-3 bg-gray-900 text-white rounded-xl text-xs font-bold hover:bg-orange-600 transition-all shadow-sm">
-                            Ký xác nhận ngay
-                        </button>
-                    </div>
-                </div>
-
-                <!-- SIGNED ITEM -->
-                <template x-if="isSigned">
-                    <div class="bg-white rounded-xl p-6 border border-green-100 shadow-sm animate-fadeIn">
-                        <div class="flex flex-col md:flex-row md:items-center gap-6">
-                            <div class="w-14 h-14 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shrink-0">
-                                <i data-lucide="check-circle" class="w-7 h-7"></i>
-                            </div>
-                            <div class="flex-1">
-                                <h3 class="font-bold text-gray-900 text-lg">Phụ lục Điều chỉnh Suất ăn Dự phòng T05/2026</h3>
-                                <div class="flex items-center gap-2 mt-1">
-                                    <span class="text-[10px] text-green-600 font-bold uppercase">Đã ký điện tử</span>
-                                    <span class="text-[10px] text-gray-300">|</span>
-                                    <span class="text-[10px] text-gray-400 font-medium">Hoàn tất: 25/04/2026</span>
-                                </div>
-                            </div>
-                            <div class="flex gap-2">
-                                <button @@click="viewSignedDoc()" class="px-4 py-2 text-xs font-bold text-gray-400 hover:text-gray-900 transition">Xem lại</button>
-                                <button class="px-4 py-2 bg-green-600 text-white text-xs font-bold rounded-lg hover:bg-green-700 transition">Tải bản PDF</button>
-                            </div>
-                        </div>
-                    </div>
-                </template>
-
-                <!-- ARCHIVED -->
-                <div class="bg-gray-50/50 rounded-xl p-6 border border-gray-100 flex items-center gap-6 opacity-50 grayscale">
-                    <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center text-gray-300">
-                        <i data-lucide="file-text" class="w-6 h-6"></i>
-                    </div>
-                    <div class="flex-1">
-                        <h4 class="font-bold text-gray-700">Hợp đồng Nguyên tắc 2025</h4>
-                        <p class="text-[10px] text-gray-400 font-medium mt-1">Lưu trữ từ: 01/01/2025</p>
-                    </div>
-                    <button class="px-4 py-2 text-xs font-bold text-gray-400 cursor-not-allowed">Đã khóa</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ===== FULL-SCREEN LIGHT SIGNING FLOW ===== -->
-    <div x-show="signingMode" 
-         class="full-screen-sign flex flex-col"
-         x-transition:enter="transition ease-out duration-300"
-         x-transition:enter-start="opacity-0"
-         x-transition:enter-end="opacity-100"
-         style="display: none;">
-        
-        <!-- Modern Toolbar -->
-        <header class="modern-toolbar px-8 py-5 flex items-center justify-between shrink-0 sticky top-0 z-50">
-            <div class="flex items-center gap-5">
-                <button @@click="exitSigning()" class="w-10 h-10 rounded-xl bg-gray-50 hover:bg-orange-50 flex items-center justify-center text-gray-400 hover:text-orange-600 transition-all">
-                    <i data-lucide="arrow-left" class="w-5 h-5"></i>
+    <!-- Full-screen: hợp đồng khung -->
+    <div x-show="open" x-cloak class="esign-full flex flex-col" style="display:none;">
+        <header class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-4 sm:px-8">
+            <div class="flex items-center gap-3">
+                <button type="button" @@click="closeFlow()" class="rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-orange-50 hover:text-orange-600">
+                    <i data-lucide="arrow-left" class="h-5 w-5"></i>
                 </button>
                 <div>
-                    <h2 class="text-[13px] font-bold text-gray-900 leading-tight">Cổng ký số HuitMeal</h2>
-                    <p class="text-[10px] text-gray-400 font-medium" x-text="stepTitle()"></p>
+                    <p class="text-sm font-black text-slate-900">Cổng ký số HuitMeal</p>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400" x-text="step === 1 ? 'Bước 1: Rà soát nội dung' : 'Bước 2: Ký tên'"></p>
                 </div>
             </div>
-            
-            <!-- Compact Progress -->
-            <div class="hidden md:flex items-center gap-6">
-                <div class="flex items-center gap-2" :class="step >= 1 ? 'text-gray-900' : 'text-gray-300'">
-                    <span class="w-6 h-6 rounded-lg border flex items-center justify-center text-[10px] font-bold" :class="step >= 1 ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-100'">1</span>
-                    <span class="text-[10px] font-bold uppercase tracking-wider">Xem</span>
-                </div>
-                <div class="w-4 h-[1px] bg-gray-100"></div>
-                <div class="flex items-center gap-2" :class="step >= 2 ? 'text-gray-900' : 'text-gray-300'">
-                    <span class="w-6 h-6 rounded-lg border flex items-center justify-center text-[10px] font-bold" :class="step >= 2 ? 'border-gray-900 bg-gray-900 text-white' : 'border-gray-100'">2</span>
-                    <span class="text-[10px] font-bold uppercase tracking-wider">Ký</span>
-                </div>
-                <div class="w-4 h-[1px] bg-gray-100"></div>
-                <div class="flex items-center gap-2" :class="step >= 3 ? 'text-green-600' : 'text-gray-300'">
-                    <span class="w-6 h-6 rounded-lg border flex items-center justify-center text-[10px] font-bold" :class="step >= 3 ? 'border-green-600 bg-green-600 text-white' : 'border-gray-100'">3</span>
-                    <span class="text-[10px] font-bold uppercase tracking-wider">Xong</span>
-                </div>
+            <div class="hidden items-center gap-2 sm:flex">
+                <span class="rounded-lg px-2 py-1 text-[10px] font-black" :class="step >= 1 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'">1 XEM</span>
+                <span class="text-slate-300">—</span>
+                <span class="rounded-lg px-2 py-1 text-[10px] font-black" :class="step >= 2 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'">2 KÝ</span>
+                <span class="text-slate-300">—</span>
+                <span class="rounded-lg px-2 py-1 text-[10px] font-black text-slate-300">3 XONG</span>
             </div>
-
-            <button @@click="exitSigning()" class="text-xs font-bold text-gray-400 hover:text-red-600 transition">Thoát</button>
+            <button type="button" @@click="closeFlow()" class="text-xs font-bold text-slate-500 hover:text-orange-600">Thoát</button>
         </header>
 
-        <!-- Document Body -->
-        <div class="flex-1 p-6 md:p-10 flex flex-col items-center">
-            
-            <!-- DOCUMENT VIEW -->
-            <div x-show="step === 1 || step === 3" class="animate-fadeIn">
-                <div class="paper-sheet p-10 md:p-20 relative">
-                    <div class="text-center mb-16">
-                        <h2 class="text-lg font-bold uppercase underline">CỘNG HÒA XÃ HỘI CHỦ NGHĨA VIỆT NAM</h2>
-                        <p class="font-bold text-sm">Độc lập - Tự do - Hạnh phúc</p>
+        <div class="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
+            <div x-show="step === 1" class="esign-paper rounded-sm border border-slate-200 bg-white p-8 shadow-lg sm:p-12">
+                <h2 class="mb-6 text-center text-lg font-black uppercase tracking-wide text-slate-900">Phụ lục / Hợp đồng cung cấp suất ăn</h2>
+                <div class="space-y-4 text-sm leading-relaxed text-slate-800">
+                    <p><strong>Bên A (HuitMeal):</strong> <span x-text="active?.partnerLegalName || 'Công ty Cổ phần HuitMeal'"></span></p>
+                    <p><strong>Bên B (Khách hàng):</strong> <span x-text="active?.organizationName || 'Đơn vị khách hàng'"></span></p>
+                    <p class="border-t border-slate-200 pt-4"><strong>Điều 1.</strong> Nội dung cung cấp suất ăn theo lịch đã thống nhất; điều chỉnh bổ sung (nếu có) được phản ánh trong mô tả hợp đồng và hệ thống đặt hàng.</p>
+                    <p><strong>Điều 2.</strong> Thời hiệu: từ <span x-text="fmt(active?.startDate)"></span> <template x-if="active?.endDate"><span>đến <span x-text="fmt(active.endDate)"></span></span></template>.</p>
+                    <p><strong>Điều 3.</strong> Giá và thanh toán: theo khung giá trị <span x-text="money(active?.totalValue)"></span> (tham chiếu); chi tiết từng kỳ thanh toán tuân theo biên bản đối soát.</p>
+                    <p class="text-xs italic text-slate-500">Văn bản điện tử có giá trị pháp lý tương đương bản giấy sau khi các bên ký số theo quy định nội bộ và pháp luật hiện hành.</p>
+                </div>
+                <div class="mt-10 grid gap-6 border-t border-slate-200 pt-8 sm:grid-cols-2">
+                    <div class="text-center">
+                        <p class="mb-3 text-xs font-black uppercase text-slate-600">Đại diện HuitMeal</p>
+                        <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full border-4 border-red-500 text-[9px] font-black uppercase leading-tight text-red-600">Approved<br/>HuitMeal</div>
+                        <p class="mt-2 text-[10px] text-slate-500">Đã xác thực hệ thống</p>
                     </div>
-
-                    <div class="flex justify-between items-start mb-16">
-                        <img src="/assets/images/Logo.jpg" class="h-8 opacity-50 grayscale" />
-                        <div class="text-right text-[11px] text-gray-400 font-medium uppercase tracking-wider">
-                            <p>Số: PL-2026-001/HUITMEAL</p>
-                        </div>
-                    </div>
-
-                    <h1 class="text-center font-bold text-2xl mb-16 tracking-tight">PHỤ LỤC HỢP ĐỒNG DỊCH VỤ</h1>
-
-                    <div class="space-y-8 text-sm leading-[1.8] text-gray-800 text-justify">
-                        <p>Hôm nay, ngày 25/04/2026, chúng tôi cùng thống nhất các nội dung sau:</p>
-                        <p><span class="font-bold">Bên A:</span> Công ty Cổ phần HuitMeal</p>
-                        <p><span class="font-bold">Bên B:</span> Đơn vị TRƯỜNG THPT HOÀNG VĂN THỤ Enterprise</p>
-                        <div class="space-y-4">
-                            <p><span class="font-bold">Điều 1:</span> Tăng định mức suất ăn dự phòng từ 5% lên 15% tổng số lượng đặt hàng thực tế.</p>
-                            <p><span class="font-bold">Điều 2:</span> Thời gian áp dụng kể từ kỳ cung ứng tháng 05/2026.</p>
-                            <p><span class="font-bold">Điều 3:</span> Các điều khoản khác về chất lượng, đơn giá và thanh toán vẫn giữ nguyên theo Hợp đồng gốc đã ký kết.</p>
-                        </div>
-                        <p>Văn bản này được lập dưới dạng điện tử, có giá trị pháp lý tương đương văn bản giấy.</p>
-                    </div>
-
-                    <!-- Signatures -->
-                    <div class="mt-40 grid grid-cols-2 text-sm">
-                        <div class="flex flex-col items-center">
-                            <p class="font-bold uppercase mb-16 text-xs text-gray-400">ĐẠI DIỆN HUITMEAL</p>
-                            <div class="relative">
-                                <div class="stamp-ink">
-                                    <i data-lucide="check-square" class="w-6 h-6 mb-1"></i>
-                                    <span>APPROVED</span>
-                                    <span class="text-[7px]">BY HUITMEAL</span>
-                                </div>
-                            </div>
-                            <p class="mt-8 text-[11px] text-gray-400 font-medium italic">Đã xác thực hệ thống</p>
-                        </div>
-                        <div class="flex flex-col items-center">
-                            <p class="font-bold uppercase mb-16 text-xs text-gray-400">ĐẠI DIỆN KHÁCH HÀNG</p>
-                            <div class="h-24 flex flex-col items-center justify-center">
-                                <template x-if="step === 3 && signatureImage">
-                                    <img :src="signatureImage" class="max-h-20 object-contain animate-fadeIn" />
-                                </template>
-                                <template x-if="step === 1">
-                                    <div class="px-6 py-3 border-2 border-dashed border-gray-100 rounded-xl text-[10px] text-gray-300 font-bold uppercase tracking-widest">Chờ bạn ký</div>
-                                </template>
-                            </div>
-                            <p class="mt-8 text-sm font-bold text-gray-900">TRƯỜNG THPT HOÀNG VĂN THỤ</p>
-                        </div>
+                    <div class="text-center">
+                        <p class="mb-3 text-xs font-black uppercase text-slate-600">Đại diện khách hàng</p>
+                        <div class="mx-auto flex h-28 max-w-xs items-center justify-center rounded-lg border-2 border-dashed border-slate-300 text-sm font-bold text-slate-400">CHỜ BẠN KÝ</div>
                     </div>
                 </div>
             </div>
 
-            <!-- SIGNATURE PAD -->
-            <div x-show="step === 2" class="w-full max-w-xl animate-fadeIn h-full flex flex-col justify-center py-20">
-                <div class="text-center mb-8">
-                    <h3 class="text-xl font-bold text-gray-900 mb-2">Tạo chữ ký điện tử</h3>
-                    <p class="text-gray-400 text-sm">Vui lòng ký tên của bạn vào khung trắng dưới đây</p>
+            <div x-show="step === 2" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
+                <p class="mb-4 text-sm font-bold text-slate-800">Ký bằng chuột hoặc cảm ứng (PNG)</p>
+                <canvas id="contract-sig-canvas" width="520" height="200" class="w-full max-w-full cursor-crosshair touch-none rounded-xl border border-slate-200 bg-slate-50"></canvas>
+                <div class="mt-3 flex gap-2">
+                    <button type="button" @@click="clearSig()" class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50">Xóa chữ ký</button>
                 </div>
-                <div class="bg-white p-10 rounded-2xl shadow-sm border border-gray-100">
-                    <canvas id="signCanvas" width="500" height="280" class="sig-canvas w-full h-[280px]"></canvas>
-                    <div class="flex justify-between items-center mt-8">
-                        <button @@click="clearCanvas()" class="text-[10px] font-bold text-gray-400 hover:text-orange-600 flex items-center gap-2 transition-all uppercase">
-                            <i data-lucide="rotate-ccw" class="w-4 h-4"></i> Xóa & Làm lại
-                        </button>
-                        <span class="text-[9px] font-bold text-gray-300 uppercase tracking-widest">Mã hóa bảo mật 2-lớp</span>
-                    </div>
-                </div>
+                <form id="contract-sign-form" asp-action="SignContract" method="post" class="mt-6">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="contractId" :value="activeId" />
+                    <input type="hidden" name="digitalSignature" id="contract-digital-signature" value="" />
+                    <button type="button" @@click="submitSig()" class="w-full rounded-xl bg-slate-900 py-4 text-sm font-black text-white shadow-lg hover:bg-orange-600">Gửi chữ ký &amp; hoàn tất</button>
+                </form>
             </div>
-
         </div>
 
-        <!-- Sticky Footer -->
-        <footer class="bg-white border-t border-gray-100 px-8 py-5 flex justify-center shrink-0">
-            <div class="w-full max-w-4xl flex gap-4">
-                <template x-if="step === 1">
-                    <button @@click="step = 2; $nextTick(() => initCanvas())" class="w-full py-4 bg-gray-900 text-white rounded-xl font-bold text-sm shadow-md hover:bg-orange-600 transition-all">TIẾP TỤC: KÝ TÊN</button>
-                </template>
-                <template x-if="step === 2">
-                    <div class="flex w-full gap-4">
-                        <button @@click="step = 1" class="flex-1 py-4 text-sm font-bold text-gray-400">QUAY LẠI</button>
-                        <button @@click="confirmSignature()" class="flex-[2] py-4 bg-gray-900 text-white rounded-xl font-bold text-sm shadow-md hover:bg-orange-600 transition-all">XÁC NHẬN CHỮ KÝ</button>
-                    </div>
-                </template>
-                <template x-if="step === 3">
-                    <div class="flex w-full gap-4">
-                        <button @@click="exitSigning()" class="flex-1 py-4 text-sm font-bold text-gray-400">HOÀN TẤT</button>
-                        <button class="flex-[2] py-4 bg-green-600 text-white rounded-xl font-bold text-sm shadow-md hover:bg-green-700 transition-all">
-                            <i data-lucide="download" class="w-4 h-4 inline mr-2"></i> TẢI BẢN PDF (SIGNED)
-                        </button>
-                    </div>
-                </template>
+        <div class="sticky bottom-0 border-t border-slate-200 bg-white px-4 py-4 sm:px-8" x-show="step === 1">
+            <button type="button" @@click="step = 2" class="mx-auto block w-full max-w-3xl rounded-xl bg-slate-900 py-4 text-sm font-black text-white shadow hover:bg-orange-600">Tiếp tục: ký tên</button>
+        </div>
+    </div>
+
+    <!-- Full-screen: phụ lục đơn hàng (menu + tổng + ký) -->
+    <div x-show="annexOpen" x-cloak class="esign-full flex flex-col" style="display:none;">
+        <header class="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-4 sm:px-8">
+            <div class="flex items-center gap-3">
+                <button type="button" @@click="closeAnnexFlow()" class="rounded-xl border border-slate-200 p-2 text-slate-500 hover:bg-orange-50 hover:text-orange-600">
+                    <i data-lucide="arrow-left" class="h-5 w-5"></i>
+                </button>
+                <div>
+                    <p class="text-sm font-black text-slate-900">Cổng ký số HuitMeal</p>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400" x-text="annexStep === 1 ? 'Bước 1: Rà soát nội dung' : 'Bước 2: Ký tên'"></p>
+                </div>
             </div>
-        </footer>
+            <div class="hidden items-center gap-2 sm:flex">
+                <span class="rounded-lg px-2 py-1 text-[10px] font-black" :class="annexStep >= 1 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'">1 XEM</span>
+                <span class="text-slate-300">—</span>
+                <span class="rounded-lg px-2 py-1 text-[10px] font-black" :class="annexStep >= 2 ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-400'">2 KÝ</span>
+                <span class="text-slate-300">—</span>
+                <span class="rounded-lg px-2 py-1 text-[10px] font-black text-slate-300">3 XONG</span>
+            </div>
+            <button type="button" @@click="closeAnnexFlow()" class="text-xs font-bold text-slate-500 hover:text-orange-600">Thoát</button>
+        </header>
+
+        <div class="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6" x-show="orderAnnex">
+            <div x-show="annexStep === 1" class="esign-paper rounded-sm border border-slate-200 bg-white p-8 shadow-lg sm:p-12">
+                <h2 class="mb-6 text-center text-lg font-black uppercase tracking-wide text-slate-900">Phụ lục đặt hàng / xác nhận biên bản</h2>
+                <div class="space-y-3 text-sm leading-relaxed text-slate-800">
+                    <p><strong>Bên A (HuitMeal):</strong> <span x-text="orderAnnex.partnerLegalName || 'Công ty Cổ phần HuitMeal'"></span></p>
+                    <p><strong>Bên B (Khách hàng):</strong> <span x-text="orderAnnex.organizationName || 'Đơn vị khách hàng'"></span></p>
+                    <p class="text-xs text-slate-600">Mã đơn: <span class="font-mono font-bold" x-text="orderAnnex.invoiceCode || ('#' + orderAnnex.id)"></span> · Ngày đặt <span x-text="fmtIso(orderAnnex.orderDate)"></span> · Giao dự kiến <span x-text="fmtIso(orderAnnex.scheduledDate)"></span></p>
+                    <p class="border-t border-slate-200 pt-4"><strong>Điều 1.</strong> Tăng hạn mức dự trữ suất theo khung đã thống nhất với đơn vị (tham chiếu chính sách B2B).</p>
+                    <p><strong>Điều 2.</strong> Hiệu lực theo kỳ giao ngày <span x-text="fmtIso(orderAnnex.scheduledDate)"></span>.</p>
+                    <p><strong>Điều 3.</strong> Chất lượng, đơn giá và thanh toán các kỳ khác giữ nguyên theo hợp đồng khung (nếu có).</p>
+                    <p class="text-xs italic text-slate-500">Văn bản điện tử mô phỏng giá trị xác nhận; sau khi bấm gửi, hệ thống tạo PDF và lưu trên cloud.</p>
+                </div>
+                <div class="mt-6 rounded-lg border border-slate-200 bg-slate-50/80 p-4">
+                    <p class="mb-2 text-xs font-black uppercase text-slate-600">Danh mục món &amp; thành tiền</p>
+                    <ul class="max-h-52 space-y-1.5 overflow-y-auto text-sm">
+                        <template x-for="(it, idx) in (orderAnnex.items || [])" :key="idx">
+                            <li class="flex justify-between gap-2 border-b border-slate-200/80 py-1">
+                                <span x-text="it.dishName"></span>
+                                <span><span class="text-slate-500" x-text="'x' + it.quantity"></span> <strong class="text-orange-700" x-text="money(it.totalPrice)"></strong></span>
+                            </li>
+                        </template>
+                    </ul>
+                    <p class="mt-3 text-right text-base font-black text-slate-900">Tổng: <span x-text="money(orderAnnex.totalAmount)"></span></p>
+                </div>
+                <div class="mt-10 grid gap-6 border-t border-slate-200 pt-8 sm:grid-cols-2">
+                    <div class="text-center">
+                        <p class="mb-3 text-xs font-black uppercase text-slate-600">Đại diện HuitMeal</p>
+                        <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full border-4 border-red-500 text-[8px] font-black uppercase leading-tight text-red-600">Approved<br/>HuitMeal</div>
+                        <p class="mt-2 text-[10px] text-slate-500">Đã xác thực hệ thống</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="mb-3 text-xs font-black uppercase text-slate-600">Đại diện khách hàng</p>
+                        <div class="mx-auto flex h-28 max-w-xs items-center justify-center rounded-lg border-2 border-dashed border-slate-300 text-sm font-bold text-slate-400">CHỜ BẠN KÝ</div>
+                        <p class="mt-2 text-[10px] font-semibold text-slate-600" x-text="orderAnnex.organizationName || ''"></p>
+                    </div>
+                </div>
+            </div>
+
+            <div x-show="annexStep === 2" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
+                <p class="mb-4 text-sm font-bold text-slate-800">Ký bằng chuột hoặc cảm ứng (PNG) — xác nhận phụ lục đơn</p>
+                <canvas id="order-annex-sig-canvas" width="520" height="200" class="w-full max-w-full cursor-crosshair touch-none rounded-xl border border-slate-200 bg-slate-50"></canvas>
+                <div class="mt-3 flex gap-2">
+                    <button type="button" @@click="clearAnnexSig()" class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50">Xóa chữ ký</button>
+                </div>
+                <form id="order-annex-sign-form" asp-action="SignOrderAnnex" method="post" class="mt-6">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="orderId" :value="orderAnnex.id" />
+                    <input type="hidden" name="digitalSignature" id="order-annex-digital-signature" value="" />
+                    <button type="button" @@click="submitAnnexSig()" class="w-full rounded-xl bg-slate-900 py-4 text-sm font-black text-white shadow-lg hover:bg-orange-600">Xác nhận &amp; lưu PDF lên cloud</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="sticky bottom-0 border-t border-slate-200 bg-white px-4 py-4 sm:px-8" x-show="annexStep === 1 && orderAnnex">
+            <button type="button" @@click="annexStep = 2; $nextTick(() => bindAnnexCanvas())" class="mx-auto block w-full max-w-3xl rounded-xl bg-slate-900 py-4 text-sm font-black text-white shadow hover:bg-orange-600">Tiếp tục: ký tên</button>
+        </div>
     </div>
 </div>
 
 @section Scripts {
     <script>
-        function eSignFlow() {
+        function esignPortal() {
             return {
-                signingMode: false,
+                contracts: [],
+                orderAnnex: null,
+                annexOpen: false,
+                annexStep: 1,
+                open: false,
                 step: 1,
-                signatureImage: null,
-                isSigned: false,
-                canvas: null,
-                ctx: null,
-                isDrawing: false,
-
-                startSigning() {
-                    this.signingMode = true;
+                activeId: null,
+                get active() { return this.contracts.find(c => c.id === this.activeId); },
+                init() {
+                    this.contracts = window.__HM_CONTRACTS || [];
+                    this.orderAnnex = window.__HM_ORDER_ANNEX || null;
+                    this.annexOpen = !!(this.orderAnnex && this.orderAnnex.id);
+                    this.annexStep = 1;
+                    if (this.annexOpen) {
+                        document.body.classList.add('overflow-hidden');
+                        this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                    }
+                },
+                fmt(v) {
+                    if (!v) return '';
+                    const d = new Date(v);
+                    return d.toLocaleDateString('vi-VN');
+                },
+                fmtIso(v) {
+                    if (!v) return '';
+                    const d = new Date(v);
+                    return d.toLocaleDateString('vi-VN');
+                },
+                money(v) {
+                    if (v == null || v === '') return '0 đ';
+                    return Number(v).toLocaleString('vi-VN') + ' đ';
+                },
+                openFlow(id) {
+                    this.activeId = id;
                     this.step = 1;
-                    this.isSigned = false;
-                    document.body.style.overflow = 'hidden';
-                    this.$nextTick(() => lucide.createIcons());
+                    this.open = true;
+                    document.body.classList.add('overflow-hidden');
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
                 },
-
-                exitSigning() {
-                    this.signingMode = false;
-                    document.body.style.overflow = 'auto';
+                closeFlow() {
+                    this.open = false;
+                    if (!this.annexOpen) document.body.classList.remove('overflow-hidden');
+                    this.step = 1;
                 },
-
-                stepTitle() {
-                    if (this.step === 1) return 'Bước 1: Rà soát nội dung';
-                    if (this.step === 2) return 'Bước 2: Vẽ chữ ký điện tử';
-                    return 'Bước 3: Chứng thực thành công';
+                openAnnexFlow() {
+                    if (!this.orderAnnex) return;
+                    this.annexStep = 1;
+                    this.annexOpen = true;
+                    document.body.classList.add('overflow-hidden');
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
                 },
-
-                initCanvas() {
-                    this.canvas = document.getElementById('signCanvas');
-                    this.ctx = this.canvas.getContext('2d');
-                    this.ctx.lineWidth = 2.5;
-                    this.ctx.lineJoin = 'round';
-                    this.ctx.lineCap = 'round';
-                    this.ctx.strokeStyle = '#1e293b';
-
-                    const start = (e) => {
-                        this.isDrawing = true;
-                        this.ctx.beginPath();
-                        const rect = this.canvas.getBoundingClientRect();
-                        const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                        const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                        this.ctx.moveTo(x, y);
-                    };
-                    const move = (e) => {
-                        if (!this.isDrawing) return;
-                        const rect = this.canvas.getBoundingClientRect();
-                        const x = (e.touches ? e.touches[0].clientX : e.clientX) - rect.left;
-                        const y = (e.touches ? e.touches[0].clientY : e.clientY) - rect.top;
-                        this.ctx.lineTo(x, y);
-                        this.ctx.stroke();
-                    };
-                    const stop = () => this.isDrawing = false;
-
-                    this.canvas.addEventListener('mousedown', start);
-                    this.canvas.addEventListener('mousemove', move);
-                    this.canvas.addEventListener('mouseup', stop);
-                    this.canvas.addEventListener('touchstart', (e) => { e.preventDefault(); start(e); });
-                    this.canvas.addEventListener('touchmove', (e) => { e.preventDefault(); move(e); });
-                    this.canvas.addEventListener('touchend', stop);
-                    
-                    lucide.createIcons();
+                closeAnnexFlow() {
+                    this.annexOpen = false;
+                    this.annexStep = 1;
+                    if (!this.open) document.body.classList.remove('overflow-hidden');
                 },
-
-                clearCanvas() { this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height); },
-
-                confirmSignature() {
-                    this.signatureImage = this.canvas.toDataURL();
-                    this.step = 3;
-                    this.isSigned = true;
-                    this.$nextTick(() => lucide.createIcons());
+                clearSig() {
+                    const c = document.getElementById('contract-sig-canvas');
+                    if (!c) return;
+                    const ctx = c.getContext('2d');
+                    ctx.clearRect(0, 0, c.width, c.height);
                 },
-
-                viewSignedDoc() {
-                    this.signingMode = true;
-                    this.step = 3;
-                    document.body.style.overflow = 'hidden';
-                    this.$nextTick(() => lucide.createIcons());
+                clearAnnexSig() {
+                    const c = document.getElementById('order-annex-sig-canvas');
+                    if (!c) return;
+                    const ctx = c.getContext('2d');
+                    ctx.clearRect(0, 0, c.width, c.height);
+                },
+                submitSig() {
+                    const c = document.getElementById('contract-sig-canvas');
+                    const hidden = document.getElementById('contract-digital-signature');
+                    if (!c || !hidden) return;
+                    const blank = document.createElement('canvas');
+                    blank.width = c.width; blank.height = c.height;
+                    if (blank.toDataURL() === c.toDataURL()) {
+                        alert('Vui lòng ký trước khi gửi.');
+                        return;
+                    }
+                    hidden.value = c.toDataURL('image/png');
+                    document.getElementById('contract-sign-form').submit();
+                },
+                submitAnnexSig() {
+                    const c = document.getElementById('order-annex-sig-canvas');
+                    const hidden = document.getElementById('order-annex-digital-signature');
+                    if (!c || !hidden) return;
+                    const blank = document.createElement('canvas');
+                    blank.width = c.width; blank.height = c.height;
+                    if (blank.toDataURL() === c.toDataURL()) {
+                        alert('Vui lòng ký trước khi gửi.');
+                        return;
+                    }
+                    hidden.value = c.toDataURL('image/png');
+                    document.getElementById('order-annex-sign-form').submit();
+                },
+                bindAnnexCanvas() {
+                    const c = document.getElementById('order-annex-sig-canvas');
+                    if (!c || c.dataset.bound === '1') return;
+                    c.dataset.bound = '1';
+                    wireCanvas(c);
                 }
-            }
+            };
         }
-        document.addEventListener("DOMContentLoaded", () => lucide.createIcons());
+        function wireCanvas(c) {
+            const ctx = c.getContext('2d');
+            let d = false, lx = null, ly = null;
+            function pos(e) {
+                const r = c.getBoundingClientRect();
+                const t = e.touches ? e.touches[0] : e;
+                return { x: (t.clientX - r.left) * (c.width / r.width), y: (t.clientY - r.top) * (c.height / r.height) };
+            }
+            c.addEventListener('mousedown', e => { d = true; const p = pos(e); lx = p.x; ly = p.y; });
+            c.addEventListener('mouseup', () => { d = false; lx = ly = null; });
+            c.addEventListener('mouseleave', () => { d = false; lx = ly = null; });
+            c.addEventListener('mousemove', e => {
+                if (!d || lx == null) return;
+                const p = pos(e);
+                ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke();
+                lx = p.x; ly = p.y;
+            });
+            c.addEventListener('touchstart', e => { d = true; const p = pos(e); lx = p.x; ly = p.y; e.preventDefault(); }, { passive: false });
+            c.addEventListener('touchend', () => { d = false; lx = ly = null; });
+            c.addEventListener('touchmove', e => {
+                if (!d || lx == null) return;
+                const p = pos(e);
+                ctx.strokeStyle = '#0f172a'; ctx.lineWidth = 2; ctx.lineCap = 'round';
+                ctx.beginPath(); ctx.moveTo(lx, ly); ctx.lineTo(p.x, p.y); ctx.stroke();
+                lx = p.x; ly = p.y; e.preventDefault();
+            }, { passive: false });
+        }
+        document.addEventListener('DOMContentLoaded', function () {
+            document.querySelectorAll('#contract-sig-canvas, #order-annex-sig-canvas').forEach(c => {
+                if (c && !c.dataset.bound) { c.dataset.bound = '1'; wireCanvas(c); }
+            });
+        });
     </script>
 }

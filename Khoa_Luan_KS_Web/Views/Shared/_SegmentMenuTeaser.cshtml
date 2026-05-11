@@ -1,0 +1,51 @@
+@using Khoa_Luan_KS_Web.Services
+@{
+    var menus = ViewBag.SegmentMenus as IList<WeeklyMenuClientDto>;
+    var err = ViewBag.SegmentMenuError as string;
+    var pk = ViewBag.SegmentProfileKey as string ?? "";
+    var loginRequired = ViewBag.SegmentMenuLoginRequired as bool? == true;
+}
+<div class="mb-10 rounded-2xl border border-slate-200 bg-white/90 p-6 shadow-sm backdrop-blur-sm">
+    <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between mb-4">
+        <div>
+            <p class="text-[10px] font-black uppercase tracking-[0.25em] text-orange-500">Thực đơn tuần</p>
+            <h3 class="text-lg font-black text-slate-900">Gợi ý theo phân khúc dịch vụ</h3>
+        </div>
+        <a href="/Menu/Index?profile=@Uri.EscapeDataString(pk)#menu-section"
+           class="inline-flex items-center justify-center gap-2 rounded-xl bg-orange-500 px-4 py-2.5 text-xs font-black text-white shadow-md shadow-orange-500/25 hover:bg-orange-600">
+            Xem đầy đủ trên Menu
+        </a>
+    </div>
+
+    @if (loginRequired)
+    {
+        <p class="text-sm text-slate-600">
+            <a href="/Auth/Login?returnUrl=@Uri.EscapeDataString(Context.Request.Path)" class="font-bold text-orange-600 hover:text-orange-700">Đăng nhập</a>
+            để xem các thực đơn tuần được gợi ý cho phân khúc này.
+        </p>
+    }
+    else if (!string.IsNullOrEmpty(err))
+    {
+        <p class="text-sm font-medium text-amber-800 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">@err</p>
+    }
+    else if (menus is { Count: > 0 })
+    {
+        <div class="flex flex-wrap gap-2">
+            @foreach (var m in menus)
+            {
+                <a href="/Menu/Index?menuId=@m.Id&profile=@Uri.EscapeDataString(pk)#menu-section"
+                   class="inline-flex flex-col rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-left text-xs font-bold text-slate-800 hover:border-orange-300 hover:bg-orange-50/80 transition-colors">
+                    <span>@m.StartDate.ToString("dd/MM") – @m.EndDate.ToString("dd/MM")</span>
+                    @if (!string.IsNullOrEmpty(m.Description))
+                    {
+                        <span class="mt-0.5 max-w-[220px] truncate font-medium text-slate-500">@m.Description</span>
+                    }
+                </a>
+            }
+        </div>
+    }
+    else
+    {
+        <p class="text-sm text-slate-500">Chưa có thực đơn tuần phù hợp trong hệ thống. Vui lòng thử lại sau hoặc liên hệ tư vấn.</p>
+    }
+</div>

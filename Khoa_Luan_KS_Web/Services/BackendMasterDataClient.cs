@@ -161,16 +161,22 @@ public class BackendMasterDataClient
         return await GetAsync<GetPartnerResponse>($"/api/v1/master-data/Partner/{id}", accessToken, ct);
     }
 
-    public async Task<GetUnitsResponse> GetUnitsAsync(string accessToken, int page = 1, int pageSize = 10, string? searchTerm = null, CancellationToken ct = default)
+    public async Task<GetUnitsResponse> GetUnitsAsync(string accessToken, int page = 1, int pageSize = 10, string? searchTerm = null, bool? isActive = null, CancellationToken ct = default)
     {
         var query = $"?Page={page}&PageSize={pageSize}";
         if (!string.IsNullOrEmpty(searchTerm)) query += $"&SearchTerm={Uri.EscapeDataString(searchTerm)}";
+        if (isActive.HasValue) query += $"&IsActive={(isActive.Value ? "true" : "false")}";
         return await GetAsync<GetUnitsResponse>($"/api/v1/master-data/Organization{query}", accessToken, ct);
     }
 
     public async Task<GetUnitResponse> GetUnitAsync(int id, string accessToken, CancellationToken ct = default)
     {
         return await GetAsync<GetUnitResponse>($"/api/v1/master-data/Organization/{id}", accessToken, ct);
+    }
+
+    public async Task<GetUnitResponse> UpdateOrganizationStatusAsync(int id, bool isActive, string accessToken, CancellationToken ct = default)
+    {
+        return await PatchAsync<GetUnitResponse>($"/api/v1/master-data/Organization/{id}/status", new { isActive }, accessToken, ct);
     }
 
     public async Task<PartnerDto> CreatePartnerAsync(CreatePartnerRequest payload, string accessToken, CancellationToken ct = default)
@@ -243,6 +249,77 @@ public class BackendMasterDataClient
         return res.Id;
     }
 
+    // --- WeeklyMenu ---
+    public async Task<GetWeeklyMenusClientResponse> GetWeeklyMenusAsync(string accessToken, int page = 1, int pageSize = 10, string? searchTerm = null, int? customerTypeId = null, string? customerProfileKey = null, CancellationToken ct = default)
+    {
+        var query = $"?Page={page}&PageSize={pageSize}";
+        if (!string.IsNullOrEmpty(searchTerm)) query += $"&SearchTerm={Uri.EscapeDataString(searchTerm)}";
+        if (customerTypeId.HasValue) query += $"&CustomerTypeId={customerTypeId.Value}";
+        if (!string.IsNullOrWhiteSpace(customerProfileKey)) query += $"&CustomerProfileKey={Uri.EscapeDataString(customerProfileKey)}";
+        return await GetAsync<GetWeeklyMenusClientResponse>($"/api/v1/master-data/WeeklyMenu{query}", accessToken, ct);
+    }
+
+    public async Task<GetCustomerTypesClientResponse> GetCustomerTypesAsync(string accessToken, CancellationToken ct = default)
+    {
+        return await GetAsync<GetCustomerTypesClientResponse>("/api/v1/master-data/customer-types", accessToken, ct);
+    }
+
+    public async Task<GetOrdersClientResponse> GetOrdersAsync(string accessToken, int page = 1, int pageSize = 20, string? status = null, CancellationToken ct = default)
+    {
+        var q = $"?Page={page}&PageSize={pageSize}";
+        if (!string.IsNullOrEmpty(status)) q += $"&Status={Uri.EscapeDataString(status)}";
+        return await GetAsync<GetOrdersClientResponse>($"/api/v1/master-data/Order{q}", accessToken, ct);
+    }
+
+    public async Task<GetOrderClientResponse> GetOrderAsync(int id, string accessToken, CancellationToken ct = default)
+    {
+        return await GetAsync<GetOrderClientResponse>($"/api/v1/master-data/Order/{id}", accessToken, ct);
+    }
+
+    public async Task<GetOrderClientResponse> CreateCustomerMealOrderAsync(CreateCustomerMealOrderApiRequest request, string accessToken, CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var client = CreateClient(accessToken);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PostAsync("/api/v1/master-data/Order/customer", content, ct);
+        return await HandleResponse<GetOrderClientResponse>(res, ct);
+    }
+
+    public async Task<GetOrderClientResponse> SignOrderAnnexAsync(int orderId, SignOrderAnnexApiRequest request, string accessToken, CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var client = CreateClient(accessToken);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PostAsync($"/api/v1/master-data/Order/{orderId}/sign-annex", content, ct);
+        return await HandleResponse<GetOrderClientResponse>(res, ct);
+    }
+
+    public async Task<GetWeeklyMenuClientResponse> GetWeeklyMenuAsync(int id, string accessToken, CancellationToken ct = default)
+    {
+        return await GetAsync<GetWeeklyMenuClientResponse>($"/api/v1/master-data/WeeklyMenu/{id}", accessToken, ct);
+    }
+
+    public async Task<GetWeeklyMenuDetailClientResponse> GetWeeklyMenuDetailAsync(int id, string accessToken, CancellationToken ct = default)
+    {
+        return await GetAsync<GetWeeklyMenuDetailClientResponse>($"/api/v1/master-data/WeeklyMenu/{id}/detail", accessToken, ct);
+    }
+
+    /// <summary>Danh sách hợp đồng theo tổ chức (role Company / Organization).</summary>
+    public async Task<GetMyOrganizationContractsClientResponse> GetMyOrganizationContractsAsync(string accessToken, CancellationToken ct = default)
+    {
+        return await GetAsync<GetMyOrganizationContractsClientResponse>("/api/v1/company/contracts", accessToken, ct);
+    }
+
+    public async Task<GetContractClientResponse> GetCompanyContractAsync(int contractId, string accessToken, CancellationToken ct = default)
+    {
+        return await GetAsync<GetContractClientResponse>($"/api/v1/company/contracts/{contractId}", accessToken, ct);
+    }
+
+    public async Task<GetContractClientResponse> SignCompanyContractAsync(int contractId, SignCompanyContractRequest request, string accessToken, CancellationToken ct = default)
+    {
+        return await PostAsync<GetContractClientResponse>($"/api/v1/company/contracts/{contractId}/sign", request, accessToken, ct);
+    }
+
     private async Task<T> GetAsync<T>(string path, string accessToken, CancellationToken ct)
     {
         var client = CreateClient(accessToken);
@@ -265,6 +342,16 @@ public class BackendMasterDataClient
         var json = JsonSerializer.Serialize(payload);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var res = await client.PutAsync(path, content, ct);
+        return await HandleResponse<T>(res, ct);
+    }
+
+    private async Task<T> PatchAsync<T>(string path, object payload, string accessToken, CancellationToken ct)
+    {
+        var client = CreateClient(accessToken);
+        var json = JsonSerializer.Serialize(payload);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var request = new HttpRequestMessage(HttpMethod.Patch, path) { Content = content };
+        using var res = await client.SendAsync(request, ct);
         return await HandleResponse<T>(res, ct);
     }
 
@@ -342,20 +429,26 @@ public class UnitDto
     public string? Address { get; set; }
     public string? Phone { get; set; }
     public string? ContactPerson { get; set; }
+    public string? ContactEmail { get; set; }
     public string? TaxCode { get; set; }
     public string? LegalRepresentative { get; set; }
     public string? LogoUrl { get; set; }
+    public string? Website { get; set; }
+    public string? EducationLevel { get; set; }
     [JsonPropertyName("type")]
     public string UnitType { get; set; } = "Office";
     public bool IsSubscriptionActive { get; set; }
     public int DefaultDailyMeals { get; set; }
     public bool IsActive { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }
 
 public class GetUnitsResponse : PaginationResponse<UnitDto> { }
 
 public class GetUnitResponse
 {
+    [JsonPropertyName("organization")]
     public UnitDto Unit { get; set; } = new();
 }
 
@@ -468,7 +561,15 @@ public class DishDto
     public string? Code { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public string? Category { get; set; }
+
+    [JsonPropertyName("primarySlotKey")]
+    public string? PrimarySlotKey { get; set; }
+
+    [JsonPropertyName("dishSlotCategoryCodes")]
+    public List<string> DishSlotCategoryCodes { get; set; } = new();
+
+    /// <summary>Alias cho view cũ; backend trả về <c>primarySlotKey</c>.</summary>
+    public string? Category => PrimarySlotKey;
     public decimal Price { get; set; }
     public string? DietaryLabel { get; set; }
     public string? ImageUrl { get; set; }
@@ -623,4 +724,171 @@ public class GetPermissionsResponse : PaginationResponse<PermissionDto>
 
 public class GetRolePermissionsResponse : PaginationResponse<RolePermissionDto>
 {
+}
+
+// ─── WeeklyMenu DTOs ────────────────────────────────────────────────────────
+public class WeeklyMenuClientDto
+{
+    public int Id { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
+    public List<WeeklyMenuImageClientDto> Images { get; set; } = new();
+    public int CreatedBy { get; set; }
+    public DateTime CreatedAt { get; set; }
+}
+
+public class WeeklyMenuImageClientDto
+{
+    public int Id { get; set; }
+    public int MediaFileId { get; set; }
+    public string Role { get; set; } = "gallery";
+    public int SortOrder { get; set; }
+    public string Url { get; set; } = string.Empty;
+}
+
+public class GetWeeklyMenusClientResponse : PaginationResponse<WeeklyMenuClientDto> { }
+
+public class GetWeeklyMenuClientResponse
+{
+    [JsonPropertyName("weeklyMenu")]
+    public WeeklyMenuClientDto WeeklyMenu { get; set; } = new();
+}
+
+public class GetWeeklyMenuDetailClientResponse
+{
+    [JsonPropertyName("weeklyMenu")]
+    public WeeklyMenuClientDto WeeklyMenu { get; set; } = new();
+
+    [JsonPropertyName("schedules")]
+    public List<WeeklyMenuScheduleDetailClientDto> Schedules { get; set; } = new();
+}
+
+public class WeeklyMenuScheduleDetailClientDto
+{
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public int MenuId { get; set; }
+    public DateTime Date { get; set; }
+    public string MealSlot { get; set; } = string.Empty;
+    public int DishId { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public WeeklyMenuScheduleDishSummaryClientDto Dish { get; set; } = new();
+}
+
+public class WeeklyMenuScheduleDishSummaryClientDto
+{
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Category { get; set; }
+    public decimal Price { get; set; }
+    public string? ImageUrl { get; set; }
+}
+
+// ─── Customer types / Orders (B2C) ───────────────────────────────────────────
+public class GetCustomerTypesClientResponse
+{
+    public List<CustomerTypeClientDto> Data { get; set; } = new();
+}
+
+public class CustomerTypeClientDto
+{
+    public int Id { get; set; }
+    public string? ProfileKey { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+}
+
+public class GetOrdersClientResponse : PaginationResponse<OrderDetailClientDto> { }
+
+public class GetOrderClientResponse
+{
+    [JsonPropertyName("order")]
+    public OrderDetailClientDto Order { get; set; } = new();
+}
+
+public class OrderDetailClientDto
+{
+    public int Id { get; set; }
+    public int? UserId { get; set; }
+    public int? OrganizationId { get; set; }
+    public string? OrganizationName { get; set; }
+    public DateTime OrderDate { get; set; }
+    public DateTime ScheduledDate { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public decimal TotalAmount { get; set; }
+    public string PaymentStatus { get; set; } = string.Empty;
+    public string? InvoiceCode { get; set; }
+    public string? AnnexPdfUrl { get; set; }
+    public DateTime? AnnexSignedAt { get; set; }
+    public List<OrderItemLineClientDto> Items { get; set; } = new();
+}
+
+public class SignOrderAnnexApiRequest
+{
+    public string DigitalSignature { get; set; } = string.Empty;
+}
+
+public class OrderItemLineClientDto
+{
+    public int Id { get; set; }
+    public int DishId { get; set; }
+    public string DishName { get; set; } = string.Empty;
+    public int Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal TotalPrice { get; set; }
+}
+
+public class CreateCustomerMealOrderApiRequest
+{
+    public DateOnly ScheduledDate { get; set; }
+    public List<CreateCustomerMealOrderLineApi> Lines { get; set; } = new();
+}
+
+public class CreateCustomerMealOrderLineApi
+{
+    public int DishId { get; set; }
+    public int Quantity { get; set; } = 1;
+}
+
+// ─── Company contracts (B2B self-service) ───────────────────────────────────
+public class GetMyOrganizationContractsClientResponse
+{
+    public List<CustomerContractDto> Contracts { get; set; } = new();
+}
+
+public class GetContractClientResponse
+{
+    public CustomerContractDto Contract { get; set; } = new();
+}
+
+public class CustomerContractDto
+{
+    public int Id { get; set; }
+    public int PartnerId { get; set; }
+    public string? PartnerLegalName { get; set; }
+    public int? OrganizationId { get; set; }
+    public string? OrganizationName { get; set; }
+    public string? ContractNumber { get; set; }
+    public string? Description { get; set; }
+    public string? SupplySchedule { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public decimal? TotalValue { get; set; }
+    public decimal? DepositAmount { get; set; }
+    public string? ContractFileUrl { get; set; }
+    public bool IsDigitallySigned { get; set; }
+    public DateTime? DigitallySignedAt { get; set; }
+    public string? SignatureImage { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+
+public class SignCompanyContractRequest
+{
+    public string DigitalSignature { get; set; } = string.Empty;
+    public string? SignatureImageUrl { get; set; }
 }

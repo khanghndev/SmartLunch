@@ -1,0 +1,94 @@
+@model Khoa_Luan_KS_Web.Models.MenuMealDetailViewModel
+@using Khoa_Luan_KS_Web.Services
+@{
+    ViewData["Title"] = Model.Schedule.Dish.Name + " - HuitMeal";
+    Layout = "_LayoutCustomer";
+    var d = Model.DishDetail?.Dish;
+    var img = !string.IsNullOrEmpty(d?.ImageUrl) ? d.ImageUrl : Model.Schedule.Dish.ImageUrl;
+    string SlotLabel(string? slot) => slot?.ToLowerInvariant() switch
+    {
+        "breakfast" => "Sáng",
+        "lunch" => "Trưa",
+        "dinner" => "Chiều",
+        "snack" => "Phụ",
+        _ => slot ?? ""
+    };
+}
+
+<div class="max-w-5xl mx-auto px-4 py-10">
+    <a href="@Url.Action("Index", "Menu", new { menuId = Model.WeeklyMenu.Id })#menu-section"
+       class="inline-flex items-center gap-2 text-sm font-bold text-orange-600 hover:text-orange-700 mb-6">
+        <i data-lucide="arrow-left" class="w-4 h-4"></i> Quay lại thực đơn tuần
+    </a>
+
+    <div class="grid md:grid-cols-2 gap-8 items-start">
+        <div class="rounded-3xl overflow-hidden border border-slate-200 bg-slate-50 aspect-[4/3]">
+            @if (!string.IsNullOrEmpty(img))
+            {
+                <img src="@img" alt="@Model.Schedule.Dish.Name" class="w-full h-full object-cover" />
+            }
+            else
+            {
+                <div class="w-full h-full flex items-center justify-center text-slate-400 font-bold">Chưa có ảnh</div>
+            }
+        </div>
+        <div>
+            <p class="text-xs font-black uppercase tracking-widest text-orange-500 mb-2">
+                @Model.WeeklyMenu.StartDate.ToString("dd/MM/yyyy") – @Model.WeeklyMenu.EndDate.ToString("dd/MM/yyyy")
+                · @Model.Schedule.Date.ToString("dddd dd/MM", new System.Globalization.CultureInfo("vi-VN"))
+                · @SlotLabel(Model.Schedule.MealSlot)
+            </p>
+            <h1 class="text-3xl md:text-4xl font-black text-slate-900 tracking-tight mb-3">@Model.Schedule.Dish.Name</h1>
+            @if (!string.IsNullOrEmpty(Model.Schedule.Dish.Category))
+            {
+                <p class="text-sm text-slate-500 mb-4">@Model.Schedule.Dish.Category</p>
+            }
+            <p class="text-2xl font-black text-green-600 mb-6">@Model.Schedule.Dish.Price.ToString("N0") đ / suất</p>
+
+            @if (!string.IsNullOrEmpty(d?.Description))
+            {
+                <div class="prose prose-slate max-w-none text-slate-600 text-sm leading-relaxed mb-6">
+                    @d.Description
+                </div>
+            }
+
+            <form asp-controller="Cart" asp-action="Add" method="post" class="flex flex-wrap items-center gap-3">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="dishId" value="@Model.Schedule.DishId" />
+                <input type="hidden" name="name" value="@Model.Schedule.Dish.Name" />
+                <input type="hidden" name="price" value="@Model.Schedule.Dish.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
+                <input type="hidden" name="imageUrl" value="@(Model.Schedule.Dish.ImageUrl ?? "")" />
+                <input type="hidden" name="menuScheduleId" value="@Model.Schedule.Id" />
+                <input type="hidden" name="scheduleDateUtc" value="@Model.Schedule.Date.ToUniversalTime().ToString("o")" />
+                <input type="hidden" name="mealSlot" value="@Model.Schedule.MealSlot" />
+                <label class="text-sm font-bold text-slate-600">Số suất</label>
+                <input type="number" name="quantity" value="1" min="1" max="99"
+                       class="w-20 border border-slate-200 rounded-xl px-3 py-2 font-bold" />
+                <button type="submit" class="px-6 py-3 rounded-xl bg-orange-500 text-white font-black text-sm hover:bg-orange-600 shadow-lg shadow-orange-500/25">
+                    Thêm vào giỏ
+                </button>
+                <a asp-controller="Cart" asp-action="Index" class="px-6 py-3 rounded-xl border border-slate-200 font-bold text-sm text-slate-700 hover:bg-slate-50">Xem giỏ</a>
+            </form>
+        </div>
+    </div>
+
+    @if (Model.DishDetail?.IngredientQuotas is { Count: > 0 } quotas)
+    {
+        <section class="mt-12 border-t border-slate-100 pt-10">
+            <h2 class="text-lg font-black text-slate-900 mb-4">Thành phần (ước lượng)</h2>
+            <ul class="grid sm:grid-cols-2 gap-2 text-sm text-slate-600">
+                @foreach (var q in quotas)
+                {
+                    <li class="flex justify-between gap-4 bg-slate-50 rounded-xl px-4 py-2 border border-slate-100">
+                        <span>@q.IngredientName</span>
+                        <span class="font-bold text-slate-800">@q.Quantity @q.Unit</span>
+                    </li>
+                }
+            </ul>
+        </section>
+    }
+</div>
+
+@section Scripts {
+    <script>document.addEventListener('DOMContentLoaded', () => lucide.createIcons());</script>
+}

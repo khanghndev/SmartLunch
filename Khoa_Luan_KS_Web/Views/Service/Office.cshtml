@@ -30,8 +30,8 @@
                 Giải pháp dinh dưỡng khoa học, giúp duy trì năng lượng bền bỉ và nâng cao hiệu suất làm việc cho đội ngũ nhân sự của bạn.
             </p>
             <div data-animate="fade-up" data-delay="3" class="flex flex-wrap justify-center gap-4">
-                <a href="#menu" class="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold text-sm transition-all shadow-lg shadow-orange-500/25 hover:-translate-y-1 active:scale-95">
-                    KHÁM PHÁ THỰC ĐƠN
+                <a href="/Menu/Index?profile=org_company#menu-section" class="px-8 py-4 bg-orange-500 hover:bg-orange-600 text-white rounded-full font-bold text-sm transition-all shadow-lg shadow-orange-500/25 hover:-translate-y-1 active:scale-95">
+                    THỰC ĐƠN TUẦN (VĂN PHÒNG)
                 </a>
                 <a href="/Customer/Contact" class="px-8 py-4 bg-white/10 hover:bg-white/20 text-white border border-white/30 backdrop-blur-md rounded-full font-bold text-sm transition-all hover:-translate-y-1 active:scale-95">
                     LIÊN HỆ TƯ VẤN
@@ -188,6 +188,7 @@
     <!-- ===== MENU SECTION ===== -->
     <section id="menu" class="py-24 bg-white" x-data="{ tab: 'man' }">
         <div class="max-w-7xl mx-auto px-6">
+            <partial name="_SegmentMenuTeaser" />
             <div class="flex flex-col md:flex-row md:items-end justify-between gap-8 mb-16" data-animate="fade-up">
                 <div class="max-w-2xl">
                     <h4 class="text-orange-500 font-bold uppercase tracking-widest text-sm mb-4">Thực đơn linh hoạt</h4>

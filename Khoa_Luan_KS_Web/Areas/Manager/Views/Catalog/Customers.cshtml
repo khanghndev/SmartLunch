@@ -2,40 +2,84 @@
 @{
     ViewData["Title"] = "Đối Tác Khách Hàng B2B";
     Layout = "_LayoutManager";
+    var curPage = (int)(ViewBag.CurrentPage ?? 1);
+    var totalPages = (int)(ViewBag.TotalPages ?? 1);
+    var pageSize = (int)(ViewBag.PageSize ?? 10);
+    var isActiveFilter = ViewBag.IsActiveFilter as bool?;
+    var serverSearch = ViewBag.SearchTerm as string ?? string.Empty;
+    var subscriptionCount = Model.Items.Count(x => x.IsSubscriptionActive);
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">@TempData["Success"]</div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">@TempData["Error"]</div>
 }
 
 <div x-data="customerManager()" class="space-y-6 animate-in fade-in duration-500">
-    <!-- Header Section -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-black text-slate-900 tracking-tight">Đối Tác Khách Hàng B2B</h1>
-            <p class="text-sm text-slate-500 font-medium">Quản lý tập khách hàng Doanh nghiệp, Trường học, Bệnh viện</p>
+            <p class="text-sm text-slate-500 font-medium">Quản lý tập khách hàng Doanh nghiệp, Trường học, Bệnh viện (đơn vị đặt suất — Organization)</p>
         </div>
-        <button x-on:click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2.5 rounded-xl font-bold shadow-lg shadow-green-100 transition-all active:scale-95 flex items-center gap-2">
+        <button type="button" disabled class="cursor-not-allowed opacity-60 bg-slate-200 text-slate-600 px-6 py-2.5 rounded-xl font-bold flex items-center gap-2" title="Tạo đơn vị qua API/DB — chưa có endpoint trên giao diện">
             <i class="fas fa-plus-circle"></i> Khởi tạo Khách hàng
         </button>
     </div>
 
-    <!-- Filters & Search -->
-    <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4">
+    <form method="get" asp-area="Manager" asp-controller="Catalog" asp-action="Customers" class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm flex flex-col md:flex-row gap-4 items-stretch md:items-end">
+        <input type="hidden" name="page" value="1" />
+        <input type="hidden" name="pageSize" value="@pageSize" />
         <div class="relative flex-1">
             <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-            <input type="text" x-model="searchTerm" placeholder="Tìm tên đối tác, đại diện liên hệ..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-green-500 transition-all text-sm font-medium" />
+            <input type="text" name="searchTerm" value="@serverSearch" placeholder="Tìm tên đối tác, đại diện liên hệ..." class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border-none rounded-xl focus:ring-2 focus:ring-green-500 transition-all text-sm font-medium" />
         </div>
-        <div class="flex gap-2">
-            <select x-model="filterType" class="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-green-500 cursor-pointer">
-                <option value="">Tất cả Phân Khúc</option>
-                <option value="School">Trường học</option>
-                <option value="Office">Văn phòng</option>
-                <option value="Factory">Nhà máy / Xí nghiệp</option>
+        <div class="flex flex-wrap gap-2">
+            <select name="isActive" class="bg-slate-50 border-none rounded-xl px-4 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-green-500 cursor-pointer min-w-[160px]">
+                @if (!isActiveFilter.HasValue)
+                {
+                    <option value="" selected>Tất cả trạng thái</option>
+                }
+                else
+                {
+                    <option value="">Tất cả trạng thái</option>
+                }
+                @if (isActiveFilter == true)
+                {
+                    <option value="true" selected>Đang phục vụ</option>
+                }
+                else
+                {
+                    <option value="true">Đang phục vụ</option>
+                }
+                @if (isActiveFilter == false)
+                {
+                    <option value="false" selected>Tạm ngưng</option>
+                }
+                else
+                {
+                    <option value="false">Tạm ngưng</option>
+                }
             </select>
-            <button class="bg-slate-50 hover:bg-slate-100 text-slate-600 px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
-                <i class="fas fa-filter"></i> Lọc trạng thái
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all">
+                <i class="fas fa-filter mr-1"></i> Áp dụng
             </button>
         </div>
+    </form>
+
+    <div class="bg-white p-3 rounded-xl border border-slate-100 flex flex-wrap items-center gap-3 text-sm">
+        <span class="text-slate-500 font-bold">Lọc nhanh phân khúc (trên trang hiện tại):</span>
+        <select x-model="filterType" class="bg-slate-50 border border-slate-100 rounded-lg px-3 py-2 text-sm font-bold text-slate-700">
+            <option value="">Tất cả phân khúc</option>
+            <option value="School">Trường học</option>
+            <option value="Office">Văn phòng</option>
+            <option value="Factory">Nhà máy / Xí nghiệp</option>
+        </select>
     </div>
 
-    <!-- Stats Row -->
     <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Tổng khách hàng</p>
@@ -46,8 +90,8 @@
             <p class="text-2xl font-black text-emerald-700">@Model.Items.Count(x => x.IsActive)</p>
         </div>
         <div class="bg-blue-50 p-4 rounded-2xl border border-blue-100 shadow-sm">
-            <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Hợp đồng mới</p>
-            <p class="text-2xl font-black text-blue-700">2</p>
+            <p class="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-1">Đăng ký định kỳ</p>
+            <p class="text-2xl font-black text-blue-700">@subscriptionCount</p>
         </div>
         <div class="bg-slate-900 p-4 rounded-2xl border border-slate-800 shadow-sm">
             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">Dự kiến suất ăn</p>
@@ -55,7 +99,6 @@
         </div>
     </div>
 
-    <!-- Table Section -->
     <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left">
@@ -85,8 +128,8 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="space-y-1">
-                                    <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-tighter" x-text="item.unitType"></span>
-                                    <p class="text-[11px] text-slate-500 font-medium line-clamp-1" x-text="item.address"></p>
+                                    <span class="px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-tighter" x-text="typeLabel(item.unitType)"></span>
+                                    <p class="text-[11px] text-slate-500 font-medium line-clamp-1" x-text="item.address || '—'"></p>
                                 </div>
                             </td>
                             <td class="px-6 py-4">
@@ -95,7 +138,7 @@
                                         <div class="h-full bg-indigo-500 rounded-full" :style="'width: ' + (Math.min(item.defaultDailyMeals / 500, 1) * 100) + '%'"></div>
                                     </div>
                                     <p class="text-xs font-black text-slate-700">
-                                        <span x-text="item.defaultDailyMeals.toLocaleString()"></span> 
+                                        <span x-text="item.defaultDailyMeals.toLocaleString()"></span>
                                         <span class="text-[9px] text-slate-400 uppercase ml-0.5">suất/ngày</span>
                                     </p>
                                 </div>
@@ -110,17 +153,18 @@
                                 <template x-if="!item.isActive">
                                     <div class="inline-flex items-center gap-2 px-2.5 py-1 rounded-lg bg-red-50 text-red-600 border border-red-100">
                                         <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span>
-                                        <span class="text-[10px] font-black uppercase tracking-tighter">Kết thúc HĐ</span>
+                                        <span class="text-[10px] font-black uppercase tracking-tighter">Tạm ngưng</span>
                                     </div>
                                 </template>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <a :href="'/Manager/Catalog/CustomerDetail/' + item.id" class="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-green-500 hover:text-white flex items-center justify-center transition-all">
+                                <div class="flex items-center justify-center gap-2">
+                                    <a :href="'/Manager/Catalog/CustomerDetail/' + item.id" class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 hover:bg-green-500 hover:text-white flex items-center justify-center transition-all" title="Xem chi tiết">
                                         <i class="fas fa-eye text-xs"></i>
                                     </a>
-                                    <button class="w-8 h-8 rounded-lg bg-slate-100 text-slate-400 hover:bg-blue-500 hover:text-white flex items-center justify-center transition-all">
-                                        <i class="fas fa-edit text-xs"></i>
+                                    <button type="button" class="w-9 h-9 rounded-lg bg-slate-100 text-slate-500 hover:bg-blue-500 hover:text-white flex items-center justify-center transition-all" title="Đổi trạng thái hoạt động"
+                                            x-on:click="openStatusModal(item)">
+                                        <i class="fas fa-toggle-on text-xs"></i>
                                     </button>
                                 </div>
                             </td>
@@ -129,16 +173,60 @@
                 </tbody>
             </table>
         </div>
-        
-        <!-- Pagination -->
-        <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex items-center justify-between">
+
+        <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <p class="text-xs font-medium text-slate-500">
-                Hiển thị <span class="font-bold text-slate-900">1-@Model.Items.Count</span> trên <span class="font-bold text-slate-900">@Model.TotalCount</span> khách hàng B2B
+                Trang <span class="font-bold text-slate-900">@curPage</span> / <span class="font-bold text-slate-900">@totalPages</span>
+                — Hiển thị <span class="font-bold text-slate-900">@Model.Items.Count</span> / <span class="font-bold text-slate-900">@Model.TotalCount</span> khách hàng B2B
             </p>
             <div class="flex gap-2">
-                <button class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-400 cursor-not-allowed">Trước</button>
-                <button class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-600 hover:bg-white hover:shadow-sm transition-all">Sau</button>
+                @if (curPage > 1)
+                {
+                    <a class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm transition-all"
+                       asp-area="Manager" asp-controller="Catalog" asp-action="Customers"
+                       asp-route-page="@(curPage - 1)" asp-route-pageSize="@pageSize" asp-route-searchTerm="@serverSearch" asp-route-isActive="@isActiveFilter">Trước</a>
+                }
+                else
+                {
+                    <span class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-300 cursor-not-allowed">Trước</span>
+                }
+                @if (curPage < totalPages)
+                {
+                    <a class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-700 hover:bg-white hover:shadow-sm transition-all"
+                       asp-area="Manager" asp-controller="Catalog" asp-action="Customers"
+                       asp-route-page="@(curPage + 1)" asp-route-pageSize="@pageSize" asp-route-searchTerm="@serverSearch" asp-route-isActive="@isActiveFilter">Sau</a>
+                }
+                else
+                {
+                    <span class="px-4 py-2 rounded-xl border border-slate-200 text-xs font-bold text-slate-300 cursor-not-allowed">Sau</span>
+                }
             </div>
+        </div>
+    </div>
+
+    <div x-show="statusModal.open" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50" x-transition
+         x-on:click="statusModal.open = false">
+        <div class="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 space-y-4" x-on:click.stop>
+            <h3 class="text-lg font-black text-slate-900">Trạng thái hoạt động</h3>
+            <p class="text-sm text-slate-600">Chỉ cập nhật <strong>IsActive</strong> trên hệ thống. Không chỉnh sửa thông tin người dùng hay hồ sơ liên hệ từ màn hình này.</p>
+            <p class="text-sm font-bold text-slate-800" x-text="statusModal.name"></p>
+            <div class="flex gap-3">
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="modalActive" :value="true" x-model="statusModal.nextActive" class="text-green-600" />
+                    <span class="text-sm font-bold text-emerald-700">Đang phục vụ</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                    <input type="radio" name="modalActive" :value="false" x-model="statusModal.nextActive" class="text-red-600" />
+                    <span class="text-sm font-bold text-red-700">Tạm ngưng</span>
+                </label>
+            </div>
+            <form method="post" asp-area="Manager" asp-controller="Catalog" asp-action="UpdateCustomerStatus" class="flex justify-end gap-2 pt-2">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" :value="statusModal.id" />
+                <input type="hidden" name="isActive" :value="statusModal.nextActive ? 'true' : 'false'" />
+                <button type="button" class="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-50" x-on:click="statusModal.open = false">Hủy</button>
+                <button type="submit" class="px-5 py-2 rounded-xl text-sm font-bold bg-green-600 text-white hover:bg-green-700">Lưu</button>
+            </form>
         </div>
     </div>
 </div>
@@ -147,23 +235,35 @@
     <script>
         function customerManager() {
             return {
-                searchTerm: '',
+                searchTerm: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(serverSearch)),
                 filterType: '',
-                isModalOpen: false,
+                statusModal: { open: false, id: 0, name: '', nextActive: true },
                 customers: @Html.Raw(Json.Serialize(Model.Items)),
-                
+                typeLabel(t) {
+                    if (t === 'School') return 'Trường học';
+                    if (t === 'Factory') return 'Nhà máy / XN';
+                    if (t === 'Office') return 'Văn phòng';
+                    return t || '—';
+                },
+                openStatusModal(item) {
+                    this.statusModal = {
+                        open: true,
+                        id: item.id,
+                        name: item.name,
+                        nextActive: item.isActive
+                    };
+                },
                 get filteredCustomers() {
                     return this.customers.filter(c => {
-                        const matchesSearch = !this.searchTerm || 
-                            c.name.toLowerCase().includes(this.searchTerm.toLowerCase()) ||
-                            (c.contactPerson && c.contactPerson.toLowerCase().includes(this.searchTerm.toLowerCase()));
-                        
+                        const q = (this.searchTerm || '').toLowerCase();
+                        const matchesSearch = !q ||
+                            (c.name && c.name.toLowerCase().includes(q)) ||
+                            (c.contactPerson && c.contactPerson.toLowerCase().includes(q));
                         const matchesType = !this.filterType || c.unitType === this.filterType;
-                        
                         return matchesSearch && matchesType;
                     });
                 }
-            }
+            };
         }
     </script>
 }

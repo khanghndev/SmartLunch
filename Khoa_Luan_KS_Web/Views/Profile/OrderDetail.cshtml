@@ -1,0 +1,67 @@
+@model Khoa_Luan_KS_Web.Services.OrderDetailClientDto
+@{
+    ViewData["Title"] = "Chi tiết đơn hàng";
+    Layout = "_LayoutCustomer";
+    var sig = ViewBag.SignatureDataUrl as string;
+}
+
+<div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
+    @if (TempData["OrderSuccess"] is string os && !string.IsNullOrEmpty(os))
+    {
+        <div class="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">@os</div>
+    }
+
+    <h1 class="mb-1 text-2xl font-black text-slate-900">Chi tiết đơn</h1>
+    <p class="mb-6 font-mono text-sm text-slate-600">@(string.IsNullOrEmpty(Model.InvoiceCode) ? "#" + Model.Id : Model.InvoiceCode)</p>
+
+    <div class="mb-6 flex flex-wrap gap-2">
+        <a asp-action="Invoice" asp-route-id="@Model.Id" target="_blank"
+           class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-slate-800 sm:text-sm">
+            Xuất hóa đơn (in / PDF)
+        </a>
+        @if (!string.IsNullOrEmpty(Model.AnnexPdfUrl))
+        {
+            <a href="@Model.AnnexPdfUrl" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-900 hover:bg-emerald-100 sm:text-sm">
+                Xem / tải PDF phụ lục đặt hàng
+            </a>
+        }
+        else if (User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp"))
+        {
+            <a asp-action="Contracts" asp-route-orderId="@Model.Id"
+               class="inline-flex items-center gap-2 rounded-xl border border-slate-900 bg-white px-4 py-2.5 text-xs font-bold text-slate-900 hover:bg-slate-50 sm:text-sm">
+                Ký phụ lục đặt hàng (PDF)
+            </a>
+        }
+        <a asp-action="Orders" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 sm:text-sm">Danh sách đơn</a>
+        <a asp-controller="Menu" asp-action="Index" class="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-xs font-bold text-orange-800 hover:bg-orange-100 sm:text-sm">Tiếp tục mua</a>
+    </div>
+
+    <div class="space-y-3 rounded-2xl border border-slate-100 bg-white p-5 shadow-sm text-sm">
+        <div class="flex justify-between border-b border-slate-100 py-2"><span class="text-slate-500">Ngày đặt</span><span class="font-bold">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span></div>
+        <div class="flex justify-between border-b border-slate-100 py-2"><span class="text-slate-500">Ngày giao dự kiến</span><span class="font-bold">@Model.ScheduledDate.ToString("dd/MM/yyyy")</span></div>
+        <div class="flex justify-between border-b border-slate-100 py-2"><span class="text-slate-500">Trạng thái</span><span class="font-bold">@Model.Status</span></div>
+        <div class="flex justify-between py-2"><span class="text-slate-500">Thanh toán</span><span class="font-bold">@Model.PaymentStatus</span></div>
+    </div>
+
+    <h2 class="mb-2 mt-8 text-lg font-black text-slate-900">Món trong đơn</h2>
+    <ul class="divide-y divide-slate-100 rounded-2xl border border-slate-100 bg-white shadow-sm">
+        @foreach (var it in Model.Items)
+        {
+            <li class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-sm">
+                <span class="font-medium text-slate-800">@it.DishName</span>
+                <span class="text-slate-600">x @it.Quantity</span>
+                <span class="font-bold text-orange-600">@it.TotalPrice.ToString("N0") đ</span>
+            </li>
+        }
+    </ul>
+    <p class="mt-4 text-right text-lg font-black text-slate-900">Tổng: @Model.TotalAmount.ToString("N0") đ</p>
+
+    @if (!string.IsNullOrEmpty(sig))
+    {
+        <div class="mt-8 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm">
+            <p class="mb-2 text-xs font-bold uppercase tracking-wider text-slate-500">Chữ ký xác nhận đã lưu</p>
+            <img src="@sig" alt="Chữ ký" class="max-h-40 rounded-lg border border-slate-100 bg-slate-50" />
+        </div>
+    }
+</div>

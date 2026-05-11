@@ -1,0 +1,62 @@
+@model Khoa_Luan_KS_Web.Services.OrderDetailClientDto
+@{
+    Layout = null;
+    var sig = ViewBag.SignatureDataUrl as string;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hóa đơn @(Model.InvoiceCode ?? Model.Id.ToString()) - HuitMeal</title>
+    <style>
+        body { font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; padding: 24px; color: #0f172a; background: #fff; }
+        .wrap { max-width: 720px; margin: 0 auto; }
+        h1 { font-size: 1.35rem; margin: 0 0 4px; }
+        .muted { color: #64748b; font-size: 0.85rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 16px; font-size: 0.9rem; }
+        th, td { border: 1px solid #e2e8f0; padding: 8px 10px; text-align: left; }
+        th { background: #f8fafc; }
+        .total { text-align: right; font-weight: 700; margin-top: 12px; font-size: 1.05rem; }
+        .sig { margin-top: 20px; max-height: 120px; border: 1px solid #e2e8f0; padding: 8px; background: #fafafa; }
+        @@media print { .no-print { display: none; } body { padding: 12px; } }
+    </style>
+</head>
+<body>
+    <div class="wrap">
+        <h1>HÓA ĐƠN BÁN HÀNG (BẢN ĐIỆN TỬ)</h1>
+        <p class="muted">HuitMeal — Mã: @(string.IsNullOrEmpty(Model.InvoiceCode) ? Model.Id.ToString() : Model.InvoiceCode)</p>
+        <p class="muted">Ngày lập: @DateTime.Now.ToString("dd/MM/yyyy HH:mm")</p>
+
+        <table>
+            <thead>
+                <tr><th>STT</th><th>Tên món</th><th>SL</th><th>Đơn giá</th><th>Thành tiền</th></tr>
+            </thead>
+            <tbody>
+                @{ var i = 0; }
+                @foreach (var it in Model.Items)
+                {
+                    <tr>
+                        <td>@(++i)</td>
+                        <td>@it.DishName</td>
+                        <td>@it.Quantity</td>
+                        <td>@it.UnitPrice.ToString("N0") đ</td>
+                        <td>@it.TotalPrice.ToString("N0") đ</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        <p class="total">Tổng thanh toán: @Model.TotalAmount.ToString("N0") đ</p>
+        <p class="muted">Ngày giao dự kiến: @Model.ScheduledDate.ToString("dd/MM/yyyy") — Trạng thái: @Model.Status</p>
+
+        @if (!string.IsNullOrEmpty(sig))
+        {
+            <p style="margin-top:20px;font-weight:700;font-size:0.85rem;">Chữ ký người mua</p>
+            <img class="sig" src="@sig" alt="Chữ ký" />
+        }
+
+        <p class="no-print muted" style="margin-top:24px;">Dùng chức năng In của trình duyệt (Ctrl+P) để lưu PDF. Đây là phiên bản hóa đơn hiển thị nội bộ; hóa đơn GTGT theo quy định thuế (nếu có) do kế toán phát hành riêng.</p>
+        <p class="no-print"><button type="button" onclick="window.print()" style="padding:10px 20px;background:#ea580c;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">In / Lưu PDF</button></p>
+    </div>
+</body>
+</html>

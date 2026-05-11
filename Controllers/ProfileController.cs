@@ -1,0 +1,164 @@
+using System.Security.Claims;
+using Khoa_Luan_KS_Web.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Khoa_Luan_KS_Web.Controllers
+{
+    [Authorize(Policy = "CustomerArea")]
+    public class ProfileController : Controller
+    {
+        private readonly Services.BackendAuthClient _backendAuthClient;
+        private readonly Services.BackendMasterDataClient _masterDataClient;
+
+        public ProfileController(Services.BackendAuthClient backendAuthClient, Services.BackendMasterDataClient masterDataClient)
+        {
+            _backendAuthClient = backendAuthClient;
+            _masterDataClient = masterDataClient;
+        }
+
+        private static bool IsOrganizationAccount(ClaimsPrincipal user) =>
+            user.IsInRole("Organization") ||
+            user.IsInRole("Company") ||
+            user.IsInRole("Khách hàng doanh nghiệp");
+
+        public async Task<IActionResult> Index(CancellationToken ct)
+        {
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth");
+
+            try
+            {
+                var profile = await _backendAuthClient.GetProfileAsync(accessToken, ct);
+                return View(profile);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Không thể tải thông tin hồ sơ: " + ex.Message;
+                return RedirectToAction("Index", "Customer");
+            }
+        }
+
+        public async Task<IActionResult> Orders(int page = 1, CancellationToken ct = default)
+        {
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Orders)) });
+
+            try
+            {
+                var orders = await _masterDataClient.GetOrdersAsync(accessToken, page, 20, ct: ct);
+                return View(orders);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = "Không thể tải danh sách đơn: " + ex.Message;
+                return View(new Services.GetOrdersClientResponse());
+            }
+        }
+
+        public async Task<IActionResult> OrderDetail(int id, CancellationToken ct = default)
+        {
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(OrderDetail), new { id }) });
+
+            try
+            {
+                var res = await _masterDataClient.GetOrderAsync(id, accessToken, ct);
+                ViewBag.SignatureDataUrl = HttpContext.Session.GetString($"order_sig_{id}");
+                return View(res.Order);
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Không thể tải đơn hàng hoặc bạn không có quyền xem.";
+                return RedirectToAction(nameof(Orders));
+            }
+        }
+
+        public async Task<IActionResult> Invoice(int id, CancellationToken ct = default)
+        {
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Invoice), new { id }) });
+
+            try
+            {
+                var res = await _masterDataClient.GetOrderAsync(id, accessToken, ct);
+                ViewBag.SignatureDataUrl = HttpContext.Session.GetString($"order_sig_{id}");
+                return View(res.Order);
+            }
+            catch
+            {
+                return NotFound();
+            }
+        }
+
+        public async Task<IActionResult> Contracts(CancellationToken ct = default)
+        {
+            var vm = new CustomerContractsPageVm();
+            if (!IsOrganizationAccount(User))
+            {
+                vm.InfoMessage =
+                    "Cổng ký hợp đồng điện tử dành cho tài khoản doanh nghiệp (đơn vị) đã được gán trên hệ thống. Khách cá nhân có thể xem hóa đơn và chữ ký xác nhận trên từng đơn hàng.";
+                return View(vm);
+            }
+
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Contracts)) });
+
+            try
+            {
+                var res = await _masterDataClient.GetMyOrganizationContractsAsync(accessToken, ct);
+                vm.Contracts = res.Contracts ?? new List<Services.CustomerContractDto>();
+            }
+            catch (Exception ex)
+            {
+                vm.ApiError = ex.Message;
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SignContract(int contractId, string digitalSignature, CancellationToken ct = default)
+        {
+            if (!IsOrganizationAccount(User))
+                return Forbid();
+
+            var sig = (digitalSignature ?? string.Empty).Trim();
+            if (contractId <= 0 || string.IsNullOrWhiteSpace(sig))
+            {
+                TempData["ContractError"] = "Thiếu dữ liệu chữ ký.";
+                return RedirectToAction(nameof(Contracts));
+            }
+
+            const int maxSig = 400_000;
+            if (sig.Length > maxSig)
+                sig = sig.Substring(0, maxSig);
+
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Contracts)) });
+
+            try
+            {
+                await _masterDataClient.SignCompanyContractAsync(
+                    contractId,
+                    new Services.SignCompanyContractRequest { DigitalSignature = sig },
+                    accessToken,
+                    ct);
+                TempData["ContractSuccess"] = "Đã ký số thành công. PDF hợp đồng đã được tạo và lưu trên hệ thống lưu trữ.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ContractError"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Contracts));
+        }
+    }
+}

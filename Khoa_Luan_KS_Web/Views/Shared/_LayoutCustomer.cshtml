@@ -24,7 +24,7 @@
     bool IsActivePrefix(string prefix) => currentPath.StartsWith(prefix.ToLower(), StringComparison.OrdinalIgnoreCase);
 }
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -49,12 +49,12 @@
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
         /* ===== BASE ===== */
-        body { font-family: 'Montserrat', sans-serif; }
+        body { font-family: 'Montserrat', 'Segoe UI', system-ui, -apple-system, sans-serif; }
 
         /* ===== PAGE LOAD OVERLAY ===== */
         #page-loader {
@@ -269,6 +269,10 @@
               }
               @if (isLoggedIn)
               {
+                  <a href="/Cart" class="hidden items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-orange-200 hover:text-orange-600 sm:inline-flex" title="Giỏ hàng">
+                      <i data-lucide="shopping-cart" class="h-4 w-4"></i>
+                      <span>Giỏ</span>
+                  </a>
                   <div x-data="{ profileOpen: false }" 
                        @@mouseenter="profileOpen = true" 
                        @@mouseleave="profileOpen = false" 
@@ -297,6 +301,9 @@
                               <div class="p-2 space-y-1">
                                   <a href="/Profile/Index" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-xl transition-all">
                                       <i data-lucide="user" class="w-4 h-4 opacity-50"></i> Thông tin hồ sơ
+                                  </a>
+                                  <a href="/Cart" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-xl transition-all">
+                                      <i data-lucide="shopping-cart" class="w-4 h-4 opacity-50"></i> Giỏ hàng
                                   </a>
                                   <a href="/Profile/Orders" class="flex items-center gap-3 px-4 py-2.5 text-sm font-medium text-gray-600 hover:bg-orange-50 hover:text-orange-600 rounded-xl transition-all">
                                       <i data-lucide="package" class="w-4 h-4 opacity-50"></i> Quản lý đơn hàng

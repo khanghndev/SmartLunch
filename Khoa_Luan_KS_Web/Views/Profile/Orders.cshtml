@@ -1,175 +1,98 @@
+@model Khoa_Luan_KS_Web.Services.GetOrdersClientResponse
 @{
     ViewData["Title"] = "Lịch sử đơn hàng";
     Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+    var orders = Model?.Items ?? new List<Khoa_Luan_KS_Web.Services.OrderDetailClientDto>();
 }
 
 <div class="max-w-7xl mx-auto px-6 py-12">
-    <!-- Breadcrumb -->
-    <nav class="flex text-sm text-gray-500 mb-6" aria-label="Breadcrumb">
+    <nav class="mb-6 flex text-sm text-gray-500" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
             <li class="inline-flex items-center">
-                <a href="/Customer/Index" class="hover:text-orange-500 font-medium transition flex items-center gap-1">
-                    <i data-lucide="home" class="w-4 h-4"></i> Trang chủ
+                <a href="/Customer/Index" class="flex items-center gap-1 font-medium transition hover:text-orange-500">
+                    <i data-lucide="home" class="h-4 w-4"></i> Trang chủ
                 </a>
             </li>
             <li>
                 <div class="flex items-center">
-                    <i data-lucide="chevron-right" class="w-4 h-4 text-gray-300"></i>
-                    <span class="ml-1 md:ml-2 font-medium text-gray-700">Lịch sử đơn hàng</span>
+                    <i data-lucide="chevron-right" class="h-4 w-4 text-gray-300"></i>
+                    <span class="ml-1 font-medium text-gray-700 md:ml-2">Lịch sử đơn hàng</span>
                 </div>
             </li>
         </ol>
     </nav>
 
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Lịch sử Báo suất (Đơn hàng)</h1>
-        
-        <!-- Filters -->
-        <div class="flex gap-2">
-            <select class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white font-medium text-gray-700">
-                <option>Tháng này (04/2026)</option>
-                <option>Tháng trước</option>
-                <option>Tất cả thời gian</option>
-            </select>
-            <select class="border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500 bg-white font-medium text-gray-700">
-                <option>Tất cả trạng thái</option>
-                <option>Đã giao đủ</option>
-                <option>Đang duyệt</option>
-                <option>Đã hủy</option>
-            </select>
-        </div>
+    @if (TempData["Error"] is string err && !string.IsNullOrEmpty(err))
+    {
+        <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">@err</div>
+    }
+
+    <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
+        <h1 class="text-2xl font-bold tracking-tight text-gray-900">Đơn hàng của tôi</h1>
+        <a asp-controller="Menu" asp-action="Index" class="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-orange-600">
+            Đặt thêm từ thực đơn
+        </a>
     </div>
 
-    <div class="flex flex-col md:flex-row gap-8 items-stretch">
-        <!-- Sidebar Navigation -->
-        <div class="w-full md:w-64 flex-shrink-0">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 p-4 h-full">
-                <div class="flex items-center gap-3 mb-6 pb-6 border-b border-gray-100">
-                    <div class="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xl shadow-sm">
-                        K
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-gray-900">TRƯỜNG THPT HOÀNG VĂN THỤ</h3>
-                        <p class="text-xs text-gray-500">Khách hàng Doanh nghiệp</p>
-                    </div>
-                </div>
-
-                <nav class="space-y-1 text-sm font-medium">
-                    <a href="/Profile/Index" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
-                        <i data-lucide="user" class="w-4 h-4 text-gray-400"></i> Hồ sơ doanh nghiệp
-                    </a>
-                    <a href="/Profile/Orders" class="flex items-center gap-3 px-3 py-2.5 bg-orange-50 text-orange-700 rounded-lg transition-colors">
-                        <i data-lucide="shopping-bag" class="w-4 h-4"></i> Lịch sử đơn hàng
-                    </a>
-                    <a href="/Profile/Contracts" class="flex items-center gap-3 px-3 py-2.5 text-gray-600 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-colors">
-                        <i data-lucide="file-signature" class="w-4 h-4 text-gray-400"></i> Hợp đồng điện tử
-                    </a>
-                </nav>
-            </div>
+    <div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse text-left">
+                <thead>
+                    <tr class="border-b border-gray-100 bg-gray-50 text-[11px] font-bold uppercase tracking-wider text-gray-500">
+                        <th class="px-6 py-4">Mã đơn</th>
+                        <th class="px-6 py-4">Ngày đặt</th>
+                        <th class="px-6 py-4">Ngày giao dự kiến</th>
+                        <th class="px-6 py-4 text-right">Tổng (VND)</th>
+                        <th class="px-6 py-4">Trạng thái</th>
+                        <th class="px-6 py-4">Thanh toán</th>
+                        <th class="px-6 py-4 text-right">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-sm">
+                    @if (!orders.Any())
+                    {
+                        <tr>
+                            <td colspan="7" class="px-6 py-12 text-center text-gray-500">
+                                Chưa có đơn nào. <a asp-controller="Cart" asp-action="Checkout" class="font-bold text-orange-600 hover:text-orange-700">Thanh toán giỏ hàng</a> hoặc
+                                <a asp-controller="Menu" asp-action="Index" class="font-bold text-orange-600 hover:text-orange-700">xem thực đơn</a>.
+                            </td>
+                        </tr>
+                    }
+                    else
+                    {
+                        @foreach (var o in orders)
+                        {
+                            <tr class="transition-colors hover:bg-gray-50/80">
+                                <td class="px-6 py-4 font-bold text-gray-900">@(string.IsNullOrEmpty(o.InvoiceCode) ? "#" + o.Id : o.InvoiceCode)</td>
+                                <td class="px-6 py-4 text-gray-600">@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td class="px-6 py-4 text-gray-600">@o.ScheduledDate.ToString("dd/MM/yyyy")</td>
+                                <td class="px-6 py-4 text-right font-bold text-orange-600">@o.TotalAmount.ToString("N0")</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-slate-700">@o.Status</span>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600">@o.PaymentStatus</td>
+                                <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    <a asp-action="OrderDetail" asp-route-id="@o.Id" class="font-bold text-orange-600 hover:text-orange-800">Chi tiết</a>
+                                    <span class="text-gray-300">|</span>
+                                    <a asp-action="Invoice" asp-route-id="@o.Id" target="_blank" class="font-bold text-slate-600 hover:text-slate-900">Hóa đơn</a>
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
         </div>
-
-        <div class="flex-1 flex flex-col">
-            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex-1">
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left border-collapse whitespace-nowrap">
-                        <thead>
-                            <tr class="bg-gray-50 border-b border-gray-100 text-[11px] text-gray-500 uppercase tracking-wider font-bold">
-                                <th class="px-6 py-4">Mã Phiếu Báo</th>
-                                <th class="px-6 py-4">Thời Gian Giao Suất</th>
-                                <th class="px-6 py-4 text-right">TK Cơm NV</th>
-                                <th class="px-6 py-4 text-right">TK Suất VIP</th>
-                                <th class="px-6 py-4 text-right">Thành Tiền (VND)</th>
-                                <th class="px-6 py-4">Trạng Thái</th>
-                                <th class="px-6 py-4 text-center">Tác Vụ</th>
-                            </tr>
-                        </thead>
-                        <tbody class="text-sm divide-y divide-gray-100">
-                            <!-- Phiếu đang mở -->
-                            <tr class="hover:bg-gray-50/50 transition-colors bg-orange-50/20">
-                                <td class="px-6 py-4 font-bold text-gray-900">#PX-260401</td>
-                                <td class="px-6 py-4"><span class="font-medium text-gray-900">Ngày Mai</span> - 26/04/2026</td>
-                                <td class="px-6 py-4 text-right font-bold text-gray-900">1,250</td>
-                                <td class="px-6 py-4 text-right font-bold text-gray-900">15</td>
-                                <td class="px-6 py-4 text-right font-bold text-orange-600">~ 31,400,000</td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-amber-100 text-amber-800">
-                                        Hệ thống Đang chốt
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <a href="#" class="inline-flex items-center gap-1 text-sm font-bold text-orange-600 hover:text-orange-800 transition">Điều chỉnh báo suất</a>
-                                </td>
-                            </tr>
-                            <!-- Phiếu hôm trước -->
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 font-bold text-gray-900">#PX-250400</td>
-                                <td class="px-6 py-4 text-gray-600">Hôm nay - 25/04/2026</td>
-                                <td class="px-6 py-4 text-right font-medium text-gray-900">1,310</td>
-                                <td class="px-6 py-4 text-right font-medium text-gray-900">10</td>
-                                <td class="px-6 py-4 text-right font-bold text-gray-900">32,750,000</td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-green-100 text-green-800 border border-green-200">
-                                        <i data-lucide="check" class="w-3 h-3"></i> Đã giao đủ
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <a href="#" class="inline-flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-800 transition">Xem chi tiết</a>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 font-bold text-gray-900">#PX-240499</td>
-                                <td class="px-6 py-4 text-gray-600">Hôm qua - 24/04/2026</td>
-                                <td class="px-6 py-4 text-right font-medium text-gray-900">1,100</td>
-                                <td class="px-6 py-4 text-right font-medium text-gray-900">20</td>
-                                <td class="px-6 py-4 text-right font-bold text-gray-900">27,500,000</td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-green-100 text-green-800 border border-green-200">
-                                        <i data-lucide="check" class="w-3 h-3"></i> Đã giao đủ
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <a href="#" class="inline-flex items-center gap-1 text-sm font-bold text-blue-600 hover:text-blue-800 transition">Xem chi tiết</a>
-                                </td>
-                            </tr>
-                            <tr class="hover:bg-gray-50 transition-colors">
-                                <td class="px-6 py-4 font-bold text-gray-500 line-through">#PX-230498</td>
-                                <td class="px-6 py-4 text-gray-400">Chủ Nhật - 23/04/2026</td>
-                                <td class="px-6 py-4 text-right text-gray-400 font-medium">-</td>
-                                <td class="px-6 py-4 text-right text-gray-400 font-medium">-</td>
-                                <td class="px-6 py-4 text-right text-gray-400">-</td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-bold bg-gray-100 text-gray-600 border border-gray-200">
-                                        <i data-lucide="x" class="w-3 h-3"></i> Tạm ngưng
-                                    </span>
-                                </td>
-                                <td class="px-6 py-4 text-center">
-                                    <span class="text-gray-400 text-xs font-medium">Lịch bảo trì NSX</span>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                
-                <!-- Pagination -->
-                <div class="px-6 py-4 border-t border-gray-100 bg-gray-50/50 flex flex-col md:flex-row items-center justify-between gap-4">
-                    <span class="text-sm font-medium text-gray-600">Đang hiển thị 1 đến 4 phần tử trong số 153 phiếu dự giao</span>
-                    <div class="flex gap-1">
-                        <button class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-500 hover:bg-gray-50 disabled:opacity-50 font-medium bg-white" disabled>Trước</button>
-                        <button class="px-3 py-1.5 bg-gray-800 text-white rounded-md text-sm font-bold shadow-sm">1</button>
-                        <button class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 hover:bg-gray-50 bg-white font-medium">2</button>
-                        <button class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 hover:bg-gray-50 bg-white font-medium">3</button>
-                        <button class="px-3 py-1.5 border border-gray-200 rounded-md text-sm text-gray-700 hover:bg-gray-50 bg-white font-medium">Sau</button>
-                    </div>
-                </div>
+        @if (Model != null && Model.TotalCount > Model.PageSize)
+        {
+            <div class="border-t border-gray-100 bg-gray-50/50 px-6 py-3 text-sm text-gray-600">
+                Trang @Model.Page — tổng @Model.TotalCount đơn (hiển thị tối đa @Model.PageSize mỗi trang).
             </div>
-        </div>
+        }
     </div>
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function() {
-        if(window.lucide) {
-            lucide.createIcons();
-        }
+    document.addEventListener("DOMContentLoaded", function () {
+        if (window.lucide) lucide.createIcons();
     });
 </script>

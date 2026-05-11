@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
@@ -85,9 +86,19 @@ public class BackendMenuSuggestionClient
         try
         {
             var doc = JsonDocument.Parse(body);
+            string? finalMsg = null;
             if (doc.RootElement.TryGetProperty("message", out var msg) && msg.ValueKind == JsonValueKind.String)
-                return msg.GetString();
-            return null;
+                finalMsg = msg.GetString();
+
+            if (doc.RootElement.TryGetProperty("errors", out var errors) && errors.ValueKind == JsonValueKind.Array && errors.GetArrayLength() > 0)
+            {
+                var errorList = errors.EnumerateArray().Select(e => e.GetString()).Where(e => !string.IsNullOrEmpty(e));
+                var errorStr = string.Join(" | ", errorList);
+                if (!string.IsNullOrEmpty(errorStr))
+                    finalMsg = finalMsg == null ? errorStr : $"{finalMsg} ({errorStr})";
+            }
+
+            return finalMsg;
         }
         catch { return null; }
     }

@@ -1,0 +1,16 @@
+{
+  "name": "khoa_luan_ks_web",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "build:css": "npx tailwindcss -i ./wwwroot/css/tailwind_src.css -o ./wwwroot/css/site.css --minify",
+    "watch:css": "npx tailwindcss -i ./wwwroot/css/tailwind_src.css -o ./wwwroot/css/site.css --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "tailwindcss": "^4.2.4"
+  }
+}

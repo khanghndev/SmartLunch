@@ -130,14 +130,19 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
                 return RedirectToAction(nameof(Suppliers));
             }
         }
-        public async Task<IActionResult> Customers(int page = 1, int pageSize = 10, string? searchTerm = null, CancellationToken ct = default)
+        public async Task<IActionResult> Customers(int page = 1, int pageSize = 10, string? searchTerm = null, bool? isActive = null, CancellationToken ct = default)
         {
             var token = HttpContext.Session.GetString("access_token");
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
 
             try
             {
-                var response = await _masterDataClient.GetUnitsAsync(token, page, pageSize, searchTerm, ct);
+                var response = await _masterDataClient.GetUnitsAsync(token, page, pageSize, searchTerm, isActive, ct);
+                ViewBag.CurrentPage = page;
+                ViewBag.PageSize = pageSize;
+                ViewBag.TotalPages = response.TotalCount == 0 ? 1 : (int)Math.Ceiling((double)response.TotalCount / pageSize);
+                ViewBag.IsActiveFilter = isActive;
+                ViewBag.SearchTerm = searchTerm ?? string.Empty;
                 return View(response);
             }
             catch (Exception ex)
@@ -146,7 +151,53 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
                 return View(new Services.GetUnitsResponse());
             }
         }
-        public IActionResult CustomerDetail(string id) => View();
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateCustomerStatus(int id, bool isActive, string? returnUrl, CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token))
+                return RedirectToAction("Login", "Auth", new { area = "" });
+
+            try
+            {
+                await _masterDataClient.UpdateOrganizationStatusAsync(id, isActive, token, ct);
+                TempData["Success"] = isActive ? "Đã kích hoạt khách hàng B2B." : "Đã tạm ngưng phục vụ khách hàng B2B.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+
+            return RedirectToAction(nameof(Customers));
+        }
+
+        public async Task<IActionResult> CustomerDetail(int id, CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
+
+            try
+            {
+                var response = await _masterDataClient.GetUnitAsync(id, token, ct);
+                if (response?.Unit == null || response.Unit.Id == 0)
+                {
+                    TempData["Error"] = "Không tìm thấy khách hàng.";
+                    return RedirectToAction(nameof(Customers));
+                }
+
+                return View(response.Unit);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Customers));
+            }
+        }
 
         public async Task<IActionResult> Meals(int page = 1, int pageSize = 20, string? searchTerm = null, string? category = null, CancellationToken ct = default)
         {

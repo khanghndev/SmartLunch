@@ -221,13 +221,30 @@
                             </div>
                             <div>
                                 <div class="panel-label"><i data-lucide="zap" class="w-3.5 h-3.5"></i> Rule Base</div>
+                                @{
+                                    var rk = Model.RulesKey ?? "industrial";
+                                    var ruleOpts = new (string Value, string Label)[]
+                                    {
+                                        ("industrial", "Công nghiệp (industrial)"),
+                                        ("org_company", "Doanh nghiệp (org_company)"),
+                                        ("org_elementary", "Mầm non / tiểu học (org_elementary)"),
+                                        ("org_primary_school", "Tiểu học (org_primary_school)"),
+                                        ("org_secondary_school", "THCS (org_secondary_school)"),
+                                        ("org_high_school", "THPT (org_high_school)"),
+                                        ("vegetarian", "Chay (vegetarian)"),
+                                    };
+                                }
                                 <select name="RulesKey" class="field-input">
-                                    @if (Model.RulesKey == "industrial") {
-                                        <option value="industrial" selected="selected">Công nghiệp</option>
-                                        <option value="school">Trường học</option>
-                                    } else {
-                                        <option value="industrial">Công nghiệp</option>
-                                        <option value="school" selected="selected">Trường học</option>
+                                    @foreach (var ro in ruleOpts)
+                                    {
+                                        if (rk == ro.Value)
+                                        {
+                                            <option value="@ro.Value" selected>@ro.Label</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@ro.Value">@ro.Label</option>
+                                        }
                                     }
                                 </select>
                             </div>
@@ -409,7 +426,8 @@
                     price = d.Price,
                     description = d.Description,
                     calories = d.Calories,
-                    primarySlot = d.Category?.ToLowerInvariant() ?? ""
+                    primarySlot = (d.PrimarySlotKey ?? d.Category ?? "").ToLowerInvariant(),
+                    slotKeys = d.DishSlotCategoryCodes ?? new List<string>()
                 }))),
                 selectedIds: [],
 
@@ -423,7 +441,10 @@
                     return this.allDishes.filter(d => {
                         const q = this.searchQuery.toLowerCase();
                         const matchSearch = !q || d.name.toLowerCase().includes(q);
-                        const matchSlot = !this.selectedSlot || d.primarySlot === this.selectedSlot;
+                        if (!this.selectedSlot) return matchSearch;
+                        const keys = d.slotKeys || [];
+                        const matchSlot = d.primarySlot === this.selectedSlot ||
+                            keys.some(k => (k || '').toLowerCase() === this.selectedSlot);
                         return matchSearch && matchSlot;
                     });
                 },

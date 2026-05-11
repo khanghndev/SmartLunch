@@ -85,6 +85,14 @@ public class MenuSuggestionController : Controller
                 RulesKey = "industrial"
             };
 
+            var validRules = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+            {
+                "industrial", "org_company", "org_elementary", "org_primary_school",
+                "org_secondary_school", "org_high_school", "vegetarian",
+            };
+            if (!validRules.Contains(model.RulesKey ?? ""))
+                model.RulesKey = "industrial";
+
             return View(model);
         }
         catch (Exception ex)
@@ -116,8 +124,11 @@ public class MenuSuggestionController : Controller
                 return RedirectToAction(nameof(Generate));
             }
 
-            // Ensure UTC
-            request.WeekStartUtc = DateTime.SpecifyKind(request.WeekStartUtc, DateTimeKind.Utc);
+            if (string.Equals(request.RulesKey, "school", StringComparison.OrdinalIgnoreCase))
+                request.RulesKey = "org_primary_school";
+
+            // Week boundary in UTC (align with backend handler)
+            request.WeekStartUtc = DateTime.SpecifyKind(request.WeekStartUtc.Date, DateTimeKind.Utc);
 
             var result = await _menuSuggestionClient.GenerateMenuSuggestionAsync(request, token);
             TempData["Success"] = "Đã tạo gợi ý thực đơn thành công!";
