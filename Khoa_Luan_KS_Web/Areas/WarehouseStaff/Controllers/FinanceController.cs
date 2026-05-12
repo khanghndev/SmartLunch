@@ -5,7 +5,7 @@ using Khoa_Luan_KS_Web.Services;
 namespace Khoa_Luan_KS_Web.Areas.WarehouseStaff.Controllers
 {
     [Area("WarehouseStaff")]
-    [Authorize(Policy = "ManagerArea")]
+    [Authorize(Policy = "WarehouseStaffArea")]
     public class FinanceController : Controller
     {
         private readonly BackendWarehouseClient _client;

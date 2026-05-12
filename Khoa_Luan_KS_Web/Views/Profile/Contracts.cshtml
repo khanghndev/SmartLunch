@@ -40,7 +40,7 @@
     {
         <div class="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
             <p class="font-medium">@Model.PostCheckoutBanner</p>
-            <p class="mt-1 text-sky-900">Vui lòng hoàn tất ký phụ lục đặt hàng (cổng toàn màn hình đã mở nếu đơn còn chờ ký). Chữ ký xác nhận trên giỏ vẫn được lưu kèm đơn.</p>
+            <p class="mt-1 text-sky-900">Sau khi đặt hàng, hệ thống chuyển thẳng tới chi tiết đơn và lưu phụ lục nếu bạn đã ký ở bước phụ lục. Nếu đơn vẫn chờ ký PDF, mở cổng phía dưới hoặc từ liên kết trên trang đơn.</p>
             @if (Model.PostCheckoutOrderId is int ocId)
             {
                 <p class="mt-2"><a href="@Url.Action("OrderDetail", "Profile", new { id = ocId })" class="font-semibold text-orange-700 underline hover:text-orange-800">Xem chi tiết đơn vừa tạo</a></p>
@@ -126,7 +126,7 @@
             <button type="button" @@click="closeFlow()" class="text-xs font-bold text-slate-500 hover:text-orange-600">Thoát</button>
         </header>
 
-        <div class="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6">
+        <div class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
             <div x-show="step === 1" class="esign-paper rounded-sm border border-slate-200 bg-white p-8 shadow-lg sm:p-12">
                 <h2 class="mb-6 text-center text-lg font-black uppercase tracking-wide text-slate-900">Phụ lục / Hợp đồng cung cấp suất ăn</h2>
                 <div class="space-y-4 text-sm leading-relaxed text-slate-800">
@@ -166,7 +166,7 @@
         </div>
 
         <div class="sticky bottom-0 border-t border-slate-200 bg-white px-4 py-4 sm:px-8" x-show="step === 1">
-            <button type="button" @@click="step = 2" class="mx-auto block w-full max-w-3xl rounded-xl bg-slate-900 py-4 text-sm font-black text-white shadow hover:bg-orange-600">Tiếp tục: ký tên</button>
+            <button type="button" @@click="step = 2" class="mx-auto block w-full max-w-5xl rounded-xl bg-slate-900 py-4 text-sm font-black text-white shadow hover:bg-orange-600">Tiếp tục: ký tên</button>
         </div>
     </div>
 
@@ -192,7 +192,7 @@
             <button type="button" @@click="closeAnnexFlow()" class="text-xs font-bold text-slate-500 hover:text-orange-600">Thoát</button>
         </header>
 
-        <div class="mx-auto w-full max-w-3xl flex-1 px-4 py-8 sm:px-6" x-show="orderAnnex">
+        <div class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6" x-show="orderAnnex">
             <div x-show="annexStep === 1" class="esign-paper rounded-sm border border-slate-200 bg-white p-8 shadow-lg sm:p-12">
                 <h2 class="mb-6 text-center text-lg font-black uppercase tracking-wide text-slate-900">Phụ lục đặt hàng / xác nhận biên bản</h2>
                 <div class="space-y-3 text-sm leading-relaxed text-slate-800">
@@ -246,7 +246,7 @@
         </div>
 
         <div class="sticky bottom-0 border-t border-slate-200 bg-white px-4 py-4 sm:px-8" x-show="annexStep === 1 && orderAnnex">
-            <button type="button" @@click="annexStep = 2; $nextTick(() => bindAnnexCanvas())" class="mx-auto block w-full max-w-3xl rounded-xl bg-slate-900 py-4 text-sm font-black text-white shadow hover:bg-orange-600">Tiếp tục: ký tên</button>
+            <button type="button" @@click="annexStep = 2; $nextTick(() => bindAnnexCanvas())" class="mx-auto block w-full max-w-5xl rounded-xl bg-slate-900 py-4 text-sm font-black text-white shadow hover:bg-orange-600">Tiếp tục: ký tên</button>
         </div>
     </div>
 </div>

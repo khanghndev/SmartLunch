@@ -3,17 +3,35 @@
 @{
     ViewData["Title"] = CartViewText.PageTitle;
     Layout = "_LayoutCustomer";
+    var canPlaceOrder = !Model.IsEmpty && Model.TotalPortions >= CartOrderRules.MinimumPortions;
+    var showMinWarning = !Model.IsEmpty && !canPlaceOrder;
 }
 
-<div class="mx-auto max-w-4xl px-4 py-10 sm:px-6">
-    <nav class="mb-6 text-sm text-slate-500">
+<div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <nav class="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500">
         <a href="/Customer/Index" class="hover:text-orange-600">Trang chủ</a>
-        <span class="mx-2">/</span>
-        <span class="font-medium text-slate-800">@CartViewText.PageTitle</span>
+        <span class="text-slate-300">/</span>
+        <span class="font-semibold text-slate-800">@CartViewText.PageTitle</span>
     </nav>
 
-    <h1 class="mb-2 text-2xl font-black text-slate-900">@CartViewText.PageTitle</h1>
-    <p class="mb-8 text-sm text-slate-600">@CartViewText.Lead</p>
+    <div class="mb-10 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
+        <div class="max-w-2xl">
+            <h1 class="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl">@CartViewText.PageTitle</h1>
+            <p class="mt-3 text-base leading-relaxed text-slate-600">@CartViewText.Lead</p>
+        </div>
+        <div class="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-200/80 bg-white px-5 py-4 shadow-sm">
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tổng suất</p>
+                <p id="cart-portions" class="text-2xl font-black text-slate-900">@Model.TotalPortions</p>
+            </div>
+            <div class="h-10 w-px bg-slate-200"></div>
+            <div>
+                <p class="text-[10px] font-bold uppercase tracking-wider text-orange-600">@CartViewText.SubtotalLabel</p>
+                <p id="cart-total" class="text-2xl font-black text-orange-600">@Model.TotalAmount.ToString("N0") đ</p>
+            </div>
+            <span id="cart-min-warning" class="@(showMinWarning ? "" : "hidden ")rounded-full bg-amber-100 px-3 py-1 text-xs font-bold text-amber-900">Chưa đủ @CartViewText.MinimumPortionsHint</span>
+        </div>
+    </div>
 
     @if (TempData["CartSuccess"] is string cartOk && !string.IsNullOrEmpty(cartOk))
     {
@@ -30,179 +48,339 @@
 
     @if (Model.IsEmpty)
     {
-        <div class="rounded-2xl border border-slate-100 bg-white p-10 text-center shadow-sm">
+        <div class="rounded-3xl border border-slate-100 bg-white p-14 text-center shadow-sm">
             <p class="mb-4 text-slate-600">@CartViewText.EmptyTitle</p>
-            <a asp-controller="Menu" asp-action="Index" class="inline-flex rounded-xl bg-orange-500 px-6 py-3 text-sm font-bold text-white hover:bg-orange-600">@CartViewText.EmptyCta</a>
+            <a asp-controller="Menu" asp-action="Index" class="inline-flex rounded-2xl bg-orange-500 px-8 py-3.5 text-sm font-bold text-white shadow-lg shadow-orange-500/25 hover:bg-orange-600">@CartViewText.EmptyCta</a>
         </div>
     }
     else
     {
-        <div class="space-y-6">
-            @foreach (var bundle in Model.State.MenuBundles)
-            {
-                var selectedSlots = bundle.Slots.Where(s => s.Selected).ToList();
-                var bundleUnit = selectedSlots.Sum(s => s.Price);
-                var bundleSubtotal = bundleUnit * bundle.BundleQuantity;
-                var byDay = bundle.Slots.OrderBy(s => s.ScheduleDate).GroupBy(s => s.ScheduleDate.Date).ToList();
+        <div class="grid gap-8 lg:grid-cols-[1fr_360px]">
+            <div class="space-y-6">
+                @foreach (var bundle in Model.State.MenuBundles)
+                {
+                    var selectedSlots = bundle.Slots.Where(s => s.Selected).ToList();
+                    var bundleUnit = selectedSlots.Sum(s => s.Price);
+                    var bundleSubtotal = bundleUnit * bundle.BundleQuantity;
+                    var byDay = bundle.Slots.OrderBy(s => s.ScheduleDate).GroupBy(s => s.ScheduleDate.Date).ToList();
 
-                <div class="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-6">
-                    <div class="mb-4 flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
-                        <div>
-                            <p class="text-[10px] font-black uppercase tracking-wider text-orange-600">@CartViewText.BundleKicker</p>
-                            <p class="text-lg font-black text-slate-900">@bundle.Label</p>
-                            <p class="mt-1 text-xs text-slate-500">
-                                @(selectedSlots.Count) suất / bộ · @bundleUnit.ToString("N0") đ / bộ
-                            </p>
+                    <article class="overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-slate-900/5">
+                        <div class="border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-6 py-5 sm:px-8">
+                            <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                                <div>
+                                    <p class="text-[10px] font-black uppercase tracking-widest text-orange-600">@CartViewText.BundleKicker</p>
+                                    <h2 class="mt-1 text-xl font-black text-slate-900 sm:text-2xl">@bundle.Label</h2>
+                                    <p class="mt-2 text-sm text-slate-500">
+                                        @(selectedSlots.Count) suất / bộ · @bundleUnit.ToString("N0") đ / bộ
+                                    </p>
+                                </div>
+                                <div class="text-left sm:text-right">
+                                    <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">@CartViewText.SubtotalLabel</p>
+                                    <p id="bundle-sub-@bundle.BundleId" class="text-2xl font-black text-orange-600">@bundleSubtotal.ToString("N0") đ</p>
+                                </div>
+                            </div>
                         </div>
-                        <div class="text-left sm:text-right">
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">@CartViewText.SubtotalLabel</p>
-                            <p class="text-xl font-black text-orange-600">@bundleSubtotal.ToString("N0") đ</p>
+
+                        <div class="px-6 py-6 sm:px-8">
+                            <form asp-action="UpdateBundle" method="post" class="cart-bundle-form space-y-6" data-bundle-id="@bundle.BundleId">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="bundleId" value="@bundle.BundleId" />
+
+                                <div class="flex flex-wrap items-end gap-4">
+                                    <div class="min-w-[140px]">
+                                        <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">@CartViewText.BundleQtyLabel</label>
+                                        <input type="number" name="quantity" value="@bundle.BundleQuantity" min="1" max="999" data-bundle-qty
+                                               class="h-11 w-full rounded-xl border border-slate-200 bg-slate-50/50 px-4 text-base font-bold text-slate-900 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20 sm:w-32" />
+                                    </div>
+                                    <p class="max-w-md pb-1 text-xs leading-relaxed text-slate-500">
+                                        Giá cập nhật tự động khi bạn đổi số bộ hoặc chọn ngày.
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <p class="text-sm font-bold text-slate-800">@CartViewText.BundleDayHint</p>
+                                    <p class="mt-1 text-xs text-slate-500">@CartViewText.BundleDaySubHint</p>
+
+                                    <div class="mt-4 space-y-5">
+                                        @foreach (var day in byDay)
+                                        {
+                                            var dayKey = day.Key.ToString("yyyy-MM-dd");
+                                            var daySlots = day.OrderBy(s => s.MealSlot).ToList();
+                                            var daySelected = daySlots.All(s => s.Selected);
+                                            <div class="rounded-2xl border border-slate-100 bg-slate-50/40 p-4 sm:p-5" data-day-row="@dayKey">
+                                                <div class="flex items-start gap-3">
+                                                    <input type="checkbox" class="day-master mt-1 h-5 w-5 shrink-0 rounded border-slate-300 text-orange-600 focus:ring-orange-500"
+                                                           data-day="@dayKey" @(daySelected ? "checked=\"checked\"" : null) />
+                                                    <div class="min-w-0 flex-1">
+                                                        <span class="text-sm font-black uppercase tracking-wide text-slate-900">@CartViewText.DayShortVi(day.Key) @day.Key.ToString("dd/MM/yyyy")</span>
+                                                        <ul class="mt-3 space-y-2">
+                                                            @foreach (var slot in daySlots)
+                                                            {
+                                                                <li class="flex gap-3 rounded-xl border border-white/80 bg-white px-3 py-2.5 shadow-sm">
+                                                                    <span class="mt-0.5 inline-flex h-5 w-5 shrink-0 items-center justify-center rounded border border-slate-200 bg-slate-100 text-[10px] text-slate-400" title="Theo thực đơn">&#10003;</span>
+                                                                    <span class="min-w-0 flex-1 text-sm leading-snug">
+                                                                        <span class="font-bold text-slate-900">@MenuViewText.SlotLabel(slot.MealSlot)</span>
+                                                                        <span class="text-slate-600"> — @slot.Name</span>
+                                                                        <span class="mt-0.5 block text-xs font-bold text-emerald-700">@slot.Price.ToString("N0") đ</span>
+                                                                    </span>
+                                                                    <input type="checkbox" name="selectedScheduleIds" value="@slot.ScheduleId" data-day="@dayKey"
+                                                                           class="slot-cb sr-only" @(slot.Selected ? "checked=\"checked\"" : null) />
+                                                                </li>
+                                                            }
+                                                        </ul>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        }
+                                    </div>
+                                </div>
+                            </form>
+
+                            <form asp-action="RemoveBundle" method="post" class="mt-6 border-t border-slate-100 pt-5" onsubmit="return confirm('Xóa gói menu tuần này khỏi giỏ?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="bundleId" value="@bundle.BundleId" />
+                                <button type="submit" class="text-sm font-bold text-red-600 hover:text-red-700 hover:underline">
+                                    @CartViewText.BtnRemoveBundle
+                                </button>
+                            </form>
+                        </div>
+                    </article>
+                }
+
+                @if (Model.State.LooseLines.Any())
+                {
+                    <div>
+                        <p class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">@CartViewText.LooseKicker</p>
+                        <div class="divide-y divide-slate-100 rounded-3xl border border-slate-200 bg-white shadow-sm">
+                            @foreach (var line in Model.State.LooseLines)
+                            {
+                                <div class="loose-row flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+                                    <div class="min-w-0 flex-1">
+                                        <p class="font-bold text-slate-900">@line.Name</p>
+                                        <p class="loose-unit text-xs text-slate-500">@line.Price.ToString("N0") đ / suất</p>
+                                    </div>
+                                    <form asp-action="UpdateLoose" method="post" class="loose-sync flex items-center gap-2">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="dishId" value="@line.DishId" />
+                                        <input type="hidden" name="menuScheduleId" value="@line.MenuScheduleId" />
+                                        <label class="text-xs font-bold text-slate-500">@CartViewText.QtyShort</label>
+                                        <input type="number" name="quantity" value="@line.Quantity" min="0" max="999" data-loose-qty
+                                               class="h-10 w-24 rounded-xl border border-slate-200 px-3 text-sm font-bold" />
+                                    </form>
+                                    <p class="loose-line-total text-right text-sm font-black text-orange-600 sm:w-32">
+                                        @((line.Price * line.Quantity).ToString("N0")) đ
+                                    </p>
+                                </div>
+                            }
                         </div>
                     </div>
+                }
+            </div>
 
-                    <form asp-action="UpdateBundle" method="post" class="cart-bundle-form space-y-4">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="bundleId" value="@bundle.BundleId" />
-
-                        <div class="flex flex-wrap items-end gap-3">
-                            <div>
-                                <label class="mb-1 block text-xs font-bold text-slate-600">@CartViewText.BundleQtyLabel</label>
-                                <input type="number" name="quantity" value="@bundle.BundleQuantity" min="1" max="999"
-                                       class="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold" />
-                            </div>
-                            <button type="submit" class="rounded-xl bg-orange-500 px-4 py-2 text-sm font-black text-white shadow hover:bg-orange-600">
-                                @CartViewText.BtnUpdateBundle
-                            </button>
-                            <div class="flex flex-wrap gap-2">
-                                <button type="button" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100"
-                                        onclick="cartPresetWorkdays(this.closest('form'))">
-                                    @CartViewText.BtnWorkdays
-                                </button>
-                                <button type="button" class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-bold text-slate-700 hover:bg-slate-100"
-                                        onclick="cartPresetAll(this.closest('form'))">
-                                    @CartViewText.BtnAllDays
-                                </button>
-                            </div>
-                        </div>
-
-                        <div>
-                            <p class="mb-2 text-xs font-bold text-slate-700">@CartViewText.BundleDayHint</p>
-                            <div class="max-h-72 space-y-4 overflow-y-auto rounded-xl border border-slate-100 bg-slate-50/50 p-3 sm:p-4">
-                                @foreach (var day in byDay)
-                                {
-                                    <div>
-                                        <p class="mb-2 text-[11px] font-black uppercase tracking-wide text-emerald-800">
-                                            @CartViewText.DayShortVi(day.Key) @day.Key.ToString("dd/MM")
-                                        </p>
-                                        <ul class="space-y-2">
-                                            @foreach (var slot in day.OrderBy(s => s.MealSlot))
-                                            {
-                                                var cbId = "cb_" + bundle.BundleId + "_" + slot.ScheduleId;
-                                                <li class="rounded-lg border border-slate-100 bg-white px-3 py-2">
-                                                    <label for="@cbId" class="flex cursor-pointer gap-3">
-                                                        @if (slot.Selected)
-                                                        {
-                                                            <input id="@cbId" type="checkbox"
-                                                                   name="selectedScheduleIds"
-                                                                   value="@slot.ScheduleId"
-                                                                   data-weekday="@((int)slot.ScheduleDate.DayOfWeek)"
-                                                                   checked="checked"
-                                                                   class="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-orange-600 focus:ring-orange-500" />
-                                                        }
-                                                        else
-                                                        {
-                                                            <input id="@cbId" type="checkbox"
-                                                                   name="selectedScheduleIds"
-                                                                   value="@slot.ScheduleId"
-                                                                   data-weekday="@((int)slot.ScheduleDate.DayOfWeek)"
-                                                                   class="mt-1 h-4 w-4 shrink-0 rounded border-slate-300 text-orange-600 focus:ring-orange-500" />
-                                                        }
-                                                        <span class="min-w-0 flex-1 text-sm leading-snug">
-                                                            <span class="font-bold text-slate-900">@MenuViewText.SlotLabel(slot.MealSlot)</span>
-                                                            <span class="text-slate-600"> — @slot.Name</span>
-                                                            <span class="mt-0.5 block text-xs font-bold text-emerald-700">@slot.Price.ToString("N0") đ</span>
-                                                        </span>
-                                                    </label>
-                                                </li>
-                                            }
-                                        </ul>
-                                    </div>
-                                }
-                            </div>
-                        </div>
-                    </form>
-
-                    <form asp-action="RemoveBundle" method="post" class="mt-4 border-t border-slate-100 pt-4" onsubmit="return confirm('Xóa gói menu tuần này khỏi giỏ?');">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="bundleId" value="@bundle.BundleId" />
-                        <button type="submit" class="text-xs font-bold text-red-600 hover:text-red-700 hover:underline">
-                            @CartViewText.BtnRemoveBundle
-                        </button>
-                    </form>
-                </div>
-            }
-
-            @if (Model.State.LooseLines.Any())
-            {
-                <div>
-                    <p class="mb-3 text-[10px] font-black uppercase tracking-wider text-slate-400">@CartViewText.LooseKicker</p>
-                    <div class="space-y-3 rounded-2xl border border-slate-100 bg-white p-4 shadow-sm sm:p-6">
-                        @foreach (var line in Model.State.LooseLines)
+            <aside class="lg:sticky lg:top-24 h-fit space-y-4">
+                <div class="rounded-3xl border border-orange-100 bg-gradient-to-br from-orange-50 to-white p-6 shadow-md ring-1 ring-orange-500/10">
+                    <p class="text-xs font-bold uppercase tracking-wider text-orange-800">Tóm tắt</p>
+                    <p class="mt-2 text-sm text-slate-600">Kiểm tra tổng suất trước khi đặt. Đơn vị doanh nghiệp sẽ được dẫn tiếp tới bước ký phụ lục PDF sau khi tạo đơn.</p>
+                    <div class="mt-6 border-t border-orange-100 pt-4">
+                        <p class="text-xs font-bold text-slate-500">Tạm tính</p>
+                        <p id="cart-total-aside" class="text-3xl font-black text-slate-900">@Model.TotalAmount.ToString("N0") đ</p>
+                    </div>
+                    <div class="mt-6 flex flex-col gap-2">
+                        <form asp-action="Clear" method="post" onsubmit="return confirm('Xóa toàn bộ giỏ?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="w-full rounded-2xl border border-slate-200 bg-white py-3 text-sm font-bold text-slate-600 hover:bg-slate-50">@CartViewText.BtnClearCart</button>
+                        </form>
+                        @if (canPlaceOrder)
                         {
-                            <div class="flex flex-col gap-4 border-b border-slate-100 py-4 last:border-0 sm:flex-row sm:items-center">
-                                <div class="min-w-0 flex-1">
-                                    <p class="font-bold text-slate-900">@line.Name</p>
-                                    <p class="text-xs text-slate-500">@line.Price.ToString("N0") đ / suất</p>
-                                </div>
-                                <form asp-action="UpdateLoose" method="post" class="flex items-center gap-2">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="dishId" value="@line.DishId" />
-                                    <input type="hidden" name="menuScheduleId" value="@line.MenuScheduleId" />
-                                    <label class="text-xs font-bold text-slate-500">@CartViewText.QtyShort</label>
-                                    <input type="number" name="quantity" value="@line.Quantity" min="0" max="999"
-                                           class="w-20 rounded-lg border border-slate-200 px-2 py-1.5 text-sm font-bold" />
-                                    <button type="submit" class="rounded-lg bg-slate-100 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-200">@CartViewText.BtnUpdateBundle</button>
-                                </form>
-                                <p class="text-right text-sm font-black text-orange-600 sm:w-28">
-                                    @((line.Price * line.Quantity).ToString("N0")) đ
-                                </p>
-                            </div>
+                            <a asp-action="Delivery" id="btn-checkout" class="inline-flex w-full items-center justify-center rounded-2xl bg-orange-500 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/30 hover:bg-orange-600">@CartViewText.BtnCheckout</a>
+                        }
+                        else
+                        {
+                            <button type="button" disabled class="w-full cursor-not-allowed rounded-2xl bg-slate-200 py-3.5 text-sm font-black text-slate-500" title="@CartViewText.ErrorMinimumPortions">@CartViewText.BtnCheckout</button>
                         }
                     </div>
                 </div>
-            }
-        </div>
-
-        <div class="mt-6 flex flex-col justify-between gap-4 rounded-2xl border border-orange-100 bg-orange-50/50 p-4 sm:flex-row sm:items-center sm:p-6">
-            <div>
-                <p class="text-xs font-bold uppercase tracking-wider text-orange-700">@CartViewText.SubtotalLabel</p>
-                <p class="text-2xl font-black text-slate-900">@Model.TotalAmount.ToString("N0") đ</p>
-            </div>
-            <div class="flex flex-wrap gap-2">
-                <form asp-action="Clear" method="post" onsubmit="return confirm('Xóa toàn bộ giỏ?');">
-                    @Html.AntiForgeryToken()
-                    <button type="submit" class="rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">@CartViewText.BtnClearCart</button>
-                </form>
-                <a asp-action="Checkout" class="inline-flex items-center justify-center rounded-xl bg-orange-500 px-6 py-2.5 text-sm font-black text-white shadow-md hover:bg-orange-600">@CartViewText.BtnCheckout</a>
-            </div>
+            </aside>
         </div>
     }
 </div>
 
 @section Scripts {
+    @{
+        var checkoutLabelJson = System.Text.Json.JsonSerializer.Serialize(CartViewText.BtnCheckout);
+        var minErrJson = System.Text.Json.JsonSerializer.Serialize(CartViewText.ErrorMinimumPortions);
+        var minPortions = CartOrderRules.MinimumPortions;
+    }
     <script>
-        function cartPresetWorkdays(form) {
-            if (!form) return;
-            form.querySelectorAll('input[type="checkbox"][name="selectedScheduleIds"]').forEach(function (cb) {
-                var wd = parseInt(cb.getAttribute('data-weekday'), 10);
-                cb.checked = wd >= 1 && wd <= 5;
+        (function () {
+            var LABEL_CHECKOUT = @Html.Raw(checkoutLabelJson);
+            var LABEL_MIN = @Html.Raw(minErrJson);
+            var MIN_PORTIONS = @minPortions;
+            function afToken(form) {
+                var i = form.querySelector('input[name="__RequestVerificationToken"]');
+                return i ? i.value : '';
+            }
+            function afHeaders(form) {
+                var h = { 'X-Requested-With': 'XMLHttpRequest' };
+                var t = afToken(form);
+                if (t) h['RequestVerificationToken'] = t;
+                return h;
+            }
+            function totalPortionsVal(data) {
+                if (!data) return null;
+                var p = data.totalPortions != null ? data.totalPortions : data.TotalPortions;
+                return p == null ? null : Number(p);
+            }
+            function meetsMin(data) {
+                if (!data) return false;
+                if (data.meetsMinimum === true || data.MeetsMinimum === true) return true;
+                if (data.meetsMinimum === false || data.MeetsMinimum === false) return false;
+                var p = totalPortionsVal(data);
+                return p != null && !isNaN(p) && p >= MIN_PORTIONS;
+            }
+            function isSyncError(data) {
+                return data && (data.ok === false || data.Ok === false);
+            }
+            function parseMoney(text) {
+                var n = String(text).replace(/[^\d]/g, '');
+                return n ? parseInt(n, 10) : 0;
+            }
+            function formatMoney(num) {
+                return num.toLocaleString('vi-VN') + ' đ';
+            }
+            function wireDayMaster(form) {
+                form.querySelectorAll('.day-master').forEach(function (master) {
+                    master.addEventListener('change', function () {
+                        var day = master.getAttribute('data-day');
+                        var on = master.checked;
+                        form.querySelectorAll('input.slot-cb[data-day="' + day + '"]').forEach(function (cb) {
+                            cb.checked = on;
+                        });
+                        syncBundle(form);
+                    });
+                });
+                form.querySelectorAll('input.slot-cb').forEach(function (cb) {
+                    cb.addEventListener('change', function () {
+                        var day = cb.getAttribute('data-day');
+                        var cbs = form.querySelectorAll('input.slot-cb[data-day="' + day + '"]');
+                        var allOn = true;
+                        cbs.forEach(function (x) { if (!x.checked) allOn = false; });
+                        var m = form.querySelector('.day-master[data-day="' + day + '"]');
+                        if (m) m.checked = allOn;
+                    });
+                });
+            }
+            function applyCartSyncUi(data) {
+                var bundleSub = data.bundleSubtotal != null ? data.bundleSubtotal : data.BundleSubtotal;
+                var bid = data.bundleId;
+                if (bid && bundleSub != null) {
+                    var el = document.getElementById('bundle-sub-' + bid);
+                    if (el) el.textContent = formatMoney(Math.round(Number(bundleSub)));
+                }
+                var cartTotal = data.cartTotal != null ? data.cartTotal : data.CartTotal;
+                var ct = document.getElementById('cart-total');
+                var cta = document.getElementById('cart-total-aside');
+                var tot = Math.round(Number(cartTotal != null ? cartTotal : 0));
+                if (ct) ct.textContent = formatMoney(tot);
+                if (cta) cta.textContent = formatMoney(tot);
+                var portions = data.totalPortions != null ? data.totalPortions : data.TotalPortions;
+                var cp = document.getElementById('cart-portions');
+                if (cp && portions != null) cp.textContent = String(portions);
+                var warn = document.getElementById('cart-min-warning');
+                if (warn) warn.classList.toggle('hidden', meetsMin(data));
+                var btn = document.getElementById('btn-checkout');
+                if (btn) {
+                    if (meetsMin(data)) {
+                        if (btn.tagName === 'BUTTON') {
+                            var a = document.createElement('a');
+                            a.id = 'btn-checkout';
+                            a.className = 'inline-flex w-full items-center justify-center rounded-2xl bg-orange-500 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/30 hover:bg-orange-600';
+                            a.href = '@Url.Action("Delivery", "Cart")';
+                            a.textContent = LABEL_CHECKOUT;
+                            btn.replaceWith(a);
+                        }
+                    } else if (btn.tagName === 'A') {
+                        var b = document.createElement('button');
+                        b.id = 'btn-checkout';
+                        b.type = 'button';
+                        b.disabled = true;
+                        b.className = 'w-full cursor-not-allowed rounded-2xl bg-slate-200 py-3.5 text-sm font-black text-slate-500';
+                        b.title = LABEL_MIN;
+                        b.textContent = LABEL_CHECKOUT;
+                        btn.replaceWith(b);
+                    }
+                }
+            }
+            function syncBundle(form) {
+                var fd = new FormData(form);
+                var bid = form.getAttribute('data-bundle-id');
+                return fetch(form.getAttribute('action'), {
+                    method: 'POST',
+                    headers: afHeaders(form),
+                    body: fd
+                }).then(function (r) {
+                    if (!r.ok) return r.text().then(function (t) { throw new Error(t || r.status); });
+                    return r.json();
+                }).then(function (data) {
+                    if (isSyncError(data)) {
+                        if (data.error || data.Error) alert(data.error || data.Error);
+                        return;
+                    }
+                    if (!data) return;
+                    data.bundleId = bid;
+                    applyCartSyncUi(data);
+                }).catch(function (e) { console.error(e); });
+            }
+            function debounce(fn, ms) {
+                var t;
+                return function () {
+                    clearTimeout(t);
+                    var args = arguments, self = this;
+                    t = setTimeout(function () { fn.apply(self, args); }, ms);
+                };
+            }
+            var bundleForms = Array.prototype.slice.call(document.querySelectorAll('form.cart-bundle-form'));
+            bundleForms.forEach(function (form) {
+                wireDayMaster(form);
+                var qty = form.querySelector('input[name="quantity"]');
+                if (qty) qty.addEventListener('input', debounce(function () {
+                    syncBundle(form).catch(function (e) { console.error(e); });
+                }, 400));
             });
-        }
-        function cartPresetAll(form) {
-            if (!form) return;
-            form.querySelectorAll('input[type="checkbox"][name="selectedScheduleIds"]').forEach(function (cb) {
-                cb.checked = true;
+            bundleForms.reduce(function (prev, form) {
+                return prev.then(function () { return syncBundle(form); });
+            }, Promise.resolve()).catch(function (e) { console.error(e); });
+            document.querySelectorAll('form.loose-sync').forEach(function (form) {
+                var qty = form.querySelector('input[name="quantity"]');
+                if (!qty) return;
+                qty.addEventListener('input', debounce(function () {
+                    var fd = new FormData(form);
+                    fetch(form.getAttribute('action'), {
+                        method: 'POST',
+                        headers: afHeaders(form),
+                        body: fd
+                    }).then(function (r) {
+                        if (!r.ok) return r.text().then(function (t) { throw new Error(t || r.status); });
+                        return r.json();
+                    }).then(function (data) {
+                        if (isSyncError(data)) return;
+                        if (!data) return;
+                        var row = form.closest('.loose-row');
+                        var lt = row && row.querySelector('.loose-line-total');
+                        var q = parseInt(qty.value, 10) || 0;
+                        if (lt && row) {
+                            var unitEl = row.querySelector('.loose-unit');
+                            var unit = unitEl ? parseMoney(unitEl.textContent) : 0;
+                            lt.textContent = formatMoney(unit * q);
+                        }
+                        data.bundleId = null;
+                        applyCartSyncUi(data);
+                    }).catch(function (e) { console.error(e); });
+                }, 400));
             });
-        }
+        })();
     </script>
+    <style>
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    </style>
 }

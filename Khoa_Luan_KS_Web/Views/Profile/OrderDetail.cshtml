@@ -1,4 +1,6 @@
 @model Khoa_Luan_KS_Web.Services.OrderDetailClientDto
+@using System
+@using Khoa_Luan_KS_Web.Models
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
     Layout = "_LayoutCustomer";
@@ -10,9 +12,37 @@
     {
         <div class="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">@os</div>
     }
+    @if (TempData["AnnexSignWarning"] is string aw && !string.IsNullOrEmpty(aw))
+    {
+        <div class="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-950">@aw</div>
+    }
 
     <h1 class="mb-1 text-2xl font-black text-slate-900">Chi tiết đơn</h1>
     <p class="mb-6 font-mono text-sm text-slate-600">@(string.IsNullOrEmpty(Model.InvoiceCode) ? "#" + Model.Id : Model.InvoiceCode)</p>
+
+    @{
+        var deliveryNotes = ViewBag.OrderDeliveryNotes as List<OrderDeliveryNoteLine>;
+    }
+    @if (deliveryNotes is { Count: > 0 })
+    {
+        <div class="mb-6 rounded-2xl border border-sky-200 bg-sky-50/80 p-5 text-sm shadow-sm">
+            <p class="mb-3 text-xs font-black uppercase tracking-wider text-sky-900">Lịch giao đã ghi nhận</p>
+            <ul class="space-y-2">
+                @foreach (var d in deliveryNotes.OrderBy(x => x.DateKey, StringComparer.Ordinal))
+                {
+                    <li class="rounded-xl border border-white/60 bg-white/80 px-3 py-2">
+                        <span class="font-bold text-slate-900">@d.DisplayLabel</span>
+                        <span class="mx-2 text-slate-300">·</span>
+                        <span class="text-slate-700">@d.Address</span>
+                        @if (!string.IsNullOrWhiteSpace(d.DeliveryTime))
+                        {
+                            <span class="mt-1 block text-xs font-semibold text-orange-700">Giờ giao: @d.DeliveryTime</span>
+                        }
+                    </li>
+                }
+            </ul>
+        </div>
+    }
 
     <div class="mb-6 flex flex-wrap gap-2">
         <a asp-action="Invoice" asp-route-id="@Model.Id" target="_blank"
@@ -41,7 +71,19 @@
         <div class="flex justify-between border-b border-slate-100 py-2"><span class="text-slate-500">Ngày đặt</span><span class="font-bold">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</span></div>
         <div class="flex justify-between border-b border-slate-100 py-2"><span class="text-slate-500">Ngày giao dự kiến</span><span class="font-bold">@Model.ScheduledDate.ToString("dd/MM/yyyy")</span></div>
         <div class="flex justify-between border-b border-slate-100 py-2"><span class="text-slate-500">Trạng thái</span><span class="font-bold">@Model.Status</span></div>
-        <div class="flex justify-between py-2"><span class="text-slate-500">Thanh toán</span><span class="font-bold">@Model.PaymentStatus</span></div>
+        <div class="flex justify-between py-2">
+            <span class="text-slate-500">Thanh toán</span>
+            <span class="font-bold">
+                @if (string.Equals(Model.PaymentStatus, "unpaid", StringComparison.OrdinalIgnoreCase))
+                {
+                    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-black text-amber-900">Chờ thanh toán</span>
+                }
+                else
+                {
+                    @Model.PaymentStatus
+                }
+            </span>
+        </div>
     </div>
 
     <h2 class="mb-2 mt-8 text-lg font-black text-slate-900">Món trong đơn</h2>

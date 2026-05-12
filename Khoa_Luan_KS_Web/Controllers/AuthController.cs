@@ -112,6 +112,7 @@ namespace Khoa_Luan_KS_Web.Controllers
             // Identify role before clearing session/auth cookie
             string? roleHint = null;
             if (IsAdmin(User)) roleHint = "Admin";
+            else if (IsWarehouseStaff(User)) roleHint = "WarehouseStaff";
             else if (IsStaff(User)) roleHint = "Manager";
 
             var accessToken = HttpContext.Session.GetString("access_token");

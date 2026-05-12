@@ -1,0 +1,80 @@
+@using Khoa_Luan_KS_Web.Models
+@model CartDeliveryPageVm
+@{
+    ViewData["Title"] = "Thông tin giao hàng";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
+    <nav class="mb-6 flex flex-wrap gap-2 text-sm text-slate-500">
+        <a href="/Customer/Index" class="hover:text-orange-600">Trang chủ</a>
+        <span class="text-slate-300">/</span>
+        <a asp-action="Index" class="hover:text-orange-600">@CartViewText.PageTitle</a>
+        <span class="text-slate-300">/</span>
+        <span class="font-semibold text-slate-800">Giao hàng</span>
+    </nav>
+
+    <h1 class="text-3xl font-black tracking-tight text-slate-900">Địa chỉ giao chung &amp; giờ theo ngày</h1>
+    <p class="mt-2 max-w-3xl text-slate-600">Nhập <strong>một địa chỉ</strong> cho toàn bộ suất trong đơn. Chọn khung giờ nhận cho từng ngày có suất. Bước tiếp theo: xem phụ lục và ký xác nhận.</p>
+
+    @if (TempData["CheckoutError"] is string ce && !string.IsNullOrEmpty(ce))
+    {
+        <div class="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">@ce</div>
+    }
+
+    <div class="mt-10 grid gap-10 lg:grid-cols-[1fr_320px]">
+        <form asp-action="Delivery" method="post" class="space-y-6">
+            @Html.AntiForgeryToken()
+
+            <div class="rounded-3xl border border-orange-200 bg-orange-50/40 p-6 shadow-sm ring-1 ring-orange-500/10 sm:p-8">
+                <label class="mb-2 block text-xs font-black uppercase tracking-wide text-orange-900">Địa chỉ giao (chung cho mọi ngày)</label>
+                <input type="text" name="commonAddress" value="@Model.PrefillCommonAddress" required autocomplete="street-address"
+                       class="w-full rounded-xl border border-orange-200/80 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 shadow-sm focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20"
+                       placeholder="Số nhà, đường, phường/xã, quận/huyện, TP..." />
+            </div>
+
+            <div class="space-y-4">
+                <p class="text-sm font-bold text-slate-800">Giờ giao mong muốn theo từng ngày</p>
+                @for (var i = 0; i < Model.Days.Count; i++)
+                {
+                    <div class="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-6">
+                        <input type="hidden" name="rows[@i].DateKey" value="@Model.Days[i].DateKey" />
+                        <div>
+                            <h2 class="text-base font-black text-slate-900">@Model.Days[i].DisplayLabel</h2>
+                            <span class="text-xs font-mono text-slate-400">@Model.Days[i].DateKey</span>
+                        </div>
+                        <div class="w-full max-w-[200px] sm:shrink-0">
+                            <label class="mb-1.5 block text-xs font-bold uppercase tracking-wide text-slate-500">Giờ giao</label>
+                            <input type="time" name="rows[@i].DeliveryTime" value="@Model.Days[i].DeliveryTime"
+                                   class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold text-slate-900 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-500/20" />
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="flex flex-wrap gap-3">
+                <button type="submit" class="inline-flex flex-1 items-center justify-center rounded-2xl bg-orange-500 px-8 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/25 hover:bg-orange-600 sm:flex-none">
+                    Tiếp tục — xem hợp đồng &amp; ký
+                </button>
+                <a asp-action="Index" class="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-600 hover:bg-slate-50">Quay lại giỏ</a>
+            </div>
+        </form>
+
+        <aside class="h-fit rounded-3xl border border-slate-100 bg-slate-50/80 p-6">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-500">Tóm tắt</p>
+            <p class="mt-2 text-2xl font-black text-orange-600">@Model.Cart.TotalAmount.ToString("N0") đ</p>
+            <p class="mt-1 text-sm text-slate-600">@Model.Cart.TotalPortions suất · tối thiểu @CartViewText.MinimumPortionsHint</p>
+            <ul class="mt-4 space-y-2 border-t border-slate-200 pt-4 text-xs text-slate-600">
+                @foreach (var b in Model.Cart.State.MenuBundles)
+                {
+                    var n = b.Slots.Count(s => s.Selected);
+                    if (n == 0) { continue; }
+                    <li class="flex justify-between gap-2">
+                        <span class="min-w-0 truncate">@b.Label</span>
+                        <span class="shrink-0 font-bold">×@b.BundleQuantity</span>
+                    </li>
+                }
+            </ul>
+        </aside>
+    </div>
+</div>

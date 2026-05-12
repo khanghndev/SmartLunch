@@ -1,9 +1,14 @@
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(o =>
+    {
+        o.JsonSerializerOptions.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;
+    });
 
 builder.Services.AddHttpClient();
 
@@ -29,37 +34,41 @@ builder.Services
         {
             OnRedirectToLogin = context =>
             {
-                var path = context.Request.Path.Value ?? string.Empty;
-                var role = path.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/admin", StringComparison.OrdinalIgnoreCase)
-                    ? "Admin"
-                    : path.StartsWith("/Manager", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/manager", StringComparison.OrdinalIgnoreCase)
-                        ? "Manager"
-                        : "Customer";
-
+                var role = ResolveAreaRole(context.Request.Path.Value);
                 var returnUrl = context.Request.PathBase + context.Request.Path + context.Request.QueryString;
                 var redirectUri = $"/Auth/Login?role={Uri.EscapeDataString(role)}&returnUrl={Uri.EscapeDataString(returnUrl)}";
-
                 context.Response.Redirect(redirectUri);
                 return Task.CompletedTask;
             },
             OnRedirectToAccessDenied = async context =>
             {
+                // Đang đăng nhập role khác mà truy cập area không thuộc quyền:
+                // tự đăng xuất cookie + session + xoá persistent cookie để buộc đăng nhập lại
                 await context.HttpContext.SignOutAsync(Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme);
                 context.HttpContext.Session.Clear();
+                foreach (var cookieName in new[] { "hm_access_token", "hm_refresh_token", "hm_user_email", "hm_user_name" })
+                {
+                    if (context.Request.Cookies.ContainsKey(cookieName))
+                    {
+                        context.Response.Cookies.Delete(cookieName);
+                    }
+                }
 
-                var path = context.Request.Path.Value ?? string.Empty;
-                var role = path.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/admin", StringComparison.OrdinalIgnoreCase)
-                    ? "Admin"
-                    : path.StartsWith("/Manager", StringComparison.OrdinalIgnoreCase) || path.StartsWith("/manager", StringComparison.OrdinalIgnoreCase)
-                        ? "Manager"
-                        : "Customer";
-
+                var role = ResolveAreaRole(context.Request.Path.Value);
                 var returnUrl = context.Request.PathBase + context.Request.Path + context.Request.QueryString;
                 var redirectUri = $"/Auth/Login?role={Uri.EscapeDataString(role)}&returnUrl={Uri.EscapeDataString(returnUrl)}";
-
                 context.Response.Redirect(redirectUri);
             }
         };
+
+        static string ResolveAreaRole(string? pathValue)
+        {
+            var path = pathValue ?? string.Empty;
+            if (path.StartsWith("/Admin", StringComparison.OrdinalIgnoreCase)) return "Admin";
+            if (path.StartsWith("/WarehouseStaff", StringComparison.OrdinalIgnoreCase)) return "WarehouseStaff";
+            if (path.StartsWith("/Manager", StringComparison.OrdinalIgnoreCase)) return "Manager";
+            return "Customer";
+        }
     });
 
 builder.Services.AddAuthorization(options =>
@@ -68,14 +77,21 @@ builder.Services.AddAuthorization(options =>
         policy.RequireAssertion(ctx =>
             ctx.User.IsInRole("Admin") || ctx.User.IsInRole("Super Admin")));
 
+    // Khu vực Quản lý công ty: KHÔNG bao gồm các nhân viên kho/bếp/bán hàng
+    // (mỗi role có khu vực riêng để tránh nhầm tài khoản).
     options.AddPolicy("ManagerArea", policy =>
         policy.RequireAssertion(ctx =>
-            ctx.User.IsInRole("Manager") || 
-            ctx.User.IsInRole("WarehouseStaff") || 
-            ctx.User.IsInRole("ChefStaff") || 
-            ctx.User.IsInRole("SalesStaff") || 
-            ctx.User.IsInRole("Shipper") ||
-            ctx.User.IsInRole("Quản lý công ty")));
+            ctx.User.IsInRole("Manager") ||
+            ctx.User.IsInRole("Quản lý công ty") ||
+            ctx.User.IsInRole("Admin") ||
+            ctx.User.IsInRole("Super Admin")));
+
+    // Khu vực Nhân viên kho riêng — chỉ WarehouseStaff (+ Admin để hỗ trợ vận hành)
+    options.AddPolicy("WarehouseStaffArea", policy =>
+        policy.RequireAssertion(ctx =>
+            ctx.User.IsInRole("WarehouseStaff") ||
+            ctx.User.IsInRole("Admin") ||
+            ctx.User.IsInRole("Super Admin")));
 
     options.AddPolicy("CustomerArea", policy =>
         policy.RequireAssertion(ctx =>

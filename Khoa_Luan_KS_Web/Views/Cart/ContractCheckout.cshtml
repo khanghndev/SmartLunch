@@ -1,0 +1,207 @@
+@using Khoa_Luan_KS_Web.Models
+@using System.Globalization
+@using System
+@model CartContractPageVm
+@{
+    ViewData["Title"] = "Phụ lục đặt hàng & ký xác nhận";
+    Layout = "_LayoutCustomer";
+    var flat = CartIndexViewModel.FlattenForOrder(Model.Cart.State);
+    var dishAgg = flat.GroupBy(l => l.DishId).Select(g => new
+    {
+        Name = g.First().Name,
+        Qty = g.Sum(x => x.Quantity),
+        Unit = g.First().Price,
+        Total = g.Sum(x => x.Price * x.Quantity),
+    }).ToList();
+    var canSubmit = User.IsInRole("Customer") || User.IsInRole("Khách hàng cá nhân")
+        || User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp");
+    var scheduleStr = Model.ScheduledDateForApi.ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture);
+    var isOrgAccount = User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp");
+}
+
+<div class="flex min-h-[calc(100vh-8rem)] flex-col bg-slate-100/80">
+    <header class="sticky top-0 z-20 border-b border-slate-200 bg-white/95 px-4 py-4 backdrop-blur sm:px-8">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3">
+            <div>
+                <p class="text-[10px] font-black uppercase tracking-widest text-orange-600">Bước cuối — xác nhận pháp lý</p>
+                <h1 class="text-lg font-black text-slate-900 sm:text-xl">Phụ lục đặt hàng &amp; chữ ký số</h1>
+            </div>
+            <a asp-action="Delivery" class="text-sm font-bold text-slate-500 hover:text-orange-600">← Sửa địa chỉ giao</a>
+        </div>
+    </header>
+
+    <div class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6">
+        @if (TempData["CheckoutError"] is string ce && !string.IsNullOrEmpty(ce))
+        {
+            <div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800">@ce</div>
+        }
+
+        <form asp-action="Checkout" method="post" class="space-y-6" id="contract-checkout-form">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="scheduledDate" value="@scheduleStr" />
+
+        <div class="max-h-[calc(100vh-14rem)] overflow-y-auto rounded-sm border border-slate-300 bg-white shadow-2xl">
+            <div class="esign-paper space-y-6 p-8 text-sm leading-relaxed text-slate-900 sm:p-12 lg:p-14" style="font-family: 'Times New Roman', Times, serif;">
+                <div class="text-center">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-blue-900">Cộng hòa xã hội chủ nghĩa Việt Nam</p>
+                    <p class="text-xs text-blue-900">Độc lập — Tự do — Hạnh phúc</p>
+                    <h2 class="mt-6 text-lg font-black uppercase tracking-wide text-blue-950">Phụ lục đặt hàng và xác nhận biên bản</h2>
+                    <p class="mt-2 text-xs text-slate-600">(Bản điện tử — hiển thị đầy đủ trước khi ký)</p>
+                </div>
+
+                <div class="rounded-lg border border-slate-200 bg-slate-50/50 p-4 text-xs sm:text-sm">
+                    <p><strong>Bên A (Cung cấp suất ăn):</strong> Công ty Cổ phần HuitMeal</p>
+                    <p class="mt-1"><strong>Bên B (Khách đặt suất):</strong> @(User.Identity?.Name ?? "Khách hàng")</p>
+                    <p class="mt-2 text-slate-600">Thời điểm lập phụ lục: @DateTime.Now.ToString("dd/MM/yyyy HH:mm", CultureInfo.GetCultureInfo("vi-VN"))</p>
+                </div>
+
+                <section>
+                    <h3 class="mb-2 text-base font-black text-blue-900">I. Các bên tham gia</h3>
+                    <p>Bên A cam kết chuẩn bị và giao suất ăn theo thực đơn đã công bố. Bên B xác nhận nhu cầu, khối lượng suất và điều kiện giao nhận theo nội dung dưới đây.</p>
+                </section>
+
+                <section>
+                    <h3 class="mb-2 text-base font-black text-blue-900">II. Nội dung thống nhất</h3>
+                    <p class="mb-2"><strong>Điều 1.</strong> Tổng giá trị đơn đặt (tạm tính): <strong>@Model.Cart.TotalAmount.ToString("N0") đ</strong>, tổng <strong>@Model.Cart.TotalPortions suất</strong>, đáp ứng điều kiện tối thiểu @CartViewText.MinimumPortionsHint.</p>
+                    <p class="mb-2"><strong>Điều 2.</strong> Địa điểm và thời gian giao: theo bảng lịch giao từng ngày (mục IV).</p>
+                    <p class="mb-2"><strong>Điều 3.</strong> Sau khi Bên B ký xác nhận điện tử và hệ thống ghi nhận đơn hàng, trạng thái thanh toán chuyển sang <strong>chờ thanh toán</strong> theo chính sách đã thông báo.</p>
+                    <p class="text-xs italic text-slate-600">Văn bản điện tử có giá trị nội bộ và phục vụ đối soát; Bên B đã đọc toàn bộ trước khi ký.</p>
+                </section>
+
+                <section>
+                    <h3 class="mb-2 text-base font-black text-blue-900">III. Bảng kê món ăn và giá trị</h3>
+                    <div class="overflow-x-auto rounded-lg border border-slate-300">
+                        <table class="w-full border-collapse text-xs sm:text-sm">
+                            <thead>
+                                <tr class="bg-slate-100 text-left">
+                                    <th class="border border-slate-300 px-3 py-2 font-black">Tên món</th>
+                                    <th class="border border-slate-300 px-3 py-2 font-black">SL</th>
+                                    <th class="border border-slate-300 px-3 py-2 font-black">Đơn giá</th>
+                                    <th class="border border-slate-300 px-3 py-2 font-black">Thành tiền</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var row in dishAgg)
+                                {
+                                    <tr>
+                                        <td class="border border-slate-300 px-3 py-2">@row.Name</td>
+                                        <td class="border border-slate-300 px-3 py-2 font-semibold">@row.Qty</td>
+                                        <td class="border border-slate-300 px-3 py-2">@row.Unit.ToString("N0") đ</td>
+                                        <td class="border border-slate-300 px-3 py-2 font-bold text-orange-800">@row.Total.ToString("N0") đ</td>
+                                    </tr>
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr class="bg-slate-50 font-black">
+                                    <td colspan="3" class="border border-slate-300 px-3 py-2 text-right">Cộng</td>
+                                    <td class="border border-slate-300 px-3 py-2 text-orange-700">@Model.Cart.TotalAmount.ToString("N0") đ</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </section>
+
+                <section>
+                    <h3 class="mb-2 text-base font-black text-blue-900">IV. Lịch giao và địa chỉ</h3>
+                    <p class="mb-3 text-xs text-slate-600">Địa chỉ giao dưới đây là <strong>địa chỉ chung</strong> cho toàn đơn; khung giờ có thể khác nhau theo từng ngày.</p>
+                    <ul class="space-y-2 rounded-lg border border-slate-200 bg-slate-50/50 p-4">
+                        @foreach (var d in Model.Delivery.OrderBy(x => x.DateKey, StringComparer.Ordinal))
+                        {
+                            <li class="flex flex-col gap-1 border-b border-slate-200/80 pb-2 last:border-0 last:pb-0 sm:flex-row sm:justify-between">
+                                <span class="font-bold text-slate-800">@d.DisplayLabel</span>
+                                <span class="text-slate-700">@d.Address</span>
+                                <span class="shrink-0 text-xs font-bold text-orange-700">Giờ: @(string.IsNullOrWhiteSpace(d.DeliveryTime) ? "—" : d.DeliveryTime)</span>
+                            </li>
+                        }
+                    </ul>
+                </section>
+
+                <section class="border-t border-slate-200 pt-6">
+                    <h3 class="mb-3 text-base font-black text-blue-900">V. Chữ ký xác nhận của Bên B</h3>
+                    <p class="mb-4 text-xs text-slate-600">Ký bằng chuột hoặc cảm ứng. Chữ ký được đính kèm đơn hàng điện tử.</p>
+                    <div class="rounded-xl border border-slate-300 bg-white p-4 shadow-inner">
+                        <canvas id="contract-sign-canvas" width="720" height="220" class="w-full max-w-full cursor-crosshair touch-none rounded-lg border border-slate-200 bg-slate-50"></canvas>
+                        <div class="mt-3 flex flex-wrap items-center gap-2">
+                            <button type="button" id="contract-sign-clear" class="rounded-lg border border-slate-200 bg-slate-50 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-white">Xóa chữ ký</button>
+                        </div>
+                        <input type="hidden" name="signatureDataUrl" id="signatureDataUrl" value="" />
+                    </div>
+                    @if (isOrgAccount)
+                    {
+                        <p class="mt-3 text-xs text-slate-600">
+                            Sau khi tạo đơn, nếu quy trình nội bộ yêu cầu thêm bản <strong>ký phụ lục PDF</strong>, bạn có thể hoàn tất tại mục Hợp đồng trong tài khoản — không bắt buộc thay cho chữ ký tại đây.
+                        </p>
+                    }
+                </section>
+            </div>
+        </div>
+
+            @if (canSubmit)
+            {
+                <button type="submit" class="w-full rounded-2xl bg-slate-900 py-4 text-sm font-black text-white shadow-xl hover:bg-orange-600">
+                    Xác nhận — tạo đơn hàng
+                </button>
+            }
+            else
+            {
+                <button type="button" disabled class="w-full cursor-not-allowed rounded-2xl bg-slate-300 py-4 text-sm font-black text-slate-500">
+                    Tài khoản chưa được phép đặt suất trực tuyến
+                </button>
+            }
+            <a asp-action="Index" class="block text-center text-sm font-bold text-slate-500 hover:text-orange-600">Quay lại giỏ hàng</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            var canvas = document.getElementById('contract-sign-canvas');
+            var hidden = document.getElementById('signatureDataUrl');
+            var form = document.getElementById('contract-checkout-form');
+            var clearBtn = document.getElementById('contract-sign-clear');
+            if (!canvas || !hidden || !form) return;
+            var ctx = canvas.getContext('2d');
+            var drawing = false, last = null;
+            function pos(e) {
+                var r = canvas.getBoundingClientRect();
+                var t = e.touches ? e.touches[0] : e;
+                return { x: (t.clientX - r.left) * (canvas.width / r.width), y: (t.clientY - r.top) * (canvas.height / r.height) };
+            }
+            function start(e) { drawing = true; last = pos(e); e.preventDefault(); }
+            function end() { drawing = false; last = null; }
+            function move(e) {
+                if (!drawing || !last) return;
+                var p = pos(e);
+                ctx.strokeStyle = '#0f172a';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.beginPath();
+                ctx.moveTo(last.x, last.y);
+                ctx.lineTo(p.x, p.y);
+                ctx.stroke();
+                last = p;
+                e.preventDefault();
+            }
+            canvas.addEventListener('mousedown', start);
+            canvas.addEventListener('mousemove', move);
+            canvas.addEventListener('mouseup', end);
+            canvas.addEventListener('mouseleave', end);
+            canvas.addEventListener('touchstart', start, { passive: false });
+            canvas.addEventListener('touchmove', move, { passive: false });
+            canvas.addEventListener('touchend', end);
+            if (clearBtn) clearBtn.addEventListener('click', function () {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                hidden.value = '';
+            });
+            form.addEventListener('submit', function () {
+                try {
+                    var blank = document.createElement('canvas');
+                    blank.width = canvas.width; blank.height = canvas.height;
+                    if (blank.toDataURL() !== canvas.toDataURL())
+                        hidden.value = canvas.toDataURL('image/png');
+                } catch (_) { }
+            });
+        })();
+    </script>
+}

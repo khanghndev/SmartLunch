@@ -71,6 +71,21 @@ namespace Khoa_Luan_KS_Web.Controllers
             {
                 var res = await _masterDataClient.GetOrderAsync(id, accessToken, ct);
                 ViewBag.SignatureDataUrl = HttpContext.Session.GetString($"order_sig_{id}");
+                var deliveryJson = HttpContext.Session.GetString($"order_delivery_{id}");
+                if (!string.IsNullOrEmpty(deliveryJson))
+                {
+                    try
+                    {
+                        var notes = JsonSerializer.Deserialize<List<OrderDeliveryNoteLine>>(deliveryJson,
+                            new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                        ViewBag.OrderDeliveryNotes = notes;
+                    }
+                    catch
+                    {
+                        /* ignore */
+                    }
+                }
+
                 return View(res.Order);
             }
             catch (Exception)

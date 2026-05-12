@@ -32,6 +32,8 @@ public class CartIndexViewModel
 {
     public CartState State { get; set; } = new();
     public decimal TotalAmount { get; set; }
+    public int TotalPortions { get; set; }
+    public bool MeetsMinimumPortions { get; set; }
 
     public bool IsEmpty => State.MenuBundles.Count == 0 && State.LooseLines.Count == 0;
 
@@ -47,7 +49,14 @@ public class CartIndexViewModel
         foreach (var l in state.LooseLines)
             t += l.Price * l.Quantity;
 
-        return new CartIndexViewModel { State = state, TotalAmount = t };
+        var portions = CartOrderRules.CountPortions(state);
+        return new CartIndexViewModel
+        {
+            State = state,
+            TotalAmount = t,
+            TotalPortions = portions,
+            MeetsMinimumPortions = portions >= CartOrderRules.MinimumPortions,
+        };
     }
 
     /// <summary>Dùng cho đặt hàng: mỗi suất đã chọn × số bộ menu.</summary>
