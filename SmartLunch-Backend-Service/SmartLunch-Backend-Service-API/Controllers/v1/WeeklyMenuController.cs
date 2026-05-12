@@ -12,7 +12,7 @@ using System.Net;
 namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 
 /// <summary>
-/// WeeklyMenu management controller for CRUD operations
+/// WeeklyMenu (master-data). Đọc: Admin, Organization, Customer — Customer dùng filter (customerTypeId, effectiveDate).
 /// </summary>
 [ApiController]
 [ApiVersion("1.0")]
@@ -31,7 +31,7 @@ public class WeeklyMenuController : ControllerBase
     }
 
     /// <summary>
-    /// Get list of weeklymenus with pagination
+    /// Danh sách weekly menu (phân trang). Dùng EffectiveDate trong query để chỉ trả các kỳ có Start–End bao ngày đó (app Customer).
     /// </summary>
     [HttpGet]
     [Authorize(Policy = "permission:weekly_menus.read")]
@@ -61,11 +61,8 @@ public class WeeklyMenuController : ControllerBase
         }
     }
 
-    /// <summary>
-    /// Get weeklymenu by ID
-    /// </summary>
+    /// <summary>Lấy thông tin header weekly menu theo Id.</summary>
     [HttpGet("{id}")]
-    [Authorize(Policy = "permission:weekly_menus.read")]
     public async Task<ActionResult<BaseApiResponse<GetWeeklyMenuResponse>>> GetWeeklyMenu(int id)
     {
         try
@@ -89,10 +86,9 @@ public class WeeklyMenuController : ControllerBase
     }
 
     /// <summary>
-    /// Chi tiết weekly menu: thông tin header + toàn bộ <c>MenuSchedule</c> (theo Dish), sắp xếp theo ngày và meal slot.
+    /// Chi tiết weekly menu: header + toàn bộ <c>MenuSchedule</c> (theo Dish), sắp xếp theo ngày và meal slot (app Customer).
     /// </summary>
     [HttpGet("{id:int}/detail")]
-    [Authorize(Policy = "permission:weekly_menus.read")]
     public async Task<ActionResult<BaseApiResponse<GetWeeklyMenuDetailResponse>>> GetWeeklyMenuDetail(int id)
     {
         try

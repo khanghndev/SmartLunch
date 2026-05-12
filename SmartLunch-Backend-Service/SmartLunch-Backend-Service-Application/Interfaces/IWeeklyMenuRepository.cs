@@ -1,3 +1,4 @@
+using System;
 using SmartLunch.Backend.Service.Domain.Entities;
 
 namespace SmartLunch.Backend.Service.Application.Interfaces;
@@ -15,7 +16,8 @@ public interface IWeeklyMenuRepository
         int page,
         int pageSize,
         string? searchTerm = null,
-        int? customerTypeId = null);
+        int? customerTypeId = null,
+        DateTime? effectiveDate = null);
 
     Task<WeeklyMenu?> GetWeeklyMenuWithSchedulesByDateAsync(DateTime date, int? customerTypeId = null);
 }
