@@ -10,6 +10,8 @@ public class OrderContractSummaryDto
     public string? SupplySchedule { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
+    public decimal? TotalValue { get; set; }
+    public decimal? MealUnitPrice { get; set; }
     public string Status { get; set; } = string.Empty;
     public string? PartnerLegalName { get; set; }
     public bool IsDigitallySigned { get; set; }

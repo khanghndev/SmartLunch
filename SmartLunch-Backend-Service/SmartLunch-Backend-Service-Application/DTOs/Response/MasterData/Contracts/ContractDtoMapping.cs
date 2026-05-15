@@ -27,6 +27,7 @@ public static class ContractDtoMapping
         StartDate = c.StartDate,
         EndDate = c.EndDate,
         TotalValue = c.TotalValue,
+        MealUnitPrice = c.MealUnitPrice,
         DepositAmount = c.DepositAmount,
         ContractFileUrl = c.ContractFileUrl,
         IsDigitallySigned = c.IsDigitallySigned,

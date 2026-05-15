@@ -17,8 +17,6 @@ namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/master-data/[controller]")]
-/// <remarks>Manager quản lý thực đơn tuần toàn hệ thống; Organization (B2B) có thể xem theo quyền weekly_menus.read.</remarks>
-[Authorize(Policy = "roles:Admin,Manager,Organization,Customer")]
 public class WeeklyMenuController : ControllerBase
 {
     private readonly ILogger<WeeklyMenuController> _logger;
@@ -34,7 +32,6 @@ public class WeeklyMenuController : ControllerBase
     /// Danh sách weekly menu (phân trang). Dùng EffectiveDate trong query để chỉ trả các kỳ có Start–End bao ngày đó (app Customer).
     /// </summary>
     [HttpGet]
-    [Authorize(Policy = "permission:weekly_menus.read")]
     public async Task<ActionResult<BaseApiResponse<GetWeeklyMenusResponse>>> GetWeeklyMenus([FromQuery] GetWeeklyMenusRequest request)
     {
         try
@@ -44,7 +41,8 @@ public class WeeklyMenuController : ControllerBase
                 request.PageSize,
                 request.SearchTerm,
                 request.CustomerTypeId,
-                request.CustomerProfileKey);
+                request.CustomerProfileKey,
+                request.EffectiveDate);
             var response = await _mediator.Send(query);
             return Ok(BaseApiResponse<GetWeeklyMenusResponse>.SuccessResult(response, "WeeklyMenus retrieved successfully"));
         }

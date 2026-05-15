@@ -51,6 +51,8 @@ public static class OrderDtoMapping
         SupplySchedule = c.SupplySchedule,
         StartDate = c.StartDate,
         EndDate = c.EndDate,
+        TotalValue = c.TotalValue,
+        MealUnitPrice = c.MealUnitPrice,
         Status = c.Status,
         PartnerLegalName = c.Partner?.LegalName,
         IsDigitallySigned = c.IsDigitallySigned,

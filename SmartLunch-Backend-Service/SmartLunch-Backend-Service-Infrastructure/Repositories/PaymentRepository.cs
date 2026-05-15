@@ -20,6 +20,14 @@ public class PaymentRepository : IPaymentRepository
             .FirstOrDefaultAsync(e => e.Id == id);
     }
 
+    public async Task<Payment?> GetByIdWithOrderAndPaymentsAsync(int paymentId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Payments
+            .Include(p => p.Order)
+                .ThenInclude(o => o!.Payments)
+            .FirstOrDefaultAsync(p => p.Id == paymentId, cancellationToken);
+    }
+
     public async Task<(List<Payment> Payments, int TotalCount)> GetPaymentsAsync(int page, int pageSize, string? searchTerm = null)
     {
         var query = _context.Payments.AsQueryable();

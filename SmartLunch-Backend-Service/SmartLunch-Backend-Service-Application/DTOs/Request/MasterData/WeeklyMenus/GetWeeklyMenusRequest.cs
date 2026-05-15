@@ -9,4 +9,7 @@ public class GetWeeklyMenusRequest
 
     /// <summary>Lọc theo <c>customer_types.ProfileKey</c> (ví dụ org_primary_school, industrial, org_company).</summary>
     public string? CustomerProfileKey { get; set; }
+
+    /// <summary>Ngày tham chiếu (date-only): chỉ trả weekly menu có StartDate–EndDate bao ngày này.</summary>
+    public DateTime? EffectiveDate { get; set; }
 }

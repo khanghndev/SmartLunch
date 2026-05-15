@@ -162,6 +162,38 @@ public class DishRepository : IDishRepository
         return (dishes, totalCount);
     }
 
+    public async Task<(List<Dish> Dishes, int TotalCount)> GetByDishCategoryIdAsync(
+        int dishCategoryId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default)
+    {
+        if (dishCategoryId <= 0)
+            return (new List<Dish>(), 0);
+
+        page = Math.Max(1, page);
+        pageSize = Math.Clamp(pageSize, 1, 200);
+
+        var query = _context.Dishes
+            .AsNoTracking()
+            .Where(d => d.IsActive && d.DishDishCategories.Any(ddc => ddc.DishCategoryId == dishCategoryId));
+
+        var totalCount = await query.CountAsync(cancellationToken);
+
+        var dishes = await query
+            .Include(d => d.CookingMethod)
+            .Include(d => d.DishDishCategories)
+                .ThenInclude(ddc => ddc.DishCategory)
+            .OrderBy(d => d.Name)
+            .Include(d => d.DishImages)
+                .ThenInclude(img => img.MediaFile)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(cancellationToken);
+
+        return (dishes, totalCount);
+    }
+
     public async Task<Dish> CreateAsync(Dish dish)
     {
         _context.Dishes.Add(dish);

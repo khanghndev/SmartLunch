@@ -519,6 +519,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.SupplySchedule).HasMaxLength(500);
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.TotalValue).HasPrecision(12, 2);
+                entity.Property(e => e.MealUnitPrice).HasPrecision(12, 2);
                 entity.Property(e => e.DepositAmount).HasPrecision(12, 2);
                 entity.HasOne(e => e.Partner).WithMany(p => p.Contracts).HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(e => e.Organization).WithMany(o => o.Contracts).HasForeignKey(e => e.OrganizationId).OnDelete(DeleteBehavior.SetNull);

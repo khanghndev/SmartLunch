@@ -1,0 +1,163 @@
+using System.Net;
+using System.Security.Claims;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using SmartLunch.Backend.Service.Application.Commands.OrganizationMealOrders.CheckoutOrganizationMeal;
+using SmartLunch.Backend.Service.Application.Commands.OrganizationMealOrders.PrepareOrganizationMealContract;
+using SmartLunch.Backend.Service.Application.DTOs;
+using SmartLunch.Backend.Service.Application.DTOs.Request.OrganizationMealOrders;
+using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealOrders;
+using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetOrganizationDishCategories;
+using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetOrganizationDishesByCategory;
+
+namespace SmartLunch.Backend.Service.API.Controllers;
+
+/// <summary>
+/// Đặt suất ăn theo đơn vị (Organization): danh mục món, nháp hợp đồng (chưa DB), checkout PayOS.
+/// </summary>
+[ApiController]
+[ApiVersion("1.0")]
+[Route("api/v{version:apiVersion}/organization/meal-order")]
+[Authorize(Policy = "roles:Company,Organization,Khách hàng doanh nghiệp")]
+public class OrganizationMealOrderController : ControllerBase
+{
+    private readonly ILogger<OrganizationMealOrderController> _logger;
+    private readonly IMediator _mediator;
+
+    public OrganizationMealOrderController(ILogger<OrganizationMealOrderController> logger, IMediator mediator)
+    {
+        _logger = logger;
+        _mediator = mediator;
+    }
+
+    /// <summary>Lấy thể loại món (bảng dish_categories) + cửa sổ ngày được phép đặt (VN).</summary>
+    [HttpGet("dish-category")]
+    public async Task<ActionResult<BaseApiResponse<GetOrganizationDishCategoriesResponse>>> GetDishCategories()
+    {
+        try
+        {
+            var response = await _mediator.Send(new GetOrganizationDishCategoriesQuery());
+            return Ok(BaseApiResponse<GetOrganizationDishCategoriesResponse>.SuccessResult(
+                response,
+                "Dish categories retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Org meal order: list dish categories");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetOrganizationDishCategoriesResponse>.ErrorResult(
+                    "An error occurred while retrieving dish categories",
+                    new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Lấy món theo thể loại (Id bản ghi dish_categories).</summary>
+    [HttpGet("dish/category")]
+    public async Task<ActionResult<BaseApiResponse<GetOrganizationDishesByCategoryResponse>>> GetDishesByCategory(
+        [FromQuery] int categoryId,
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 20)
+    {
+        try
+        {
+            var response = await _mediator.Send(new GetOrganizationDishesByCategoryQuery(categoryId, page, pageSize));
+            return Ok(BaseApiResponse<GetOrganizationDishesByCategoryResponse>.SuccessResult(
+                response,
+                "Dishes retrieved successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetOrganizationDishesByCategoryResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Org meal order: list dishes by category {CategoryId}", categoryId);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetOrganizationDishesByCategoryResponse>.ErrorResult(
+                    "An error occurred while retrieving dishes",
+                    new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Chuẩn bị hợp đồng / đơn hàng nháy: giá/suất do FE (<c>price</c>), mealPlan theo slot <c>main|side|soup</c> khớp <c>dish_categories.SlotKey</c>.
+    /// Tổng tiền = <c>price × (tổng quantity các dòng main)</c> — không dùng Dish.Price. Chỉ lưu Redis.
+    /// </summary>
+    [HttpPost("contract")]
+    public async Task<ActionResult<BaseApiResponse<PrepareOrganizationMealContractResponse>>> PrepareContract(
+        [FromBody] PrepareOrganizationMealContractRequest request)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var response = await _mediator.Send(new PrepareOrganizationMealContractCommand(userId, request));
+            return Ok(BaseApiResponse<PrepareOrganizationMealContractResponse>.SuccessResult(
+                response,
+                "Draft prepared successfully"));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode((int)HttpStatusCode.Forbidden, BaseApiResponse<PrepareOrganizationMealContractResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<PrepareOrganizationMealContractResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Org meal order: prepare contract draft");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<PrepareOrganizationMealContractResponse>.ErrorResult(
+                    "An error occurred while preparing the contract draft",
+                    new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Xác nhận đơn: ghi đơn + hợp đồng (nếu cần) vào DB, tạo thanh toán đặt cọc PayOS (20–50%).
+    /// </summary>
+    [HttpPost("checkout")]
+    public async Task<ActionResult<BaseApiResponse<CheckoutOrganizationMealResponse>>> Checkout(
+        [FromBody] CheckoutOrganizationMealRequest request)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var response = await _mediator.Send(new CheckoutOrganizationMealCommand(userId, request));
+            return Ok(BaseApiResponse<CheckoutOrganizationMealResponse>.SuccessResult(response, "Checkout successful"));
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<CheckoutOrganizationMealResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(BaseApiResponse<CheckoutOrganizationMealResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Org meal order: checkout");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<CheckoutOrganizationMealResponse>.ErrorResult(
+                    "An error occurred during checkout",
+                    new[] { ex.Message }));
+        }
+    }
+
+    private int RequireUserId()
+    {
+        var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+        if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
+            throw new UnauthorizedAccessException("Invalid user context.");
+        return userId;
+    }
+}

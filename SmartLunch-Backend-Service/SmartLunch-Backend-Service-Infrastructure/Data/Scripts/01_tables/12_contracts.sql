@@ -14,6 +14,7 @@ CREATE TABLE contracts (
     StartDate DATE NOT NULL,
     EndDate DATE NULL,
     TotalValue DECIMAL(12,2) NULL,
+    MealUnitPrice DECIMAL(12,2) NULL COMMENT 'Giá thỏa thuận / suất (đơn vị đặt) — không dùng giá catalog Dish',
     DepositAmount DECIMAL(12,2) NULL,
     ContractFileUrl VARCHAR(500) NULL COMMENT 'Đường dẫn file hợp đồng',
     

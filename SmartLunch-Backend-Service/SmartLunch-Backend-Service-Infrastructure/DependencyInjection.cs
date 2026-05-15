@@ -22,6 +22,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
             // ICacheService -> RedisCacheService (excluded from Scrutor scan by "Service" suffix)
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<ICartCacheService, CartCacheService>();
+            services.AddScoped<IOrganizationMealOrderDraftCache, OrganizationMealOrderDraftCacheService>();
             services.AddScoped<IStorageService, AppwriteStorageService>();
             services.AddScoped<IContractPdfService, QuestPdfContractFileService>();
             services.AddScoped<IOrderAnnexPdfService, QuestPdfOrderAnnexPdfService>();
@@ -40,6 +41,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
                         !type.IsSealed && // Exclude static classes (sealed classes without instance constructors)
                         type.Name != "FirebaseStorageService" && // Use AppwriteStorageService for IFirebaseStorageService
                         type.Name != "CartCacheService" && // Registered explicitly as ICartCacheService
+                        type.Name != "OrganizationMealOrderDraftCacheService" && // Registered explicitly as IOrganizationMealOrderDraftCache
                         !type.Name.EndsWith("Options") && // Exclude options classes
                         !type.Name.EndsWith("Extensions") && // Exclude extension classes
                         !type.Name.EndsWith("Context") && // Exclude DbContext (registered separately)

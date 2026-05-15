@@ -19,6 +19,10 @@ public class Contract
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public decimal? TotalValue { get; set; }
+
+    /// <summary>Giá / suất thỏa thuận với đơn vị (không lấy từ Dish.Price).</summary>
+    public decimal? MealUnitPrice { get; set; }
+
     public decimal? DepositAmount { get; set; }
     public string? ContractFileUrl { get; set; }
     

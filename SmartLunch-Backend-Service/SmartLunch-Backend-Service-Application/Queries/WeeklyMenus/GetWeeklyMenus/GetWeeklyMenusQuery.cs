@@ -11,12 +11,21 @@ public class GetWeeklyMenusQuery : IRequest<GetWeeklyMenusResponse>
     public int? CustomerTypeId { get; set; }
     public string? CustomerProfileKey { get; set; }
 
-    public GetWeeklyMenusQuery(int page = 1, int pageSize = 10, string? searchTerm = null, int? customerTypeId = null, string? customerProfileKey = null)
+    public DateTime? EffectiveDate { get; set; }
+
+    public GetWeeklyMenusQuery(
+        int page = 1,
+        int pageSize = 10,
+        string? searchTerm = null,
+        int? customerTypeId = null,
+        string? customerProfileKey = null,
+        DateTime? effectiveDate = null)
     {
         Page = page;
         PageSize = pageSize;
         SearchTerm = searchTerm;
         CustomerTypeId = customerTypeId;
         CustomerProfileKey = customerProfileKey;
+        EffectiveDate = effectiveDate;
     }
 }

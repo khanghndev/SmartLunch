@@ -20,6 +20,13 @@ public interface IDishRepository
 
     /// <summary>Danh sách phân trang. <paramref name="category"/>: lọc theo dish_categories.SlotKey (vd main, soup).</summary>
     Task<(List<Dish> Dishes, int TotalCount)> GetDishesAsync(int page, int pageSize, string? searchTerm = null, bool? isActive = null, string? category = null);
+
+    /// <summary>Món thuộc một bản ghi <c>dish_categories</c> (đặt suất đơn vị).</summary>
+    Task<(List<Dish> Dishes, int TotalCount)> GetByDishCategoryIdAsync(
+        int dishCategoryId,
+        int page,
+        int pageSize,
+        CancellationToken cancellationToken = default);
     Task<Dish> CreateAsync(Dish dish);
     Task<Dish> UpdateAsync(Dish dish);
 

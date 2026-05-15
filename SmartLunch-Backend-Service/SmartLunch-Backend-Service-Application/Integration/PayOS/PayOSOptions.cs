@@ -35,4 +35,9 @@ public sealed class PayOSOptions
     /// URL mặc định khi hủy. Có thể ghi đè mỗi lần tạo link.
     /// </summary>
     public string DefaultCancelUrl { get; set; } = "";
+
+    /// <summary>
+    /// Chỉ dùng môi trường dev: bỏ qua verify chữ ký webhook. Production phải false.
+    /// </summary>
+    public bool WebhookSkipSignatureVerification { get; set; }
 }
