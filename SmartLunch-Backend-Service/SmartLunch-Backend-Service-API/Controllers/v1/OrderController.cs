@@ -10,6 +10,7 @@ using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Orders;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Orders;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetOrder;
+using SmartLunch.Backend.Service.Application.Queries.Orders.GetOrderAnnexPreview;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetOrders;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetMealStatistics;
 using SmartLunch.Backend.Service.Application.Queries.Orders.GetDetailedMealStatistics;
@@ -135,6 +136,33 @@ public class OrderController : ControllerBase
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetOrderResponse>.ErrorResult("An error occurred while updating order status", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Xem trước PDF phụ lục đặt hàng (cùng bố cục bản ký chính thức).</summary>
+    [HttpGet("{id:int}/annex-preview")]
+    [Authorize(Policy = "roles:Customer,Organization,Company,Khách hàng cá nhân,Khách hàng doanh nghiệp")]
+    [Authorize(Policy = "permission:orders.read")]
+    public async Task<IActionResult> GetOrderAnnexPreview(int id)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var pdf = await _mediator.Send(new GetOrderAnnexPreviewQuery(id, userId));
+            return File(pdf, "application/pdf", $"phu-luc-don-{id}-preview.pdf");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating annex preview for order {OrderId}", id);
+            return StatusCode((int)HttpStatusCode.InternalServerError);
         }
     }
 

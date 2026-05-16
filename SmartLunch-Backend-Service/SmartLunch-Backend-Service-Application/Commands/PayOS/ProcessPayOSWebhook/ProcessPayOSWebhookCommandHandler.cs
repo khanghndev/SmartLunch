@@ -141,9 +141,12 @@ public sealed class ProcessPayOSWebhookCommandHandler
         }
 
         var derived = PaymentReconciliationDerivation.DerivePaymentStatus(order.TotalAmount, paidSum);
-        order.PaymentStatus = string.Equals(derived, PaymentReconciliationDerivation.DerivedOverpaid, StringComparison.Ordinal)
-            ? OrderPaymentStatus.Paid
-            : derived;
+        if (string.Equals(derived, PaymentReconciliationDerivation.DerivedOverpaid, StringComparison.Ordinal))
+            order.PaymentStatus = OrderPaymentStatus.Paid;
+        else if (string.Equals(derived, OrderPaymentStatus.Partial, StringComparison.Ordinal) && paidSum > 0)
+            order.PaymentStatus = OrderPaymentStatus.DepositPaid;
+        else
+            order.PaymentStatus = derived;
         order.UpdatedAt = DateTime.UtcNow;
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

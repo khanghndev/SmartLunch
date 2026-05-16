@@ -4,7 +4,6 @@ using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Orders;
 using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Application.Helpers;
-using SmartLunch.Backend.Service.Application.Integration.PayOS;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
@@ -25,8 +24,6 @@ public sealed class CheckoutOrganizationMealCommandHandler
     private readonly IOrderRepository _orderRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IContractPdfService _contractPdfService;
-    private readonly IPayOSClient _payOSClient;
-    private readonly IUserRepository _userRepository;
     private readonly ILogger<CheckoutOrganizationMealCommandHandler> _logger;
 
     public CheckoutOrganizationMealCommandHandler(
@@ -39,8 +36,6 @@ public sealed class CheckoutOrganizationMealCommandHandler
         IOrderRepository orderRepository,
         IUnitOfWork unitOfWork,
         IContractPdfService contractPdfService,
-        IPayOSClient payOSClient,
-        IUserRepository userRepository,
         ILogger<CheckoutOrganizationMealCommandHandler> logger)
     {
         _draftCache = draftCache;
@@ -52,8 +47,6 @@ public sealed class CheckoutOrganizationMealCommandHandler
         _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
         _contractPdfService = contractPdfService;
-        _payOSClient = payOSClient;
-        _userRepository = userRepository;
         _logger = logger;
     }
 
@@ -216,6 +209,13 @@ public sealed class CheckoutOrganizationMealCommandHandler
 
         await _draftCache.RemoveAsync(command.UserId, draftId, cancellationToken);
 
+        if (contract != null)
+        {
+            contract.DepositAmount = depositDecimal;
+            contract.UpdatedAt = DateTime.UtcNow;
+            await _contractRepository.UpdateAsync(contract);
+        }
+
         if (wasNewContract && contract != null)
         {
             var forPdf = await _contractRepository.GetByIdAsync(contract.Id)
@@ -229,6 +229,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
                     checkoutOrg,
                     cancellationToken);
                 forPdf.ContractFileUrl = url;
+                forPdf.DepositAmount = depositDecimal;
                 forPdf.UpdatedAt = DateTime.UtcNow;
                 await _contractRepository.UpdateAsync(forPdf);
             }
@@ -236,42 +237,6 @@ public sealed class CheckoutOrganizationMealCommandHandler
 
         if (!wasNewContract && contract != null && contract.Id > 0)
             await SyncExistingContractMealPricingAsync(contract.Id, draft, total, cancellationToken);
-
-        var payer = await _userRepository.GetByIdAsync(command.UserId);
-        var buyerName = payer == null
-            ? null
-            : string.Join(
-                " ",
-                new[] { payer.FirstName, payer.LastName }.Where(s => !string.IsNullOrWhiteSpace(s))).Trim();
-        if (string.IsNullOrEmpty(buyerName))
-            buyerName = payer?.Username;
-
-        var payOs = await _payOSClient.CreatePaymentRequestAsync(
-            new PayOSCreatePaymentInput
-            {
-                OrderCode = payment.Id,
-                Amount = depositVnd,
-                Description = $"Đặt cọc {req.DepositPercent}% đơn suất ăn #{order.Id}",
-                ReturnUrl = req.ReturnUrl,
-                CancelUrl = req.CancelUrl,
-                BuyerName = buyerName,
-                BuyerEmail = payer?.Email,
-                BuyerPhone = payer?.PhoneNumber,
-                Items = new[]
-                {
-                    new PayOSPaymentItemInput
-                    {
-                        Name = $"Đặt cọc hợp đồng / đơn #{order.Id}",
-                        Quantity = 1,
-                        Price = depositVnd,
-                        Unit = "VND",
-                    },
-                },
-            },
-            cancellationToken);
-
-        if (!payOs.Success)
-            _logger.LogWarning("PayOS checkout failed for order {OrderId}: {Message}", order.Id, payOs.Message);
 
         var reloaded = await _orderRepository.GetByIdWithDetailsAsync(order.Id)
             ?? throw new InvalidOperationException("Order created but failed to reload.");
@@ -281,10 +246,10 @@ public sealed class CheckoutOrganizationMealCommandHandler
             Order = new GetOrderResponse { Order = OrderDtoMapping.ToDto(reloaded) },
             DepositPercent = req.DepositPercent,
             DepositAmountVnd = depositVnd,
-            CheckoutUrl = payOs.CheckoutUrl,
-            QrCode = payOs.QrCode,
-            PayOsStatus = payOs.Status,
-            PayOsMessage = payOs.Success ? null : payOs.Message,
+            CheckoutUrl = null,
+            QrCode = null,
+            PayOsStatus = null,
+            PayOsMessage = "Đơn đã tạo. Vui lòng ký phụ lục đặt hàng trước khi thanh toán đặt cọc.",
         };
     }
 

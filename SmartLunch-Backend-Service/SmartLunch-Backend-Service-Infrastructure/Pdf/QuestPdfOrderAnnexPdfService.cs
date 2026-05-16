@@ -34,7 +34,7 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
         if (order.Id <= 0)
             throw new ArgumentException("Order must be persisted.", nameof(order));
 
-        var pdf = BuildPdfBytes(order, buyerDisplayName, signatureDataUrl);
+        var pdf = GeneratePdfBytes(order, buyerDisplayName, signatureDataUrl);
         var objectName = $"orders/o{order.Id}/phu-luc-don-{order.Id}-{DateTime.UtcNow:yyyyMMddHHmmss}.pdf";
 
         await using var ms = new MemoryStream(pdf);
@@ -48,7 +48,7 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
         return signed.Url;
     }
 
-    private static byte[] BuildPdfBytes(Order order, string buyerDisplayName, string signatureDataUrl)
+    public byte[] GeneratePdfBytes(Order order, string buyerDisplayName, string? signatureDataUrl = null)
     {
         var vi = CultureInfo.GetCultureInfo("vi-VN");
         string Dt(DateTime d) => d.ToString("dd/MM/yyyy HH:mm", vi);

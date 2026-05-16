@@ -1,4 +1,5 @@
 using MediatR;
+using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Orders;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
@@ -9,13 +10,16 @@ public class SignOrderAnnexCommandHandler : IRequestHandler<SignOrderAnnexComman
 {
     private readonly IOrderRepository _orderRepository;
     private readonly IOrderAnnexPdfService _orderAnnexPdfService;
+    private readonly IContractRepository _contractRepository;
 
     public SignOrderAnnexCommandHandler(
         IOrderRepository orderRepository,
-        IOrderAnnexPdfService orderAnnexPdfService)
+        IOrderAnnexPdfService orderAnnexPdfService,
+        IContractRepository contractRepository)
     {
         _orderRepository = orderRepository;
         _orderAnnexPdfService = orderAnnexPdfService;
+        _contractRepository = contractRepository;
     }
 
     public async Task<GetOrderResponse> Handle(SignOrderAnnexCommand request, CancellationToken cancellationToken)
@@ -47,6 +51,27 @@ public class SignOrderAnnexCommandHandler : IRequestHandler<SignOrderAnnexComman
         order.AnnexPdfUrl = pdfUrl;
         order.AnnexSignedAt = DateTime.UtcNow;
         order.UpdatedAt = DateTime.UtcNow;
+
+        var pendingDeposit = order.Payments.FirstOrDefault(p =>
+            string.Equals(p.Method, "payos", StringComparison.OrdinalIgnoreCase) &&
+            string.Equals(p.Status, "pending", StringComparison.OrdinalIgnoreCase));
+
+        if (pendingDeposit != null &&
+            string.Equals(order.PaymentStatus, OrderPaymentStatus.Unpaid, StringComparison.OrdinalIgnoreCase))
+        {
+            order.PaymentStatus = OrderPaymentStatus.AwaitingPayment;
+            if (order.ContractId is int contractId && contractId > 0)
+            {
+                var contract = await _contractRepository.GetByIdAsync(contractId);
+                if (contract != null)
+                {
+                    contract.DepositAmount = pendingDeposit.Amount;
+                    contract.UpdatedAt = DateTime.UtcNow;
+                    await _contractRepository.UpdateAsync(contract);
+                }
+            }
+        }
+
         await _orderRepository.CommitAsync();
 
         var reloaded = await _orderRepository.GetByIdWithDetailsAsync(order.Id);

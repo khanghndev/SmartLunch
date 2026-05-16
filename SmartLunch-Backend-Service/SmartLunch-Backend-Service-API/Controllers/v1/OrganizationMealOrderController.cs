@@ -4,6 +4,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartLunch.Backend.Service.Application.Commands.OrganizationMealOrders.CheckoutOrganizationMeal;
+using SmartLunch.Backend.Service.Application.Commands.OrganizationMealOrders.InitiateOrganizationMealPayment;
 using SmartLunch.Backend.Service.Application.Commands.OrganizationMealOrders.PrepareOrganizationMealContract;
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.OrganizationMealOrders;
@@ -118,7 +119,7 @@ public class OrganizationMealOrderController : ControllerBase
     }
 
     /// <summary>
-    /// Xác nhận đơn: ghi đơn + hợp đồng (nếu cần) vào DB, tạo thanh toán đặt cọc PayOS (20–50%).
+    /// Xác nhận đơn: ghi đơn + hợp đồng (nếu cần) vào DB, tạo bản ghi đặt cọc chờ thanh toán (chưa gọi PayOS).
     /// </summary>
     [HttpPost("checkout")]
     public async Task<ActionResult<BaseApiResponse<CheckoutOrganizationMealResponse>>> Checkout(
@@ -149,6 +150,48 @@ public class OrganizationMealOrderController : ControllerBase
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<CheckoutOrganizationMealResponse>.ErrorResult(
                     "An error occurred during checkout",
+                    new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Khởi tạo thanh toán PayOS cho đơn đã ký phụ lục (trạng thái awaiting_payment).
+    /// </summary>
+    [HttpPost("pay")]
+    public async Task<ActionResult<BaseApiResponse<InitiateOrganizationMealPaymentResponse>>> InitiatePayment(
+        [FromBody] InitiateOrganizationMealPaymentRequest request)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var response = await _mediator.Send(new InitiateOrganizationMealPaymentCommand(userId, request));
+            return Ok(BaseApiResponse<InitiateOrganizationMealPaymentResponse>.SuccessResult(
+                response,
+                "Payment link created"));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode((int)HttpStatusCode.Forbidden, BaseApiResponse<InitiateOrganizationMealPaymentResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<InitiateOrganizationMealPaymentResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<InitiateOrganizationMealPaymentResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(BaseApiResponse<InitiateOrganizationMealPaymentResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Org meal order: initiate payment for order {OrderId}", request.OrderId);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<InitiateOrganizationMealPaymentResponse>.ErrorResult(
+                    "An error occurred while initiating payment",
                     new[] { ex.Message }));
         }
     }
