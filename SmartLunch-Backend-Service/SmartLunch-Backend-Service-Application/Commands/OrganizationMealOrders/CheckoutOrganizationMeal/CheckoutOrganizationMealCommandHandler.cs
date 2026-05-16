@@ -1,4 +1,3 @@
-using System.Globalization;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using SmartLunch.Backend.Service.Application.Constants;
@@ -160,8 +159,6 @@ public sealed class CheckoutOrganizationMealCommandHandler
 
         foreach (var day in draft.Days.OrderBy(d => d.ServiceDate))
         {
-            var dayCode = day.ServiceDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-
             void AddDayLines(List<OrganizationMealOrderDraftLine> lines, string slot)
             {
                 var isMain = string.Equals(slot, "main", StringComparison.OrdinalIgnoreCase);
@@ -175,7 +172,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
                         Quantity = line.Quantity,
                         UnitPrice = unitPrice,
                         TotalPrice = lineTotal,
-                        Code = dayCode,
+                        ServiceDate = day.ServiceDate,
                     });
                 }
             }

@@ -59,16 +59,8 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
 
         static DateOnly ResolveServiceDate(OrderItem item, DateTime scheduledUtc)
         {
-            if (!string.IsNullOrWhiteSpace(item.Code) &&
-                DateOnly.TryParseExact(
-                    item.Code.Trim(),
-                    "yyyy-MM-dd",
-                    CultureInfo.InvariantCulture,
-                    DateTimeStyles.None,
-                    out var parsed))
-            {
-                return parsed;
-            }
+            if (item.ServiceDate.HasValue)
+                return item.ServiceDate.Value;
 
             return DateOnly.FromDateTime(scheduledUtc);
         }

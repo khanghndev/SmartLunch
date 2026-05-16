@@ -4,6 +4,7 @@ CREATE TABLE order_items (
     OrderId INT NOT NULL,
     DishId INT NOT NULL,
     Quantity INT NOT NULL DEFAULT 1,
+    ServiceDate DATE NULL COMMENT 'Ngày giao suất (đơn nhiều ngày)',
     UnitPrice DECIMAL(10,2) NOT NULL,
     TotalPrice DECIMAL(12,2) NOT NULL,
     PRIMARY KEY (Id),

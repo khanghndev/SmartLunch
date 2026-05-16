@@ -867,6 +867,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.UnitPrice).HasPrecision(10, 2);
                 entity.Property(e => e.TotalPrice).HasPrecision(12, 2);
+                entity.Property(e => e.ServiceDate).HasColumnType("date");
                 entity.HasOne(e => e.Order).WithMany(o => o.OrderItems).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Dish).WithMany(d => d.OrderItems).HasForeignKey(e => e.DishId).OnDelete(DeleteBehavior.Restrict);
             });

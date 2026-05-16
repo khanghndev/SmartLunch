@@ -10,6 +10,8 @@ public class OrderItem
     public int OrderId { get; set; }
     public int DishId { get; set; }
     public int Quantity { get; set; } = 1;
+    /// <summary>Ngày giao suất (đơn đặt nhiều ngày); null với đơn một ngày / giỏ hàng.</summary>
+    public DateOnly? ServiceDate { get; set; }
     public decimal UnitPrice { get; set; }
     public decimal TotalPrice { get; set; }
 
