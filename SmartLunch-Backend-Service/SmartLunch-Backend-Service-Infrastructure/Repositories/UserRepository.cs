@@ -19,6 +19,8 @@ public class UserRepository : IUserRepository
         return await _context.Users
             .Include(u => u.UserRoles)
                 .ThenInclude(ur => ur.Role)
+            .Include(u => u.UserOrganizations)
+                .ThenInclude(uo => uo.Organization)
             .FirstOrDefaultAsync(u => u.Id == id);
     }
 
