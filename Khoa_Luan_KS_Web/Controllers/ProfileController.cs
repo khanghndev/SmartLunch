@@ -160,6 +160,28 @@ namespace Khoa_Luan_KS_Web.Controllers
             return View(vm);
         }
 
+        [HttpGet]
+        public async Task<IActionResult> OrderAnnexPreview(int orderId, CancellationToken ct = default)
+        {
+            if (!IsOrganizationAccount(User))
+                return Forbid();
+
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return Unauthorized();
+
+            try
+            {
+                var pdf = await _masterDataClient.GetOrderAnnexPreviewPdfAsync(orderId, accessToken, ct);
+                Response.Headers.CacheControl = "no-store";
+                return File(pdf, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Không tạo được bản xem trước PDF: {ex.Message}");
+            }
+        }
+
         private static string? SerializeOrderAnnexPortal(OrderDetailClientDto o)
         {
             if (o.Id == 0 || !string.IsNullOrEmpty(o.AnnexPdfUrl))
@@ -258,8 +280,8 @@ namespace Khoa_Luan_KS_Web.Controllers
                     accessToken,
                     ct);
                 TempData["OrderSuccess"] =
-                    "Đã ký và lưu PDF phụ lục đặt hàng trên cloud. Bạn có thể mở lại từ liên kết PDF trên trang chi tiết đơn.";
-                return RedirectToAction(nameof(OrderDetail), new { id = orderId });
+                    "Đã ký và lưu PDF phụ lục lên cloud. Trạng thái đơn: đang chờ thanh toán — vui lòng thanh toán đặt cọc từ lịch sử đơn hàng.";
+                return RedirectToAction(nameof(Orders));
             }
             catch (Exception ex)
             {

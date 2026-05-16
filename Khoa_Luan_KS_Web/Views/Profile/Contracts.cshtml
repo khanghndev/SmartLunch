@@ -1,4 +1,4 @@
-@using System.Globalization
+﻿@using System.Globalization
 @using System.Text.Json
 @using System.Text.Encodings.Web
 @model Khoa_Luan_KS_Web.Models.CustomerContractsPageVm
@@ -13,7 +13,19 @@
 <style>
     [x-cloak] { display: none !important; }
     .esign-paper { font-family: 'Times New Roman', Times, serif; }
-    .esign-full { position: fixed; inset: 0; z-index: 60; background: #f8fafc; overflow-y: auto; }
+    .esign-full { position: fixed; inset: 0; z-index: 60; background: #e2e8f0; overflow-y: auto; }
+    .annex-pdf-frame {
+        min-height: calc(100vh - 10.5rem);
+        height: calc(100vh - 10.5rem);
+        background: #525659;
+    }
+    .annex-pdf-frame iframe {
+        display: block;
+        width: 100%;
+        height: 100%;
+        border: 0;
+        background: #fff;
+    }
 </style>
 
 <script>window.__HM_CONTRACTS = @Html.Raw(contractsJson);</script>
@@ -40,7 +52,7 @@
     {
         <div class="mb-4 rounded-xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm text-sky-950">
             <p class="font-medium">@Model.PostCheckoutBanner</p>
-            <p class="mt-1 text-sky-900">Sau khi đặt hàng, hệ thống chuyển thẳng tới chi tiết đơn và lưu phụ lục nếu bạn đã ký ở bước phụ lục. Nếu đơn vẫn chờ ký PDF, mở cổng phía dưới hoặc từ liên kết trên trang đơn.</p>
+            <p class="mt-1 text-sky-900">Ký phụ lục bên dưới (hoặc cổng tự mở). Sau khi ký, trạng thái chuyển <strong>đang chờ thanh toán</strong> — thanh toán đặt cọc tại <a href="@Url.Action("Orders", "Profile")" class="font-semibold underline">lịch sử đơn hàng</a>.</p>
             @if (Model.PostCheckoutOrderId is int ocId)
             {
                 <p class="mt-2"><a href="@Url.Action("OrderDetail", "Profile", new { id = ocId })" class="font-semibold text-orange-700 underline hover:text-orange-800">Xem chi tiết đơn vừa tạo</a></p>
@@ -193,43 +205,21 @@
         </header>
 
         <div class="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6" x-show="orderAnnex">
-            <div x-show="annexStep === 1" class="esign-paper rounded-sm border border-slate-200 bg-white p-8 shadow-lg sm:p-12">
-                <h2 class="mb-6 text-center text-lg font-black uppercase tracking-wide text-slate-900">Phụ lục đặt hàng / xác nhận biên bản</h2>
-                <div class="space-y-3 text-sm leading-relaxed text-slate-800">
-                    <p><strong>Bên A (HuitMeal):</strong> <span x-text="orderAnnex.partnerLegalName || 'Công ty Cổ phần HuitMeal'"></span></p>
-                    <p><strong>Bên B (Khách hàng):</strong> <span x-text="orderAnnex.organizationName || 'Đơn vị khách hàng'"></span></p>
-                    <p class="text-xs text-slate-600">Mã đơn: <span class="font-mono font-bold" x-text="orderAnnex.invoiceCode || ('#' + orderAnnex.id)"></span> · Ngày đặt <span x-text="fmtIso(orderAnnex.orderDate)"></span> · Giao dự kiến <span x-text="fmtIso(orderAnnex.scheduledDate)"></span></p>
-                    <p class="border-t border-slate-200 pt-4"><strong>Điều 1.</strong> Tăng hạn mức dự trữ suất theo khung đã thống nhất với đơn vị (tham chiếu chính sách B2B).</p>
-                    <p><strong>Điều 2.</strong> Hiệu lực theo kỳ giao ngày <span x-text="fmtIso(orderAnnex.scheduledDate)"></span>.</p>
-                    <p><strong>Điều 3.</strong> Chất lượng, đơn giá và thanh toán các kỳ khác giữ nguyên theo hợp đồng khung (nếu có).</p>
-                    <p class="text-xs italic text-slate-500">Văn bản điện tử mô phỏng giá trị xác nhận; sau khi bấm gửi, hệ thống tạo PDF và lưu trên cloud.</p>
-                </div>
-                <div class="mt-6 rounded-lg border border-slate-200 bg-slate-50/80 p-4">
-                    <p class="mb-2 text-xs font-black uppercase text-slate-600">Danh mục món &amp; thành tiền</p>
-                    <ul class="max-h-52 space-y-1.5 overflow-y-auto text-sm">
-                        <template x-for="(it, idx) in (orderAnnex.items || [])" :key="idx">
-                            <li class="flex justify-between gap-2 border-b border-slate-200/80 py-1">
-                                <span x-text="it.dishName"></span>
-                                <span><span class="text-slate-500" x-text="'x' + it.quantity"></span> <strong class="text-orange-700" x-text="money(it.totalPrice)"></strong></span>
-                            </li>
-                        </template>
-                    </ul>
-                    <p class="mt-3 text-right text-base font-black text-slate-900">Tổng: <span x-text="money(orderAnnex.totalAmount)"></span></p>
-                </div>
-                <div class="mt-10 grid gap-6 border-t border-slate-200 pt-8 sm:grid-cols-2">
-                    <div class="text-center">
-                        <p class="mb-3 text-xs font-black uppercase text-slate-600">Đại diện HuitMeal</p>
-                        <div class="mx-auto flex h-24 w-24 items-center justify-center rounded-full border-4 border-red-500 text-[8px] font-black uppercase leading-tight text-red-600">Approved<br/>HuitMeal</div>
-                        <p class="mt-2 text-[10px] text-slate-500">Đã xác thực hệ thống</p>
+            <div x-show="annexStep === 1">
+                <p class="mb-3 text-center text-[10px] font-semibold uppercase tracking-wider text-slate-500">Bản xem trước phụ lục (PDF) — đúng nội dung sẽ lưu sau khi ký</p>
+                <div class="annex-pdf-frame relative mx-auto max-w-4xl overflow-hidden rounded-sm border border-slate-300 shadow-2xl">
+                    <div x-show="annexPreviewLoading" class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-3 bg-slate-200/95">
+                        <div class="h-10 w-10 animate-spin rounded-full border-4 border-slate-300 border-t-slate-900"></div>
+                        <p class="text-sm font-semibold text-slate-700">Đang tạo bản xem trước PDF…</p>
                     </div>
-                    <div class="text-center">
-                        <p class="mb-3 text-xs font-black uppercase text-slate-600">Đại diện khách hàng</p>
-                        <div class="mx-auto flex h-28 max-w-xs items-center justify-center rounded-lg border-2 border-dashed border-slate-300 text-sm font-bold text-slate-400">CHỜ BẠN KÝ</div>
-                        <p class="mt-2 text-[10px] font-semibold text-slate-600" x-text="orderAnnex.organizationName || ''"></p>
-                    </div>
+                    <iframe
+                        x-show="annexPreviewSrc"
+                        :src="annexPreviewSrc"
+                        @@load="onAnnexPreviewLoad()"
+                        title="Xem trước phụ lục đặt hàng"
+                    ></iframe>
                 </div>
             </div>
-
             <div x-show="annexStep === 2" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
                 <p class="mb-4 text-sm font-bold text-slate-800">Ký bằng chuột hoặc cảm ứng (PNG) — xác nhận phụ lục đơn</p>
                 <canvas id="order-annex-sig-canvas" width="520" height="200" class="w-full max-w-full cursor-crosshair touch-none rounded-xl border border-slate-200 bg-slate-50"></canvas>
@@ -240,7 +230,7 @@
                     @Html.AntiForgeryToken()
                     <input type="hidden" name="orderId" :value="orderAnnex.id" />
                     <input type="hidden" name="digitalSignature" id="order-annex-digital-signature" value="" />
-                    <button type="button" @@click="submitAnnexSig()" class="w-full rounded-xl bg-slate-900 py-4 text-sm font-black text-white shadow-lg hover:bg-orange-600">Xác nhận &amp; lưu PDF lên cloud</button>
+                    <button type="button" @@click="submitAnnexSig()" class="w-full rounded-xl bg-slate-900 py-4 text-sm font-black text-white shadow-lg hover:bg-orange-600">Hoàn tất ký — lưu PDF &amp; chuyển thanh toán</button>
                 </form>
             </div>
         </div>
@@ -259,6 +249,8 @@
                 orderAnnex: null,
                 annexOpen: false,
                 annexStep: 1,
+                annexPreviewSrc: '',
+                annexPreviewLoading: false,
                 open: false,
                 step: 1,
                 activeId: null,
@@ -270,8 +262,23 @@
                     this.annexStep = 1;
                     if (this.annexOpen) {
                         document.body.classList.add('overflow-hidden');
+                        this.loadAnnexPreview();
                         this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
                     }
+                },
+                loadAnnexPreview(force) {
+                    if (!this.orderAnnex?.id) return;
+                    if (this.orderAnnex.annexPdfUrl) {
+                        this.annexPreviewLoading = true;
+                        this.annexPreviewSrc = this.orderAnnex.annexPdfUrl;
+                        return;
+                    }
+                    if (force) this.annexPreviewSrc = '';
+                    this.annexPreviewLoading = true;
+                    this.annexPreviewSrc = '/Profile/OrderAnnexPreview?orderId=' + encodeURIComponent(this.orderAnnex.id) + '&_=' + Date.now();
+                },
+                onAnnexPreviewLoad() {
+                    this.annexPreviewLoading = false;
                 },
                 fmt(v) {
                     if (!v) return '';
@@ -304,6 +311,7 @@
                     this.annexStep = 1;
                     this.annexOpen = true;
                     document.body.classList.add('overflow-hidden');
+                    this.loadAnnexPreview();
                     this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
                 },
                 closeAnnexFlow() {

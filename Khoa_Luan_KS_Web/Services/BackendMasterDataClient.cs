@@ -285,6 +285,19 @@ public class BackendMasterDataClient
         return await HandleResponse<GetOrderClientResponse>(res, ct);
     }
 
+    public async Task<byte[]> GetOrderAnnexPreviewPdfAsync(int orderId, string accessToken, CancellationToken ct = default)
+    {
+        var client = CreateClient(accessToken);
+        using var res = await client.GetAsync($"/api/v1/master-data/Order/{orderId}/annex-preview", ct);
+        if (!res.IsSuccessStatusCode)
+        {
+            var body = await res.Content.ReadAsStringAsync(ct);
+            throw new InvalidOperationException($"Không tải được preview PDF phụ lục ({(int)res.StatusCode}): {body}");
+        }
+
+        return await res.Content.ReadAsByteArrayAsync(ct);
+    }
+
     public async Task<GetOrderClientResponse> SignOrderAnnexAsync(int orderId, SignOrderAnnexApiRequest request, string accessToken, CancellationToken ct = default)
     {
         var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
@@ -352,6 +365,16 @@ public class BackendMasterDataClient
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var res = await client.PostAsync("/api/v1/organization/meal-order/checkout", content, ct);
         return await HandleResponse<CheckoutOrganizationMealClientResponse>(res, ct);
+    }
+
+    public async Task<InitiateOrganizationMealPaymentClientResponse> InitiateOrganizationMealPaymentAsync(
+        InitiateOrganizationMealPaymentClientRequest request, string accessToken, CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var client = CreateClient(accessToken);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PostAsync("/api/v1/organization/meal-order/pay", content, ct);
+        return await HandleResponse<InitiateOrganizationMealPaymentClientResponse>(res, ct);
     }
 
     private async Task<T> GetAsync<T>(string path, string accessToken, CancellationToken ct)
@@ -1025,6 +1048,23 @@ public class CheckoutOrganizationMealClientResponse
 {
     public GetOrderClientResponse Order { get; set; } = new();
     public int DepositPercent { get; set; }
+    public int DepositAmountVnd { get; set; }
+    public string? CheckoutUrl { get; set; }
+    public string? QrCode { get; set; }
+    public string? PayOsStatus { get; set; }
+    public string? PayOsMessage { get; set; }
+}
+
+public class InitiateOrganizationMealPaymentClientRequest
+{
+    public int OrderId { get; set; }
+    public string? ReturnUrl { get; set; }
+    public string? CancelUrl { get; set; }
+}
+
+public class InitiateOrganizationMealPaymentClientResponse
+{
+    public int OrderId { get; set; }
     public int DepositAmountVnd { get; set; }
     public string? CheckoutUrl { get; set; }
     public string? QrCode { get; set; }

@@ -181,10 +181,6 @@ public class OrganizationMealOrderController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        var baseUrl = $"{Request.Scheme}://{Request.Host}";
-        var returnUrl = $"{baseUrl}{Url.Action(nameof(PaymentResult))}";
-        var cancelUrl = $"{baseUrl}{Url.Action(nameof(Review))}";
-
         try
         {
             var result = await _masterDataClient.CheckoutOrganizationMealAsync(
@@ -192,8 +188,6 @@ public class OrganizationMealOrderController : Controller
                 {
                     DraftId = draft.DraftId,
                     DepositPercent = depositPercent,
-                    ReturnUrl = returnUrl,
-                    CancelUrl = cancelUrl,
                 },
                 accessToken,
                 ct);
@@ -202,27 +196,65 @@ public class OrganizationMealOrderController : Controller
             HttpContext.Session.Remove(DraftSessionKey + "_org_name");
 
             var order = result.Order?.Order;
-            TempData["OrderSuccess"] = $"Đã tạo đơn hàng #{order?.Id} thành công.";
-            TempData["OrderPlacedId"] = order?.Id.ToString();
-
-            if (!string.IsNullOrEmpty(result.CheckoutUrl))
+            if (order == null || order.Id <= 0)
             {
-                TempData["OrgMealPayOsUrl"] = result.CheckoutUrl;
-                return Redirect(result.CheckoutUrl);
+                TempData["OrgMealError"] = "Không tạo được đơn hàng.";
+                return RedirectToAction(nameof(Review));
             }
 
-            return RedirectToAction(nameof(PaymentResult), new
-            {
-                orderId = order?.Id,
-                depositPercent = result.DepositPercent,
-                depositAmount = result.DepositAmountVnd,
-                message = result.PayOsMessage,
-            });
+            TempData["OrderSuccess"] =
+                $"Đã tạo đơn hàng #{order.Id}. Vui lòng ký phụ lục đặt hàng, sau đó thanh toán đặt cọc từ lịch sử đơn.";
+            TempData["OrderPlacedId"] = order.Id.ToString();
+
+            return RedirectToAction("Contracts", "Profile", new { orderId = order.Id });
         }
         catch (Exception ex)
         {
             TempData["OrgMealError"] = ex.Message;
             return RedirectToAction(nameof(Review));
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PayDeposit(int orderId, CancellationToken ct)
+    {
+        if (!IsOrganizationMealOrderUser(User))
+            return Forbid();
+
+        var accessToken = HttpContext.Session.GetString("access_token");
+        if (string.IsNullOrEmpty(accessToken))
+            return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action("Orders", "Profile") });
+
+        var baseUrl = $"{Request.Scheme}://{Request.Host}";
+        var returnUrl = $"{baseUrl}{Url.Action(nameof(PaymentResult), new { orderId })}";
+        var cancelUrl = $"{baseUrl}{Url.Action("Orders", "Profile")}";
+
+        try
+        {
+            var result = await _masterDataClient.InitiateOrganizationMealPaymentAsync(
+                new InitiateOrganizationMealPaymentClientRequest
+                {
+                    OrderId = orderId,
+                    ReturnUrl = returnUrl,
+                    CancelUrl = cancelUrl,
+                },
+                accessToken,
+                ct);
+
+            if (!string.IsNullOrEmpty(result.CheckoutUrl))
+            {
+                TempData["OrderPlacedId"] = orderId.ToString();
+                return Redirect(result.CheckoutUrl);
+            }
+
+            TempData["OrgMealError"] = result.PayOsMessage ?? "Không tạo được liên kết thanh toán PayOS.";
+            return RedirectToAction("OrderDetail", "Profile", new { id = orderId });
+        }
+        catch (Exception ex)
+        {
+            TempData["OrgMealError"] = ex.Message;
+            return RedirectToAction("Orders", "Profile");
         }
     }
 
@@ -240,8 +272,14 @@ public class OrganizationMealOrderController : Controller
             PayOsReady = !string.IsNullOrEmpty(payUrl),
         };
 
-        if (orderId is > 0 && TempData["OrderSuccess"] is string ok)
-            ViewBag.SuccessMessage = ok;
+        if (orderId is > 0)
+        {
+            vm.OrderId = orderId.Value;
+            if (TempData["OrderSuccess"] is string ok)
+                ViewBag.SuccessMessage = ok;
+            else
+                ViewBag.SuccessMessage = "Thanh toán đặt cọc thành công. Hợp đồng đã chuyển sang trạng thái đã đặt cọc.";
+        }
 
         return View(vm);
     }

@@ -1,6 +1,7 @@
 @model Khoa_Luan_KS_Web.Services.OrderDetailClientDto
 @using System
 @using Khoa_Luan_KS_Web.Models
+@using Khoa_Luan_KS_Web.Helpers
 @{
     ViewData["Title"] = "Chi tiết đơn hàng";
     Layout = "_LayoutCustomer";
@@ -11,6 +12,10 @@
     @if (TempData["OrderSuccess"] is string os && !string.IsNullOrEmpty(os))
     {
         <div class="mb-4 rounded-xl border border-green-200 bg-green-50 px-4 py-3 text-sm font-medium text-green-800">@os</div>
+    }
+    @if (TempData["OrgMealError"] is string ome && !string.IsNullOrEmpty(ome))
+    {
+        <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-900">@ome</div>
     }
     @if (TempData["AnnexSignWarning"] is string aw && !string.IsNullOrEmpty(aw))
     {
@@ -59,9 +64,20 @@
         else if (User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp"))
         {
             <a asp-action="Contracts" asp-route-orderId="@Model.Id"
-               class="inline-flex items-center gap-2 rounded-xl border border-slate-900 bg-white px-4 py-2.5 text-xs font-bold text-slate-900 hover:bg-slate-50 sm:text-sm">
-                Ký phụ lục đặt hàng (PDF)
+               class="inline-flex items-center gap-2 rounded-xl border border-violet-300 bg-violet-50 px-4 py-2.5 text-xs font-bold text-violet-900 hover:bg-violet-100 sm:text-sm">
+                Ký phụ lục đặt hàng
             </a>
+        }
+        @if ((User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp"))
+             && OrderPaymentStatusDisplay.CanPayDeposit(Model.PaymentStatus, Model.AnnexPdfUrl))
+        {
+            <form asp-controller="OrganizationMealOrder" asp-action="PayDeposit" method="post" class="inline">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="orderId" value="@Model.Id" />
+                <button type="submit" class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2.5 text-xs font-black text-white shadow-lg hover:from-orange-600 hover:to-amber-600 sm:text-sm">
+                    <i data-lucide="credit-card" class="h-4 w-4"></i> Thanh toán đặt cọc
+                </button>
+            </form>
         }
         <a asp-action="Orders" class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 sm:text-sm">Danh sách đơn</a>
         <a asp-controller="Menu" asp-action="Index" class="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2.5 text-xs font-bold text-orange-800 hover:bg-orange-100 sm:text-sm">Tiếp tục mua</a>
@@ -73,15 +89,8 @@
         <div class="flex justify-between border-b border-slate-100 py-2"><span class="text-slate-500">Trạng thái</span><span class="font-bold">@Model.Status</span></div>
         <div class="flex justify-between py-2">
             <span class="text-slate-500">Thanh toán</span>
-            <span class="font-bold">
-                @if (string.Equals(Model.PaymentStatus, "unpaid", StringComparison.OrdinalIgnoreCase))
-                {
-                    <span class="rounded-full bg-amber-100 px-2 py-0.5 text-xs font-black text-amber-900">Chờ thanh toán</span>
-                }
-                else
-                {
-                    @Model.PaymentStatus
-                }
+            <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-black @OrderPaymentStatusDisplay.BadgeClass(Model.PaymentStatus)">
+                @OrderPaymentStatusDisplay.Label(Model.PaymentStatus)
             </span>
         </div>
     </div>

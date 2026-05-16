@@ -243,11 +243,8 @@
               <div class="absolute top-[75px] left-0 w-[280px] bg-white shadow-xl rounded-xl py-3 border border-gray-100 opacity-0 invisible translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50">
                 <a href="/Service/Safety" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/Safety") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn sạch</a>
                 <a href="/Service/MenuSuggestions" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/MenuSuggestions") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Gợi ý thực đơn</a>
-                <a href="/Menu/Index" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Menu/Index") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all border-t mt-1 pt-3">Thực đơn</a>
-                @if (isOrgMealOrderUser)
-                {
-                <a href="/OrganizationMealOrder" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActivePrefix("/OrganizationMealOrder") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all font-bold">Đặt suất doanh nghiệp</a>
-                }
+                <a href="/Menu/Index" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Menu/Index") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all border-t mt-1 pt-3">Thực đơn cố định</a>
+                <a href="/OrganizationMealOrder" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActivePrefix("/OrganizationMealOrder") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all font-bold">Thực đơn tự chọn</a>
                 <a href="/Service/School" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/School") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn trường học</a>
                 <a href="/Service/Office" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/Office") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn văn phòng</a>
                 <a href="/Service/Factory" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/Factory") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn nhà máy</a>

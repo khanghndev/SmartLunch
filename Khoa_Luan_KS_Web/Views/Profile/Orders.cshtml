@@ -1,8 +1,10 @@
 @model Khoa_Luan_KS_Web.Services.GetOrdersClientResponse
+@using Khoa_Luan_KS_Web.Helpers
 @{
     ViewData["Title"] = "Lịch sử đơn hàng";
     Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
     var orders = Model?.Items ?? new List<Khoa_Luan_KS_Web.Services.OrderDetailClientDto>();
+    var isOrg = User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp");
 }
 
 <div class="max-w-7xl mx-auto px-6 py-12">
@@ -22,6 +24,14 @@
         </ol>
     </nav>
 
+    @if (TempData["OrderSuccess"] is string ok && !string.IsNullOrEmpty(ok))
+    {
+        <div class="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-900">@ok</div>
+    }
+    @if (TempData["OrgMealError"] is string ome && !string.IsNullOrEmpty(ome))
+    {
+        <div class="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">@ome</div>
+    }
     @if (TempData["Error"] is string err && !string.IsNullOrEmpty(err))
     {
         <div class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-800">@err</div>
@@ -29,9 +39,17 @@
 
     <div class="mb-8 flex flex-col justify-between gap-4 md:flex-row md:items-center">
         <h1 class="text-2xl font-bold tracking-tight text-gray-900">Đơn hàng của tôi</h1>
-        <a asp-controller="Menu" asp-action="Index" class="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-orange-600">
-            Đặt thêm từ thực đơn
-        </a>
+        <div class="flex flex-wrap gap-2">
+            @if (isOrg)
+            {
+                <a asp-controller="OrganizationMealOrder" asp-action="Index" class="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-orange-50 px-4 py-2 text-sm font-bold text-orange-800 hover:bg-orange-100">
+                    Đặt suất doanh nghiệp
+                </a>
+            }
+            <a asp-controller="Menu" asp-action="Index" class="inline-flex items-center gap-2 rounded-xl bg-orange-500 px-4 py-2 text-sm font-bold text-white shadow-sm hover:bg-orange-600">
+                Đặt thêm từ thực đơn
+            </a>
+        </div>
     </div>
 
     <div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
@@ -53,8 +71,15 @@
                     {
                         <tr>
                             <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                                Chưa có đơn nào. <a asp-controller="Cart" asp-action="Delivery" class="font-bold text-orange-600 hover:text-orange-700">Thanh toán giỏ hàng</a> hoặc
-                                <a asp-controller="Menu" asp-action="Index" class="font-bold text-orange-600 hover:text-orange-700">xem thực đơn</a>.
+                                Chưa có đơn nào.
+                                @if (isOrg)
+                                {
+                                    <a asp-controller="OrganizationMealOrder" asp-action="Index" class="font-bold text-orange-600 hover:text-orange-700">Đặt suất doanh nghiệp</a>
+                                }
+                                else
+                                {
+                                    <a asp-controller="Menu" asp-action="Index" class="font-bold text-orange-600 hover:text-orange-700">Xem thực đơn</a>
+                                }
                             </td>
                         </tr>
                     }
@@ -70,8 +95,28 @@
                                 <td class="px-6 py-4">
                                     <span class="inline-flex rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-slate-700">@o.Status</span>
                                 </td>
-                                <td class="px-6 py-4 text-gray-600">@o.PaymentStatus</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold @OrderPaymentStatusDisplay.BadgeClass(o.PaymentStatus)">
+                                        @OrderPaymentStatusDisplay.Label(o.PaymentStatus)
+                                    </span>
+                                </td>
                                 <td class="px-6 py-4 text-right whitespace-nowrap">
+                                    @if (isOrg && OrderPaymentStatusDisplay.CanPayDeposit(o.PaymentStatus, o.AnnexPdfUrl))
+                                    {
+                                        <form asp-controller="OrganizationMealOrder" asp-action="PayDeposit" method="post" class="mb-1 inline">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="orderId" value="@o.Id" />
+                                            <button type="submit" class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1.5 text-xs font-black text-white shadow hover:from-orange-600 hover:to-amber-600">
+                                                <i data-lucide="credit-card" class="h-3.5 w-3.5"></i> Thanh toán cọc
+                                            </button>
+                                        </form>
+                                        <br />
+                                    }
+                                    else if (isOrg && string.Equals(o.PaymentStatus, "unpaid", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(o.AnnexPdfUrl))
+                                    {
+                                        <a asp-action="Contracts" asp-route-orderId="@o.Id" class="mb-1 inline-block text-xs font-bold text-violet-700 hover:underline">Ký phụ lục</a>
+                                        <br />
+                                    }
                                     <a asp-action="OrderDetail" asp-route-id="@o.Id" class="font-bold text-orange-600 hover:text-orange-800">Chi tiết</a>
                                     <span class="text-gray-300">|</span>
                                     <a asp-action="Invoice" asp-route-id="@o.Id" target="_blank" class="font-bold text-slate-600 hover:text-slate-900">Hóa đơn</a>
