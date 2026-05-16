@@ -1,0 +1,569 @@
+@model Khoa_Luan_KS_Web.Models.OrganizationMealOrderIndexVm
+@using System.Text.Json
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Đặt suất theo đơn vị";
+    Layout = "_LayoutCustomer";
+    var categories = Model.Categories?.Categories ?? new List<Khoa_Luan_KS_Web.Services.OrganizationDishCategoryClientDto>();
+    var categoriesJson = JsonSerializer.Serialize(categories, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+    var dateMin = Model.DateMin.ToString("yyyy-MM-dd");
+    var dateMax = Model.DateMax.ToString("yyyy-MM-dd");
+    var dateDefault = Model.DateDefault.ToString("yyyy-MM-dd");
+    var dateRuleHint = Model.DateRuleHint;
+    var antiToken = Antiforgery.GetAndStoreTokens(Context).RequestToken ?? "";
+    var antiTokenJson = JsonSerializer.Serialize(antiToken);
+    var orgIdJson = Model.OrganizationId.ToString();
+}
+
+<style>
+    [x-cloak] { display: none !important; }
+    .org-meal-hero {
+        background: radial-gradient(1200px 600px at 80% -10%, rgba(251, 146, 60, 0.22), transparent 55%),
+                    radial-gradient(900px 500px at -10% 30%, rgba(148, 163, 184, 0.18), transparent 50%),
+                    linear-gradient(180deg, #fffdfb 0%, #f8fafc 100%);
+    }
+</style>
+
+<div class="w-full font-sans text-slate-900" x-data="orgMealOrderApp">
+    <section class="org-meal-hero relative border-b border-orange-100/60">
+        <div class="relative z-10 mx-auto max-w-7xl px-4 pb-12 pt-24 sm:px-6 lg:pt-28">
+            <div class="max-w-2xl space-y-4">
+                <div class="inline-flex items-center gap-2 rounded-full border border-orange-200/80 bg-white/90 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.2em] text-orange-600 shadow-sm">
+                    <span class="h-1.5 w-1.5 rounded-full bg-orange-500"></span>
+                    Doanh nghiệp · Đặt suất hàng loạt
+                </div>
+                <h1 class="text-3xl font-black tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">
+                    Lập thực đơn <span class="bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">theo đơn vị</span>
+                </h1>
+                <p class="text-sm leading-relaxed text-slate-600 sm:text-base">
+                    Chọn ngày phục vụ, giá thỏa thuận/suất và món theo khung <strong class="text-orange-600">Món chính · Món phụ · Canh</strong>.
+                    Tổng tiền = giá/suất × tổng số lượng món chính.
+                </p>
+                @if (Model.OrganizationId > 0)
+                {
+                    <div class="inline-flex items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-sm font-bold text-emerald-900">
+                        <i data-lucide="building-2" class="h-4 w-4"></i>
+                        @Model.OrganizationName
+                    </div>
+                }
+            </div>
+        </div>
+    </section>
+
+    <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        @if (TempData["OrgMealError"] is string err && !string.IsNullOrEmpty(err))
+        {
+            <div class="mb-6 flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-900">
+                <i data-lucide="alert-circle" class="h-5 w-5 shrink-0"></i>
+                @err
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(Model.ApiError))
+        {
+            <div class="mb-6 rounded-3xl border border-amber-200 bg-amber-50 p-8 text-center">
+                <i data-lucide="alert-triangle" class="mx-auto mb-3 h-10 w-10 text-amber-600"></i>
+                <p class="font-semibold text-amber-900">@Model.ApiError</p>
+                <a href="/Customer/Contact" class="mt-4 inline-flex text-sm font-bold text-orange-600 hover:underline">Liên hệ hỗ trợ</a>
+            </div>
+        }
+        else if (Model.OrganizationId > 0)
+        {
+            <!-- Step indicator -->
+            <div class="mb-8 flex flex-wrap items-center justify-center gap-2 sm:gap-4">
+                <template x-for="(label, idx) in ['Thiết lập', 'Thực đơn', 'Xác nhận']" :key="idx">
+                    <div class="flex items-center gap-2">
+                        <span class="flex h-8 w-8 items-center justify-center rounded-full text-xs font-black transition"
+                              :class="step === idx + 1 ? 'bg-orange-500 text-white shadow-lg shadow-orange-500/30' : (step > idx + 1 ? 'bg-emerald-500 text-white' : 'bg-slate-200 text-slate-500')"
+                              x-text="idx + 1"></span>
+                        <span class="text-xs font-bold sm:text-sm" :class="step === idx + 1 ? 'text-orange-600' : 'text-slate-500'" x-text="label"></span>
+                        <span x-show="idx < 2" class="hidden h-px w-8 bg-slate-200 sm:block"></span>
+                    </div>
+                </template>
+            </div>
+
+            <!-- Step 1: Settings -->
+            <div x-show="step === 1" class="mx-auto max-w-2xl space-y-6 rounded-3xl border border-slate-200/80 bg-white p-6 shadow-xl sm:p-8">
+                <h2 class="text-lg font-black text-slate-900">Thiết lập đơn hàng</h2>
+                <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Giá thỏa thuận / suất (VND)</label>
+                    <input type="number" x-model.number="pricePerPortion" min="1000" step="1000"
+                           class="w-full rounded-2xl border border-slate-200 px-4 py-3 text-lg font-bold text-slate-900 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200" placeholder="45000" />
+                    <p class="mt-1 text-xs text-slate-500">Không dùng giá niêm yết từng món — chỉ áp dụng cho món chính.</p>
+                </div>
+                <div>
+                    <label class="mb-1.5 block text-[11px] font-bold uppercase tracking-wider text-slate-500">Thêm ngày phục vụ</label>
+                    <div class="flex flex-wrap gap-2">
+                        <input type="date" x-model="newDate" :min="dateMin" :max="dateMax"
+                               class="flex-1 rounded-xl border border-slate-200 px-3 py-2.5 text-sm focus:border-orange-400 focus:outline-none" />
+                        <button type="button" @@click="addDay()"
+                                class="inline-flex items-center gap-1 rounded-xl bg-emerald-600 px-4 py-2.5 text-sm font-bold text-white hover:bg-emerald-700">
+                            <i data-lucide="plus" class="h-4 w-4"></i> Thêm
+                        </button>
+                    </div>
+                    <p class="mt-2 rounded-xl border border-blue-100 bg-blue-50/80 px-3 py-2 text-xs leading-relaxed text-blue-900">@dateRuleHint</p>
+                    <p class="mt-1 text-xs text-slate-400">Khoảng chọn: @Model.DateMin.ToString("dd/MM/yyyy") – @Model.DateMax.ToString("dd/MM/yyyy")</p>
+                </div>
+                <div x-show="mealDays.length > 0" class="flex flex-wrap gap-2">
+                    <template x-for="day in mealDays" :key="day.serviceDate">
+                        <span class="inline-flex items-center gap-1 rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700">
+                            <span x-text="formatDate(day.serviceDate)"></span>
+                            <button type="button" @@click="removeDay(day.serviceDate)" class="text-slate-400 hover:text-red-500">&times;</button>
+                        </span>
+                    </template>
+                </div>
+                <p x-show="formError" class="text-sm font-medium text-red-600" x-text="formError"></p>
+                <button type="button" @@click="goStep2()"
+                        class="w-full rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/30 hover:from-orange-600 hover:to-amber-600">
+                    Tiếp tục — lập thực đơn
+                </button>
+            </div>
+
+            <!-- Step 2: Meal plan per day -->
+            <div x-show="step === 2" class="space-y-6">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                        <h2 class="text-lg font-black text-slate-900">Thực đơn theo ngày</h2>
+                        <p class="mt-1 text-xs text-slate-500">Cột <strong class="text-orange-600">SL</strong> = số suất/món. <strong class="text-violet-700">Tổng món phụ và canh mỗi ngày không được vượt tổng suất món chính.</strong></p>
+                    </div>
+                    <button type="button" @@click="step = 1" class="text-sm font-bold text-slate-500 hover:text-orange-600">← Sửa thiết lập</button>
+                </div>
+
+                <!-- Day tabs -->
+                <div class="flex gap-2 overflow-x-auto pb-1">
+                    <template x-for="day in mealDays" :key="day.serviceDate">
+                        <button type="button" @@click="activeDay = day.serviceDate"
+                                class="shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition"
+                                :class="activeDay === day.serviceDate ? 'border-emerald-600 bg-emerald-600 text-white shadow-md' : 'border-slate-200 bg-white text-slate-700 hover:border-emerald-300'"
+                                x-text="formatDate(day.serviceDate)"></button>
+                    </template>
+                </div>
+
+                <template x-for="day in mealDays" :key="'panel-' + day.serviceDate">
+                    <div x-show="activeDay === day.serviceDate" class="space-y-4">
+                        <div class="flex flex-wrap items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-xs shadow-sm">
+                            <span class="font-bold text-emerald-700">Món chính: <span x-text="daySlotTotal(day, 'main')"></span> suất</span>
+                            <span class="text-slate-300">|</span>
+                            <span :class="daySlotTotal(day, 'side') > daySlotTotal(day, 'main') ? 'font-bold text-red-600' : 'text-slate-600'">
+                                Món phụ: <span x-text="daySlotTotal(day, 'side')"></span> / <span x-text="daySlotTotal(day, 'main')"></span>
+                            </span>
+                            <span class="text-slate-300">|</span>
+                            <span :class="daySlotTotal(day, 'soup') > daySlotTotal(day, 'main') ? 'font-bold text-red-600' : 'text-slate-600'">
+                                Canh: <span x-text="daySlotTotal(day, 'soup')"></span> / <span x-text="daySlotTotal(day, 'main')"></span>
+                            </span>
+                        </div>
+                        <template x-for="slot in slots" :key="slot.key">
+                            <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm">
+                                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-slate-100 px-4 py-3 sm:px-5"
+                                        :class="slot.key === 'main' ? 'bg-gradient-to-r from-emerald-600 to-teal-700' : 'bg-slate-800'">
+                                    <div class="flex items-center gap-2 text-white">
+                                        <i :data-lucide="slot.icon" class="h-4 w-4"></i>
+                                        <span class="text-sm font-black uppercase tracking-wide" x-text="slot.label"></span>
+                                        <span x-show="slot.key === 'main'" class="rounded-full bg-white/20 px-2 py-0.5 text-[10px] font-bold">Tính tiền</span>
+                                    </div>
+                                    <button type="button" @@click="openPicker(day.serviceDate, slot.key)"
+                                            :disabled="slot.key !== 'main' && daySlotTotal(day, 'main') > 0 && daySlotTotal(day, slot.key) >= daySlotTotal(day, 'main')"
+                                            :class="slot.key !== 'main' && daySlotTotal(day, 'main') > 0 && daySlotTotal(day, slot.key) >= daySlotTotal(day, 'main') ? 'cursor-not-allowed opacity-50' : 'hover:bg-white/25'"
+                                            class="rounded-xl bg-white/15 px-3 py-1.5 text-xs font-bold text-white backdrop-blur">
+                                        + Thêm món
+                                    </button>
+                                </div>
+                                <div class="p-4 sm:p-5">
+                                    <template x-if="getLines(day, slot.key).length === 0">
+                                        <p class="py-4 text-center text-sm text-slate-400">Chưa có món — nhấn «Thêm món»</p>
+                                    </template>
+                                    <ul class="space-y-2">
+                                        <template x-for="(line, li) in getLines(day, slot.key)" :key="line.dishId">
+                                            <li class="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-100 bg-slate-50/80 p-3">
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="font-bold text-slate-900" x-text="line.dishName"></p>
+                                                    <p class="text-[11px] text-slate-500" x-text="'ID: ' + line.dishId"></p>
+                                                </div>
+                                                <div class="flex items-center gap-2">
+                                                    <button type="button" @@click="changeQty(day.serviceDate, slot.key, line.dishId, -1)"
+                                                            class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white font-bold text-slate-600 hover:border-orange-300">−</button>
+                                                    <input type="number" min="1" x-model.number="line.quantity"
+                                                           @@blur="normalizeQty(line, day.serviceDate, slot.key)"
+                                                           class="w-20 rounded-lg border border-slate-200 px-2 py-1 text-center text-sm font-bold" />
+                                                    <button type="button" @@click="changeQty(day.serviceDate, slot.key, line.dishId, 1)"
+                                                            class="flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white font-bold text-slate-600 hover:border-orange-300">+</button>
+                                                </div>
+                                                <button type="button" @@click="removeLine(day.serviceDate, slot.key, line.dishId)"
+                                                        class="text-slate-400 hover:text-red-500">
+                                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                                </button>
+                                            </li>
+                                        </template>
+                                    </ul>
+                                </div>
+                            </div>
+                        </template>
+                    </div>
+                </template>
+
+                <!-- Summary sidebar -->
+                <div class="sticky bottom-4 z-10 rounded-2xl border border-orange-200 bg-white/95 p-4 shadow-2xl backdrop-blur sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-orange-600">Tạm tính</p>
+                        <p class="text-xl font-black text-slate-900">
+                            <span x-text="formatMoney(estimatedTotal())"></span>
+                            <span class="text-sm font-bold text-slate-500">đ</span>
+                        </p>
+                        <p class="text-xs text-slate-500">
+                            <span x-text="totalMainQty()"></span> suất món chính ×
+                            <span x-text="formatMoney(pricePerPortion)"></span> đ/suất
+                        </p>
+                    </div>
+                    <div class="mt-3 flex gap-2 sm:mt-0">
+                        <button type="button" @@click="step = 1" class="rounded-xl border border-slate-200 px-4 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">Quay lại</button>
+                        <button type="button" @@click="submitDraft()" :disabled="submitting"
+                                class="rounded-2xl bg-slate-900 px-6 py-2.5 text-sm font-black text-white hover:bg-orange-600 disabled:opacity-50">
+                            <span x-show="!submitting">Xem nháp hợp đồng</span>
+                            <span x-show="submitting">Đang xử lý…</span>
+                        </button>
+                    </div>
+                </div>
+                <p x-show="formError" class="text-center text-sm font-medium text-red-600" x-text="formError"></p>
+            </div>
+        }
+    </section>
+
+    <!-- Dish picker modal -->
+    <div x-show="pickerOpen" x-transition.opacity class="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/60 p-0 sm:items-center sm:p-4"
+         @@keydown.escape.window="pickerOpen = false">
+        <div @@click.outside="pickerOpen = false"
+             class="flex max-h-[90vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:rounded-3xl">
+            <div class="flex items-center justify-between border-b border-slate-100 px-5 py-4">
+                <div>
+                    <p class="text-[10px] font-black uppercase tracking-wider text-orange-600">Chọn món</p>
+                    <h3 class="font-black text-slate-900" x-text="pickerSlotLabel()"></h3>
+                </div>
+                <button type="button" @@click="pickerOpen = false" class="rounded-full p-2 text-slate-400 hover:bg-slate-100">
+                    <i data-lucide="x" class="h-5 w-5"></i>
+                </button>
+            </div>
+            <div class="border-b border-slate-100 px-4 py-2">
+                <div class="flex gap-2 overflow-x-auto pb-1">
+                    <template x-for="cat in categoriesForPicker()" :key="cat.id">
+                        <button type="button" @@click="loadDishes(cat.id)"
+                                class="shrink-0 rounded-full border px-3 py-1.5 text-xs font-bold transition"
+                                :class="pickerCategoryId === cat.id ? 'border-orange-500 bg-orange-50 text-orange-700' : 'border-slate-200 text-slate-600'"
+                                x-text="cat.name"></button>
+                    </template>
+                </div>
+            </div>
+            <div class="flex-1 overflow-y-auto p-4">
+                <div x-show="dishesLoading" class="py-12 text-center text-sm text-slate-500">Đang tải món…</div>
+                <div x-show="!dishesLoading && pickerDishes.length === 0" class="py-12 text-center text-sm text-slate-500">Không có món trong danh mục này.</div>
+                <ul class="grid gap-2 sm:grid-cols-2">
+                    <template x-for="d in pickerDishes" :key="d.id">
+                        <li>
+                            <button type="button" @@click="pickDish(d)"
+                                    class="flex w-full items-start gap-3 rounded-2xl border border-slate-100 p-3 text-left transition hover:border-orange-200 hover:bg-orange-50/50">
+                                <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+                                    <i data-lucide="utensils" class="h-5 w-5"></i>
+                                </div>
+                                <div class="min-w-0 flex-1">
+                                    <p class="line-clamp-2 text-sm font-bold text-slate-900" x-text="d.name"></p>
+                                    <p class="mt-0.5 text-[11px] text-slate-500" x-text="d.slotKeys?.join(', ') || ''"></p>
+                                </div>
+                            </button>
+                        </li>
+                    </template>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener('alpine:init', () => {
+        const categories = @Html.Raw(categoriesJson);
+        const orgId = @orgIdJson;
+        const dateMin = @Json.Serialize(dateMin);
+        const dateMax = @Json.Serialize(dateMax);
+        const dateDefault = @Json.Serialize(dateDefault);
+        const antiToken = @Html.Raw(antiTokenJson);
+
+        Alpine.data('orgMealOrderApp', () => ({
+            step: 1,
+            pricePerPortion: 45000,
+            newDate: dateDefault,
+            dateMin, dateMax,
+            mealDays: [],
+            activeDay: null,
+            formError: '',
+            submitting: false,
+            pickerOpen: false,
+            pickerDay: null,
+            pickerSlot: 'main',
+            pickerCategoryId: null,
+            pickerDishes: [],
+            dishesLoading: false,
+            slots: [
+                { key: 'main', label: 'Món chính', icon: 'beef' },
+                { key: 'side', label: 'Món phụ', icon: 'salad' },
+                { key: 'soup', label: 'Canh', icon: 'soup' },
+            ],
+
+            formatDate(iso) {
+                if (!iso) return '';
+                const p = iso.split('-');
+                return p[2] + '/' + p[1] + '/' + p[0];
+            },
+            formatMoney(n) {
+                return new Intl.NumberFormat('vi-VN').format(Math.round(n || 0));
+            },
+            addDay() {
+                this.formError = '';
+                const d = this.newDate;
+                if (!d) { this.formError = 'Chọn ngày phục vụ.'; return; }
+                const dateErr = this.validateServiceDate(d);
+                if (dateErr) { this.formError = dateErr; return; }
+                if (this.mealDays.some(x => x.serviceDate === d)) {
+                    this.formError = 'Ngày đã có trong danh sách.';
+                    return;
+                }
+                this.mealDays.push({
+                    serviceDate: d,
+                    mealPlan: { main: [], side: [], soup: [] }
+                });
+                this.mealDays.sort((a, b) => a.serviceDate.localeCompare(b.serviceDate));
+                this.activeDay = d;
+            },
+            removeDay(iso) {
+                this.mealDays = this.mealDays.filter(x => x.serviceDate !== iso);
+                this.activeDay = this.mealDays[0]?.serviceDate || null;
+            },
+            goStep2() {
+                this.formError = '';
+                if (!this.pricePerPortion || this.pricePerPortion <= 0) {
+                    this.formError = 'Nhập giá thỏa thuận / suất hợp lệ.';
+                    return;
+                }
+                if (this.mealDays.length === 0) {
+                    this.formError = 'Thêm ít nhất một ngày phục vụ.';
+                    return;
+                }
+                for (const day of this.mealDays) {
+                    const dateErr = this.validateServiceDate(day.serviceDate);
+                    if (dateErr) { this.formError = dateErr; return; }
+                }
+                this.activeDay = this.mealDays[0].serviceDate;
+                this.step = 2;
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+            validateServiceDate(iso) {
+                if (iso < this.dateMin || iso > this.dateMax) {
+                    return 'Ngày nằm ngoài khoảng cho phép (' + this.formatDate(this.dateMin) + ' – ' + this.formatDate(this.dateMax) + ').';
+                }
+                return '';
+            },
+            daySlotTotal(dayOrIso, slot) {
+                const d = this.resolveDay(dayOrIso);
+                if (!d) return 0;
+                return (d.mealPlan[slot] || []).reduce((s, l) => s + Math.max(1, parseInt(l.quantity, 10) || 1), 0);
+            },
+            validateDaySlotTotals(dayOrIso, requireMain) {
+                const d = this.resolveDay(dayOrIso);
+                if (!d) return '';
+                const main = this.daySlotTotal(d, 'main');
+                if (requireMain && main <= 0) {
+                    return 'Ngày ' + this.formatDate(d.serviceDate) + ': cần ít nhất một món chính (suất > 0).';
+                }
+                if (main > 0) {
+                    const side = this.daySlotTotal(d, 'side');
+                    const soup = this.daySlotTotal(d, 'soup');
+                    if (side > main) {
+                        return 'Ngày ' + this.formatDate(d.serviceDate) + ': tổng món phụ (' + side + ') không được vượt món chính (' + main + ' suất).';
+                    }
+                    if (soup > main) {
+                        return 'Ngày ' + this.formatDate(d.serviceDate) + ': tổng canh (' + soup + ') không được vượt món chính (' + main + ' suất).';
+                    }
+                }
+                return '';
+            },
+            validateAllDaySlotTotals(requireMain) {
+                for (const day of this.mealDays) {
+                    const err = this.validateDaySlotTotals(day, requireMain);
+                    if (err) return err;
+                }
+                return '';
+            },
+            canAddSideSoupQty(dayOrIso, slot, addQty) {
+                if (slot === 'main') return true;
+                const main = this.daySlotTotal(dayOrIso, 'main');
+                if (main <= 0) return false;
+                const current = this.daySlotTotal(dayOrIso, slot);
+                return (current + addQty) <= main;
+            },
+            getDay(iso) { return this.mealDays.find(x => x.serviceDate === iso); },
+            resolveDay(dayOrIso) {
+                if (dayOrIso && typeof dayOrIso === 'object') return dayOrIso;
+                return this.getDay(dayOrIso);
+            },
+            getLines(day, slot) {
+                const d = this.resolveDay(day);
+                if (!d) return [];
+                return d.mealPlan[slot] || [];
+            },
+            normalizeQty(line, dayOrIso, slot) {
+                let q = parseInt(line.quantity, 10);
+                if (isNaN(q) || q < 1) q = 1;
+                if (slot !== 'main') {
+                    const day = this.resolveDay(dayOrIso);
+                    const main = this.daySlotTotal(day, 'main');
+                    const others = this.daySlotTotal(day, slot) - Math.max(1, parseInt(line.quantity, 10) || 1);
+                    const maxForLine = Math.max(0, main - others);
+                    if (q > maxForLine) q = Math.max(1, maxForLine);
+                    if (maxForLine < 1) q = 1;
+                }
+                line.quantity = q;
+            },
+            openPicker(serviceDate, slot) {
+                this.pickerDay = serviceDate;
+                this.pickerSlot = slot;
+                this.pickerOpen = true;
+                const cats = this.categoriesForPicker();
+                if (cats.length) {
+                    this.pickerCategoryId = cats[0].id;
+                    this.loadDishes(cats[0].id);
+                }
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+            categoriesForPicker() {
+                return categories.filter(c =>
+                    (c.slotKey || '').toLowerCase() === this.pickerSlot.toLowerCase()
+                ).sort((a, b) => a.sortOrder - b.sortOrder);
+            },
+            pickerSlotLabel() {
+                const s = this.slots.find(x => x.key === this.pickerSlot);
+                return (s?.label || this.pickerSlot) + ' · ' + this.formatDate(this.pickerDay);
+            },
+            async loadDishes(categoryId) {
+                this.pickerCategoryId = categoryId;
+                this.dishesLoading = true;
+                this.pickerDishes = [];
+                try {
+                    const res = await fetch(`/OrganizationMealOrder/Dishes?categoryId=${categoryId}&pageSize=50`);
+                    if (!res.ok) throw new Error((await res.json()).message || 'Lỗi tải món');
+                    const data = await res.json();
+                    this.pickerDishes = data.dishes || [];
+                } catch (e) {
+                    this.formError = e.message || 'Không tải được danh sách món.';
+                } finally {
+                    this.dishesLoading = false;
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                }
+            },
+            pickDish(d) {
+                const day = this.getDay(this.pickerDay);
+                if (!day) return;
+                const slot = this.pickerSlot;
+                if (slot !== 'main' && !this.canAddSideSoupQty(day, slot, 1)) {
+                    this.formError = 'Ngày ' + this.formatDate(day.serviceDate)
+                        + ': tổng ' + (slot === 'side' ? 'món phụ' : 'canh')
+                        + ' không được vượt tổng suất món chính (' + this.daySlotTotal(day, 'main') + ').';
+                    return;
+                }
+                const lines = day.mealPlan[slot];
+                const existing = lines.find(x => x.dishId === d.id);
+                if (existing) {
+                    if (!this.canAddSideSoupQty(day, slot, 1)) {
+                        this.formError = 'Đã đạt giới hạn suất ' + (slot === 'side' ? 'món phụ' : 'canh') + ' cho ngày này.';
+                        return;
+                    }
+                    existing.quantity += 1;
+                } else {
+                    lines.push({ dishId: d.id, dishName: d.name, quantity: 1 });
+                }
+                this.pickerOpen = false;
+                this.formError = '';
+            },
+            changeQty(dayOrIso, slot, dishId, delta) {
+                const day = this.resolveDay(dayOrIso);
+                const line = day?.mealPlan[slot]?.find(x => x.dishId === dishId);
+                if (!line) return;
+                const next = Math.max(1, (parseInt(line.quantity, 10) || 1) + delta);
+                if (slot !== 'main') {
+                    const main = this.daySlotTotal(day, 'main');
+                    const others = this.daySlotTotal(day, slot) - (parseInt(line.quantity, 10) || 1);
+                    if (next + others > main) {
+                        this.formError = 'Ngày ' + this.formatDate(day.serviceDate)
+                            + ': tổng ' + (slot === 'side' ? 'món phụ' : 'canh')
+                            + ' tối đa ' + main + ' suất (bằng món chính).';
+                        return;
+                    }
+                }
+                line.quantity = next;
+                this.formError = '';
+            },
+            removeLine(dayOrIso, slot, dishId) {
+                const day = this.resolveDay(dayOrIso);
+                if (!day) return;
+                day.mealPlan[slot] = day.mealPlan[slot].filter(x => x.dishId !== dishId);
+            },
+            totalMainQty() {
+                let t = 0;
+                for (const day of this.mealDays) {
+                    for (const line of day.mealPlan.main || []) {
+                        t += Math.max(1, parseInt(line.quantity, 10) || 1);
+                    }
+                }
+                return t;
+            },
+            estimatedTotal() {
+                return this.pricePerPortion * this.totalMainQty();
+            },
+            buildPayload() {
+                const qty = (l) => Math.max(1, parseInt(l.quantity, 10) || 1);
+                return {
+                    organizationId: orgId,
+                    price: this.pricePerPortion,
+                    mealDays: this.mealDays.map(d => ({
+                        serviceDate: d.serviceDate,
+                        mealPlan: {
+                            main: (d.mealPlan.main || []).map(l => ({ dishId: l.dishId, quantity: qty(l) })),
+                            side: (d.mealPlan.side || []).map(l => ({ dishId: l.dishId, quantity: qty(l) })),
+                            soup: (d.mealPlan.soup || []).map(l => ({ dishId: l.dishId, quantity: qty(l) })),
+                        }
+                    }))
+                };
+            },
+            validateMealPlan() {
+                for (const day of this.mealDays) {
+                    const dateErr = this.validateServiceDate(day.serviceDate);
+                    if (dateErr) return dateErr;
+                }
+                return this.validateAllDaySlotTotals(true);
+            },
+            async submitDraft() {
+                this.formError = this.validateMealPlan();
+                if (this.formError) return;
+                this.submitting = true;
+                try {
+                    const res = await fetch('/OrganizationMealOrder/PrepareContract', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': antiToken
+                        },
+                        body: JSON.stringify(this.buildPayload())
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Không tạo được nháp hợp đồng.');
+                    window.location.href = data.redirectUrl;
+                } catch (e) {
+                    this.formError = e.message || 'Lỗi khi tạo nháp.';
+                } finally {
+                    this.submitting = false;
+                }
+            },
+            init() {
+                if (window.lucide) lucide.createIcons();
+            }
+        }));
+    });
+    document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
+</script>
+}

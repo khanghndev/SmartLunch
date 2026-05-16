@@ -320,6 +320,40 @@ public class BackendMasterDataClient
         return await PostAsync<GetContractClientResponse>($"/api/v1/company/contracts/{contractId}/sign", request, accessToken, ct);
     }
 
+    // --- Organization meal order (B2B đặt suất theo đơn vị) ---
+    public async Task<GetOrganizationDishCategoriesClientResponse> GetOrganizationDishCategoriesAsync(string accessToken, CancellationToken ct = default)
+    {
+        return await GetAsync<GetOrganizationDishCategoriesClientResponse>("/api/v1/organization/meal-order/dish-category", accessToken, ct);
+    }
+
+    public async Task<GetOrganizationDishesByCategoryClientResponse> GetOrganizationDishesByCategoryAsync(
+        int categoryId, string accessToken, int page = 1, int pageSize = 20, CancellationToken ct = default)
+    {
+        return await GetAsync<GetOrganizationDishesByCategoryClientResponse>(
+            $"/api/v1/organization/meal-order/dish/category?categoryId={categoryId}&page={page}&pageSize={pageSize}",
+            accessToken, ct);
+    }
+
+    public async Task<PrepareOrganizationMealContractClientResponse> PrepareOrganizationMealContractAsync(
+        PrepareOrganizationMealContractClientRequest request, string accessToken, CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var client = CreateClient(accessToken);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PostAsync("/api/v1/organization/meal-order/contract", content, ct);
+        return await HandleResponse<PrepareOrganizationMealContractClientResponse>(res, ct);
+    }
+
+    public async Task<CheckoutOrganizationMealClientResponse> CheckoutOrganizationMealAsync(
+        CheckoutOrganizationMealClientRequest request, string accessToken, CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var client = CreateClient(accessToken);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PostAsync("/api/v1/organization/meal-order/checkout", content, ct);
+        return await HandleResponse<CheckoutOrganizationMealClientResponse>(res, ct);
+    }
+
     private async Task<T> GetAsync<T>(string path, string accessToken, CancellationToken ct)
     {
         var client = CreateClient(accessToken);
@@ -891,4 +925,109 @@ public class SignCompanyContractRequest
 {
     public string DigitalSignature { get; set; } = string.Empty;
     public string? SignatureImageUrl { get; set; }
+}
+
+// ─── Organization meal order (B2B) ───────────────────────────────────────────
+public class GetOrganizationDishCategoriesClientResponse
+{
+    public List<OrganizationDishCategoryClientDto> Categories { get; set; } = new();
+    public DateOnly AllowedFirstServiceDate { get; set; }
+    public DateOnly AllowedLastServiceDate { get; set; }
+}
+
+public class OrganizationDishCategoryClientDto
+{
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public string SlotKey { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public int SortOrder { get; set; }
+}
+
+public class GetOrganizationDishesByCategoryClientResponse
+{
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+    public List<OrganizationDishListItemClientDto> Dishes { get; set; } = new();
+}
+
+public class OrganizationDishListItemClientDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public decimal Price { get; set; }
+    public string? ImageUrl { get; set; }
+    public List<string> SlotKeys { get; set; } = new();
+}
+
+public class PrepareOrganizationMealContractClientRequest
+{
+    public int OrganizationId { get; set; }
+    public decimal Price { get; set; }
+    public List<OrganizationMealDayClientRequest> MealDays { get; set; } = new();
+}
+
+public class OrganizationMealDayClientRequest
+{
+    public string ServiceDate { get; set; } = string.Empty;
+    public OrganizationMealPlanSlotsClientRequest MealPlan { get; set; } = new();
+}
+
+public class OrganizationMealPlanSlotsClientRequest
+{
+    public List<OrganizationMealLineClientRequest> Main { get; set; } = new();
+    public List<OrganizationMealLineClientRequest> Side { get; set; } = new();
+    public List<OrganizationMealLineClientRequest> Soup { get; set; } = new();
+}
+
+public class OrganizationMealLineClientRequest
+{
+    [JsonPropertyName("dishId")]
+    public int DishId { get; set; }
+
+    [JsonPropertyName("quantity")]
+    public int Quantity { get; set; } = 1;
+}
+
+public class PrepareOrganizationMealContractClientResponse
+{
+    public string DraftId { get; set; } = string.Empty;
+    public DateOnly AllowedFirstServiceDate { get; set; }
+    public DateOnly AllowedLastServiceDate { get; set; }
+    public decimal PricePerPortion { get; set; }
+    public int TotalMainQuantity { get; set; }
+    public decimal TotalAmount { get; set; }
+    public List<OrganizationMealDraftLineSummaryClientDto> Lines { get; set; } = new();
+    public string? PersistenceNotice { get; set; }
+}
+
+public class OrganizationMealDraftLineSummaryClientDto
+{
+    public DateOnly ServiceDate { get; set; }
+    public string Slot { get; set; } = string.Empty;
+    public int DishId { get; set; }
+    public string DishName { get; set; } = string.Empty;
+    public int Quantity { get; set; }
+    public decimal UnitPrice { get; set; }
+    public decimal LineTotal { get; set; }
+}
+
+public class CheckoutOrganizationMealClientRequest
+{
+    public string DraftId { get; set; } = string.Empty;
+    public int DepositPercent { get; set; }
+    public string? ReturnUrl { get; set; }
+    public string? CancelUrl { get; set; }
+}
+
+public class CheckoutOrganizationMealClientResponse
+{
+    public GetOrderClientResponse Order { get; set; } = new();
+    public int DepositPercent { get; set; }
+    public int DepositAmountVnd { get; set; }
+    public string? CheckoutUrl { get; set; }
+    public string? QrCode { get; set; }
+    public string? PayOsStatus { get; set; }
+    public string? PayOsMessage { get; set; }
 }
