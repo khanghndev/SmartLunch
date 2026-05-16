@@ -29,6 +29,7 @@ public class OrderRepository : IOrderRepository
             .Include(o => o.User).ThenInclude(u => u!.UserOrganizations).ThenInclude(uo => uo.Organization)
             .Include(o => o.CreatedBySalesUser)
             .Include(o => o.OrderItems).ThenInclude(i => i.Dish)
+            .Include(o => o.Payments)
             .Include(o => o.Deliveries)
             .FirstOrDefaultAsync(e => e.Id == id);
     }

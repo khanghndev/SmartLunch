@@ -54,8 +54,17 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
                 throw new InvalidOperationException("Đơn hàng đã được thanh toán đặt cọc hoặc đã thanh toán đủ.");
             }
 
-            throw new InvalidOperationException(
-                "Đơn hàng chưa ở trạng thái chờ thanh toán. Vui lòng hoàn tất ký phụ lục.");
+            if (string.Equals(order.PaymentStatus, OrderPaymentStatus.Unpaid, StringComparison.OrdinalIgnoreCase))
+            {
+                order.PaymentStatus = OrderPaymentStatus.AwaitingPayment;
+                order.UpdatedAt = DateTime.UtcNow;
+                await _orderRepository.CommitAsync();
+            }
+            else
+            {
+                throw new InvalidOperationException(
+                    "Đơn hàng chưa ở trạng thái chờ thanh toán. Vui lòng hoàn tất ký phụ lục.");
+            }
         }
 
         var pendingPayment = order.Payments.FirstOrDefault(p =>

@@ -52,23 +52,21 @@ public class SignOrderAnnexCommandHandler : IRequestHandler<SignOrderAnnexComman
         order.AnnexSignedAt = DateTime.UtcNow;
         order.UpdatedAt = DateTime.UtcNow;
 
+        if (string.Equals(order.PaymentStatus, OrderPaymentStatus.Unpaid, StringComparison.OrdinalIgnoreCase))
+            order.PaymentStatus = OrderPaymentStatus.AwaitingPayment;
+
         var pendingDeposit = order.Payments.FirstOrDefault(p =>
             string.Equals(p.Method, "payos", StringComparison.OrdinalIgnoreCase) &&
             string.Equals(p.Status, "pending", StringComparison.OrdinalIgnoreCase));
 
-        if (pendingDeposit != null &&
-            string.Equals(order.PaymentStatus, OrderPaymentStatus.Unpaid, StringComparison.OrdinalIgnoreCase))
+        if (pendingDeposit != null && order.ContractId is int contractId && contractId > 0)
         {
-            order.PaymentStatus = OrderPaymentStatus.AwaitingPayment;
-            if (order.ContractId is int contractId && contractId > 0)
+            var contract = await _contractRepository.GetByIdAsync(contractId);
+            if (contract != null)
             {
-                var contract = await _contractRepository.GetByIdAsync(contractId);
-                if (contract != null)
-                {
-                    contract.DepositAmount = pendingDeposit.Amount;
-                    contract.UpdatedAt = DateTime.UtcNow;
-                    await _contractRepository.UpdateAsync(contract);
-                }
+                contract.DepositAmount = pendingDeposit.Amount;
+                contract.UpdatedAt = DateTime.UtcNow;
+                await _contractRepository.UpdateAsync(contract);
             }
         }
 

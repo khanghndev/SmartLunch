@@ -1,3 +1,4 @@
+using System.Globalization;
 using MediatR;
 using Microsoft.Extensions.Logging;
 using SmartLunch.Backend.Service.Application.Constants;
@@ -93,8 +94,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
             throw new ArgumentException("Draft total is inconsistent. Call POST contract again.");
 
         var dishSlot = BuildDishSlotMap(draft);
-        var mergedQty = MergeQuantities(draft);
-        var dishIds = mergedQty.Keys.ToList();
+        var dishIds = dishSlot.Keys.ToList();
 
         var dishes = await _dishRepository.GetByIdsAsync(dishIds, cancellationToken);
         if (dishes.Count != dishIds.Count)
@@ -158,19 +158,31 @@ public sealed class CheckoutOrganizationMealCommandHandler
             InvoiceCode = await AllocateOrganizationInvoiceCodeAsync(scheduledDate, cancellationToken),
         };
 
-        foreach (var (dishId, quantity) in mergedQty)
+        foreach (var day in draft.Days.OrderBy(d => d.ServiceDate))
         {
-            var slot = dishSlot[dishId];
-            var isMain = string.Equals(slot, "main", StringComparison.OrdinalIgnoreCase);
-            var unitPrice = isMain ? draft.PricePerPortion : 0m;
-            var lineTotal = decimal.Round(unitPrice * quantity, 2, MidpointRounding.AwayFromZero);
-            order.OrderItems.Add(new OrderItem
+            var dayCode = day.ServiceDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+
+            void AddDayLines(List<OrganizationMealOrderDraftLine> lines, string slot)
             {
-                DishId = dishId,
-                Quantity = quantity,
-                UnitPrice = unitPrice,
-                TotalPrice = lineTotal,
-            });
+                var isMain = string.Equals(slot, "main", StringComparison.OrdinalIgnoreCase);
+                foreach (var line in lines)
+                {
+                    var unitPrice = isMain ? draft.PricePerPortion : 0m;
+                    var lineTotal = decimal.Round(unitPrice * line.Quantity, 2, MidpointRounding.AwayFromZero);
+                    order.OrderItems.Add(new OrderItem
+                    {
+                        DishId = line.DishId,
+                        Quantity = line.Quantity,
+                        UnitPrice = unitPrice,
+                        TotalPrice = lineTotal,
+                        Code = dayCode,
+                    });
+                }
+            }
+
+            AddDayLines(day.Main, "main");
+            AddDayLines(day.Side, "side");
+            AddDayLines(day.Soup, "soup");
         }
 
         order.TotalAmount = total;
@@ -297,29 +309,6 @@ public sealed class CheckoutOrganizationMealCommandHandler
         }
 
         return map;
-    }
-
-    private static Dictionary<int, int> MergeQuantities(OrganizationMealOrderDraftPayload draft)
-    {
-        var qty = new Dictionary<int, int>();
-        foreach (var day in draft.Days)
-        {
-            void Add(List<OrganizationMealOrderDraftLine> lines)
-            {
-                foreach (var line in lines)
-                {
-                    if (!qty.TryGetValue(line.DishId, out var s))
-                        s = 0;
-                    qty[line.DishId] = s + line.Quantity;
-                }
-            }
-
-            Add(day.Main);
-            Add(day.Side);
-            Add(day.Soup);
-        }
-
-        return qty;
     }
 
     private async Task<string> AllocateOrganizationInvoiceCodeAsync(

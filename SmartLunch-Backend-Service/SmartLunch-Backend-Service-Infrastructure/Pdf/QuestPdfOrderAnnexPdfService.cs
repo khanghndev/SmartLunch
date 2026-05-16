@@ -55,14 +55,55 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
         string DateOnlyFmt(DateTime d) => d.Date.ToString("dd/MM/yyyy", vi);
         string Money(decimal v) => v.ToString("N0", vi) + " đ";
 
-        var lines = order.OrderItems
-            .OrderBy(i => i.Dish?.Name)
+        static bool IsMainPortionLine(OrderItem i) => i.UnitPrice > 0m;
+
+        static DateOnly ResolveServiceDate(OrderItem item, DateTime scheduledUtc)
+        {
+            if (!string.IsNullOrWhiteSpace(item.Code) &&
+                DateOnly.TryParseExact(
+                    item.Code.Trim(),
+                    "yyyy-MM-dd",
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var parsed))
+            {
+                return parsed;
+            }
+
+            return DateOnly.FromDateTime(scheduledUtc);
+        }
+
+        var tableLines = order.OrderItems
+            .OrderBy(i => ResolveServiceDate(i, order.ScheduledDate))
+            .ThenBy(i => i.Dish?.Name)
             .Select(i => (
                 Name: i.Dish?.Name ?? "Món",
-                i.Quantity,
-                Unit: i.UnitPrice,
-                Line: i.TotalPrice))
+                i.Quantity))
             .ToList();
+
+        var dailyPortions = order.OrderItems
+            .Where(IsMainPortionLine)
+            .GroupBy(i => ResolveServiceDate(i, order.ScheduledDate))
+            .OrderBy(g => g.Key)
+            .Select(g => (Date: g.Key, Portions: g.Sum(i => i.Quantity)))
+            .ToList();
+
+        var totalMainPortions = dailyPortions.Sum(d => d.Portions);
+        var pricePerPortion = order.Contract?.MealUnitPrice
+            ?? order.OrderItems.Where(IsMainPortionLine).Select(i => i.UnitPrice).FirstOrDefault();
+        if (pricePerPortion <= 0m && totalMainPortions > 0 && order.TotalAmount > 0m)
+        {
+            pricePerPortion = decimal.Round(
+                order.TotalAmount / totalMainPortions,
+                2,
+                MidpointRounding.AwayFromZero);
+        }
+
+        var computedTotal = decimal.Round(
+            pricePerPortion * totalMainPortions,
+            2,
+            MidpointRounding.AwayFromZero);
+        var displayTotal = order.TotalAmount > 0m ? order.TotalAmount : computedTotal;
 
         var sigPng = TryDecodeSignaturePng(signatureDataUrl);
         var invoiceRef = string.IsNullOrEmpty(order.InvoiceCode) ? $"ĐH-{order.Id}" : order.InvoiceCode!;
@@ -131,10 +172,8 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
                     {
                         table.ColumnsDefinition(c =>
                         {
-                            c.RelativeColumn(4.2f);
-                            c.RelativeColumn(0.9f);
-                            c.RelativeColumn(1.6f);
-                            c.RelativeColumn(1.6f);
+                            c.RelativeColumn(5f);
+                            c.RelativeColumn(1.2f);
                         });
 
                         static IContainer CellStyle(IContainer x, bool header) =>
@@ -145,23 +184,46 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
                         table.Header(h =>
                         {
                             h.Cell().Element(c => CellStyle(c, true)).Text("Tên món").SemiBold().FontSize(9.5f);
-                            h.Cell().Element(c => CellStyle(c, true)).AlignRight().Text("SL").SemiBold().FontSize(9.5f);
-                            h.Cell().Element(c => CellStyle(c, true)).AlignRight().Text("Đơn giá").SemiBold().FontSize(9.5f);
-                            h.Cell().Element(c => CellStyle(c, true)).AlignRight().Text("Thành tiền").SemiBold().FontSize(9.5f);
+                            h.Cell().Element(c => CellStyle(c, true)).AlignRight().Text("Số lượng").SemiBold().FontSize(9.5f);
                         });
 
-                        foreach (var ln in lines)
+                        foreach (var ln in tableLines)
                         {
                             table.Cell().Element(c => CellStyle(c, false)).Text(ln.Name).FontSize(9.5f);
                             table.Cell().Element(c => CellStyle(c, false)).AlignRight().Text(ln.Quantity.ToString(vi)).FontSize(9.5f);
-                            table.Cell().Element(c => CellStyle(c, false)).AlignRight().Text(Money(ln.Unit)).FontSize(9.5f);
-                            table.Cell().Element(c => CellStyle(c, false)).AlignRight().Text(Money(ln.Line)).FontSize(9.5f);
                         }
                     });
 
                     col.Item().AlignRight().PaddingTop(8).Background(Colors.Blue.Lighten5).Border(1).BorderColor(Colors.Blue.Lighten2)
-                        .Padding(10).Text($"Tổng giá trị (đồng): {Money(order.TotalAmount)}").Bold().FontSize(12)
-                        .FontColor(Colors.Blue.Darken4);
+                        .Padding(10).Column(summary =>
+                        {
+                            summary.Spacing(4);
+                            summary.Item().Text("TỔNG HỢP SUẤT ĂN VÀ GIÁ TRỊ").Bold().FontSize(11).FontColor(Colors.Blue.Darken4);
+
+                            if (dailyPortions.Count > 0)
+                            {
+                                foreach (var day in dailyPortions)
+                                {
+                                    summary.Item().Text(
+                                            $"Ngày {day.Date.ToString("dd/MM/yyyy", vi)}: {day.Portions.ToString("N0", vi)} suất")
+                                        .FontSize(10);
+                                }
+                            }
+                            else
+                            {
+                                summary.Item().Text(
+                                        $"Ngày {DateOnly.FromDateTime(order.ScheduledDate):dd/MM/yyyy}: {totalMainPortions.ToString("N0", vi)} suất")
+                                    .FontSize(10);
+                            }
+
+                            summary.Item().PaddingTop(4).Text(
+                                    $"Tổng cộng suất (tất cả các ngày): {totalMainPortions.ToString("N0", vi)} suất")
+                                .SemiBold().FontSize(10.5f);
+                            summary.Item().Text($"Đơn giá một suất: {Money(pricePerPortion)}").FontSize(10);
+                            summary.Item().PaddingTop(4).Text(
+                                    $"Tổng giá trị = {totalMainPortions.ToString("N0", vi)} suất × {Money(pricePerPortion)} = {Money(displayTotal)}")
+                                .Bold().FontSize(12).FontColor(Colors.Blue.Darken4);
+                        });
 
                     col.Item().PaddingTop(10).DefaultTextStyle(x => x.Italic().FontColor(Colors.Grey.Darken2).FontSize(8.5f))
                         .Text(
