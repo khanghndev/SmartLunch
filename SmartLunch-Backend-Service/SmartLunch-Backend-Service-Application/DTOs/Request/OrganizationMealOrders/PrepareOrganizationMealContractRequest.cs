@@ -12,6 +12,9 @@ public sealed class PrepareOrganizationMealContractRequest
     public decimal Price { get; set; }
 
     public List<OrganizationMealDayRequest> MealDays { get; set; } = new();
+
+    /// <summary>Mã khuyến mãi (tùy chọn).</summary>
+    public string? PromotionCode { get; set; }
 }
 
 public sealed class OrganizationMealDayRequest

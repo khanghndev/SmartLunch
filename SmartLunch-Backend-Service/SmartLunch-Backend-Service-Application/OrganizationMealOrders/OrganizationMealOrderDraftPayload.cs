@@ -14,6 +14,13 @@ public sealed class OrganizationMealOrderDraftPayload
 
     public List<OrganizationMealOrderDraftDay> Days { get; set; } = new();
     public decimal TotalAmount { get; set; }
+
+    public decimal? SubtotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public string? PromotionCode { get; set; }
+    public int? AppliedPromotionId { get; set; }
+    public string? AppliedPromotionName { get; set; }
+
     public DateOnly MinServiceDate { get; set; }
     public DateTime CreatedAtUtc { get; set; }
 }

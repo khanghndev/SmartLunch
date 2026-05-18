@@ -13,6 +13,12 @@ public class Order
     public DateTime ScheduledDate { get; set; }
     public string Status { get; set; } = "pending"; // pending|confirmed|preparing|delivered|cancelled
     public decimal TotalAmount { get; set; }
+
+    /// <summary>Tổng trước khuyến mãi (null = không áp dụng KM / đơn cũ).</summary>
+    public decimal? SubtotalAmount { get; set; }
+
+    public decimal DiscountAmount { get; set; }
+
     public string PaymentStatus { get; set; } = "unpaid"; // unpaid|partial|paid
     public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
@@ -36,4 +42,5 @@ public class Order
     public virtual ICollection<Payment> Payments { get; set; } = new List<Payment>();
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
     public virtual ICollection<Complaint> Complaints { get; set; } = new List<Complaint>();
+    public virtual ICollection<OrderPromotionApplication> PromotionApplications { get; set; } = new List<OrderPromotionApplication>();
 }

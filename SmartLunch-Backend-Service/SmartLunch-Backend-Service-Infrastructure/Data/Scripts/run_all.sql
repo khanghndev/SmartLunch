@@ -65,6 +65,9 @@ SOURCE 01_tables/42_system_backups.sql;
 SOURCE 01_tables/43_dish_images.sql;
 SOURCE 01_tables/44_weekly_menu_images.sql;
 SOURCE 01_tables/45_partner_documents.sql;
+SOURCE 01_tables/47_promotions.sql;
+SOURCE 01_tables/48_promotion_targets.sql;
+SOURCE 01_tables/49_order_promotion_applications.sql;
 
 -- Step 1.5: Code generation (function + triggers) — SAU khi tạo bảng
 SOURCE 00_config/02_code_triggers.sql;
@@ -105,5 +108,7 @@ SOURCE 05_maintenance/02_orders_annex_columns.sql;
 SOURCE 05_maintenance/03_warehousestaff_grant_partner_perms.sql;
 SOURCE 05_maintenance/01_analyze_optimize.sql;
 SOURCE 05_maintenance/05_order_items_service_date.sql;
+SOURCE 05_maintenance/06_orders_promotion_columns.sql;
+SOURCE 05_maintenance/07_promotions_permissions.sql;
 
 SELECT 'SmartLunch database setup completed!' AS Status;

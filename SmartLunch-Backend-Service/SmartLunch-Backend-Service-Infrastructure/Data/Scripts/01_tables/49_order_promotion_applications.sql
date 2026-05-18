@@ -1,0 +1,20 @@
+CREATE TABLE order_promotion_applications (
+    Id INT NOT NULL AUTO_INCREMENT,
+    OrderId INT NOT NULL,
+    PromotionId INT NOT NULL,
+    PromotionCode VARCHAR(40) NULL,
+    PromotionName VARCHAR(200) NOT NULL,
+    ScopeType VARCHAR(30) NOT NULL,
+    DiscountType VARCHAR(20) NOT NULL,
+    DiscountValue DECIMAL(12,2) NOT NULL,
+    SubtotalBefore DECIMAL(12,2) NOT NULL,
+    DiscountAmount DECIMAL(12,2) NOT NULL,
+    TotalAfter DECIMAL(12,2) NOT NULL,
+    SnapshotJson TEXT NULL COMMENT 'JSON đối soát',
+    AppliedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (Id),
+    INDEX IX_order_promo_order (OrderId),
+    INDEX IX_order_promo_promotion (PromotionId),
+    CONSTRAINT FK_order_promo_order FOREIGN KEY (OrderId) REFERENCES orders (Id) ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT FK_order_promo_promotion FOREIGN KEY (PromotionId) REFERENCES promotions (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci COMMENT = 'KM đã áp dụng trên đơn';

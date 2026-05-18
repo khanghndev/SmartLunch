@@ -2,7 +2,9 @@ using MediatR;
 using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Orders;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Orders;
+using SmartLunch.Backend.Service.Application.Helpers;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.Promotions;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Domain.Time;
 
@@ -13,15 +15,21 @@ public class CreateCustomerMealOrderCommandHandler : IRequestHandler<CreateCusto
     private readonly IOrderRepository _orderRepository;
     private readonly IUserRepository _userRepository;
     private readonly IDishRepository _dishRepository;
+    private readonly IPromotionEngine _promotionEngine;
+    private readonly IPromotionRepository _promotionRepository;
 
     public CreateCustomerMealOrderCommandHandler(
         IOrderRepository orderRepository,
         IUserRepository userRepository,
-        IDishRepository dishRepository)
+        IDishRepository dishRepository,
+        IPromotionEngine promotionEngine,
+        IPromotionRepository promotionRepository)
     {
         _orderRepository = orderRepository;
         _userRepository = userRepository;
         _dishRepository = dishRepository;
+        _promotionEngine = promotionEngine;
+        _promotionRepository = promotionRepository;
     }
 
     public async Task<GetOrderResponse> Handle(CreateCustomerMealOrderCommand request, CancellationToken cancellationToken)
@@ -103,6 +111,33 @@ public class CreateCustomerMealOrderCommandHandler : IRequestHandler<CreateCusto
                 TotalPrice = lineTotal,
             });
         }
+
+        var promoInput = new OrderPromotionEvaluateInput
+        {
+            Channel = PromotionConstants.ChannelB2C,
+            UserId = request.CustomerUserId,
+            PromotionCode = req.PromotionCode,
+            Subtotal = total,
+            TotalQuantity = merged.Sum(m => m.Quantity),
+            Lines = merged.Select(m =>
+            {
+                var dish = dishById[m.DishId];
+                var lineTotal = dish.Price * m.Quantity;
+                return new OrderPromotionLineInput
+                {
+                    DishId = m.DishId,
+                    Quantity = m.Quantity,
+                    LineTotal = lineTotal,
+                };
+            }).ToList(),
+        };
+
+        await OrderPromotionApplyHelper.EvaluateAndApplyToOrderAsync(
+            order,
+            promoInput,
+            _promotionEngine,
+            _promotionRepository,
+            cancellationToken);
 
         await _orderRepository.AddAsync(order, cancellationToken);
         await _orderRepository.CommitAsync();

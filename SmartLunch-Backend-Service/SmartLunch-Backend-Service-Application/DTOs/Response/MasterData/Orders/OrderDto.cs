@@ -12,6 +12,9 @@ public class OrderDto
     public DateTime ScheduledDate { get; set; }
     public string Status { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
+    public decimal? SubtotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public OrderPromotionSummaryDto? AppliedPromotion { get; set; }
     public string PaymentStatus { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }

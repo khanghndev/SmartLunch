@@ -19,6 +19,18 @@ public static class OrderDtoMapping
             ScheduledDate = order.ScheduledDate,
             Status = order.Status,
             TotalAmount = order.TotalAmount,
+            SubtotalAmount = order.SubtotalAmount,
+            DiscountAmount = order.DiscountAmount,
+            AppliedPromotion = order.PromotionApplications
+                .OrderByDescending(a => a.AppliedAt)
+                .Select(a => new OrderPromotionSummaryDto
+                {
+                    PromotionId = a.PromotionId,
+                    PromotionCode = a.PromotionCode,
+                    PromotionName = a.PromotionName,
+                    DiscountAmount = a.DiscountAmount,
+                })
+                .FirstOrDefault(),
             PaymentStatus = order.PaymentStatus,
             CreatedAt = order.CreatedAt,
             UpdatedAt = order.UpdatedAt,

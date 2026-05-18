@@ -6,6 +6,7 @@ using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealOrder
 using SmartLunch.Backend.Service.Application.Helpers;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
+using SmartLunch.Backend.Service.Application.Promotions;
 using SmartLunch.Backend.Service.Domain.Entities;
 
 namespace SmartLunch.Backend.Service.Application.Commands.OrganizationMealOrders.CheckoutOrganizationMeal;
@@ -24,6 +25,8 @@ public sealed class CheckoutOrganizationMealCommandHandler
     private readonly IOrderRepository _orderRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IContractPdfService _contractPdfService;
+    private readonly IPromotionEngine _promotionEngine;
+    private readonly IPromotionRepository _promotionRepository;
     private readonly ILogger<CheckoutOrganizationMealCommandHandler> _logger;
 
     public CheckoutOrganizationMealCommandHandler(
@@ -36,6 +39,8 @@ public sealed class CheckoutOrganizationMealCommandHandler
         IOrderRepository orderRepository,
         IUnitOfWork unitOfWork,
         IContractPdfService contractPdfService,
+        IPromotionEngine promotionEngine,
+        IPromotionRepository promotionRepository,
         ILogger<CheckoutOrganizationMealCommandHandler> logger)
     {
         _draftCache = draftCache;
@@ -47,6 +52,8 @@ public sealed class CheckoutOrganizationMealCommandHandler
         _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
         _contractPdfService = contractPdfService;
+        _promotionEngine = promotionEngine;
+        _promotionRepository = promotionRepository;
         _logger = logger;
     }
 
@@ -85,12 +92,41 @@ public sealed class CheckoutOrganizationMealCommandHandler
         //     }
         // }
 
-        var recomputedTotal = decimal.Round(
+        var recomputedSubtotal = decimal.Round(
             draft.PricePerPortion * draft.TotalMainQuantity,
             2,
             MidpointRounding.AwayFromZero);
-        if (recomputedTotal != draft.TotalAmount)
-            throw new ArgumentException("Draft total is inconsistent. Call POST contract again.");
+
+        var draftSubtotal = draft.SubtotalAmount ?? recomputedSubtotal;
+        if (draftSubtotal != recomputedSubtotal)
+            throw new ArgumentException("Draft subtotal is inconsistent. Call POST contract again.");
+
+        var checkoutOrg = await _organizationRepository.GetByIdAsync(draft.OrganizationId);
+        if (checkoutOrg == null || !checkoutOrg.IsActive)
+            throw new ArgumentException("Organization is not available.");
+
+        var existingContract = await _contractRepository.GetActiveForOrganizationAsync(checkoutOrg.Id, cancellationToken);
+
+        var promoLines = BuildPromotionLines(draft);
+        var evaluation = await _promotionEngine.EvaluateAsync(new OrderPromotionEvaluateInput
+        {
+            Channel = PromotionConstants.ChannelB2BOrg,
+            UserId = command.UserId,
+            OrganizationId = draft.OrganizationId,
+            ContractId = existingContract?.Id,
+            ContractType = existingContract?.ContractType,
+            PromotionCode = draft.PromotionCode,
+            Subtotal = recomputedSubtotal,
+            TotalQuantity = draft.TotalMainQuantity,
+            Lines = promoLines,
+        }, cancellationToken);
+
+        if (evaluation.TotalAfter != draft.TotalAmount ||
+            evaluation.DiscountAmount != draft.DiscountAmount ||
+            evaluation.Subtotal != draftSubtotal)
+        {
+            throw new ArgumentException("Promotion on draft is no longer valid. Call POST contract again.");
+        }
 
         var dishSlot = BuildDishSlotMap(draft);
         var dishIds = dishSlot.Keys.ToList();
@@ -105,13 +141,9 @@ public sealed class CheckoutOrganizationMealCommandHandler
                 throw new ArgumentException($"Dish '{d.Name}' is not active.");
         }
 
-        var total = recomputedTotal;
+        var total = draft.TotalAmount;
 
-        var checkoutOrg = await _organizationRepository.GetByIdAsync(draft.OrganizationId);
-        if (checkoutOrg == null || !checkoutOrg.IsActive)
-            throw new ArgumentException("Organization is not available.");
-
-        Contract? contract = await _contractRepository.GetActiveForOrganizationAsync(checkoutOrg.Id, cancellationToken);
+        Contract? contract = existingContract;
         var wasNewContract = false;
         if (contract == null)
         {
@@ -182,7 +214,16 @@ public sealed class CheckoutOrganizationMealCommandHandler
             AddDayLines(day.Soup, "soup");
         }
 
+        order.SubtotalAmount = evaluation.Subtotal;
+        order.DiscountAmount = evaluation.DiscountAmount;
         order.TotalAmount = total;
+
+        if (evaluation.Applied && evaluation.PromotionId is int promoId)
+        {
+            var promo = await _promotionRepository.GetByIdWithTargetsAsync(promoId, cancellationToken);
+            if (promo != null)
+                order.PromotionApplications.Add(_promotionEngine.BuildApplication(order, promo, evaluation));
+        }
 
         var depositDecimal = decimal.Round(total * (req.DepositPercent / 100m), 2, MidpointRounding.AwayFromZero);
         var depositVnd = (int)Math.Round(depositDecimal, MidpointRounding.AwayFromZero);
@@ -278,6 +319,28 @@ public sealed class CheckoutOrganizationMealCommandHandler
 
         persisted.UpdatedAt = VietnamTime.Now;
         await _contractRepository.UpdateAsync(persisted);
+    }
+
+    private static List<OrderPromotionLineInput> BuildPromotionLines(OrganizationMealOrderDraftPayload draft)
+    {
+        var lines = new List<OrderPromotionLineInput>();
+        foreach (var day in draft.Days)
+        {
+            foreach (var line in day.Main)
+            {
+                lines.Add(new OrderPromotionLineInput
+                {
+                    DishId = line.DishId,
+                    Quantity = line.Quantity,
+                    LineTotal = decimal.Round(
+                        draft.PricePerPortion * line.Quantity,
+                        2,
+                        MidpointRounding.AwayFromZero),
+                });
+            }
+        }
+
+        return lines;
     }
 
     private static Dictionary<int, string> BuildDishSlotMap(OrganizationMealOrderDraftPayload draft)

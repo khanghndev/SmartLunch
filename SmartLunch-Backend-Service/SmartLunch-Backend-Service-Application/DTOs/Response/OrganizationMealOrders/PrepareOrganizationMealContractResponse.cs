@@ -28,6 +28,11 @@ public sealed class PrepareOrganizationMealContractResponse
     public decimal PricePerPortion { get; set; }
     public int TotalMainQuantity { get; set; }
     public decimal TotalAmount { get; set; }
+    public decimal? SubtotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public int? AppliedPromotionId { get; set; }
+    public string? AppliedPromotionName { get; set; }
+    public string? PromotionCode { get; set; }
     public List<OrganizationMealDraftLineSummaryDto> Lines { get; set; } = new();
 
     /// <summary>Gợi ý hiển thị: dữ liệu chỉ lưu cache, chưa ghi CSDL.</summary>

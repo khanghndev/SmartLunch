@@ -7,6 +7,9 @@ public class CreateCustomerMealOrderRequest
     public DateOnly ScheduledDate { get; set; }
 
     public List<CreateCustomerMealOrderLineRequest> Lines { get; set; } = new();
+
+    /// <summary>Mã khuyến mãi (tùy chọn).</summary>
+    public string? PromotionCode { get; set; }
 }
 
 public class CreateCustomerMealOrderLineRequest

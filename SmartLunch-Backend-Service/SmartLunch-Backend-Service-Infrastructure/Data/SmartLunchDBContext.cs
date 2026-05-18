@@ -61,6 +61,9 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<MenuSchedule> MenuSchedules { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
+        public DbSet<Promotion> Promotions { get; set; }
+        public DbSet<PromotionTarget> PromotionTargets { get; set; }
+        public DbSet<OrderPromotionApplication> OrderPromotionApplications { get; set; }
         public DbSet<Delivery> Deliveries { get; set; }
         public DbSet<Payment> Payments { get; set; }
         public DbSet<Transaction> Transactions { get; set; }
@@ -851,6 +854,8 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.TotalAmount).HasPrecision(12, 2);
+                entity.Property(e => e.SubtotalAmount).HasPrecision(12, 2);
+                entity.Property(e => e.DiscountAmount).HasPrecision(12, 2);
                 entity.Property(e => e.PaymentStatus).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.InvoiceCode).HasMaxLength(40);
                 entity.Property(e => e.AnnexPdfUrl).HasMaxLength(2048);
@@ -1086,6 +1091,56 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                     .WithMany(u => u.Notifications)
                     .HasForeignKey(e => e.UserId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<Promotion>(entity =>
+            {
+                entity.ToTable("promotions");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Code).IsUnique();
+                entity.Property(e => e.Code).HasMaxLength(40);
+                entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Description).HasMaxLength(500);
+                entity.Property(e => e.ScopeType).IsRequired().HasMaxLength(30);
+                entity.Property(e => e.DiscountType).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.DiscountValue).HasPrecision(12, 2);
+                entity.Property(e => e.SelectionMode).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Channel).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.MinOrderAmount).HasPrecision(12, 2);
+            });
+
+            modelBuilder.Entity<PromotionTarget>(entity =>
+            {
+                entity.ToTable("promotion_targets");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.TargetType).IsRequired().HasMaxLength(30);
+                entity.Property(e => e.TargetKey).HasMaxLength(50);
+                entity.HasOne(e => e.Promotion)
+                    .WithMany(p => p.Targets)
+                    .HasForeignKey(e => e.PromotionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<OrderPromotionApplication>(entity =>
+            {
+                entity.ToTable("order_promotion_applications");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.PromotionCode).HasMaxLength(40);
+                entity.Property(e => e.PromotionName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.ScopeType).IsRequired().HasMaxLength(30);
+                entity.Property(e => e.DiscountType).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.DiscountValue).HasPrecision(12, 2);
+                entity.Property(e => e.SubtotalBefore).HasPrecision(12, 2);
+                entity.Property(e => e.DiscountAmount).HasPrecision(12, 2);
+                entity.Property(e => e.TotalAfter).HasPrecision(12, 2);
+                entity.HasOne(e => e.Order)
+                    .WithMany(o => o.PromotionApplications)
+                    .HasForeignKey(e => e.OrderId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Promotion)
+                    .WithMany(p => p.Applications)
+                    .HasForeignKey(e => e.PromotionId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
         #endregion

@@ -1,9 +1,11 @@
 using MediatR;
+using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Request.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Application.Helpers;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
+using SmartLunch.Backend.Service.Application.Promotions;
 using SmartLunch.Backend.Service.Domain.Entities;
 
 namespace SmartLunch.Backend.Service.Application.Commands.OrganizationMealOrders.PrepareOrganizationMealContract;
@@ -14,15 +16,21 @@ public sealed class PrepareOrganizationMealContractCommandHandler
     private readonly IUserOrganizationRepository _userOrganizationRepository;
     private readonly IDishRepository _dishRepository;
     private readonly IOrganizationMealOrderDraftCache _draftCache;
+    private readonly IPromotionEngine _promotionEngine;
+    private readonly IContractRepository _contractRepository;
 
     public PrepareOrganizationMealContractCommandHandler(
         IUserOrganizationRepository userOrganizationRepository,
         IDishRepository dishRepository,
-        IOrganizationMealOrderDraftCache draftCache)
+        IOrganizationMealOrderDraftCache draftCache,
+        IPromotionEngine promotionEngine,
+        IContractRepository contractRepository)
     {
         _userOrganizationRepository = userOrganizationRepository;
         _dishRepository = dishRepository;
         _draftCache = draftCache;
+        _promotionEngine = promotionEngine;
+        _contractRepository = contractRepository;
     }
 
     public async Task<PrepareOrganizationMealContractResponse> Handle(
@@ -132,6 +140,35 @@ public sealed class PrepareOrganizationMealContractCommandHandler
         var minDate = draftDays.Min(d => d.ServiceDate);
 
         var draftId = Guid.NewGuid().ToString("N");
+
+        var promoLines = new List<OrderPromotionLineInput>();
+        foreach (var day in draftDays)
+        {
+            foreach (var line in day.Main)
+            {
+                promoLines.Add(new OrderPromotionLineInput
+                {
+                    DishId = line.DishId,
+                    Quantity = line.Quantity,
+                    LineTotal = decimal.Round(price * line.Quantity, 2, MidpointRounding.AwayFromZero),
+                });
+            }
+        }
+
+        var activeContract = await _contractRepository.GetActiveForOrganizationAsync(req.OrganizationId, cancellationToken);
+        var evaluation = await _promotionEngine.EvaluateAsync(new OrderPromotionEvaluateInput
+        {
+            Channel = PromotionConstants.ChannelB2BOrg,
+            UserId = command.UserId,
+            OrganizationId = req.OrganizationId,
+            ContractId = activeContract?.Id,
+            ContractType = activeContract?.ContractType,
+            PromotionCode = req.PromotionCode,
+            Subtotal = total,
+            TotalQuantity = totalMainQty,
+            Lines = promoLines,
+        }, cancellationToken);
+
         var payload = new OrganizationMealOrderDraftPayload
         {
             UserId = command.UserId,
@@ -139,7 +176,12 @@ public sealed class PrepareOrganizationMealContractCommandHandler
             PricePerPortion = price,
             TotalMainQuantity = totalMainQty,
             Days = draftDays,
-            TotalAmount = total,
+            SubtotalAmount = evaluation.Subtotal,
+            DiscountAmount = evaluation.DiscountAmount,
+            TotalAmount = evaluation.TotalAfter,
+            PromotionCode = req.PromotionCode,
+            AppliedPromotionId = evaluation.PromotionId,
+            AppliedPromotionName = evaluation.PromotionName,
             MinServiceDate = minDate,
             CreatedAtUtc = utcNow,
         };
@@ -189,7 +231,12 @@ public sealed class PrepareOrganizationMealContractCommandHandler
             // AllowedLastServiceDate = allowedLast,
             PricePerPortion = price,
             TotalMainQuantity = totalMainQty,
-            TotalAmount = total,
+            SubtotalAmount = evaluation.Subtotal,
+            DiscountAmount = evaluation.DiscountAmount,
+            TotalAmount = evaluation.TotalAfter,
+            AppliedPromotionId = evaluation.PromotionId,
+            AppliedPromotionName = evaluation.PromotionName,
+            PromotionCode = req.PromotionCode,
             Lines = lineSummaries,
         };
     }
