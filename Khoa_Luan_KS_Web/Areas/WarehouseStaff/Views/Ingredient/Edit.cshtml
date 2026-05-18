@@ -1,0 +1,108 @@
+@model Khoa_Luan_KS_Web.Services.IngredientClientDto
+@{
+    ViewData["Title"] = "Sửa Nguyên Liệu";
+    Layout = "_LayoutWarehouse";
+    var partners = ViewBag.Partners as List<Khoa_Luan_KS_Web.Services.PartnerDto> ?? new();
+    var units = new[] { "kg", "g", "lít", "ml", "quả", "miếng", "gói", "hộp", "bó", "con" };
+    int ingredientId = ViewBag.IngredientId ?? Model.Id;
+    var unitInList = units.Contains(Model.Unit, StringComparer.OrdinalIgnoreCase);
+}
+
+<div class="px-1 space-y-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 mb-1">
+                <a href="/WarehouseStaff/Home/Index" class="text-gray-400 hover:text-gray-600 text-sm transition"><i class="fas fa-home"></i></a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <a href="/WarehouseStaff/Ingredient/Index" class="text-gray-500 hover:text-gray-700 text-sm">Nguyên liệu</a>
+                <i class="fas fa-chevron-right text-gray-300 text-xs"></i>
+                <span class="text-sm font-medium text-gray-500">@Model.Name</span>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Sửa Nguyên Liệu</h1>
+            <p class="text-sm text-gray-500 mt-1">Mã #@Model.Id — cập nhật thông tin danh mục</p>
+        </div>
+    </div>
+
+    <form method="post" action="/WarehouseStaff/Ingredient/Edit/@ingredientId" class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        @Html.AntiForgeryToken()
+
+        <div class="lg:col-span-2 bg-white rounded-2xl shadow-sm border border-gray-100 p-6 space-y-5">
+            <h3 class="font-bold text-gray-900 text-sm flex items-center gap-2">
+                <div class="w-6 h-6 rounded-lg bg-amber-50 flex items-center justify-center">
+                    <i class="fas fa-edit text-amber-600 text-xs"></i>
+                </div>
+                Thông tin nguyên liệu
+            </h3>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Tên nguyên liệu *</label>
+                    <input type="text" name="Name" value="@Model.Name" required maxlength="255"
+                           class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 transition" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Tên tiếng Anh (AI)</label>
+                    <input type="text" name="NameEnglish" value="@Model.NameEnglish" maxlength="100"
+                           class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 transition" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Đơn vị tính *</label>
+                    <select name="Unit" required class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 transition">
+                        @if (!unitInList && !string.IsNullOrEmpty(Model.Unit))
+                        {
+                            <option value="@Model.Unit" selected>@Model.Unit</option>
+                        }
+                        @foreach (var u in units)
+                        {
+                            <option value="@u" selected="@(string.Equals(Model.Unit, u, StringComparison.OrdinalIgnoreCase))">@u</option>
+                        }
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Giá tham chiếu / đơn vị (VNĐ)</label>
+                    <input type="number" name="CostPerUnit" value="@Model.CostPerUnit" min="0" step="1000"
+                           class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 transition" />
+                </div>
+
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">NCC mặc định</label>
+                    <select name="DefaultSupplierId" class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 transition">
+                        <option value="">-- Không chọn --</option>
+                        @foreach (var p in partners)
+                        {
+                            <option value="@p.Id" selected="@(Model.DefaultSupplierId == p.Id)">@p.LegalName</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="flex items-end">
+                    <label class="inline-flex items-center gap-2 cursor-pointer pb-2.5">
+                        <input type="checkbox" name="IsActive" value="true" checked="@Model.IsActive" class="rounded border-gray-300 text-amber-600 focus:ring-amber-500" />
+                        <span class="text-sm font-semibold text-gray-700">Đang hoạt động</span>
+                    </label>
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-gray-600 uppercase tracking-wide mb-2">Mô tả</label>
+                <textarea name="Description" rows="3" maxlength="255"
+                          class="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-amber-400 transition resize-none">@Model.Description</textarea>
+            </div>
+        </div>
+
+        <div class="lg:col-span-1 space-y-4">
+                <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 flex flex-col gap-3">
+                <button type="submit" class="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition flex items-center justify-center gap-2 shadow-sm">
+                    <i class="fas fa-save"></i> Lưu thay đổi
+                </button>
+                <a href="/WarehouseStaff/Ingredient/Detail/@ingredientId" class="w-full py-3 rounded-xl border border-gray-200 text-gray-600 hover:bg-gray-50 font-semibold text-sm text-center transition">
+                    Hủy bỏ
+                </a>
+            </div>
+        </div>
+    </form>
+</div>

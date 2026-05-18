@@ -156,6 +156,12 @@
                                 </div>
                             </div>
 
+                            <div class="rounded-2xl border border-violet-100 bg-violet-50/50 p-5">
+                                <label class="block text-[11px] font-black uppercase tracking-wider text-violet-800/80">Mã khuyến mãi (tùy chọn)</label>
+                                <input type="text" x-model="promotionCode" placeholder="VD: DONVI10"
+                                       class="mt-2 w-full rounded-2xl border border-violet-200 bg-white px-4 py-2.5 text-sm font-semibold uppercase focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-200" />
+                            </div>
+
                             <!-- Dates -->
                             <div>
                                 <div class="mb-3 flex items-center gap-2">
@@ -514,6 +520,7 @@
         Alpine.data('orgMealOrderApp', () => ({
             step: 1,
             pricePerPortion: 45000,
+            promotionCode: '',
             newDate: dateDefault,
             dateMin, dateMax,
             mealDays: [],
@@ -753,6 +760,7 @@
                 return {
                     organizationId: orgId,
                     price: this.pricePerPortion,
+                    promotionCode: this.promotionCode || null,
                     mealDays: this.mealDays.map(d => ({
                         serviceDate: d.serviceDate,
                         mealPlan: {

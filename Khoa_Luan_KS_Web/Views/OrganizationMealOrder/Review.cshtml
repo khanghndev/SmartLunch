@@ -89,8 +89,12 @@
                         <i data-lucide="receipt" class="h-5 w-5"></i>
                     </span>
                     <div>
-                        <p class="text-[10px] font-black uppercase tracking-wider text-orange-600">Tổng giá trị</p>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-orange-600">Tổng thanh toán</p>
                         <p class="text-2xl font-black text-orange-700">@draft.TotalAmount.ToString("N0") đ</p>
+                        @if (draft.DiscountAmount > 0)
+                        {
+                            <p class="mt-1 text-xs text-violet-700">Giảm @draft.DiscountAmount.ToString("N0") đ · @draft.AppliedPromotionName</p>
+                        }
                     </div>
                 </div>
             </div>

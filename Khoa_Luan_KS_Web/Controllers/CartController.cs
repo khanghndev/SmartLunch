@@ -403,7 +403,7 @@ public class CartController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Checkout(DateTime scheduledDate, string? signatureDataUrl, CancellationToken ct)
+    public async Task<IActionResult> Checkout(DateTime scheduledDate, string? signatureDataUrl, string? promotionCode, CancellationToken ct)
     {
         if (!CanSubmitOnlineMealOrder(User))
         {
@@ -452,6 +452,7 @@ public class CartController : Controller
         var req = new CreateCustomerMealOrderApiRequest
         {
             ScheduledDate = date,
+            PromotionCode = string.IsNullOrWhiteSpace(promotionCode) ? null : promotionCode.Trim(),
             Lines = cart
                 .GroupBy(c => c.DishId)
                 .Select(g => new CreateCustomerMealOrderLineApi { DishId = g.Key, Quantity = g.Sum(x => x.Quantity) })

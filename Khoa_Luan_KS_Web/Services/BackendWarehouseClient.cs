@@ -32,6 +32,15 @@ public class BackendWarehouseClient
     public Task<GetIngredientClientResponse> GetIngredientAsync(int id, string accessToken, CancellationToken ct = default)
         => GetAsync<GetIngredientClientResponse>($"/api/v1/master-data/Ingredient/{id}", accessToken, ct);
 
+    public Task<GetIngredientClientResponse> CreateIngredientAsync(CreateIngredientClientRequest payload, string accessToken, CancellationToken ct = default)
+        => PostAsync<GetIngredientClientResponse>("/api/v1/master-data/Ingredient", payload, accessToken, ct);
+
+    public Task<GetIngredientClientResponse> UpdateIngredientAsync(int id, UpdateIngredientClientRequest payload, string accessToken, CancellationToken ct = default)
+        => PutAsync<GetIngredientClientResponse>($"/api/v1/master-data/Ingredient/{id}", payload, accessToken, ct);
+
+    public Task<DeleteIngredientClientResponse> DeleteIngredientAsync(int id, string accessToken, CancellationToken ct = default)
+        => DeleteAsync<DeleteIngredientClientResponse>($"/api/v1/master-data/Ingredient/{id}", accessToken, ct);
+
     // ───────────────────────────── IngredientSource (lô hàng) ───────────────────────────
     public Task<GetIngredientSourcesClientResponse> GetIngredientSourcesAsync(string accessToken, int page = 1, int pageSize = 20, string? searchTerm = null, int? partnerId = null, int? ingredientId = null, CancellationToken ct = default)
     {
@@ -53,9 +62,14 @@ public class BackendWarehouseClient
 
     public async Task DeleteIngredientSourceAsync(int id, string accessToken, CancellationToken ct = default)
     {
+        await DeleteAsync<object>($"/api/v1/master-data/IngredientSource/{id}", accessToken, ct);
+    }
+
+    private async Task<T> DeleteAsync<T>(string path, string accessToken, CancellationToken ct)
+    {
         var client = CreateClient(accessToken);
-        using var res = await client.DeleteAsync($"/api/v1/master-data/IngredientSource/{id}", ct);
-        await HandleResponse<object>(res, ct);
+        using var res = await client.DeleteAsync(path, ct);
+        return await HandleResponse<T>(res, ct);
     }
 
     // ───────────────────────────── Inventory (master) ───────────────────────────────────
@@ -197,13 +211,47 @@ public sealed class IngredientClientDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? NameEnglish { get; set; }
     public string Unit { get; set; } = string.Empty;
     public string? Description { get; set; }
     public int? DefaultSupplierId { get; set; }
     public decimal? CostPerUnit { get; set; }
+    public int? CategoryId { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+}
+
+public sealed class CreateIngredientClientRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public string? NameEnglish { get; set; }
+    public string Unit { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public int? DefaultSupplierId { get; set; }
+    public decimal? CostPerUnit { get; set; }
+    public int? CategoryId { get; set; }
+    public bool IsActive { get; set; } = true;
+    public decimal? ReorderLevel { get; set; }
+}
+
+public sealed class UpdateIngredientClientRequest
+{
+    public string Name { get; set; } = string.Empty;
+    public string? NameEnglish { get; set; }
+    public string Unit { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public int? DefaultSupplierId { get; set; }
+    public decimal? CostPerUnit { get; set; }
+    public int? CategoryId { get; set; }
+    public bool IsActive { get; set; } = true;
+}
+
+public sealed class DeleteIngredientClientResponse
+{
+    public int Id { get; set; }
+    public string Message { get; set; } = string.Empty;
+    public bool DeactivatedOnly { get; set; }
 }
 
 public sealed class GetIngredientsClientResponse : PaginationResponse<IngredientClientDto> { }

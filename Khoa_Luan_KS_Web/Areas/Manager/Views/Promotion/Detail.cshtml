@@ -1,0 +1,156 @@
+@model Khoa_Luan_KS_Web.Services.PromotionClientDto
+@{ ViewData["Title"] = Model.Name; Layout = "_LayoutManager"; }
+
+<div class="mx-auto max-w-6xl space-y-6 pb-8">
+
+    @* Breadcrumb + Header *@
+    <div>
+        <nav class="mb-2 flex items-center gap-1.5 text-xs text-gray-400">
+            <a href="/Manager/Home/Index" class="hover:text-green-600 transition-colors">Tổng quan</a>
+            <i class="fas fa-chevron-right text-[10px]"></i>
+            <a href="/Manager/Promotion/Index" class="hover:text-green-600 transition-colors">Khuyến mãi</a>
+            <i class="fas fa-chevron-right text-[10px]"></i>
+            <span class="text-gray-600 font-medium">Chi tiết</span>
+        </nav>
+        <div class="flex items-center justify-between gap-4">
+            <div class="flex items-center gap-4">
+                <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-green-600 shadow-lg shadow-green-100">
+                    <i class="fas fa-tags text-white text-sm"></i>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-gray-900">@Model.Name</h1>
+                    @if (!string.IsNullOrEmpty(Model.Code))
+                    {
+                        <span class="inline-flex items-center gap-1 rounded-lg bg-green-50 px-2.5 py-0.5 text-xs font-mono font-semibold text-green-700">
+                            <i class="fas fa-hashtag text-[10px]"></i> @Model.Code
+                        </span>
+                    }
+                </div>
+            </div>
+            <a href="/Manager/Promotion/Edit/@Model.Id"
+               class="inline-flex items-center gap-2 rounded-xl border border-gray-200 bg-white px-4 py-2 text-sm font-semibold text-gray-600 shadow-sm transition hover:bg-gray-50">
+                <i class="fas fa-pen text-xs text-blue-500"></i> Chỉnh sửa
+            </a>
+        </div>
+    </div>
+
+    @* Trạng thái badge *@
+    <div class="flex items-center gap-2">
+        @if (Model.IsActive)
+        {
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">
+                <span class="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse"></span> Đang hoạt động
+            </span>
+        }
+        else
+        {
+            <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-gray-500">
+                <span class="h-1.5 w-1.5 rounded-full bg-gray-400"></span> Không hoạt động
+            </span>
+        }
+    </div>
+
+    @* Card: Thông tin chính *@
+    <div class="rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div class="flex items-center gap-3 border-b border-gray-100 px-6 py-4">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-50">
+                <i class="fas fa-percent text-sm text-orange-500"></i>
+            </div>
+            <h2 class="text-sm font-bold text-gray-700">Cấu hình giảm giá</h2>
+        </div>
+        <div class="grid gap-4 px-6 py-5 text-sm sm:grid-cols-2 lg:grid-cols-3">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Phạm vi</p>
+                <p class="mt-1 font-semibold text-gray-800">@Model.ScopeType</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Kênh</p>
+                <p class="mt-1 font-semibold text-gray-800">@Model.Channel</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Mức giảm</p>
+                <p class="mt-1 text-lg font-bold text-orange-600">
+                    @(Model.DiscountType == "percent" ? $"{Model.DiscountValue}%" : $"{Model.DiscountValue:N0} đ")
+                </p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Độ ưu tiên</p>
+                <p class="mt-1 font-semibold text-gray-800">@Model.Priority</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Cách chọn KM</p>
+                <p class="mt-1 font-semibold text-gray-800">@Model.SelectionMode</p>
+            </div>
+        </div>
+    </div>
+
+    @* Card: Thời gian *@
+    <div class="rounded-2xl border border-gray-100 bg-white shadow-sm">
+        <div class="flex items-center gap-3 border-b border-gray-100 px-6 py-4">
+            <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-purple-50">
+                <i class="fas fa-calendar-alt text-sm text-purple-500"></i>
+            </div>
+            <h2 class="text-sm font-bold text-gray-700">Thời gian hiệu lực</h2>
+        </div>
+        <div class="grid gap-4 px-6 py-5 text-sm sm:grid-cols-2">
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Từ ngày</p>
+                <p class="mt-1 font-semibold text-gray-800">@Model.ValidFrom.ToString("dd/MM/yyyy")</p>
+            </div>
+            <div>
+                <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Đến ngày</p>
+                <p class="mt-1 font-semibold text-gray-800">@Model.ValidTo.ToString("dd/MM/yyyy")</p>
+            </div>
+            @if (Model.BookingTimeStart.HasValue)
+            {
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Giờ đặt từ</p>
+                    <p class="mt-1 font-semibold text-gray-800">@Model.BookingTimeStart</p>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-400">Giờ đặt đến</p>
+                    <p class="mt-1 font-semibold text-gray-800">@Model.BookingTimeEnd</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    @* Card: Đối tượng *@
+    @if (Model.Targets.Count > 0)
+    {
+        <div class="rounded-2xl border border-gray-100 bg-white shadow-sm">
+            <div class="flex items-center gap-3 border-b border-gray-100 px-6 py-4">
+                <div class="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50">
+                    <i class="fas fa-bullseye text-sm text-amber-500"></i>
+                </div>
+                <h2 class="text-sm font-bold text-gray-700">Đối tượng áp dụng</h2>
+            </div>
+            <div class="flex flex-wrap gap-2 px-6 py-5">
+                @foreach (var t in Model.Targets)
+                {
+                    <span class="inline-flex items-center gap-1.5 rounded-lg bg-gray-100 px-3 py-1.5 font-mono text-xs text-gray-700">
+                        <i class="fas fa-circle-dot text-[9px] text-green-500"></i>
+                        @t.TargetType: @(t.TargetId?.ToString() ?? t.TargetKey)
+                    </span>
+                }
+            </div>
+        </div>
+    }
+
+    @* Actions *@
+    <div class="flex items-center justify-between rounded-2xl border border-gray-100 bg-white px-6 py-4 shadow-sm">
+        <a href="/Manager/Promotion/Index"
+           class="inline-flex items-center gap-2 text-sm font-semibold text-gray-500 transition hover:text-green-600">
+            <i class="fas fa-arrow-left text-xs"></i> Quay lại danh sách
+        </a>
+        <form method="post" asp-action="Delete" asp-route-id="@Model.Id"
+              onsubmit="return confirm('Vô hiệu hóa chương trình khuyến mãi này?');">
+            @Html.AntiForgeryToken()
+            <button type="submit"
+                    class="inline-flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-2 text-sm font-semibold text-red-600 transition hover:bg-red-100">
+                <i class="fas fa-ban text-xs"></i> Vô hiệu hóa
+            </button>
+        </form>
+    </div>
+
+</div>

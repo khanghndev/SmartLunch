@@ -39,6 +39,10 @@
         <form asp-action="Checkout" method="post" class="space-y-6" id="contract-checkout-form">
             @Html.AntiForgeryToken()
             <input type="hidden" name="scheduledDate" value="@scheduleStr" />
+            <div class="rounded-xl border border-violet-200 bg-violet-50 p-4">
+                <label class="block text-xs font-bold text-violet-800 uppercase mb-1">Mã khuyến mãi (tùy chọn)</label>
+                <input type="text" name="promotionCode" placeholder="Nhập mã KM" class="w-full max-w-xs rounded-lg border px-3 py-2 text-sm uppercase" />
+            </div>
 
         <div class="max-h-[calc(100vh-14rem)] overflow-y-auto rounded-sm border border-slate-300 bg-white shadow-2xl">
             <div class="esign-paper space-y-6 p-8 text-sm leading-relaxed text-slate-900 sm:p-12 lg:p-14" style="font-family: 'Times New Roman', Times, serif;">

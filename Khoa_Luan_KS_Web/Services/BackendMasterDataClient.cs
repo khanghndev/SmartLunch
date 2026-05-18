@@ -333,6 +333,47 @@ public class BackendMasterDataClient
         return await PostAsync<GetContractClientResponse>($"/api/v1/company/contracts/{contractId}/sign", request, accessToken, ct);
     }
 
+    // --- Promotions ---
+    public async Task<GetPromotionsClientResponse> GetPromotionsAsync(
+        string accessToken, int page = 1, int pageSize = 20, string? searchTerm = null, bool? isActive = null, string? scopeType = null, CancellationToken ct = default)
+    {
+        var q = $"?page={page}&pageSize={pageSize}";
+        if (!string.IsNullOrWhiteSpace(searchTerm)) q += $"&searchTerm={Uri.EscapeDataString(searchTerm)}";
+        if (isActive.HasValue) q += $"&isActive={isActive.Value.ToString().ToLowerInvariant()}";
+        if (!string.IsNullOrWhiteSpace(scopeType)) q += $"&scopeType={Uri.EscapeDataString(scopeType)}";
+        return await GetAsync<GetPromotionsClientResponse>($"/api/v1/master-data/Promotion{q}", accessToken, ct);
+    }
+
+    public async Task<GetPromotionClientResponse> GetPromotionAsync(int id, string accessToken, CancellationToken ct = default)
+        => await GetAsync<GetPromotionClientResponse>($"/api/v1/master-data/Promotion/{id}", accessToken, ct);
+
+    public async Task<GetPromotionClientResponse> CreatePromotionAsync(UpsertPromotionClientRequest request, string accessToken, CancellationToken ct = default)
+        => await PostAsync<GetPromotionClientResponse>("/api/v1/master-data/Promotion", request, accessToken, ct);
+
+    public async Task<GetPromotionClientResponse> UpdatePromotionAsync(int id, UpsertPromotionClientRequest request, string accessToken, CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(request, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+        var client = CreateClient(accessToken);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PutAsync($"/api/v1/master-data/Promotion/{id}", content, ct);
+        return await HandleResponse<GetPromotionClientResponse>(res, ct);
+    }
+
+    public async Task DeletePromotionAsync(int id, string accessToken, CancellationToken ct = default)
+    {
+        var client = CreateClient(accessToken);
+        using var res = await client.DeleteAsync($"/api/v1/master-data/Promotion/{id}", ct);
+        if (!res.IsSuccessStatusCode)
+        {
+            var body = await res.Content.ReadAsStringAsync(ct);
+            var msg = TryExtractBackendMessage(body) ?? $"Backend request failed ({(int)res.StatusCode})";
+            throw new InvalidOperationException(msg);
+        }
+    }
+
+    public async Task<PreviewPromotionClientResponse> PreviewPromotionAsync(PreviewPromotionClientRequest request, string accessToken, CancellationToken ct = default)
+        => await PostAsync<PreviewPromotionClientResponse>("/api/v1/master-data/Promotion/preview", request, accessToken, ct);
+
     // --- Organization meal order (B2B đặt suất theo đơn vị) ---
     public async Task<GetOrganizationDishCategoriesClientResponse> GetOrganizationDishCategoriesAsync(string accessToken, CancellationToken ct = default)
     {
@@ -902,6 +943,7 @@ public class CreateCustomerMealOrderApiRequest
 {
     public DateOnly ScheduledDate { get; set; }
     public List<CreateCustomerMealOrderLineApi> Lines { get; set; } = new();
+    public string? PromotionCode { get; set; }
 }
 
 public class CreateCustomerMealOrderLineApi
@@ -989,6 +1031,7 @@ public class PrepareOrganizationMealContractClientRequest
     public int OrganizationId { get; set; }
     public decimal Price { get; set; }
     public List<OrganizationMealDayClientRequest> MealDays { get; set; } = new();
+    public string? PromotionCode { get; set; }
 }
 
 public class OrganizationMealDayClientRequest
@@ -1021,8 +1064,111 @@ public class PrepareOrganizationMealContractClientResponse
     public decimal PricePerPortion { get; set; }
     public int TotalMainQuantity { get; set; }
     public decimal TotalAmount { get; set; }
+    public decimal? SubtotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public int? AppliedPromotionId { get; set; }
+    public string? AppliedPromotionName { get; set; }
+    public string? PromotionCode { get; set; }
     public List<OrganizationMealDraftLineSummaryClientDto> Lines { get; set; } = new();
     public string? PersistenceNotice { get; set; }
+}
+
+public class GetPromotionsClientResponse
+{
+    public List<PromotionClientDto> Data { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+}
+
+public class GetPromotionClientResponse
+{
+    public PromotionClientDto Promotion { get; set; } = new();
+}
+
+public class PromotionClientDto
+{
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string ScopeType { get; set; } = string.Empty;
+    public string DiscountType { get; set; } = string.Empty;
+    public decimal DiscountValue { get; set; }
+    public int Priority { get; set; }
+    public string SelectionMode { get; set; } = string.Empty;
+    public string Channel { get; set; } = string.Empty;
+    public int? MinOrderQuantity { get; set; }
+    public decimal? MinOrderAmount { get; set; }
+    public DateOnly ValidFrom { get; set; }
+    public DateOnly ValidTo { get; set; }
+    public TimeOnly? BookingTimeStart { get; set; }
+    public TimeOnly? BookingTimeEnd { get; set; }
+    public int? MaxTotalUses { get; set; }
+    public int? MaxUsesPerUser { get; set; }
+    public bool IsActive { get; set; }
+    public List<PromotionTargetClientDto> Targets { get; set; } = new();
+}
+
+public class PromotionTargetClientDto
+{
+    public int Id { get; set; }
+    public string TargetType { get; set; } = string.Empty;
+    public int? TargetId { get; set; }
+    public string? TargetKey { get; set; }
+}
+
+public class UpsertPromotionClientRequest
+{
+    public string? Code { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string ScopeType { get; set; } = string.Empty;
+    public string DiscountType { get; set; } = string.Empty;
+    public decimal DiscountValue { get; set; }
+    public int Priority { get; set; }
+    public string SelectionMode { get; set; } = "best_discount";
+    public string Channel { get; set; } = "all";
+    public int? MinOrderQuantity { get; set; }
+    public decimal? MinOrderAmount { get; set; }
+    public DateOnly ValidFrom { get; set; }
+    public DateOnly ValidTo { get; set; }
+    public TimeOnly? BookingTimeStart { get; set; }
+    public TimeOnly? BookingTimeEnd { get; set; }
+    public int? MaxTotalUses { get; set; }
+    public int? MaxUsesPerUser { get; set; }
+    public bool IsActive { get; set; } = true;
+    public List<PromotionTargetClientDto> Targets { get; set; } = new();
+}
+
+public class PreviewPromotionClientRequest
+{
+    public string Channel { get; set; } = "b2c";
+    public int? OrganizationId { get; set; }
+    public string? ContractType { get; set; }
+    public string? PromotionCode { get; set; }
+    public decimal Subtotal { get; set; }
+    public int TotalQuantity { get; set; }
+    public List<PreviewPromotionLineClientRequest> Lines { get; set; } = new();
+}
+
+public class PreviewPromotionLineClientRequest
+{
+    public int DishId { get; set; }
+    public int Quantity { get; set; }
+    public decimal LineTotal { get; set; }
+}
+
+public class PreviewPromotionClientResponse
+{
+    public decimal Subtotal { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public decimal TotalAfter { get; set; }
+    public bool Applied { get; set; }
+    public int? PromotionId { get; set; }
+    public string? PromotionCode { get; set; }
+    public string? PromotionName { get; set; }
+    public string? Message { get; set; }
 }
 
 public class OrganizationMealDraftLineSummaryClientDto

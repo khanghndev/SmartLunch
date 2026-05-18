@@ -1,0 +1,200 @@
+@model Khoa_Luan_KS_Web.Areas.Manager.Controllers.PromotionFormVm
+@{
+    var inputClass = "w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-800 placeholder-slate-400 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all shadow-sm";
+    var selectClass = inputClass + " appearance-none pr-10";
+    var labelClass = "mb-1.5 block text-sm font-bold text-slate-700";
+    var hintClass = "mt-1 block text-xs font-medium text-red-500";
+}
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div asp-validation-summary="All" class="mb-2 rounded-2xl border border-red-200 bg-red-50 px-5 py-3.5 text-sm font-medium text-red-800"></div>
+}
+
+<div class="space-y-6">
+
+    <section class="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+        <header class="flex items-center gap-3 border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+            <div class="w-9 h-9 rounded-xl bg-green-50 text-green-600 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path></svg>
+            </div>
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-wide">Thông tin cơ bản</h2>
+        </header>
+        <div class="grid gap-5 px-6 py-6 md:grid-cols-2">
+            <div>
+                <label asp-for="Code" class="@labelClass">Mã KM <span class="font-medium text-slate-400">(tùy chọn)</span></label>
+                <input asp-for="Code" placeholder="VD: SUMMER25, TETNEW..." class="@inputClass" />
+                <span asp-validation-for="Code" class="@hintClass"></span>
+            </div>
+            <div>
+                <label asp-for="Name" class="@labelClass">Tên chương trình <span class="text-red-500">*</span></label>
+                <input asp-for="Name" required placeholder="VD: Giảm giá mùa hè 2025..." class="@inputClass" />
+                <span asp-validation-for="Name" class="@hintClass"></span>
+            </div>
+            <div class="md:col-span-2">
+                <label asp-for="Description" class="@labelClass">Mô tả</label>
+                <textarea asp-for="Description" rows="3" placeholder="Mô tả chi tiết về chương trình khuyến mãi..." class="@inputClass resize-none"></textarea>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+        <header class="flex items-center gap-3 border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+            <div class="w-9 h-9 rounded-xl bg-orange-50 text-orange-500 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+            </div>
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-wide">Cấu hình giảm giá</h2>
+        </header>
+        <div class="grid gap-5 px-6 py-6 md:grid-cols-2">
+            <div>
+                <label asp-for="ScopeType" class="@labelClass">Phạm vi áp dụng <span class="text-red-500">*</span></label>
+                <div class="relative">
+                    <select asp-for="ScopeType" x-on:change="typeof scopeType !== 'undefined' && (scopeType = $event.target.value)" class="@selectClass">
+                        <option value="dish">Theo món (menu)</option>
+                        <option value="order_quantity">Theo số lượng đơn</option>
+                        <option value="customer">Theo khách / hợp đồng</option>
+                    </select>
+                    <svg class="w-4 h-4 text-slate-400 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+            <div>
+                <label asp-for="Channel" class="@labelClass">Kênh bán hàng</label>
+                <div class="relative">
+                    <select asp-for="Channel" class="@selectClass">
+                        <option value="all">Tất cả kênh</option>
+                        <option value="b2c">B2C (cá nhân)</option>
+                        <option value="b2b_org">B2B (đơn vị)</option>
+                    </select>
+                    <svg class="w-4 h-4 text-slate-400 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+            <div>
+                <label asp-for="DiscountType" class="@labelClass">Loại giảm <span class="text-red-500">*</span></label>
+                <div class="relative">
+                    <select asp-for="DiscountType" class="@selectClass">
+                        <option value="percent">Phần trăm (%)</option>
+                        <option value="fixed_amount">Số tiền cố định (đ)</option>
+                    </select>
+                    <svg class="w-4 h-4 text-slate-400 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+            <div>
+                <label asp-for="DiscountValue" class="@labelClass">Giá trị giảm <span class="text-red-500">*</span></label>
+                <input asp-for="DiscountValue" type="number" step="0.01" min="0" placeholder="0" class="@inputClass" />
+                <span asp-validation-for="DiscountValue" class="@hintClass"></span>
+            </div>
+            <div>
+                <label asp-for="Priority" class="@labelClass">
+                    Độ ưu tiên
+                    <span class="font-medium text-slate-400">(số cao = ưu tiên trước)</span>
+                </label>
+                <input asp-for="Priority" type="number" min="0" placeholder="10" class="@inputClass" />
+            </div>
+            <div>
+                <label asp-for="SelectionMode" class="@labelClass">Cách chọn KM</label>
+                <div class="relative">
+                    <select asp-for="SelectionMode" class="@selectClass">
+                        <option value="best_discount">Tốt nhất (số tiền giảm tối đa)</option>
+                        <option value="first_match">Khớp đầu tiên theo ưu tiên</option>
+                    </select>
+                    <svg class="w-4 h-4 text-slate-400 pointer-events-none absolute right-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+        <header class="flex items-center gap-3 border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+            <div class="w-9 h-9 rounded-xl bg-blue-50 text-blue-500 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path></svg>
+            </div>
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-wide">Điều kiện áp dụng</h2>
+        </header>
+        <div class="grid gap-5 px-6 py-6 md:grid-cols-2">
+            <div>
+                <label asp-for="MinOrderQuantity" class="@labelClass">Số lượng đơn tối thiểu</label>
+                <div class="relative">
+                    <input asp-for="MinOrderQuantity" type="number" min="0" placeholder="Không giới hạn" class="@inputClass pr-14" />
+                    <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">đơn</span>
+                </div>
+            </div>
+            <div>
+                <label asp-for="MinOrderAmount" class="@labelClass">Giá trị đơn tối thiểu</label>
+                <div class="relative">
+                    <input asp-for="MinOrderAmount" type="number" step="1000" min="0" placeholder="Không giới hạn" class="@inputClass pr-10" />
+                    <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">đ</span>
+                </div>
+            </div>
+            <div>
+                <label asp-for="MaxTotalUses" class="@labelClass">Giới hạn lượt dùng (tổng)</label>
+                <input asp-for="MaxTotalUses" type="number" min="0" placeholder="Không giới hạn" class="@inputClass" />
+            </div>
+            <div>
+                <label asp-for="MaxUsesPerUser" class="@labelClass">Giới hạn lượt / khách</label>
+                <input asp-for="MaxUsesPerUser" type="number" min="0" placeholder="Không giới hạn" class="@inputClass" />
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+        <header class="flex items-center gap-3 border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+            <div class="w-9 h-9 rounded-xl bg-purple-50 text-purple-500 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+            </div>
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-wide">Thời gian hiệu lực</h2>
+        </header>
+        <div class="grid gap-5 px-6 py-6 md:grid-cols-2">
+            <div>
+                <label asp-for="ValidFrom" class="@labelClass">Từ ngày <span class="text-red-500">*</span></label>
+                <input asp-for="ValidFrom" type="date" class="@inputClass" />
+                <span asp-validation-for="ValidFrom" class="@hintClass"></span>
+            </div>
+            <div>
+                <label asp-for="ValidTo" class="@labelClass">Đến ngày <span class="text-red-500">*</span></label>
+                <input asp-for="ValidTo" type="date" class="@inputClass" />
+                <span asp-validation-for="ValidTo" class="@hintClass"></span>
+            </div>
+            <div>
+                <label asp-for="BookingTimeStart" class="@labelClass">Giờ đặt từ <span class="font-medium text-slate-400">(tùy chọn)</span></label>
+                <input asp-for="BookingTimeStart" type="time" class="@inputClass" />
+            </div>
+            <div>
+                <label asp-for="BookingTimeEnd" class="@labelClass">Giờ đặt đến <span class="font-medium text-slate-400">(tùy chọn)</span></label>
+                <input asp-for="BookingTimeEnd" type="time" class="@inputClass" />
+            </div>
+        </div>
+    </section>
+
+    <section class="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+        <header class="flex items-center gap-3 border-b border-slate-100 bg-slate-50/50 px-6 py-4">
+            <div class="w-9 h-9 rounded-xl bg-amber-50 text-amber-500 flex items-center justify-center">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </div>
+            <h2 class="text-sm font-black text-slate-800 uppercase tracking-wide">Đối tượng áp dụng</h2>
+        </header>
+        <div class="px-6 py-6">
+            <label asp-for="TargetsText" class="@labelClass">Danh sách đối tượng</label>
+            <p class="mb-3 text-xs font-medium text-slate-500">
+                Mỗi dòng một đối tượng. Ví dụ:
+                <code class="mx-0.5 rounded-lg bg-slate-100 px-1.5 py-0.5 font-mono text-slate-700">dish:12</code>
+                <code class="mx-0.5 rounded-lg bg-slate-100 px-1.5 py-0.5 font-mono text-slate-700">organization:3</code>
+                <code class="mx-0.5 rounded-lg bg-slate-100 px-1.5 py-0.5 font-mono text-slate-700">contract_type:Order-Based</code>
+            </p>
+            <textarea asp-for="TargetsText" rows="5"
+                      placeholder="dish:12&#10;organization:3&#10;contract_type:Order-Based"
+                      class="@inputClass resize-y font-mono text-xs"></textarea>
+        </div>
+    </section>
+
+    <section class="flex items-center gap-4 rounded-[24px] border border-slate-100 bg-white px-6 py-5 shadow-sm">
+        <label class="relative inline-flex cursor-pointer items-center shrink-0">
+            <input asp-for="IsActive" type="checkbox" class="peer sr-only" />
+            <div class="peer h-7 w-12 rounded-full bg-slate-200 transition-colors after:absolute after:left-[3px] after:top-[3px] after:h-[22px] after:w-[22px] after:rounded-full after:bg-white after:shadow after:transition-all after:content-[''] peer-checked:bg-green-600 peer-checked:after:translate-x-5 peer-focus:ring-2 peer-focus:ring-green-200"></div>
+        </label>
+        <div>
+            <p class="text-sm font-black text-slate-800">Đang hoạt động</p>
+            <p class="text-xs font-medium text-slate-500 mt-0.5">Bật để chương trình khuyến mãi có hiệu lực ngay</p>
+        </div>
+    </section>
+
+</div>

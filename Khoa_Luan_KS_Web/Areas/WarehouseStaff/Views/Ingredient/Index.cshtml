@@ -8,6 +8,7 @@
     int pageSize = ViewBag.PageSize ?? 20;
     int totalPages = Model.PageSize == 0 ? 1 : (int)Math.Ceiling((double)Model.TotalCount / Model.PageSize);
     var items = Model.Items ?? new();
+    var isActiveQuery = isActiveFilter.HasValue ? $"&isActive={(isActiveFilter.Value ? "true" : "false")}" : "";
 }
 
 <div class="px-1 space-y-6">
@@ -23,6 +24,9 @@
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Danh Mục Nguyên Liệu</h1>
             <p class="text-sm text-gray-500 mt-1">Tổng cộng @Model.TotalCount nguyên liệu trong hệ thống</p>
         </div>
+        <a href="/WarehouseStaff/Ingredient/Create" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
+            <i class="fas fa-plus"></i> Thêm nguyên liệu
+        </a>
     </div>
 
     <!-- Filter & Search -->
@@ -95,7 +99,16 @@
                                 }
                             </td>
                             <td class="px-5 py-3.5 text-center">
-                                <a href="/WarehouseStaff/Ingredient/Detail/@i.Id" class="text-amber-600 hover:text-amber-800 text-xs font-semibold transition">Chi tiết →</a>
+                                <div class="flex flex-wrap items-center justify-center gap-2">
+                                    <a href="/WarehouseStaff/Ingredient/Detail/@i.Id" class="text-amber-600 hover:text-amber-800 text-xs font-semibold transition">Chi tiết</a>
+                                    <span class="text-gray-200">|</span>
+                                    <a href="/WarehouseStaff/Ingredient/Edit/@i.Id" class="text-slate-600 hover:text-slate-900 text-xs font-semibold transition">Sửa</a>
+                                    <span class="text-gray-200">|</span>
+                                    <form method="post" action="/WarehouseStaff/Ingredient/Delete/@i.Id" class="inline" onsubmit="return confirm('Xóa hoặc ngừng sử dụng nguyên liệu «@i.Name»?');">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="text-red-600 hover:text-red-800 text-xs font-semibold transition">Xóa</button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
                     }
@@ -110,11 +123,11 @@
                 <div class="flex gap-1">
                     @if (currentPage > 1)
                     {
-                        <a href="?page=@(currentPage - 1)&pageSize=@pageSize&searchTerm=@searchTerm" class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700">Trước</a>
+                        <a href="?page=@(currentPage - 1)&pageSize=@pageSize&searchTerm=@searchTerm@isActiveQuery" class="px-3 py-1.5 rounded-lg border border-gray-200 hover:bg-gray-50 text-gray-700">Trước</a>
                     }
                     @if (currentPage < totalPages)
                     {
-                        <a href="?page=@(currentPage + 1)&pageSize=@pageSize&searchTerm=@searchTerm" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white">Sau</a>
+                        <a href="?page=@(currentPage + 1)&pageSize=@pageSize&searchTerm=@searchTerm@isActiveQuery" class="px-3 py-1.5 rounded-lg bg-amber-500 hover:bg-amber-600 text-white">Sau</a>
                     }
                 </div>
             </div>
