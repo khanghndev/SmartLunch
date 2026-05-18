@@ -110,5 +110,6 @@ SOURCE 05_maintenance/01_analyze_optimize.sql;
 SOURCE 05_maintenance/05_order_items_service_date.sql;
 SOURCE 05_maintenance/06_orders_promotion_columns.sql;
 SOURCE 05_maintenance/07_promotions_permissions.sql;
+SOURCE 05_maintenance/08_promotions_tables.sql;
 
 SELECT 'SmartLunch database setup completed!' AS Status;

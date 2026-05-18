@@ -7,7 +7,7 @@ INSERT IGNORE INTO permissions (Name, Description, Resource, Action) VALUES
 ('promotions.delete', 'Vô hiệu khuyến mãi', 'promotions', 'delete'),
 ('promotions.list', 'Danh sách khuyến mãi', 'promotions', 'list');
 
-INSERT IGNORE INTO role_permissions (RoleId, PermissionId, GrantedAt, IsActive)
+INSERT IGNORE INTO role_permissions (RoleId, PermissionId, AssignedAt, IsActive)
 SELECT r.Id, p.Id, NOW(), 1
 FROM roles r
 CROSS JOIN permissions p
