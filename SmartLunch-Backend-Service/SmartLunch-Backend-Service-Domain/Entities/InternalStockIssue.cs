@@ -11,7 +11,7 @@ public class InternalStockIssue
     public DateTime IssuedAt { get; set; }
     public string? Reason { get; set; }
     public int? CreatedByUserId { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual User? CreatedByUser { get; set; }
     public virtual ICollection<InternalStockIssueLine> Lines { get; set; } = new List<InternalStockIssueLine>();

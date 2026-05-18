@@ -17,7 +17,7 @@ public class News
     public bool IsPublished { get; set; } = false;
     public DateTime? PublishedAt { get; set; }
     public int ViewCount { get; set; } = 0;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
     public bool IsActive { get; set; } = true;
     public int? CreatedBy { get; set; }

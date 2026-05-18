@@ -90,7 +90,7 @@ public class ConfirmMediaUploadCommandHandler : IRequestHandler<ConfirmMediaUplo
             Md5HashBase64 = metadata.Md5HashBase64,
             MediaType = actualMediaType,
             IsPublic = req.IsPublic,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = VietnamTime.Now
         };
 
         await _mediaFileRepository.CreateAsync(entity);

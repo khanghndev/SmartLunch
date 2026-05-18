@@ -49,8 +49,8 @@ public class SignOrderAnnexCommandHandler : IRequestHandler<SignOrderAnnexComman
             cancellationToken);
 
         order.AnnexPdfUrl = pdfUrl;
-        order.AnnexSignedAt = DateTime.UtcNow;
-        order.UpdatedAt = DateTime.UtcNow;
+        order.AnnexSignedAt = VietnamTime.Now;
+        order.UpdatedAt = VietnamTime.Now;
 
         if (string.Equals(order.PaymentStatus, OrderPaymentStatus.Unpaid, StringComparison.OrdinalIgnoreCase))
             order.PaymentStatus = OrderPaymentStatus.AwaitingPayment;
@@ -65,7 +65,7 @@ public class SignOrderAnnexCommandHandler : IRequestHandler<SignOrderAnnexComman
             if (contract != null)
             {
                 contract.DepositAmount = pendingDeposit.Amount;
-                contract.UpdatedAt = DateTime.UtcNow;
+                contract.UpdatedAt = VietnamTime.Now;
                 await _contractRepository.UpdateAsync(contract);
             }
         }

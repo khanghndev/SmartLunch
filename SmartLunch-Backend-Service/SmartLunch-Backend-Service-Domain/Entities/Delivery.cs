@@ -15,7 +15,7 @@ public class Delivery
     public string? ProofImageUrl { get; set; }
     public DateTime? ProofCapturedAt { get; set; }
     public string? Notes { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual Order Order { get; set; } = null!;
     public virtual User? AssignedStaff { get; set; }

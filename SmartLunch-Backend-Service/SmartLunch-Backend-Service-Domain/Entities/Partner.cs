@@ -23,7 +23,7 @@ public class Partner
     public string? ComplianceInfo { get; set; }
     public string? FinancialTerms { get; set; }
     public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<Contract> Contracts { get; set; } = new List<Contract>();

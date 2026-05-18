@@ -10,7 +10,7 @@ public class CookingMethod
     public string MethodKey { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public int SortOrder { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual ICollection<Dish> Dishes { get; set; } = new List<Dish>();
 }

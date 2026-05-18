@@ -76,7 +76,7 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, LoginRe
         }
 
         // Update last login
-        user.LastLoginAt = DateTime.UtcNow;
+        user.LastLoginAt = VietnamTime.Now;
         await _userRepository.UpdateAsync(user);
 
         // Get user roles
@@ -88,7 +88,7 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, LoginRe
         // Generate tokens
         var accessToken = _jwtService.GenerateAccessToken(user, roles);
         var refreshToken = _jwtService.GenerateRefreshToken();
-        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(_expireDays);
+        var refreshTokenExpiresAt = VietnamTime.Now.AddDays(_expireDays);
 
         // Revoke all existing active tokens for this user
         await _userTokenRepository.RevokeAllUserTokensAsync(user.Id);
@@ -102,7 +102,7 @@ public class LoginUserCommandHandler : IRequestHandler<LoginUserCommand, LoginRe
             UserId = user.Id,
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            IssuedAt = DateTime.UtcNow,
+            IssuedAt = VietnamTime.Now,
             ExpiresAt = refreshTokenExpiresAt,
             IsActive = true,
             Jti = jti

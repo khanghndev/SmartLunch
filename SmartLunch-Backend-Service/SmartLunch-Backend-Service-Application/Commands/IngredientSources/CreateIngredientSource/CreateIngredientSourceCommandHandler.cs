@@ -39,7 +39,7 @@ public class CreateIngredientSourceCommandHandler : IRequestHandler<CreateIngred
             ProductionDate = req.ProductionDate,
             ExpirationDate = req.ExpirationDate,
             Certification = string.IsNullOrWhiteSpace(req.Certification) ? null : req.Certification.Trim(),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = VietnamTime.Now
         };
 
         await _ingredientSourceRepository.CreateAsync(entity);

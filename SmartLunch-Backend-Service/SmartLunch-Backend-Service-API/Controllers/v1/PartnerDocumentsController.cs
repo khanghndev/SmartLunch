@@ -69,7 +69,7 @@ public class PartnerDocumentsController : ControllerBase
                 _ => ""
             };
 
-            var now = DateTime.UtcNow;
+            var now = VietnamTime.Now;
             var safeType = (documentType ?? "other").Trim().ToLowerInvariant();
             var objectName = $"users/{userId:D}/partner/{partnerId:D}/documents/{safeType}/{now:yyyy}/{now:MM}/{Guid.NewGuid():N}{ext}";
 
@@ -96,7 +96,7 @@ public class PartnerDocumentsController : ControllerBase
                 MediaFileId = createdMedia.Id,
                 DocumentType = safeType,
                 IsVerified = false,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = VietnamTime.Now
             };
             _db.PartnerDocuments.Add(doc);
             await _db.SaveChangesAsync();

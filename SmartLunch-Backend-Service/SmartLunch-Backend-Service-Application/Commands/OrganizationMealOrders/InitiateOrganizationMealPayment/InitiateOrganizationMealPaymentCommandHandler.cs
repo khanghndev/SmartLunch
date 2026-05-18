@@ -57,7 +57,7 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
             if (string.Equals(order.PaymentStatus, OrderPaymentStatus.Unpaid, StringComparison.OrdinalIgnoreCase))
             {
                 order.PaymentStatus = OrderPaymentStatus.AwaitingPayment;
-                order.UpdatedAt = DateTime.UtcNow;
+                order.UpdatedAt = VietnamTime.Now;
                 await _orderRepository.CommitAsync();
             }
             else

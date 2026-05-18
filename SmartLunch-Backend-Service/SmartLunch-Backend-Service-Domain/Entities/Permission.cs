@@ -12,7 +12,7 @@ public class Permission
     public string Resource { get; set; } = string.Empty; // e.g., "users", "courses"
     public string Action { get; set; } = string.Empty; // e.g., "create", "read", "update", "delete"
     public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
     public int? CreatedBy { get; set; }
     public int? UpdatedBy { get; set; }

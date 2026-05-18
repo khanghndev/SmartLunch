@@ -76,7 +76,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
                 Provider = "system",
                 IsActive = true,
                 IsEmailVerified = false,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = VietnamTime.Now
             };
             var userCreate = await _userRepository.CreateAsync(user);
 
@@ -86,7 +86,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
             {
                 UserId = userCreate.Id,
                 RoleId = req.RoleId ?? 0,
-                AssignedAt = DateTime.UtcNow,
+                AssignedAt = VietnamTime.Now,
                 IsActive = true
             };
             await _userRoleRepository.CreateAsync(userRole);
@@ -107,8 +107,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
             var roles = new List<string> { "Customer" }; // Default role
             var accessToken = _jwtService.GenerateAccessToken(userCreate, roles);
             var refreshToken = _jwtService.GenerateRefreshToken();
-            var expiresAt = DateTime.UtcNow.AddMinutes(60);
-            var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+            var expiresAt = VietnamTime.Now.AddMinutes(60);
+            var refreshTokenExpiresAt = VietnamTime.Now.AddDays(7);
 
             // Store token in database
             var userToken = new UserToken
@@ -116,7 +116,7 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
                 UserId = userCreate.Id,
                 AccessToken = accessToken,
                 RefreshToken = refreshToken,
-                IssuedAt = DateTime.UtcNow,
+                IssuedAt = VietnamTime.Now,
                 ExpiresAt = refreshTokenExpiresAt,
                 IsActive = true
             };

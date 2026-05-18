@@ -23,7 +23,7 @@ public class ClearShoppingCartCommandHandler : IRequestHandler<ClearShoppingCart
             OrganizationId = null,
             Items = new List<ShoppingCartLineDto>(),
             TotalAmount = 0,
-            UpdatedAtUtc = DateTime.UtcNow
+            UpdatedAtUtc = VietnamTime.Now
         };
 
         return new GetShoppingCartResponse { Cart = empty };

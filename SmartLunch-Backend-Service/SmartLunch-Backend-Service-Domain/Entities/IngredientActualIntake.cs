@@ -12,7 +12,7 @@ public class IngredientActualIntake
     public int CreatedByUserId { get; set; }
     public DateTime ReceivedAt { get; set; }
     public string? Note { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual IngredientIntakeProposal Proposal { get; set; } = null!;
     public virtual User CreatedByUser { get; set; } = null!;

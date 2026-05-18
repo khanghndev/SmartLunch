@@ -56,7 +56,7 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
             throw new UnauthorizedAccessException("Current password is incorrect.");
 
         user.PasswordHash = _passwordHasher.HashPassword(req.NewPassword);
-        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedAt = VietnamTime.Now;
         await _userRepository.UpdateAsync(user);
 
         await _userTokenRepository.RevokeAllUserTokensAsync(user.Id);
@@ -66,7 +66,7 @@ public class ResetPasswordCommandHandler : IRequestHandler<ResetPasswordCommand,
         return new ResetPasswordResponse
         {
             UserId = user.Id,
-            ChangedAt = DateTime.UtcNow
+            ChangedAt = VietnamTime.Now
         };
     }
 }

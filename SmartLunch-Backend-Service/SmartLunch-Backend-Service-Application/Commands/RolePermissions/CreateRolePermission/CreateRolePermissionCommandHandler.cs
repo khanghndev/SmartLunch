@@ -37,7 +37,7 @@ public class CreateRolePermissionCommandHandler : IRequestHandler<CreateRolePerm
 
             RoleId = req.RoleId,
             PermissionId = req.PermissionId,
-            AssignedAt = DateTime.UtcNow,
+            AssignedAt = VietnamTime.Now,
             AssignedBy = req.AssignedBy,
             IsActive = true
         };

@@ -20,7 +20,7 @@ public class Dish
     public decimal? Fat { get; set; }
     public decimal? Carbs { get; set; }
     public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<DishDishCategory> DishDishCategories { get; set; } = new List<DishDishCategory>();

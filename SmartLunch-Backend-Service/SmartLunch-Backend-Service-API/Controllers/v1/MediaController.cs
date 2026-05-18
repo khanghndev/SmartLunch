@@ -137,7 +137,7 @@ public class MediaController : ControllerBase
 
             var ext = GuessExtensionFromContentType(ct);
             var safePurpose = string.IsNullOrWhiteSpace(purpose) ? "general" : Slugify(purpose);
-            var now = DateTime.UtcNow;
+            var now = VietnamTime.Now;
             var objectName = $"users/{userId:D}/{safePurpose}/{mt}/{now:yyyy}/{now:MM}/{Guid.NewGuid():N}{ext}";
 
             await using var stream = file.OpenReadStream();
@@ -280,7 +280,7 @@ public class MediaController : ControllerBase
                 _ => ""
             };
 
-            var now = DateTime.UtcNow;
+            var now = VietnamTime.Now;
             var objectName = $"users/{userId:D}/image/{now:yyyy}/{now:MM}/{Guid.NewGuid():N}{ext}";
 
             await using var stream = file.OpenReadStream();

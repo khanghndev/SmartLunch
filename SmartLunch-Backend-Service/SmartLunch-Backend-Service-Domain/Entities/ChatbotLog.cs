@@ -10,7 +10,7 @@ public class ChatbotLog
     public int? UserId { get; set; }
     public string Message { get; set; } = string.Empty;
     public string? Response { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual User? User { get; set; }
 }

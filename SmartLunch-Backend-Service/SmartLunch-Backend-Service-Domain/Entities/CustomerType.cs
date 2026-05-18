@@ -10,7 +10,7 @@ public class CustomerType
     public string ProfileKey { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string? Description { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual ICollection<WeeklyMenu> WeeklyMenus { get; set; } = new List<WeeklyMenu>();
 }

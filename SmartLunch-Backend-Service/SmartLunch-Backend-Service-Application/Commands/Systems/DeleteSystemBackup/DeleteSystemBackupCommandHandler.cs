@@ -30,7 +30,7 @@ public class DeleteSystemBackupCommandHandler : IRequestHandler<DeleteSystemBack
         if (backup.IsDeleted)
             throw new InvalidOperationException("Backup already deleted.");
 
-        var deletedAt = DateTime.UtcNow;
+        var deletedAt = VietnamTime.Now;
         var physicalDeleted = false;
 
         if (request.DeletePhysicalFile)

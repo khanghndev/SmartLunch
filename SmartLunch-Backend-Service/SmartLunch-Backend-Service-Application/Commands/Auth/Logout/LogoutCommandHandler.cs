@@ -43,7 +43,7 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, LogoutRespons
 
         // Revoke the token
         userToken.IsActive = false;
-        userToken.RevokedAt = DateTime.UtcNow;
+        userToken.RevokedAt = VietnamTime.Now;
         await _userTokenRepository.UpdateAsync(userToken);
 
         // Also revoke associated refresh token if exists
@@ -53,7 +53,7 @@ public class LogoutCommandHandler : IRequestHandler<LogoutCommand, LogoutRespons
             if (refreshToken != null && refreshToken.IsActive)
             {
                 refreshToken.IsActive = false;
-                refreshToken.RevokedAt = DateTime.UtcNow;
+                refreshToken.RevokedAt = VietnamTime.Now;
                 await _userTokenRepository.UpdateAsync(refreshToken);
             }
         }

@@ -13,7 +13,7 @@ public class WeeklyMenu
     public int? CustomerTypeId { get; set; }
     public string? Description { get; set; }
     public int CreatedBy { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual User CreatedByUser { get; set; } = null!;
     public virtual CustomerType? CustomerType { get; set; }

@@ -75,7 +75,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, GetUs
             Provider = "system",
             IsActive = req.IsActive,
             IsEmailVerified = false,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = VietnamTime.Now
         };
 
         await _userRepository.CreateAsync(user);
@@ -87,7 +87,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, GetUs
 
                 UserId = user.Id,
                 RoleId = initialRole.Id,
-                AssignedAt = DateTime.UtcNow,
+                AssignedAt = VietnamTime.Now,
                 AssignedBy = request.ActorUserId,
                 IsActive = true
             });

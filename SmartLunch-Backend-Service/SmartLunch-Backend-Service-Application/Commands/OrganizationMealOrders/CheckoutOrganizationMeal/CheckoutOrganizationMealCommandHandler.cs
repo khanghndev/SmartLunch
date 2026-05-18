@@ -75,7 +75,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
         if (membership == null || !membership.IsActive)
             throw new UnauthorizedAccessException("You do not have access to this organization.");
 
-        // var utcNow = DateTime.UtcNow;
+        // var utcNow = VietnamTime.Now;
         // foreach (var day in draft.Days)
         // {
         //     if (!OrganizationMealOrderDateWindow.IsDateInWindow(day.ServiceDate, utcNow))
@@ -129,31 +129,31 @@ public sealed class CheckoutOrganizationMealCommandHandler
                 PartnerId = partner.Id,
                 OrganizationId = checkoutOrg.Id,
                 ContractType = "Order-Based",
-                Description = $"Hợp đồng đặt suất đơn vị — đơn hàng {DateTime.UtcNow:yyyy-MM-dd}",
+                Description = $"Hợp đồng đặt suất đơn vị — đơn hàng {VietnamTime.Now:yyyy-MM-dd}",
                 SupplySchedule = null,
-                StartDate = DateTime.UtcNow.Date,
+                StartDate = VietnamTime.Now.Date,
                 EndDate = null,
                 TotalValue = total,
                 MealUnitPrice = draft.PricePerPortion,
                 DepositAmount = null,
                 Status = "active",
-                CreatedAt = DateTime.UtcNow,
+                CreatedAt = VietnamTime.Now,
             };
             wasNewContract = true;
         }
 
         var scheduledDate = draft.MinServiceDate;
-        var scheduledUtc = DateTime.SpecifyKind(scheduledDate.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+        var scheduledUtc = VietnamTime.CalendarDateMidnight(scheduledDate);
 
         var order = new Order
         {
             UserId = command.UserId,
             ContractId = contract.Id > 0 ? contract.Id : null,
-            OrderDate = DateTime.UtcNow,
+            OrderDate = VietnamTime.Now,
             ScheduledDate = scheduledUtc,
             Status = OrderLifecycleStatus.Pending,
             PaymentStatus = OrderPaymentStatus.Unpaid,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = VietnamTime.Now,
             InvoiceCode = await AllocateOrganizationInvoiceCodeAsync(scheduledDate, cancellationToken),
         };
 
@@ -192,11 +192,11 @@ public sealed class CheckoutOrganizationMealCommandHandler
         var payment = new Payment
         {
             PayerId = command.UserId,
-            PaymentDate = DateTime.UtcNow,
+            PaymentDate = VietnamTime.Now,
             Amount = depositDecimal,
             Method = "payos",
             Status = "pending",
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = VietnamTime.Now,
         };
         order.Payments.Add(payment);
 
@@ -221,7 +221,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
         if (contract != null)
         {
             contract.DepositAmount = depositDecimal;
-            contract.UpdatedAt = DateTime.UtcNow;
+            contract.UpdatedAt = VietnamTime.Now;
             await _contractRepository.UpdateAsync(contract);
         }
 
@@ -239,7 +239,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
                     cancellationToken);
                 forPdf.ContractFileUrl = url;
                 forPdf.DepositAmount = depositDecimal;
-                forPdf.UpdatedAt = DateTime.UtcNow;
+                forPdf.UpdatedAt = VietnamTime.Now;
                 await _contractRepository.UpdateAsync(forPdf);
             }
         }
@@ -276,7 +276,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
         if (string.Equals(persisted.ContractType, "Order-Based", StringComparison.OrdinalIgnoreCase))
             persisted.TotalValue = orderTotal;
 
-        persisted.UpdatedAt = DateTime.UtcNow;
+        persisted.UpdatedAt = VietnamTime.Now;
         await _contractRepository.UpdateAsync(persisted);
     }
 

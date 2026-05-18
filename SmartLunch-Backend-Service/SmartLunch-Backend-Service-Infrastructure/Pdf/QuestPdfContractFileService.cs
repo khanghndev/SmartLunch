@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
+using SmartLunch.Backend.Service.Domain.Time;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 using QuestPDF.Fluent;
@@ -36,7 +37,7 @@ public sealed class QuestPdfContractFileService : IContractPdfService
 
         var pdf = BuildPdfBytes(contract, supplier, buyer);
         var objectName =
-            $"contracts/c{contract.Id}/hop-dong-{contract.Id}-{DateTime.UtcNow:yyyyMMddHHmmss}.pdf";
+            $"contracts/c{contract.Id}/hop-dong-{contract.Id}-{VietnamTime.Now:yyyyMMddHHmmss}.pdf";
 
         await using var ms = new MemoryStream(pdf);
         await _storage.UploadObjectAsync(objectName, ms, "application/pdf", cancellationToken);
@@ -66,7 +67,7 @@ public sealed class QuestPdfContractFileService : IContractPdfService
 
                 page.Header().Element(h => VietnameseFormalPdfHeader.ComposeHeader(h,
                     "HỢP ĐỒNG / BIÊN BẢN HỢP ĐỒNG CUNG CẤP SUẤT ĂN",
-                    $"Văn bản điện tử — lập lúc {Dt(DateTime.UtcNow)} (UTC) — Mã hồ sơ hợp đồng: {contract.Id}"));
+                    $"Văn bản điện tử — lập lúc {Dt(VietnamTime.Now)} (GMT+7) — Mã hồ sơ hợp đồng: {contract.Id}"));
 
                 page.Footer().AlignCenter().PaddingTop(6).DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Grey.Medium))
                     .Text(t =>
@@ -221,7 +222,7 @@ public sealed class QuestPdfContractFileService : IContractPdfService
                             if (contract.IsDigitallySigned && contract.DigitallySignedAt.HasValue)
                             {
                                 right.Item().PaddingTop(6).AlignCenter()
-                                    .Text($"Thời điểm ký: {Dt(contract.DigitallySignedAt.Value)} (UTC)")
+                                    .Text($"Thời điểm ký: {Dt(contract.DigitallySignedAt.Value)} (GMT+7)")
                                     .FontSize(8).FontColor(Colors.Grey.Darken1);
                             }
 

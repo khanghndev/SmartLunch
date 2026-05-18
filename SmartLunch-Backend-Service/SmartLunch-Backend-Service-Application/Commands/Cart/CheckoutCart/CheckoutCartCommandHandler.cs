@@ -74,7 +74,7 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
                 if (excludedDays.Contains(calendarDay))
                     continue;
 
-                var dayUtc = DateTime.SpecifyKind(calendarDay.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+                var dayUtc = VietnamTime.CalendarDateMidnight(calendarDay);
                 if (!minIncludedScheduleUtc.HasValue || dayUtc < minIncludedScheduleUtc.Value)
                     minIncludedScheduleUtc = dayUtc;
 
@@ -131,12 +131,12 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
                     ContractType = "Order-Based",
                     Description = $"Auto-created contract for order on {scheduledDate:yyyy-MM-dd}",
                     SupplySchedule = null,
-                    StartDate = DateTime.UtcNow.Date,
+                    StartDate = VietnamTime.Now.Date,
                     EndDate = null,
                     TotalValue = null,
                     DepositAmount = null,
                     Status = "active",
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = VietnamTime.Now
                 };
             }
         }
@@ -145,11 +145,11 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
         {
             UserId = command.UserId,
             ContractId = contract?.Id,
-            OrderDate = DateTime.UtcNow,
+            OrderDate = VietnamTime.Now,
             ScheduledDate = scheduledUtc,
             Status = OrderLifecycleStatus.Pending,
             PaymentStatus = OrderPaymentStatus.Unpaid,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = VietnamTime.Now
         };
 
         decimal total = 0;
@@ -206,7 +206,7 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
                     checkoutOrg,
                     cancellationToken);
                 forPdf.ContractFileUrl = url;
-                forPdf.UpdatedAt = DateTime.UtcNow;
+                forPdf.UpdatedAt = VietnamTime.Now;
                 await _contractRepository.UpdateAsync(forPdf);
             }
         }

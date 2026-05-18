@@ -65,7 +65,7 @@ public class UpdateShipperDeliveryStatusCommandHandler
             delivery.DeliveryStatus = target;
             if (target is "completed")
             {
-                delivery.DeliveredAt ??= DateTime.UtcNow;
+                delivery.DeliveredAt ??= VietnamTime.Now;
             }
 
             if (target is "failed" or "rejected")
@@ -81,7 +81,7 @@ public class UpdateShipperDeliveryStatusCommandHandler
             if (orderStatus is not (OrderLifecycleStatus.Delivered or OrderLifecycleStatus.Cancelled))
             {
                 order.Status = OrderLifecycleStatus.Delivered;
-                order.UpdatedAt = DateTime.UtcNow;
+                order.UpdatedAt = VietnamTime.Now;
             }
         }
 

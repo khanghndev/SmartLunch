@@ -1,3 +1,5 @@
+using SmartLunch.Backend.Service.Domain.Time;
+
 namespace SmartLunch.Backend.Service.Application.Helpers;
 
 /// <summary>
@@ -6,43 +8,35 @@ namespace SmartLunch.Backend.Service.Application.Helpers;
 /// </summary>
 public static class OrganizationMealOrderDateWindow
 {
-    /// <summary>Múi giờ Việt Nam (Windows + Linux).</summary>
-    public static TimeZoneInfo VietnamTimeZone { get; } = ResolveVietnamTimeZone();
+    public static TimeZoneInfo VietnamTimeZone => VietnamTime.TimeZone;
 
-    public static DateOnly TodayInVietnam(DateTime utcNow) =>
-        DateOnly.FromDateTime(TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(utcNow, DateTimeKind.Utc), VietnamTimeZone));
+    public static DateOnly TodayInVietnam() => VietnamTime.Today;
+
+    public static DateOnly TodayInVietnam(DateTime referenceTime) =>
+        DateOnly.FromDateTime(
+            referenceTime.Kind == DateTimeKind.Utc
+                ? VietnamTime.FromUtc(referenceTime)
+                : referenceTime);
 
     /// <summary>Ngày phục vụ đầu tiên (mai) và cuối cùng (mai + 2).</summary>
-    public static (DateOnly First, DateOnly Last) GetAllowedServiceDateRange(DateTime utcNow)
+    public static (DateOnly First, DateOnly Last) GetAllowedServiceDateRange()
     {
-        var today = TodayInVietnam(utcNow);
-        var first = today.AddDays(1);
-        var last = today.AddDays(3);
-        return (first, last);
+        var today = TodayInVietnam();
+        return (today.AddDays(1), today.AddDays(3));
     }
 
-    public static bool IsDateInWindow(DateOnly serviceDate, DateTime utcNow)
+    public static (DateOnly First, DateOnly Last) GetAllowedServiceDateRange(DateTime referenceTime)
     {
-        var (first, last) = GetAllowedServiceDateRange(utcNow);
+        var today = TodayInVietnam(referenceTime);
+        return (today.AddDays(1), today.AddDays(3));
+    }
+
+    public static bool IsDateInWindow(DateOnly serviceDate) =>
+        IsDateInWindow(serviceDate, VietnamTime.Now);
+
+    public static bool IsDateInWindow(DateOnly serviceDate, DateTime referenceTime)
+    {
+        var (first, last) = GetAllowedServiceDateRange(referenceTime);
         return serviceDate >= first && serviceDate <= last;
-    }
-
-    private static TimeZoneInfo ResolveVietnamTimeZone()
-    {
-        foreach (var id in new[] { "Asia/Ho_Chi_Minh", "SE Asia Standard Time" })
-        {
-            try
-            {
-                return TimeZoneInfo.FindSystemTimeZoneById(id);
-            }
-            catch (TimeZoneNotFoundException) { }
-            catch (InvalidTimeZoneException) { }
-        }
-
-        return TimeZoneInfo.CreateCustomTimeZone(
-            "UTC+07",
-            TimeSpan.FromHours(7),
-            "UTC+07",
-            "UTC+07");
     }
 }

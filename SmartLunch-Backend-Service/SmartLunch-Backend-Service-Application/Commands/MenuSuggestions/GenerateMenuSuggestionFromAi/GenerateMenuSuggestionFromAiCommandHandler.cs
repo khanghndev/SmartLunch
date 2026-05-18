@@ -214,7 +214,7 @@ public class GenerateMenuSuggestionFromAiCommandHandler
         var entity = new MenuSuggestion
         {
             WeekStart = weekStartUtc,
-            GeneratedAt = DateTime.UtcNow,
+            GeneratedAt = VietnamTime.Now,
             Version = nextVersion,
             RulesKey = rulesKeyNormalized,
             BudgetPerServing = req.BudgetPerServing,

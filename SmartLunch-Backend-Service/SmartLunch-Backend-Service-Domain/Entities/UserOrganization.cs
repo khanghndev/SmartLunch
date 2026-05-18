@@ -9,7 +9,7 @@ public class UserOrganization
     public string? Code { get; set; }
     public int UserId { get; set; }
     public int OrganizationId { get; set; }
-    public DateTime JoinedAt { get; set; } = DateTime.UtcNow;
+    public DateTime JoinedAt { get; set; } = VietnamTime.Now;
     public bool IsActive { get; set; } = true;
 
     public virtual User User { get; set; } = null!;

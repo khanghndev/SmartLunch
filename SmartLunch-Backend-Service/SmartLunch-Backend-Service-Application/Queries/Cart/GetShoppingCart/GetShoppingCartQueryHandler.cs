@@ -33,7 +33,7 @@ public class GetShoppingCartQueryHandler : IRequestHandler<GetShoppingCartQuery,
             OrganizationId = null,
             Items = new List<ShoppingCartLineDto>(),
             TotalAmount = 0,
-            UpdatedAtUtc = DateTime.UtcNow
+            UpdatedAtUtc = VietnamTime.Now
         };
     }
 }

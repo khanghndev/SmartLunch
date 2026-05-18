@@ -85,7 +85,7 @@ public class CreateIngredientIntakeProposalCommandHandler
             Status = IntakeProposalStatus.Submitted,
             HeaderNote = headerNote,
             CreatedByUserId = request.ActorUserId,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = VietnamTime.Now,
             Lines = lineEntities
         };
 
@@ -105,6 +105,6 @@ public class CreateIngredientIntakeProposalCommandHandler
 
     private static string BuildProposalCode()
     {
-        return $"DXN-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
+        return $"DXN-{VietnamTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
     }
 }

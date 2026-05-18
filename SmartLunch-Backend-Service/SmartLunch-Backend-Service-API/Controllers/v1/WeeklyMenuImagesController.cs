@@ -55,7 +55,7 @@ public class WeeklyMenuImagesController : ControllerBase
                 MediaFileId = request.MediaFileId,
                 Role = role,
                 SortOrder = request.SortOrder ?? 0,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = VietnamTime.Now
             };
 
             _db.WeeklyMenuImages.Add(entity);

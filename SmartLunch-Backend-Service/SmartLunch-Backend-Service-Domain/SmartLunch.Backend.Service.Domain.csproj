@@ -6,5 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
     </PropertyGroup>
 
-    <ItemGroup></ItemGroup>
+    <ItemGroup>
+        <Using Include="SmartLunch.Backend.Service.Domain.Time" />
+    </ItemGroup>
 </Project>

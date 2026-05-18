@@ -18,7 +18,7 @@ public class PartnerDocument
 
     public bool IsVerified { get; set; } = false;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
 
     public virtual Partner Partner { get; set; } = null!;

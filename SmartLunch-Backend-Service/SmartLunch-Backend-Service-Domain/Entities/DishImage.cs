@@ -18,7 +18,7 @@ public class DishImage
     public string Role { get; set; } = "gallery";
     public int SortOrder { get; set; } = 0;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
 
     public virtual Dish Dish { get; set; } = null!;

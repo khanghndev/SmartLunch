@@ -9,12 +9,12 @@ public class Order
     public string? Code { get; set; }
     public int? UserId { get; set; }
     public int? ContractId { get; set; }
-    public DateTime OrderDate { get; set; } = DateTime.UtcNow;
+    public DateTime OrderDate { get; set; } = VietnamTime.Now;
     public DateTime ScheduledDate { get; set; }
     public string Status { get; set; } = "pending"; // pending|confirmed|preparing|delivered|cancelled
     public decimal TotalAmount { get; set; }
     public string PaymentStatus { get; set; } = "unpaid"; // unpaid|partial|paid
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
 
     /// <summary>Mã hóa đơn hiển thị (VD: HD-20250324-AB12CD34).</summary>

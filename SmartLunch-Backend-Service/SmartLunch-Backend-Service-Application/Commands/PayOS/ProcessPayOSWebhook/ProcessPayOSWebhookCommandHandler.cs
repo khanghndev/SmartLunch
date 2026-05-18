@@ -130,7 +130,7 @@ public sealed class ProcessPayOSWebhookCommandHandler
         }
 
         payment.Status = "paid";
-        payment.PaymentDate = DateTime.UtcNow;
+        payment.PaymentDate = VietnamTime.Now;
 
         decimal paidSum = 0;
         foreach (var p in order.Payments)
@@ -147,7 +147,7 @@ public sealed class ProcessPayOSWebhookCommandHandler
             order.PaymentStatus = OrderPaymentStatus.DepositPaid;
         else
             order.PaymentStatus = derived;
-        order.UpdatedAt = DateTime.UtcNow;
+        order.UpdatedAt = VietnamTime.Now;
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

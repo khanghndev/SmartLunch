@@ -46,12 +46,12 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         }
 
         // Check if token is expired
-        if (storedToken.ExpiresAt < DateTime.UtcNow)
+        if (storedToken.ExpiresAt < VietnamTime.Now)
         {
             _logger.LogWarning("Expired refresh token attempted: {TokenId}", storedToken.Id);
             // Revoke expired token
             storedToken.IsActive = false;
-            storedToken.RevokedAt = DateTime.UtcNow;
+            storedToken.RevokedAt = VietnamTime.Now;
             await _userTokenRepository.UpdateAsync(storedToken);
 
             throw new UnauthorizedAccessException("Refresh token has expired");
@@ -67,7 +67,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
 
         // Revoke old refresh token
         storedToken.IsActive = false;
-        storedToken.RevokedAt = DateTime.UtcNow;
+        storedToken.RevokedAt = VietnamTime.Now;
         await _userTokenRepository.UpdateAsync(storedToken);
 
         // Get user roles
@@ -79,8 +79,8 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         // Generate new tokens
         var newAccessToken = _jwtService.GenerateAccessToken(user, roles);
         var newRefreshToken = _jwtService.GenerateRefreshToken();
-        var expiresAt = DateTime.UtcNow.AddMinutes(60);
-        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(7);
+        var expiresAt = VietnamTime.Now.AddMinutes(60);
+        var refreshTokenExpiresAt = VietnamTime.Now.AddDays(7);
 
         // Store new refresh token
         var newUserToken = new UserToken
@@ -89,7 +89,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             UserId = user.Id,
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,
-            IssuedAt = DateTime.UtcNow,
+            IssuedAt = VietnamTime.Now,
             ExpiresAt = refreshTokenExpiresAt,
             IsActive = true,
             ReplacedByToken = newRefreshToken

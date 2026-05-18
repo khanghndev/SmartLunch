@@ -8,7 +8,7 @@ public class MenuSuggestion
     public int Id { get; set; }
     public string? Code { get; set; }
     public DateTime WeekStart { get; set; }
-    public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
+    public DateTime GeneratedAt { get; set; } = VietnamTime.Now;
     public int Version { get; set; } = 1;
     public string? RulesKey { get; set; }
     public decimal? BudgetPerServing { get; set; }

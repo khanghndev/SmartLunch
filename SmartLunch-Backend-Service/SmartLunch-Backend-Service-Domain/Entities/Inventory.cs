@@ -8,7 +8,7 @@ public class Inventory
     public int IngredientId { get; set; }
     public decimal QuantityAvailable { get; set; } = 0;
     public decimal? ReorderLevel { get; set; }
-    public DateTime LastUpdated { get; set; } = DateTime.UtcNow;
+    public DateTime LastUpdated { get; set; } = VietnamTime.Now;
 
     public virtual Ingredient Ingredient { get; set; } = null!;
 }

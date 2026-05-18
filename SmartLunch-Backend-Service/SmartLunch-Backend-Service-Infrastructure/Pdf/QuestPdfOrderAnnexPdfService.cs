@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Net;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
+using SmartLunch.Backend.Service.Domain.Time;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 using QuestPDF.Fluent;
@@ -35,7 +36,7 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
             throw new ArgumentException("Order must be persisted.", nameof(order));
 
         var pdf = GeneratePdfBytes(order, buyerDisplayName, signatureDataUrl);
-        var objectName = $"orders/o{order.Id}/phu-luc-don-{order.Id}-{DateTime.UtcNow:yyyyMMddHHmmss}.pdf";
+        var objectName = $"orders/o{order.Id}/phu-luc-don-{order.Id}-{VietnamTime.Now:yyyyMMddHHmmss}.pdf";
 
         await using var ms = new MemoryStream(pdf);
         await _storage.UploadObjectAsync(objectName, ms, "application/pdf", cancellationToken);
@@ -110,7 +111,7 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
 
                 page.Header().Element(h => VietnameseFormalPdfHeader.ComposeHeader(h,
                     "PHỤ LỤC ĐẶT HÀNG VÀ XÁC NHẬN BIÊN BẢN",
-                    $"Kèm theo đơn đặt suất ăn — lập lúc {Dt(DateTime.UtcNow)} (UTC) — Số phụ lục: PL-{order.Id}/{DateTime.UtcNow:yyyy}"));
+                    $"Kèm theo đơn đặt suất ăn — lập lúc {Dt(VietnamTime.Now)} (GMT+7) — Số phụ lục: PL-{order.Id}/{VietnamTime.Now:yyyy}"));
 
                 page.Footer().AlignCenter().PaddingTop(6).DefaultTextStyle(x => x.FontSize(8).FontColor(Colors.Grey.Medium))
                     .Text(t =>
@@ -249,7 +250,7 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
                                 right.Item().PaddingTop(24).AlignCenter().Text("(Chữ ký)").Italic().FontColor(Colors.Grey.Medium);
 
                             right.Item().PaddingTop(6).AlignCenter().Text(buyerDisplayName).FontSize(8.5f).SemiBold();
-                            right.Item().AlignCenter().PaddingTop(2).Text($"Ngày ký: {Dt(DateTime.UtcNow)} (UTC)").FontSize(7.5f).FontColor(Colors.Grey.Darken1);
+                            right.Item().AlignCenter().PaddingTop(2).Text($"Ngày ký: {Dt(VietnamTime.Now)} (GMT+7)").FontSize(7.5f).FontColor(Colors.Grey.Darken1);
                         });
                     });
                 });

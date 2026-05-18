@@ -48,7 +48,7 @@ public class CartCacheService : ICartCacheService
     public async Task SaveAsync(ShoppingCartDto cart, CancellationToken cancellationToken = default)
     {
         var key = BuildKey(KeyPrefix, cart.UserId);
-        cart.UpdatedAtUtc = DateTime.UtcNow;
+        cart.UpdatedAtUtc = VietnamTime.Now;
         ShoppingCartMath.RecalculateTotals(cart);
         await _cache.SetAsync(key, cart, CacheTtl, cancellationToken);
         _logger.LogDebug("Cart saved to cache for user {UserId}, lines={Count}", cart.UserId, cart.Items.Count);

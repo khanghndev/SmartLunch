@@ -61,7 +61,7 @@ public class GrantRoleToUserCommandHandler : IRequestHandler<GrantRoleToUserComm
             {
                 // Reactivate the role
                 existingUserRole.IsActive = true;
-                existingUserRole.AssignedAt = DateTime.UtcNow;
+                existingUserRole.AssignedAt = VietnamTime.Now;
                 await _userRoleRepository.UpdateAsync(existingUserRole);
                 
                 _logger.LogInformation("Reactivated role {RoleName} for user {UserId}", role.Name, req.UserId);
@@ -81,7 +81,7 @@ public class GrantRoleToUserCommandHandler : IRequestHandler<GrantRoleToUserComm
 
             UserId = req.UserId,
             RoleId = req.RoleId,
-            AssignedAt = DateTime.UtcNow,
+            AssignedAt = VietnamTime.Now,
             IsActive = true
         };
 

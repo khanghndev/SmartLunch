@@ -15,7 +15,7 @@ public class Ingredient
     public decimal? CostPerUnit { get; set; }
     public int? CategoryId { get; set; }
     public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
 
     public virtual IngredientCategory? Category { get; set; }

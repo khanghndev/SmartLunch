@@ -11,7 +11,7 @@ public class MenuSchedule
     public DateTime Date { get; set; }
     public string MealSlot { get; set; } = "lunch"; // lunch, dinner, etc.
     public int DishId { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual WeeklyMenu Menu { get; set; } = null!;
     public virtual Dish Dish { get; set; } = null!;

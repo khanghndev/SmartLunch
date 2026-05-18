@@ -28,7 +28,7 @@ public class Organization
     public int DefaultDailyMeals { get; set; } = 0;
 
     public bool IsActive { get; set; } = true;
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
     public int? CreatedBy { get; set; }
     public int? UpdatedBy { get; set; }

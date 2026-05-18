@@ -11,7 +11,7 @@ public class Role
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
     public bool IsSystemRole { get; set; } = false; // System roles cannot be deleted
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
     public int? CreatedBy { get; set; }
     public int? UpdatedBy { get; set; }

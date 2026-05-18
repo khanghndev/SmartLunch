@@ -36,7 +36,7 @@ public class Notification
     /// <summary>
     /// When notification was sent (maps to SendAt in DB)
     /// </summary>
-    public DateTime SendAt { get; set; } = DateTime.UtcNow;
+    public DateTime SendAt { get; set; } = VietnamTime.Now;
 
     public virtual User User { get; set; } = null!;
 }

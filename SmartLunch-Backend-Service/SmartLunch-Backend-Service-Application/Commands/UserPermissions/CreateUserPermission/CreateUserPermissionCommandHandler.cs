@@ -37,7 +37,7 @@ public class CreateUserPermissionCommandHandler : IRequestHandler<CreateUserPerm
 
             UserId = req.UserId,
             PermissionId = req.PermissionId,
-            AssignedAt = DateTime.UtcNow,
+            AssignedAt = VietnamTime.Now,
             AssignedBy = req.AssignedBy,
             IsActive = true
         };

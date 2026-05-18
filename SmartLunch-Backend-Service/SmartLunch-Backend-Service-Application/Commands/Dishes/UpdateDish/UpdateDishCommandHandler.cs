@@ -43,7 +43,7 @@ public class UpdateDishCommandHandler : IRequestHandler<UpdateDishCommand, GetDi
         entity.Fat = req.Fat;
         entity.Carbs = req.Carbs;
         entity.IsActive = req.IsActive;
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = VietnamTime.Now;
 
         if (req.NameEnglish is not null)
             entity.NameEnglish = string.IsNullOrWhiteSpace(req.NameEnglish) ? null : req.NameEnglish.Trim();

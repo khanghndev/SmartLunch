@@ -20,6 +20,8 @@ using SmartLunch.Backend.Service.Application.Commands.Auth.LoginAdmin;
 using SmartLunch.Backend.Service.Application.Commands.Auth.LoginUser;
 using SmartLunch.Backend.Service.Application.Queries.Auth;
 
+using SmartLunch.Backend.Service.Domain.Time;
+
 namespace SmartLunch.Backend.Service.API.Controllers
 {
     /// <summary>
@@ -281,7 +283,7 @@ namespace SmartLunch.Backend.Service.API.Controllers
                 user.LastName = string.IsNullOrWhiteSpace(request.LastName) ? null : request.LastName.Trim();
                 user.PhoneNumber = string.IsNullOrWhiteSpace(request.PhoneNumber) ? null : request.PhoneNumber.Trim();
                 user.Address = string.IsNullOrWhiteSpace(request.Address) ? null : request.Address.Trim();
-                user.UpdatedAt = DateTime.UtcNow;
+                user.UpdatedAt = VietnamTime.Now;
 
                 await _db.SaveChangesAsync();
 
@@ -332,7 +334,7 @@ namespace SmartLunch.Backend.Service.API.Controllers
                     _ => ""
                 };
 
-                var now = DateTime.UtcNow;
+                var now = VietnamTime.Now;
                 var objectName = $"users/{userId:D}/avatar/{now:yyyy}/{now:MM}/{Guid.NewGuid():N}{ext}";
                 await using var stream = file.OpenReadStream();
                 await _storage.UploadObjectAsync(objectName, stream, ct, HttpContext.RequestAborted);
@@ -353,7 +355,7 @@ namespace SmartLunch.Backend.Service.API.Controllers
 
                 user.AvatarMediaFileId = created.Id;
                 user.AvatarUrl = objectName; // store objectName; GetProfile can resolve to URL later if needed
-                user.UpdatedAt = DateTime.UtcNow;
+                user.UpdatedAt = VietnamTime.Now;
                 await _db.SaveChangesAsync();
 
                 // return public view URL (no token) – relies on bucket public-read.
