@@ -24,18 +24,7 @@ public class GetIngredientsQueryHandler : IRequestHandler<GetIngredientsQuery, G
             request.SearchTerm,
             request.IsActive);
 
-        var ingredientDtos = ingredients.Select(ingredient => new IngredientDto
-        {
-                Id = ingredient.Id,
-                Name = ingredient.Name,
-                Unit = ingredient.Unit,
-                Description = ingredient.Description,
-                DefaultSupplierId = ingredient.DefaultSupplierId,
-                CostPerUnit = ingredient.CostPerUnit,
-                IsActive = ingredient.IsActive,
-                CreatedAt = ingredient.CreatedAt,
-                UpdatedAt = ingredient.UpdatedAt
-        }).ToList();
+        var ingredientDtos = ingredients.Select(IngredientDtoMapping.ToDto).ToList();
 
         _logger.LogInformation("Retrieved {Count} ingredients (Page {Page}, PageSize {PageSize})",
             ingredientDtos.Count, request.Page, request.PageSize);

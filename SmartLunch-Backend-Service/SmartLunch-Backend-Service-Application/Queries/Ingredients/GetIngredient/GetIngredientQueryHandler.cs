@@ -18,28 +18,17 @@ public class GetIngredientQueryHandler : IRequestHandler<GetIngredientQuery, Get
 
     public async Task<GetIngredientResponse> Handle(GetIngredientQuery request, CancellationToken cancellationToken)
     {
-        var ingredient = await _ingredientRepository.GetByIdAsync(request.IngredientId);
+        var ingredient = await _ingredientRepository.GetByIdWithDetailsAsync(request.IngredientId, cancellationToken);
 
         if (ingredient == null)
         {
             _logger.LogWarning("Ingredient not found with ID: {IngredientId}", request.IngredientId);
-            return new GetIngredientResponse { Ingredient = new IngredientDto() };
+            throw new KeyNotFoundException($"Ingredient with ID {request.IngredientId} was not found.");
         }
 
         return new GetIngredientResponse
         {
-            Ingredient = new IngredientDto
-            {
-                Id = ingredient.Id,
-                Name = ingredient.Name,
-                Unit = ingredient.Unit,
-                Description = ingredient.Description,
-                DefaultSupplierId = ingredient.DefaultSupplierId,
-                CostPerUnit = ingredient.CostPerUnit,
-                IsActive = ingredient.IsActive,
-                CreatedAt = ingredient.CreatedAt,
-                UpdatedAt = ingredient.UpdatedAt
-            }
+            Ingredient = IngredientDtoMapping.ToDto(ingredient),
         };
     }
 }

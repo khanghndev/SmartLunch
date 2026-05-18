@@ -1,8 +1,7 @@
-namespace SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Ingredients;
+namespace SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Ingredients;
 
-public class IngredientDto
+public class CreateIngredientRequest
 {
-    public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
     public string? NameEnglish { get; set; }
     public string Unit { get; set; } = string.Empty;
@@ -10,7 +9,7 @@ public class IngredientDto
     public int? DefaultSupplierId { get; set; }
     public decimal? CostPerUnit { get; set; }
     public int? CategoryId { get; set; }
-    public bool IsActive { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
+    public bool IsActive { get; set; } = true;
+    /// <summary>Mức tồn cảnh báo khi tạo bản ghi kho (tùy chọn).</summary>
+    public decimal? ReorderLevel { get; set; }
 }

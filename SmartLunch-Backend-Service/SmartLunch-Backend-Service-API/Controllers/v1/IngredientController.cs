@@ -1,6 +1,9 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Ingredients.CreateIngredient;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Ingredients.DeleteIngredient;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Ingredients.UpdateIngredient;
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Ingredients;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Ingredients;
@@ -68,6 +71,10 @@ public class IngredientController : ControllerBase
 
             return Ok(BaseApiResponse<GetIngredientResponse>.SuccessResult(response, "Ingredient retrieved successfully"));
         }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetIngredientResponse>.NotFoundResult(ex.Message));
+        }
         catch (ArgumentException ex)
         {
             return BadRequest(BaseApiResponse<GetIngredientResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
@@ -78,6 +85,92 @@ public class IngredientController : ControllerBase
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetIngredientResponse>.ErrorResult("An error occurred while retrieving ingredient", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Tạo nguyên liệu mới (kèm bản ghi tồn kho ban đầu = 0).
+    /// </summary>
+    [HttpPost]
+    [Authorize(Policy = "permission:ingredients.create")]
+    public async Task<ActionResult<BaseApiResponse<GetIngredientResponse>>> CreateIngredient(
+        [FromBody] CreateIngredientRequest request)
+    {
+        try
+        {
+            var response = await _mediator.Send(new CreateIngredientCommand(request));
+            return Ok(BaseApiResponse<GetIngredientResponse>.SuccessResult(response, "Ingredient created successfully"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetIngredientResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetIngredientResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating ingredient");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetIngredientResponse>.ErrorResult("An error occurred while creating ingredient", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Cập nhật nguyên liệu.
+    /// </summary>
+    [HttpPut("{id:int}")]
+    [Authorize(Policy = "permission:ingredients.update")]
+    public async Task<ActionResult<BaseApiResponse<GetIngredientResponse>>> UpdateIngredient(
+        int id,
+        [FromBody] UpdateIngredientRequest request)
+    {
+        try
+        {
+            var response = await _mediator.Send(new UpdateIngredientCommand(id, request));
+            return Ok(BaseApiResponse<GetIngredientResponse>.SuccessResult(response, "Ingredient updated successfully"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetIngredientResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetIngredientResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating ingredient {Id}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetIngredientResponse>.ErrorResult("An error occurred while updating ingredient", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Xóa nguyên liệu. Nếu đang được dùng trong món hoặc phiếu nhập thì chuyển sang ngừng hoạt động (xóa mềm).
+    /// </summary>
+    [HttpDelete("{id:int}")]
+    [Authorize(Policy = "permission:ingredients.delete")]
+    public async Task<ActionResult<BaseApiResponse<DeleteIngredientResponse>>> DeleteIngredient(int id)
+    {
+        try
+        {
+            var response = await _mediator.Send(new DeleteIngredientCommand(id));
+            return Ok(BaseApiResponse<DeleteIngredientResponse>.SuccessResult(response, response.Message));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<DeleteIngredientResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting ingredient {Id}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<DeleteIngredientResponse>.ErrorResult("An error occurred while deleting ingredient", new[] { ex.Message }));
         }
     }
 }
