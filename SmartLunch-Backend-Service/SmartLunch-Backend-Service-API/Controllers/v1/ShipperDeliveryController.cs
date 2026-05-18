@@ -181,7 +181,7 @@ public class ShipperDeliveryController : ControllerBase
                 _ => ""
             };
 
-            var now = DateTime.UtcNow;
+            var now = VietnamTime.Now;
             var objectName = $"deliveries/{id:D}/proof/{now:yyyy}/{now:MM}/{Guid.NewGuid():N}{ext}";
 
             await using (var stream = file.OpenReadStream())

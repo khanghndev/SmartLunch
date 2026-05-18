@@ -4,6 +4,7 @@ using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Orders;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Application.Helpers;
+using SmartLunch.Backend.Service.Domain.Time;
 
 namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.CreateSalesInvoice;
 
@@ -58,15 +59,13 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
         }
 
         var scheduledDate = req.ScheduledDate == default
-            ? DateOnly.FromDateTime(DateTime.UtcNow)
+            ? DateOnly.FromDateTime(VietnamTime.Now)
             : req.ScheduledDate;
 
-        var scheduledUtc = scheduledDate.ToDateTime(TimeOnly.MinValue);
-        if (scheduledUtc.Kind == DateTimeKind.Unspecified)
-            scheduledUtc = DateTime.SpecifyKind(scheduledUtc, DateTimeKind.Utc);
+        var scheduledUtc = VietnamTime.CalendarDateMidnight(scheduledDate);
 
         // --- CUT-OFF TIME VALIDATION ---
-        CutOffTimeValidator.Validate(organization.Type, scheduledUtc, DateTime.UtcNow);
+        CutOffTimeValidator.Validate(organization.Type, scheduledUtc, VietnamTime.Now);
 
         var merged = req.Lines
             .GroupBy(l => l.DishId)
@@ -97,12 +96,12 @@ public class CreateSalesInvoiceCommandHandler : IRequestHandler<CreateSalesInvoi
         var order = new Order
         {
             UserId = req.UserId is { } uid && uid != 0 ? uid : null,
-            OrderDate = DateTime.UtcNow,
+            OrderDate = VietnamTime.Now,
             ScheduledDate = scheduledUtc,
             Status = OrderLifecycleStatus.Confirmed,
             TotalAmount = total,
             PaymentStatus = OrderPaymentStatus.Unpaid,
-            CreatedAt = DateTime.UtcNow,
+            CreatedAt = VietnamTime.Now,
             InvoiceCode = invoiceCode,
             CreatedBySalesUserId = request.SalesUserId
         };

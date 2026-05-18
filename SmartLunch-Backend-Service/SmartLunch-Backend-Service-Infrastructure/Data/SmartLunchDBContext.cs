@@ -4,6 +4,8 @@ using System.Security.Claims;
 using Microsoft.Extensions.Logging;
 using SmartLunch.Backend.Service.Domain.Entities;
 
+using SmartLunch.Backend.Service.Domain.Time;
+
 namespace SmartLunch.Backend.Service.Infrastructure.Data
 {
     /// <summary>
@@ -80,7 +82,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         #region Utilities
         public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
         {
-            var timestamp = DateTime.UtcNow;
+            var timestamp = VietnamTime.Now;
 
             try
             {
@@ -97,7 +99,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
 
         public override int SaveChanges()
         {
-            var timestamp = DateTime.UtcNow;
+            var timestamp = VietnamTime.Now;
 
             try
             {

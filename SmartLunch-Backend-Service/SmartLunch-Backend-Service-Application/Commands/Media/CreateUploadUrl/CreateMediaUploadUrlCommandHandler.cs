@@ -135,7 +135,7 @@ public class CreateMediaUploadUrlCommandHandler : IRequestHandler<CreateMediaUpl
     private static string BuildObjectName(int userId, string mediaType, string ext)
     {
         // Keep objects partitioned by user to simplify authorization checks.
-        var now = DateTime.UtcNow;
+        var now = VietnamTime.Now;
         var id = Guid.NewGuid().ToString("N");
         return $"users/{userId:D}/{mediaType}/{now:yyyy}/{now:MM}/{id}{ext}";
     }

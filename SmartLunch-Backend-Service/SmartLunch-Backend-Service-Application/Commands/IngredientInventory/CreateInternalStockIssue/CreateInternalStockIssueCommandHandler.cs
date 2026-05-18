@@ -42,7 +42,7 @@ public class CreateInternalStockIssueCommandHandler
         if (reason != null && reason.Length > 500)
             reason = reason[..500];
 
-        var issuedAt = req.IssuedAtUtc ?? DateTime.UtcNow;
+        var issuedAt = req.IssuedAtUtc ?? VietnamTime.Now;
         if (issuedAt.Kind == DateTimeKind.Unspecified)
             issuedAt = DateTime.SpecifyKind(issuedAt, DateTimeKind.Utc);
 
@@ -53,7 +53,7 @@ public class CreateInternalStockIssueCommandHandler
             IssuedAt = issuedAt,
             Reason = reason,
             CreatedByUserId = request.CreatedByUserId,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = VietnamTime.Now
         };
 
         var lineTuples = merged.Select(kv => (kv.Key, kv.Value)).ToList();
@@ -68,7 +68,7 @@ public class CreateInternalStockIssueCommandHandler
 
     private static string BuildIssueCode()
     {
-        return $"PXK-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
+        return $"PXK-{VietnamTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
     }
 
     private static InternalStockIssueDetailDto MapDetail(InternalStockIssue x)

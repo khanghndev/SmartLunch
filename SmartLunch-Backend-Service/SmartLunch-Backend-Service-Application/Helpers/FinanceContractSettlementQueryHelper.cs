@@ -1,3 +1,5 @@
+using SmartLunch.Backend.Service.Domain.Time;
+
 namespace SmartLunch.Backend.Service.Application.Helpers;
 
 public static class FinanceContractSettlementQueryHelper
@@ -21,13 +23,10 @@ public static class FinanceContractSettlementQueryHelper
             throw new ArgumentException($"Khoảng ngày không được vượt quá {MaxDateRangeDays} ngày.");
     }
 
+    /// <summary>Biên ngày lịch (VN) cho ScheduledDate / PaymentDate đã lưu theo quy ước CalendarDateMidnight.</summary>
     public static (DateTime? StartUtc, DateTime? EndExclusiveUtc) ToUtcDayBounds(DateOnly? from, DateOnly? to)
     {
-        if (!from.HasValue || !to.HasValue)
-            return (null, null);
-
-        var start = DateTime.SpecifyKind(from.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
-        var endEx = DateTime.SpecifyKind(to.Value.ToDateTime(TimeOnly.MinValue).AddDays(1), DateTimeKind.Utc);
+        var (start, endEx) = VietnamTime.DayBounds(from, to);
         return (start, endEx);
     }
 }

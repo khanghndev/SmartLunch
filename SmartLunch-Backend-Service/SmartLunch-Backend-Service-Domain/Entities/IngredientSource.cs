@@ -14,7 +14,7 @@ public class IngredientSource
     public DateTime? ProductionDate { get; set; }
     public DateTime? ExpirationDate { get; set; }
     public string? Certification { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual Ingredient Ingredient { get; set; } = null!;
     public virtual Partner? Partner { get; set; }

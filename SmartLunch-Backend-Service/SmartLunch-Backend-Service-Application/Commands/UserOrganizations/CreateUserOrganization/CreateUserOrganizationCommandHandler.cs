@@ -37,7 +37,7 @@ public class CreateUserOrganizationCommandHandler : IRequestHandler<CreateUserOr
 
             UserId = req.UserId,
             OrganizationId = req.OrganizationId,
-            JoinedAt = DateTime.UtcNow,
+            JoinedAt = VietnamTime.Now,
             IsActive = true
         };
         await _userOrganizationRepository.CreateAsync(entity);

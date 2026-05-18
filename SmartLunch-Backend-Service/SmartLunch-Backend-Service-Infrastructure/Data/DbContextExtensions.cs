@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
+using SmartLunch.Backend.Service.Domain.Time;
+
 namespace SmartLunch.Backend.Service.Infrastructure.Data
 {
     public static class DbContextExtensions
@@ -134,7 +136,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
 
             if (deletedAtProperty != null)
             {
-                deletedAtProperty.CurrentValue = DateTime.UtcNow;
+                deletedAtProperty.CurrentValue = VietnamTime.Now;
                 entry.State = EntityState.Modified;
             }
             else

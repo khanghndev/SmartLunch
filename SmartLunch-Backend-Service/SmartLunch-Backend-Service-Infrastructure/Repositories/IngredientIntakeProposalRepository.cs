@@ -86,7 +86,7 @@ public class IngredientIntakeProposalRepository : IIngredientIntakeProposalRepos
 
         p.Status = approve ? IntakeProposalStatus.Approved : IntakeProposalStatus.Rejected;
         p.ReviewedByUserId = reviewerUserId;
-        p.ReviewedAt = DateTime.UtcNow;
+        p.ReviewedAt = VietnamTime.Now;
         p.ReviewNote = note;
         await _context.SaveChangesAsync(cancellationToken);
         return p;

@@ -67,7 +67,7 @@ public class GrantPermissionToRoleCommandHandler : IRequestHandler<GrantPermissi
             {
                 // Reactivate the permission
                 existingRolePermission.IsActive = true;
-                existingRolePermission.AssignedAt = DateTime.UtcNow;
+                existingRolePermission.AssignedAt = VietnamTime.Now;
                 await _rolePermissionRepository.UpdateAsync(existingRolePermission);
                 
                 _logger.LogInformation("Reactivated permission {PermissionName} for role {RoleName}", permission.Name, role.Name);
@@ -86,7 +86,7 @@ public class GrantPermissionToRoleCommandHandler : IRequestHandler<GrantPermissi
         {
             RoleId = req.RoleId,
             PermissionId = req.PermissionId,
-            AssignedAt = DateTime.UtcNow,
+            AssignedAt = VietnamTime.Now,
             IsActive = true
         };
 

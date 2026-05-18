@@ -45,7 +45,7 @@ public sealed class PrepareOrganizationMealContractCommandHandler
         if (membership == null || !membership.IsActive)
             throw new UnauthorizedAccessException("You do not have access to this organization.");
 
-        var utcNow = DateTime.UtcNow;
+        var utcNow = VietnamTime.Now;
         //var (allowedFirst, allowedLast) = OrganizationMealOrderDateWindow.GetAllowedServiceDateRange(utcNow);
 
         var mergedByDate = new Dictionary<DateOnly, OrganizationMealOrderDraftDay>();

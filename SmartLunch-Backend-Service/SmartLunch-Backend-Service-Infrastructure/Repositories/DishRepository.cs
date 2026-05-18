@@ -60,7 +60,7 @@ public class DishRepository : IDishRepository
         CancellationToken cancellationToken = default)
     {
         var idList = dishIds.Distinct().ToList();
-        var cutoff = DateTime.UtcNow.AddDays(-lookbackDays);
+        var cutoff = VietnamTime.Now.AddDays(-lookbackDays);
 
         // Aggregate order quantities per dish within the lookback window
         var counts = await _context.Set<OrderItem>()

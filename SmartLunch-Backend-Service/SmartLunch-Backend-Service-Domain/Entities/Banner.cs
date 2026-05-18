@@ -45,7 +45,7 @@ public class Banner
     /// <summary>
     /// Date and time the banner was created
     /// </summary>
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     /// <summary>
     /// Date and time the banner was updated

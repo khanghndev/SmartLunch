@@ -53,7 +53,7 @@ public class CreateContractCommandHandler : IRequestHandler<CreateContractComman
             TotalValue = req.TotalValue,
             DepositAmount = req.DepositAmount,
             Status = status,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = VietnamTime.Now
         };
 
         ContractLifecycleHelper.ApplyExpiryByEndDate(entity);
@@ -70,7 +70,7 @@ public class CreateContractCommandHandler : IRequestHandler<CreateContractComman
                 buyer: null,
                 cancellationToken);
             reloaded.ContractFileUrl = pdfUrl;
-            reloaded.UpdatedAt = DateTime.UtcNow;
+            reloaded.UpdatedAt = VietnamTime.Now;
             await _contractRepository.UpdateAsync(reloaded);
             reloaded = await _contractRepository.GetByIdAsync(entity.Id);
         }

@@ -55,7 +55,7 @@ public class DishImagesController : ControllerBase
                 MediaFileId = request.MediaFileId,
                 Role = role,
                 SortOrder = request.SortOrder ?? 0,
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = VietnamTime.Now
             };
 
             _db.DishImages.Add(entity);

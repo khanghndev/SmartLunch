@@ -10,7 +10,7 @@ public class CreateSalesInvoiceRequest
     /// <summary>Khách hàng (đặt cơm) — tùy chọn.</summary>
     public int? UserId { get; set; }
 
-    /// <summary>Ngày giao / ăn. Nếu không gửi (default), dùng ngày hiện tại (UTC).</summary>
+    /// <summary>Ngày giao / ăn. Nếu không gửi (default), dùng ngày hiện tại (giờ Việt Nam).</summary>
     public DateOnly ScheduledDate { get; set; }
 
     public List<CreateSalesInvoiceLineRequest> Lines { get; set; } = new();

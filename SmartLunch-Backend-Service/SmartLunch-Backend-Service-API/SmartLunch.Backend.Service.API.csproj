@@ -29,6 +29,10 @@
     </ItemGroup>
 
     <ItemGroup>
+        <Using Include="SmartLunch.Backend.Service.Domain.Time" />
+    </ItemGroup>
+
+    <ItemGroup>
         <ProjectReference Include="..\SmartLunch-Backend-Service-Application\SmartLunch.Backend.Service.Application.csproj" />
         <ProjectReference Include="..\SmartLunch-Backend-Service-Infrastructure\SmartLunch.Backend.Service.Infrastructure.csproj" />
     </ItemGroup>

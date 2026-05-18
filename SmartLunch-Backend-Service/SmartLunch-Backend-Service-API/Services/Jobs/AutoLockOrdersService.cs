@@ -1,3 +1,5 @@
+using SmartLunch.Backend.Service.Domain.Time;
+
 // using Microsoft.EntityFrameworkCore;
 // using SmartLunch.Backend.Service.Application.Constants;
 // using SmartLunch.Backend.Service.Infrastructure.Data;
@@ -40,7 +42,7 @@
 //         using var scope = _services.CreateScope();
 //         var context = scope.ServiceProvider.GetRequiredService<SmartLunchDBContext>();
 
-//         var nowUtc = DateTime.UtcNow;
+//         var nowUtc = VietnamTime.Now;
 //         var vnTimeZone = TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 //         var nowVn = TimeZoneInfo.ConvertTimeFromUtc(nowUtc, vnTimeZone);
 

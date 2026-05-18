@@ -12,7 +12,7 @@ public class DishCategory
     public string SlotKey { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public int SortOrder { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual ICollection<DishDishCategory> DishDishCategories { get; set; } = new List<DishDishCategory>();
 }

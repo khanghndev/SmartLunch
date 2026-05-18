@@ -26,7 +26,7 @@ public class UpdateOrganizationStatusCommandHandler : IRequestHandler<UpdateOrga
             throw new KeyNotFoundException($"Organization with ID {request.OrganizationId} was not found.");
 
         entity.IsActive = request.IsActive;
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = VietnamTime.Now;
 
         await _organizationRepository.UpdateAsync(entity, cancellationToken);
 

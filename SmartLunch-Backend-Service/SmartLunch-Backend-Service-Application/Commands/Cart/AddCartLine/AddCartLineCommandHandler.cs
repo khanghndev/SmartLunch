@@ -77,7 +77,7 @@ public class AddCartLineCommandHandler : IRequestHandler<AddCartLineCommand, Get
                 OrganizationId = null,
                 Items = new List<ShoppingCartLineDto>(),
                 TotalAmount = 0,
-                UpdatedAtUtc = DateTime.UtcNow
+                UpdatedAtUtc = VietnamTime.Now
             };
         }
 

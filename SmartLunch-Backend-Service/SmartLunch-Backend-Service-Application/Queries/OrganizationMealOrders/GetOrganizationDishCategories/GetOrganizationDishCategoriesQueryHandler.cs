@@ -20,7 +20,7 @@ public sealed class GetOrganizationDishCategoriesQueryHandler
         CancellationToken cancellationToken)
     {
         var rows = await _dishCategoryRepository.GetAllOrderedAsync(cancellationToken);
-        //var (first, last) = OrganizationMealOrderDateWindow.GetAllowedServiceDateRange(DateTime.UtcNow);
+        //var (first, last) = OrganizationMealOrderDateWindow.GetAllowedServiceDateRange(VietnamTime.Now);
 
         return new GetOrganizationDishCategoriesResponse
         {

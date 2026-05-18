@@ -32,11 +32,11 @@ public class SignContractCommandHandler : IRequestHandler<SignContractCommand, G
 
         entity.IsDigitallySigned = true;
         entity.DigitalSignature = sig;
-        entity.DigitallySignedAt = DateTime.UtcNow;
+        entity.DigitallySignedAt = VietnamTime.Now;
         entity.SignatureImage = string.IsNullOrWhiteSpace(request.Request.SignatureImageUrl)
             ? null
             : request.Request.SignatureImageUrl.Trim();
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = VietnamTime.Now;
 
         await _contractRepository.UpdateAsync(entity);
 
@@ -51,7 +51,7 @@ public class SignContractCommandHandler : IRequestHandler<SignContractCommand, G
             cancellationToken);
 
         signed.ContractFileUrl = pdfUrl;
-        signed.UpdatedAt = DateTime.UtcNow;
+        signed.UpdatedAt = VietnamTime.Now;
         await _contractRepository.UpdateAsync(signed);
 
         var reloaded = await _contractRepository.GetByIdAsync(entity.Id);

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
+using SmartLunch.Backend.Service.Domain.Time;
 using SmartLunch.Backend.Service.Infrastructure.Data;
 
 namespace SmartLunch.Backend.Service.Infrastructure.Repositories;
@@ -45,8 +46,8 @@ public class ContractRepository : IContractRepository
             .Where(c =>
                 c.OrganizationId == organizationId &&
                 c.Status == "active" &&
-                c.StartDate.Date <= DateTime.UtcNow.Date &&
-                (c.EndDate == null || c.EndDate.Value.Date >= DateTime.UtcNow.Date))
+                c.StartDate.Date <= VietnamTime.Today.ToDateTime(TimeOnly.MinValue) &&
+                (c.EndDate == null || c.EndDate.Value.Date >= VietnamTime.Today.ToDateTime(TimeOnly.MinValue)))
             .OrderByDescending(c => c.StartDate)
             .FirstOrDefaultAsync(cancellationToken);
     }

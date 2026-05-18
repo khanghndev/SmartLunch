@@ -68,7 +68,7 @@ public class CreateCustomerReviewCommandHandler : IRequestHandler<CreateCustomer
             OrderId = orderId,
             Rating = req.Rating,
             Comment = string.IsNullOrWhiteSpace(req.Comment) ? null : req.Comment.Trim(),
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = VietnamTime.Now
         };
 
         var created = await _reviewRepository.CreateAsync(entity, cancellationToken);

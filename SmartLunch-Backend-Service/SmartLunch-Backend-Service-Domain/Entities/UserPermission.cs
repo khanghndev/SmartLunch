@@ -9,7 +9,7 @@ public class UserPermission
     public string? Code { get; set; }
     public int UserId { get; set; }
     public int PermissionId { get; set; }
-    public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
+    public DateTime AssignedAt { get; set; } = VietnamTime.Now;
     public int? AssignedBy { get; set; }
     public bool IsActive { get; set; } = true;
     

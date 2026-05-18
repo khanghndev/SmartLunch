@@ -48,7 +48,7 @@ public class CreateDishCommandHandler : IRequestHandler<CreateDishCommand, GetDi
             Fat = req.Fat,
             Carbs = req.Carbs,
             IsActive = req.IsActive,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = VietnamTime.Now
         };
 
         if (req.Images != null && req.Images.Count > 0)

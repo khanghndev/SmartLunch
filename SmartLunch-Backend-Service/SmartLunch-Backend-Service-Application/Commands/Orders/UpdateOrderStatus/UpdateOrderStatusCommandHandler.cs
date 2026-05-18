@@ -51,7 +51,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         if (current != target)
         {
             order.Status = target;
-            order.UpdatedAt = DateTime.UtcNow;
+            order.UpdatedAt = VietnamTime.Now;
         }
 
         if (target == OrderLifecycleStatus.Delivered)
@@ -93,7 +93,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
             string.Equals(d.DeliveryStatus, DeliveryCompleted, StringComparison.OrdinalIgnoreCase));
         if (completed != null)
         {
-            completed.DeliveredAt ??= DateTime.UtcNow;
+            completed.DeliveredAt ??= VietnamTime.Now;
             return;
         }
 
@@ -104,7 +104,7 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
         if (delivery != null)
         {
             delivery.DeliveryStatus = DeliveryCompleted;
-            delivery.DeliveredAt = DateTime.UtcNow;
+            delivery.DeliveredAt = VietnamTime.Now;
             return;
         }
 
@@ -120,8 +120,8 @@ public class UpdateOrderStatusCommandHandler : IRequestHandler<UpdateOrderStatus
             OrderId = order.Id,
             DeliveryAddress = address,
             DeliveryStatus = DeliveryCompleted,
-            DeliveredAt = DateTime.UtcNow,
-            CreatedAt = DateTime.UtcNow
+            DeliveredAt = VietnamTime.Now,
+            CreatedAt = VietnamTime.Now
         });
     }
 }

@@ -61,7 +61,7 @@ public class GrantPermissionToUserCommandHandler : IRequestHandler<GrantPermissi
             {
                 // Reactivate the permission
                 existingUserPermission.IsActive = true;
-                existingUserPermission.AssignedAt = DateTime.UtcNow;
+                existingUserPermission.AssignedAt = VietnamTime.Now;
                 await _userPermissionRepository.UpdateAsync(existingUserPermission);
                 
                 _logger.LogInformation("Reactivated permission {PermissionName} for user {UserId}", permission.Name, req.UserId);
@@ -81,7 +81,7 @@ public class GrantPermissionToUserCommandHandler : IRequestHandler<GrantPermissi
 
             UserId = req.UserId,
             PermissionId = req.PermissionId,
-            AssignedAt = DateTime.UtcNow,
+            AssignedAt = VietnamTime.Now,
             IsActive = true
         };
 

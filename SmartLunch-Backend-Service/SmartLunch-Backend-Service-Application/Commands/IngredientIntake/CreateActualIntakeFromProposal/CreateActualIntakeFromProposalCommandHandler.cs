@@ -40,7 +40,7 @@ public class CreateActualIntakeFromProposalCommandHandler
             throw new UnauthorizedAccessException("You are not allowed to record actual intake.");
 
         var elevated = IntakeProposalAccessHelper.IsElevatedReviewer(roleNames);
-        var receivedAt = request.Request.ReceivedAtUtc ?? DateTime.UtcNow;
+        var receivedAt = request.Request.ReceivedAtUtc ?? VietnamTime.Now;
         if (receivedAt.Kind == DateTimeKind.Unspecified)
             receivedAt = DateTime.SpecifyKind(receivedAt, DateTimeKind.Utc);
 

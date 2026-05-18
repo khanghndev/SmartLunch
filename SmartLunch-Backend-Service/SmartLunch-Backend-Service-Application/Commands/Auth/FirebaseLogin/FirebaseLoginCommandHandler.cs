@@ -73,8 +73,8 @@ public class FirebaseLoginCommandHandler : IRequestHandler<FirebaseLoginCommand,
                 Provider = firebaseUserInfo.Provider ?? "firebase",
                 IsActive = true,
                 IsEmailVerified = firebaseUserInfo.EmailVerified,
-                EmailVerifiedAt = firebaseUserInfo.EmailVerified ? DateTime.UtcNow : null,
-                CreatedAt = DateTime.UtcNow
+                EmailVerifiedAt = firebaseUserInfo.EmailVerified ? VietnamTime.Now : null,
+                CreatedAt = VietnamTime.Now
             };
 
             await _userRepository.CreateAsync(user);
@@ -94,11 +94,11 @@ public class FirebaseLoginCommandHandler : IRequestHandler<FirebaseLoginCommand,
             if (firebaseUserInfo.EmailVerified && !user.IsEmailVerified)
             {
                 user.IsEmailVerified = true;
-                user.EmailVerifiedAt = DateTime.UtcNow;
+                user.EmailVerifiedAt = VietnamTime.Now;
             }
 
             // Update last login
-            user.LastLoginAt = DateTime.UtcNow;
+            user.LastLoginAt = VietnamTime.Now;
             await _userRepository.UpdateAsync(user);
         }
 
@@ -123,7 +123,7 @@ public class FirebaseLoginCommandHandler : IRequestHandler<FirebaseLoginCommand,
         // Generate tokens
         var accessToken = _jwtService.GenerateAccessToken(user, roles);
         var refreshToken = _jwtService.GenerateRefreshToken();
-        var refreshTokenExpiresAt = DateTime.UtcNow.AddDays(_expireDays);
+        var refreshTokenExpiresAt = VietnamTime.Now.AddDays(_expireDays);
 
         // Revoke all existing active tokens for this user
         await _userTokenRepository.RevokeAllUserTokensAsync(user.Id);
@@ -137,7 +137,7 @@ public class FirebaseLoginCommandHandler : IRequestHandler<FirebaseLoginCommand,
             UserId = user.Id,
             AccessToken = accessToken,
             RefreshToken = refreshToken,
-            IssuedAt = DateTime.UtcNow,
+            IssuedAt = VietnamTime.Now,
             ExpiresAt = refreshTokenExpiresAt,
             IsActive = true,
             Jti = jti

@@ -46,7 +46,7 @@ public class UpdatePartnerCommandHandler : IRequestHandler<UpdatePartnerCommand,
         entity.ComplianceInfo = req.ComplianceInfo?.Trim();
         entity.FinancialTerms = req.FinancialTerms?.Trim();
         entity.IsActive = req.IsActive;
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = VietnamTime.Now;
 
         await _partnerRepository.UpdateAsync(entity);
 

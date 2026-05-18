@@ -66,7 +66,7 @@ public class IngredientActualIntakeRepository : IIngredientActualIntakeRepositor
             }
 
             var receiptCode =
-                $"PNK-{DateTime.UtcNow:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
+                $"PNK-{VietnamTime.Now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8].ToUpperInvariant()}";
 
             var intake = new IngredientActualIntake
             {
@@ -75,7 +75,7 @@ public class IngredientActualIntakeRepository : IIngredientActualIntakeRepositor
                 CreatedByUserId = actorUserId,
                 ReceivedAt = receivedAtUtc,
                 Note = string.IsNullOrWhiteSpace(note) ? null : note.Trim().Length > 500 ? note.Trim()[..500] : note.Trim(),
-                CreatedAt = DateTime.UtcNow
+                CreatedAt = VietnamTime.Now
             };
 
             foreach (var pl in proposal.Lines)
@@ -95,13 +95,13 @@ public class IngredientActualIntakeRepository : IIngredientActualIntakeRepositor
                         IngredientId = pl.IngredientId,
                         QuantityAvailable = pl.Quantity,
                         ReorderLevel = null,
-                        LastUpdated = DateTime.UtcNow
+                        LastUpdated = VietnamTime.Now
                     });
                 }
                 else
                 {
                     inv.QuantityAvailable += pl.Quantity;
-                    inv.LastUpdated = DateTime.UtcNow;
+                    inv.LastUpdated = VietnamTime.Now;
                 }
             }
 

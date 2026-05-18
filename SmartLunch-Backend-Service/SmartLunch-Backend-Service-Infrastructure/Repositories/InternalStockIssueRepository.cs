@@ -106,7 +106,7 @@ public class InternalStockIssueRepository : IInternalStockIssueRepository
                 }
 
                 inv.QuantityAvailable -= qty;
-                inv.LastUpdated = DateTime.UtcNow;
+                inv.LastUpdated = VietnamTime.Now;
             }
 
             await _context.SaveChangesAsync(cancellationToken);

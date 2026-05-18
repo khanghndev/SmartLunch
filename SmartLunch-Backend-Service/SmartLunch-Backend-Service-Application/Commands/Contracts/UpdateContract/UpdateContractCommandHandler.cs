@@ -44,7 +44,7 @@ public class UpdateContractCommandHandler : IRequestHandler<UpdateContractComman
         entity.TotalValue = req.TotalValue;
         entity.DepositAmount = req.DepositAmount;
         entity.Status = status;
-        entity.UpdatedAt = DateTime.UtcNow;
+        entity.UpdatedAt = VietnamTime.Now;
 
         ContractLifecycleHelper.ApplyExpiryByEndDate(entity);
 

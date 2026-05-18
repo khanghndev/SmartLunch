@@ -11,7 +11,7 @@ public class IngredientIntakeProposal
     public string Status { get; set; } = string.Empty;
     public string? HeaderNote { get; set; }
     public int CreatedByUserId { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public int? ReviewedByUserId { get; set; }
     public DateTime? ReviewedAt { get; set; }

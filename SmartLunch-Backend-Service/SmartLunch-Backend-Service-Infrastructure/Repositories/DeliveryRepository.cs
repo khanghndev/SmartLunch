@@ -79,7 +79,7 @@ public class DeliveryRepository : IDeliveryRepository
 
         if (scheduledOn.HasValue)
         {
-            var start = DateTime.SpecifyKind(scheduledOn.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+            var start = VietnamTime.CalendarDateMidnight(scheduledOn.Value);
             var end = start.AddDays(1);
             query = query.Where(d => d.Order != null && d.Order.ScheduledDate >= start && d.Order.ScheduledDate < end);
         }

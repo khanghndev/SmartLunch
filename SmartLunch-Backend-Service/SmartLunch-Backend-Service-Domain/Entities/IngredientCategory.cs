@@ -7,7 +7,7 @@ public class IngredientCategory
     public string Name { get; set; } = string.Empty;
     public string NameEnglish { get; set; } = string.Empty; // protein, seafood, vegetable, etc.
     public string? Description { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual ICollection<Ingredient> Ingredients { get; set; } = new List<Ingredient>();
 }

@@ -43,7 +43,7 @@ public class CreatePartnerCommandHandler : IRequestHandler<CreatePartnerCommand,
             ComplianceInfo = req.ComplianceInfo?.Trim(),
             FinancialTerms = req.FinancialTerms?.Trim(),
             IsActive = req.IsActive,
-            CreatedAt = DateTime.UtcNow
+            CreatedAt = VietnamTime.Now
         };
 
         await _partnerRepository.CreateAsync(entity);

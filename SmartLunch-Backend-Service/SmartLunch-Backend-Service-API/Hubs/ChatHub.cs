@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using System.Collections.Concurrent;
 
+using SmartLunch.Backend.Service.Domain.Time;
+
 namespace SmartLunch.Backend.Service.API.Hubs
 {
     /// <summary>
@@ -41,7 +43,7 @@ namespace SmartLunch.Backend.Service.API.Hubs
             if (!string.IsNullOrWhiteSpace(userId))
             {
                 UserConnectionMap[userId] = Context.ConnectionId;
-                UserLastActivity[userId] = DateTime.UtcNow;
+                UserLastActivity[userId] = VietnamTime.Now;
             }
 
             _logger.LogInformation("ChatHub connected. ConnectionId={ConnectionId}, UserId={UserId}", Context.ConnectionId, userId);
@@ -59,7 +61,7 @@ namespace SmartLunch.Backend.Service.API.Hubs
                     UserConnectionMap.TryRemove(userId, out _);
                 }
 
-                UserLastActivity[userId] = DateTime.UtcNow;
+                UserLastActivity[userId] = VietnamTime.Now;
             }
 
             TypingUsers.TryRemove(Context.ConnectionId, out _);
@@ -79,7 +81,7 @@ namespace SmartLunch.Backend.Service.API.Hubs
 
             var users = ActiveUsersInDebates.GetOrAdd(debateId, _ => new ConcurrentDictionary<string, byte>());
             users[userId] = 1;
-            UserLastActivity[userId] = DateTime.UtcNow;
+            UserLastActivity[userId] = VietnamTime.Now;
 
             await Clients.Group(debateId).SendAsync("UserJoined", new
             {
@@ -129,7 +131,7 @@ namespace SmartLunch.Backend.Service.API.Hubs
             }
 
             // Simple rate limit: max 20 msgs / 10s per (debateId,userId)
-            var now = DateTime.UtcNow;
+            var now = VietnamTime.Now;
             var rateKey = $"{debateId}:{userId}";
             var q = MessageRateLimits.GetOrAdd(rateKey, _ => new ConcurrentQueue<DateTime>());
             q.Enqueue(now);
@@ -163,7 +165,7 @@ namespace SmartLunch.Backend.Service.API.Hubs
 
             if (isTyping)
             {
-                TypingUsers[Context.ConnectionId] = DateTime.UtcNow;
+                TypingUsers[Context.ConnectionId] = VietnamTime.Now;
             }
             else
             {

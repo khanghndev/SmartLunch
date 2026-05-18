@@ -64,7 +64,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, GetUs
             user.PasswordHash = _passwordHasher.HashPassword(req.NewPassword);
         }
 
-        user.UpdatedAt = DateTime.UtcNow;
+        user.UpdatedAt = VietnamTime.Now;
         await _userRepository.UpdateAsync(user);
 
         var reloaded = await _userRepository.GetByIdAsync(user.Id);

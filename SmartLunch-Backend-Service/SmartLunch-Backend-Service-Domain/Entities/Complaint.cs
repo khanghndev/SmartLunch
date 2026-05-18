@@ -13,7 +13,7 @@ public class Complaint
     public string Description { get; set; } = string.Empty;
     public string Status { get; set; } = "new"; // new|in_progress|resolved|rejected
     public int? AssignedTo { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? ResolvedAt { get; set; }
 
     public virtual User User { get; set; } = null!;

@@ -31,9 +31,9 @@ public class GetInternalStockIssuesQueryHandler
         DateTime? fromUtc = null;
         DateTime? toExUtc = null;
         if (req.IssuedFrom.HasValue)
-            fromUtc = DateTime.SpecifyKind(req.IssuedFrom.Value.ToDateTime(TimeOnly.MinValue), DateTimeKind.Utc);
+            fromUtc = VietnamTime.CalendarDateMidnight(req.IssuedFrom.Value);
         if (req.IssuedTo.HasValue)
-            toExUtc = DateTime.SpecifyKind(req.IssuedTo.Value.ToDateTime(TimeOnly.MinValue).AddDays(1), DateTimeKind.Utc);
+            toExUtc = VietnamTime.CalendarDateMidnight(req.IssuedTo.Value.AddDays(1));
 
         if (fromUtc.HasValue && toExUtc.HasValue && toExUtc.Value <= fromUtc.Value)
             throw new ArgumentException("'IssuedTo' must be on or after 'IssuedFrom'.");

@@ -108,7 +108,7 @@ public class UserTokenRepository : IUserTokenRepository
         if (token == null) return false;
 
         token.IsActive = false;
-        token.RevokedAt = DateTime.UtcNow;
+        token.RevokedAt = VietnamTime.Now;
         await _context.SaveChangesAsync();
         return true;
     }
@@ -119,7 +119,7 @@ public class UserTokenRepository : IUserTokenRepository
         foreach (var token in tokens)
         {
             token.IsActive = false;
-            token.RevokedAt = DateTime.UtcNow;
+            token.RevokedAt = VietnamTime.Now;
         }
         await _context.SaveChangesAsync();
         return true;

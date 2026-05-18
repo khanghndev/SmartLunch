@@ -29,7 +29,7 @@ public class DeleteContractCommandHandler : IRequestHandler<DeleteContractComman
         if (paymentCount > 0)
         {
             entity.Status = ContractStatus.Cancelled;
-            entity.UpdatedAt = DateTime.UtcNow;
+            entity.UpdatedAt = VietnamTime.Now;
             await _contractRepository.UpdateAsync(entity);
             await _cacheService.RemoveAsync(MasterDataCacheKeys.Partner(partnerId), cancellationToken);
             return new DeleteContractResponse

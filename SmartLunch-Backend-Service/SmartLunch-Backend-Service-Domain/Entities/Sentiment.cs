@@ -10,7 +10,7 @@ public class Sentiment
     public int ReviewId { get; set; }
     public string SentimentLabel { get; set; } = string.Empty; // positive|negative|neutral
     public decimal? Confidence { get; set; }
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual Review Review { get; set; } = null!;
 }

@@ -49,7 +49,7 @@ public class CreateMenuSuggestionCommandHandler : IRequestHandler<CreateMenuSugg
         var entity = new MenuSuggestion
         {
             WeekStart = weekStartUtc,
-            GeneratedAt = DateTime.UtcNow,
+            GeneratedAt = VietnamTime.Now,
             SuggestionText = trimmed,
             AlgorithmVersion = algorithmVersion,
             CreatedBy = request.CreatedByUserId,

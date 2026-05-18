@@ -33,7 +33,7 @@ public class Contract
     public string? SignatureImage { get; set; }
     
     public string Status { get; set; } = "active"; // active | expired | cancelled
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
 
     public virtual Partner Partner { get; set; } = null!;

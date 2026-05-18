@@ -26,7 +26,7 @@ public class MediaFile
 
     public bool IsPublic { get; set; } = false;
 
-    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    public DateTime CreatedAt { get; set; } = VietnamTime.Now;
     public DateTime? UpdatedAt { get; set; }
 }
 

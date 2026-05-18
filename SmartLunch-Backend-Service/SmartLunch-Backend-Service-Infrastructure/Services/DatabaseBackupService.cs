@@ -34,7 +34,7 @@ public class DatabaseBackupService : IDatabaseBackupService
         var opts = ReadOptions();
         Directory.CreateDirectory(opts.OutputDirectory);
 
-        var createdAt = DateTime.UtcNow;
+        var createdAt = VietnamTime.Now;
         var extension = string.IsNullOrWhiteSpace(opts.FileExtension) ? "sql" : opts.FileExtension.Trim().TrimStart('.');
         var fileName = $"{opts.FilePrefix}-{createdAt:yyyyMMddHHmmss}.{extension}";
         var filePath = Path.Combine(opts.OutputDirectory, fileName);
@@ -169,7 +169,7 @@ public class DatabaseBackupService : IDatabaseBackupService
             inputFilePath: filePath,
             cancellationToken: cancellationToken);
 
-        var restoredAt = DateTime.UtcNow;
+        var restoredAt = VietnamTime.Now;
         _logger.LogWarning("Database restore completed. File={FilePath}", filePath);
 
         try
@@ -204,7 +204,7 @@ public class DatabaseBackupService : IDatabaseBackupService
             return Task.FromResult(0);
 
         var extension = string.IsNullOrWhiteSpace(opts.FileExtension) ? "sql" : opts.FileExtension.Trim().TrimStart('.');
-        var cutoff = DateTime.UtcNow.AddDays(-Math.Max(1, opts.RetentionDays));
+        var cutoff = VietnamTime.Now.AddDays(-Math.Max(1, opts.RetentionDays));
         var deleted = 0;
 
         foreach (var file in Directory.EnumerateFiles(opts.OutputDirectory, $"{opts.FilePrefix}-*.{extension}", SearchOption.TopDirectoryOnly))

@@ -1,9 +1,11 @@
+using SmartLunch.Backend.Service.Domain.Time;
+
 namespace SmartLunch.Backend.Service.Application.DTOs
 {
     public class BaseApiResponse<T>
     {
         public bool Success { get; init; } = true;
-        public DateTime Timestamp { get; init; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; init; } = VietnamTime.Now;
         public string Type { get; init; } = string.Empty;
         public string Source { get; init; } = string.Empty;
         public string Message { get; init; } = string.Empty;
@@ -28,7 +30,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs
                 Error = message,
                 ErrorDetails = errors != null ? string.Join("; ", errors) : string.Empty,
                 Errors = errors != null ? errors.ToList().AsReadOnly() : Array.Empty<string>(),
-                Timestamp = DateTime.UtcNow,
+                Timestamp = VietnamTime.Now,
             };
 
         /// <summary>
@@ -43,7 +45,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs
                 Error = message,
                 ErrorDetails = message,
                 Errors = new List<string> { message }.AsReadOnly(),
-                Timestamp = DateTime.UtcNow,
+                Timestamp = VietnamTime.Now,
             };
 
         /// <summary>
@@ -56,7 +58,7 @@ namespace SmartLunch.Backend.Service.Application.DTOs
                 Status = "Success",
                 Message = message,
                 Data = data,
-                Timestamp = DateTime.UtcNow,
+                Timestamp = VietnamTime.Now,
             };
 
         /// <summary>

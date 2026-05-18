@@ -38,7 +38,7 @@ public class CreateUserRoleCommandHandler : IRequestHandler<CreateUserRoleComman
 
             UserId = req.UserId,
             RoleId = req.RoleId,
-            AssignedAt = DateTime.UtcNow,
+            AssignedAt = VietnamTime.Now,
             AssignedBy = req.AssignedBy,
             IsActive = true
         };
