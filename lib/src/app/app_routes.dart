@@ -1,12 +1,9 @@
 import 'app_config.dart';
 
+/// Tên route named — bám cấu trúc `lib/src/features/` trong `UI_MOB.md`.
 class AppRoutes {
   static const root = '/';
-  static const splash = '/splash';
-  static const welcome = '/welcome';
-  static const loginCustomer = '/login/customer';
-  static const loginCourier = '/login/courier';
-  static const loginOrg = '/login/org';
+  static const login = '/login';
   static const register = '/register';
   static const forgotPassword = '/forgot-password';
   static const profile = '/profile';
@@ -18,45 +15,53 @@ class AppRoutes {
 
   static const customerHome = '/customer';
   static const customerMenu = '/customer/menu';
-  static const customerOrder = '/customer/order';
-  static const customerPayment = '/customer/payment';
-  static const customerRating = '/customer/rating';
-  static const customerHistory = '/customer/history';
   static const customerMealDetail = '/customer/meal-detail';
-  static const customerPromos = '/customer/promos';
-  static const customerOrderDetail = '/customer/order-detail';
 
-  static const courierHome = '/courier';
-  static const courierDeliveryList = '/courier/deliveries';
-  static const courierDeliveryDetail = '/courier/delivery-detail';
-  static const courierRouteMap = '/courier/route-map';
-  static const courierProof = '/courier/proof-of-delivery';
-  static const courierProfile = '/courier/profile';
-  static const courierNotifications = '/courier/notifications';
+  static const shipperHome = '/shipper';
+  static const shipperDeliveryList = '/shipper/deliveries';
+  static const shipperDeliveryDetail = '/shipper/delivery-detail';
+  static const shipperRouteMap = '/shipper/route-map';
+  static const shipperProof = '/shipper/proof-of-delivery';
+  static const shipperProfile = '/shipper/profile';
+  static const shipperNotifications = '/shipper/notifications';
+  static const shipperSchedule = '/shipper/schedule';
+  static const shipperHistory = '/shipper/history';
+  static const shipperWeeklyMenu = '/shipper/weekly-menu';
 
   static const orgHome = '/org';
   static const orgStaff = '/org/staff';
   static const orgBulkOrder = '/org/bulk-order';
+  static const orgMealOrderReview = '/org/meal-order/review';
   static const orgStatistics = '/org/statistics';
   static const orgReports = '/org/reports';
   static const orgReconciliation = '/org/reconciliation';
   static const orgProfile = '/org/profile';
   static const orgNotifications = '/org/notifications';
+  static const orgContractSettlement = '/org/contract-settlement';
 
   static const chatbot = '/chatbot';
   static const notifications = '/notifications';
 
+  static const managerHome = '/manager';
+  static const managerStatistics = '/manager/statistics';
+  static const managerReports = '/manager/reports';
+  static const managerReconciliation = '/manager/reconciliation';
+  static const managerReportExport = '/manager/report-export';
+  static const managerCashFlow = '/manager/cash-flow';
+  static const managerFeedbackComplaints = '/manager/feedback-complaints';
+
   static String initialFor(AppFlavor flavor) {
     switch (flavor) {
       case AppFlavor.customer:
-        return loginCustomer;
-      case AppFlavor.courier:
-        return loginCourier;
-      case AppFlavor.org:
-        return loginOrg;
+        return customerHome;
+      case AppFlavor.shipper:
+        return login;
+      case AppFlavor.organization:
+        return login;
+      case AppFlavor.manager:
+        return login;
       case AppFlavor.all:
-      default:
-        return splash;
+        return login;
     }
   }
 }

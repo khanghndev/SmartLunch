@@ -1,0 +1,203 @@
+import '../../../../core/network/api_client.dart';
+import '../../../../core/network/api_exception.dart';
+import '../models/bulk_order_models.dart';
+import '../models/contract_models.dart';
+
+/// Remote datasource Organization — meal-order + contracts.
+class OrgRemoteDataSource {
+  const OrgRemoteDataSource(this._client);
+
+  final ApiClient _client;
+
+  static const _prefix = '/api/v1';
+
+  Future<DishCategoriesResponseModel> getDishCategories() async {
+    try {
+      final response = await _client.get(
+        '$_prefix/organization/meal-order/dish-category',
+        queryParameters: {},
+      );
+      return DishCategoriesResponseModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải danh mục món: $e', statusCode: 500);
+    }
+  }
+
+  Future<DishesByCategoryResponseModel> getDishesByCategory(
+    int categoryId, {
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    try {
+      final response = await _client.get(
+        '$_prefix/organization/meal-order/dish/category',
+        queryParameters: {
+          'categoryId': categoryId,
+          'page': page,
+          'pageSize': pageSize,
+        },
+      );
+      return DishesByCategoryResponseModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải danh sách món: $e', statusCode: 500);
+    }
+  }
+
+  Future<PrepareMealDraftModel> prepareMealContract({
+    required int organizationId,
+    required double price,
+    required List<MealDayDraftModel> mealDays,
+    String? promotionCode,
+    String organizationName = '',
+  }) async {
+    try {
+      final response = await _client.post(
+        '$_prefix/organization/meal-order/contract',
+        body: {
+          'organizationId': organizationId,
+          'price': price,
+          if (promotionCode != null && promotionCode.isNotEmpty)
+            'promotionCode': promotionCode,
+          'mealDays': mealDays.map((d) {
+            return {
+              'serviceDate': d.serviceDate,
+              'mealPlan': {
+                'main': d.linesFor('main').map((l) => l.toJson()).toList(),
+                'side': d.linesFor('side').map((l) => l.toJson()).toList(),
+                'soup': d.linesFor('soup').map((l) => l.toJson()).toList(),
+              },
+            };
+          }).toList(),
+        },
+      );
+      return PrepareMealDraftModel.fromJson(
+        response,
+        organizationName: organizationName,
+      );
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tạo nháp hợp đồng: $e', statusCode: 500);
+    }
+  }
+
+  Future<CheckoutMealResultModel> checkoutMealOrder({
+    required String draftId,
+    required int depositPercent,
+  }) async {
+    try {
+      final response = await _client.post(
+        '$_prefix/organization/meal-order/checkout',
+        body: {
+          'draftId': draftId,
+          'depositPercent': depositPercent,
+        },
+      );
+      return CheckoutMealResultModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi xác nhận đặt hàng: $e', statusCode: 500);
+    }
+  }
+
+  Future<InitiateMealPaymentModel> initiateMealPayment({
+    required int orderId,
+  }) async {
+    try {
+      final response = await _client.post(
+        '$_prefix/organization/meal-order/pay',
+        body: {'orderId': orderId},
+      );
+      return InitiateMealPaymentModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tạo link thanh toán: $e', statusCode: 500);
+    }
+  }
+
+  Future<ContractListModel> getContracts({
+    int page = 1,
+    int pageSize = 20,
+  }) async {
+    try {
+      final response = await _client.get(
+        '$_prefix/company/contracts',
+        queryParameters: {'page': page, 'pageSize': pageSize},
+      );
+      return ContractListModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải danh sách hợp đồng: $e', statusCode: 500);
+    }
+  }
+
+  Future<ContractModel?> getContractDetail(int id) async {
+    try {
+      final response = await _client.get(
+        '$_prefix/company/contracts/$id',
+        queryParameters: {},
+      );
+      final data = response['data'] as Map<String, dynamic>?;
+      if (data == null) return null;
+      final contract = data['contract'] as Map<String, dynamic>?;
+      if (contract != null) return ContractModel.fromJson(contract);
+      return ContractModel.fromJson(data);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải chi tiết hợp đồng: $e', statusCode: 500);
+    }
+  }
+
+  Future<bool> signContract({
+    required int contractId,
+    required String digitalSignature,
+    String? signatureImageUrl,
+  }) async {
+    try {
+      final response = await _client.post(
+        '$_prefix/company/contracts/$contractId/sign',
+        body: {
+          'digitalSignature': digitalSignature,
+          if (signatureImageUrl != null) 'signatureImageUrl': signatureImageUrl,
+        },
+      );
+      return response['success'] as bool? ?? true;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi ký hợp đồng: $e', statusCode: 500);
+    }
+  }
+
+  Future<ContractPaymentListModel> getContractPayments(int contractId) async {
+    try {
+      // Ưu tiên endpoint Company (role Organization); fallback Finance nếu có quyền.
+      Map<String, dynamic> response;
+      try {
+        response = await _client.get(
+          '$_prefix/company/contracts/$contractId/payments',
+          queryParameters: {},
+        );
+      } on ApiException catch (e) {
+        if (e.statusCode != 404) rethrow;
+        response = await _client.get(
+          '$_prefix/finance/contracts/$contractId/payments',
+          queryParameters: {},
+        );
+      }
+      return ContractPaymentListModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải lịch sử thanh toán: $e', statusCode: 500);
+    }
+  }
+}

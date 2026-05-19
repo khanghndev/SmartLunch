@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:smartlunch_mobile/src/app/app_routes.dart';
 
 import '../constants/app_colors.dart';
+import '../../features/profile/data/models/user_profile_model.dart';
+import '../../features/profile/data/profile_repository.dart';
 
-class PremiumDrawer extends StatelessWidget {
+class PremiumDrawer extends StatefulWidget {
   final String userName;
   final String userRole;
   final String roleBadge;
@@ -28,23 +31,48 @@ class PremiumDrawer extends StatelessWidget {
     required this.sections,
   });
 
+  @override
+  State<PremiumDrawer> createState() => _PremiumDrawerState();
+}
+
+class _PremiumDrawerState extends State<PremiumDrawer> {
+  UserProfileModel? _profile;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfile();
+  }
+
+  Future<void> _loadProfile() async {
+    try {
+      final profile = await ProfileRepository.instance.getProfile();
+      if (mounted) setState(() => _profile = profile);
+    } catch (_) {
+      // Fail silently — fallback to props
+    }
+  }
+
   void _selectTab(BuildContext context, int index) {
     Navigator.of(context).pop();
-    onSelectTab(index);
+    widget.onSelectTab(index);
   }
 
   void _navigate(BuildContext context, String route) {
     Navigator.of(context).pop();
-    onNavigate(route);
-  }
-
-  void _signOut(BuildContext context) {
-    Navigator.of(context).pop();
-    onLogout();
+    widget.onNavigate(route);
   }
 
   @override
   Widget build(BuildContext context) {
+    final displayName = _profile?.displayName ?? widget.userName;
+    final displayRole =
+        _profile?.email.isNotEmpty == true ? _profile!.email : widget.userRole;
+    final displayBadge =
+        _profile?.roles.isNotEmpty == true
+            ? _profile!.roles.first
+            : widget.roleBadge;
+
     return Drawer(
       width: MediaQuery.of(context).size.width * 0.87,
       child: Container(
@@ -53,20 +81,20 @@ class PremiumDrawer extends StatelessWidget {
           child: Column(
             children: [
               _DrawerHeader(
-                userName: userName,
-                userRole: userRole,
-                roleBadge: roleBadge,
-                gradient: gradient,
+                userName: displayName,
+                userRole: displayRole,
+                roleBadge: displayBadge,
+                gradient: widget.gradient,
               ),
               Expanded(
                 child: ListView(
                   padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
                   children: [
-                    ...sections.map(
+                    ...widget.sections.map(
                       (section) => _DrawerSectionWidget(
                         section: section,
-                        selectedIndex: selectedIndex,
-                        accentColor: accentColor,
+                        selectedIndex: widget.selectedIndex,
+                        accentColor: widget.accentColor,
                         onSelectTab: (index) => _selectTab(context, index),
                         onNavigate: (route) => _navigate(context, route),
                       ),
@@ -74,7 +102,22 @@ class PremiumDrawer extends StatelessWidget {
                   ],
                 ),
               ),
-              _LogoutTile(onTap: () => _signOut(context)),
+              _LogoutTile(
+                label: _profile == null ? 'Đăng nhập' : 'Đăng xuất',
+                icon:
+                    _profile == null
+                        ? Icons.login_rounded
+                        : Icons.logout_rounded,
+                color: _profile == null ? AppColors.customer : AppColors.danger,
+                onTap: () {
+                  Navigator.of(context).pop();
+                  if (_profile == null) {
+                    Navigator.of(context).pushNamed(AppRoutes.login);
+                  } else {
+                    widget.onLogout();
+                  }
+                },
+              ),
             ],
           ),
         ),
@@ -195,27 +238,35 @@ class _DrawerHeader extends StatelessWidget {
 }
 
 class _LogoutTile extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
   final VoidCallback onTap;
 
-  const _LogoutTile({required this.onTap});
+  const _LogoutTile({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       margin: const EdgeInsets.fromLTRB(14, 0, 14, 16),
       decoration: BoxDecoration(
-        color: AppColors.danger.withOpacity(0.08),
+        color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: AppColors.danger.withOpacity(0.2)),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: ListTile(
         onTap: onTap,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        leading: const Icon(Icons.logout_rounded, color: AppColors.danger),
+        leading: Icon(icon, color: color),
         title: Text(
-          'Đăng xuất',
+          label,
           style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: AppColors.danger,
+            color: color,
             fontWeight: FontWeight.w700,
           ),
         ),

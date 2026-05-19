@@ -8,7 +8,7 @@ void main() {
     const SmartLunchApp(
       config: AppConfig(
         flavor: AppFlavor.customer,
-        appName: 'SmartLunch Customer',
+        appName: 'HUITMeal Customer',
       ),
     ),
   );

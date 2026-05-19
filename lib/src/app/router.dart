@@ -1,46 +1,63 @@
 import 'package:flutter/material.dart';
-
 import 'app_config.dart';
 import 'app_routes.dart';
 import 'not_found_page.dart';
-import 'splash_screen.dart';
-import 'welcome_page.dart';
-import '../features/auth/presentation/pages/forgot_password_page.dart';
+
+// Auth
+import '../features/auth/presentation/pages/login_page.dart';
 import '../features/auth/presentation/pages/register_page.dart';
-import '../features/auth/presentation/pages/role_login_page.dart';
-import '../features/chatbot/presentation/pages/chatbot_page.dart';
-import '../features/courier/delivery_detail/presentation/pages/delivery_detail_page.dart';
-import '../features/courier/delivery_list/presentation/pages/delivery_list_page.dart';
-import '../features/courier/presentation/pages/courier_home_page.dart';
-import '../features/courier/proof_of_delivery/presentation/pages/proof_of_delivery_page.dart';
-import '../features/courier/route_map/presentation/pages/route_map_page.dart';
-import '../features/courier/presentation/pages/courier_profile_page.dart';
-import '../features/courier/presentation/pages/courier_notifications_page.dart';
-import '../features/customer/history/presentation/pages/order_history_page.dart';
-import '../features/customer/menu/presentation/pages/meal_detail_page.dart';
-import '../features/customer/menu/presentation/pages/menu_page.dart';
-import '../features/customer/order/presentation/pages/order_page.dart';
-import '../features/customer/order/presentation/pages/order_detail_page.dart';
-import '../features/customer/payment/presentation/pages/payment_page.dart';
-import '../features/customer/promotion/presentation/pages/promo_codes_page.dart';
-import '../features/customer/presentation/pages/customer_home_page.dart';
-import '../features/customer/presentation/widgets/meal_cards.dart';
-import '../features/customer/rating/presentation/pages/rating_page.dart';
-import '../features/notifications/presentation/pages/notifications_page.dart';
-import '../features/org/bulk_order/presentation/pages/bulk_order_page.dart';
-import '../features/org/presentation/pages/org_home_page.dart';
-import '../features/org/reconciliation/presentation/pages/reconciliation_page.dart';
-import '../features/org/reports/presentation/pages/reports_page.dart';
-import '../features/org/staff/presentation/pages/staff_page.dart';
-import '../features/org/statistics/presentation/pages/statistics_page.dart';
-import '../features/org/presentation/pages/org_profile_page.dart';
-import '../features/org/presentation/pages/org_notifications_page.dart';
+import '../features/auth/presentation/pages/forgot_password_page.dart';
+
+// Profile
 import '../features/profile/presentation/pages/profile_page.dart';
 import '../features/profile/presentation/pages/personal_info_page.dart';
 import '../features/profile/presentation/pages/security_page.dart';
 import '../features/profile/presentation/pages/address_book_page.dart';
 import '../features/profile/presentation/pages/notification_settings_page.dart';
 import '../features/profile/presentation/pages/help_center_page.dart';
+
+// Customer
+import '../features/customer/presentation/pages/customer_home_page.dart';
+import '../features/customer/presentation/pages/menu_page.dart';
+import '../features/customer/presentation/pages/meal_detail_page.dart';
+
+// Shipper
+import '../features/shipper/presentation/pages/shipper_home_page.dart';
+import '../features/shipper/presentation/pages/delivery_list_page.dart';
+import '../features/shipper/presentation/pages/delivery_detail_page.dart';
+import '../features/shipper/presentation/pages/route_map_page.dart';
+import '../features/shipper/presentation/pages/proof_of_delivery_page.dart';
+import '../features/shipper/presentation/pages/shipper_profile_page.dart';
+import '../features/shipper/presentation/pages/shipper_notifications_page.dart';
+import '../features/shipper/presentation/pages/delivery_schedule_page.dart';
+import '../features/shipper/presentation/pages/delivery_history_page.dart';
+import '../features/shipper/presentation/pages/shipper_weekly_menu_page.dart';
+
+// Organization
+import '../features/organization/presentation/pages/organization_home_page.dart';
+import '../features/organization/presentation/pages/staff_page.dart';
+import '../features/organization/presentation/pages/bulk_order_page.dart';
+import '../features/organization/presentation/pages/org_meal_order_review_page.dart';
+import '../features/organization/data/models/bulk_order_models.dart';
+import '../features/organization/presentation/pages/org_statistics_page.dart';
+import '../features/organization/presentation/pages/org_reports_page.dart';
+import '../features/organization/presentation/pages/org_reconciliation_page.dart';
+import '../features/organization/presentation/pages/organization_profile_page.dart';
+import '../features/organization/presentation/pages/org_notifications_page.dart';
+import '../features/organization/presentation/pages/contract_settlement_page.dart';
+import '../features/organization/presentation/pages/chatbot_page.dart';
+
+// Manager
+import '../features/manager/presentation/pages/manager_home_page.dart';
+import '../features/manager/presentation/pages/manager_statistics_page.dart';
+import '../features/manager/presentation/pages/manager_reports_page.dart';
+import '../features/manager/presentation/pages/manager_reconciliation_page.dart';
+import '../features/manager/presentation/pages/report_export_page.dart';
+import '../features/manager/presentation/pages/cash_flow_page.dart';
+import '../features/manager/presentation/pages/feedback_complaints_page.dart';
+
+// Notifications
+import '../features/notifications/presentation/pages/notifications_page.dart';
 
 class AppRouter {
   final AppConfig config;
@@ -51,112 +68,127 @@ class AppRouter {
     switch (settings.name) {
       case AppRoutes.root:
         return _routeForInitial();
-      case AppRoutes.splash:
-        return MaterialPageRoute(builder: (_) => const SplashScreen());
-      case AppRoutes.welcome:
-        return MaterialPageRoute(builder: (_) => const WelcomePage());
-      case AppRoutes.loginCustomer:
-        return MaterialPageRoute(
-          builder: (_) => RoleLoginPage(config: RoleLoginConfig.customer()),
-        );
-      case AppRoutes.loginCourier:
-        return MaterialPageRoute(
-          builder: (_) => RoleLoginPage(config: RoleLoginConfig.courier()),
-        );
-      case AppRoutes.loginOrg:
-        return MaterialPageRoute(
-          builder: (_) => RoleLoginPage(config: RoleLoginConfig.org()),
-        );
+        
+      // Auth
+      case AppRoutes.login:
+        return MaterialPageRoute(builder: (_) => const LoginPage(), settings: settings);
       case AppRoutes.register:
-        final registerType =
-            settings.arguments is RegisterType
-                ? settings.arguments as RegisterType
-                : RegisterType.customer;
-        return MaterialPageRoute(
-          builder: (_) => RegisterPage(type: registerType),
-        );
+        return MaterialPageRoute(builder: (_) => const RegisterPage(), settings: settings);
       case AppRoutes.forgotPassword:
-        return MaterialPageRoute(builder: (_) => const ForgotPasswordPage());
+        return MaterialPageRoute(builder: (_) => const ForgotPasswordPage(), settings: settings);
+
+      // Profile
       case AppRoutes.profile:
-        return MaterialPageRoute(builder: (_) => const ProfilePage());
+        return MaterialPageRoute(builder: (_) => const ProfilePage(), settings: settings);
       case AppRoutes.profilePersonalInfo:
-        return MaterialPageRoute(builder: (_) => const PersonalInfoPage());
+        return MaterialPageRoute(builder: (_) => const PersonalInfoPage(), settings: settings);
       case AppRoutes.profileSecurity:
-        return MaterialPageRoute(builder: (_) => const SecurityPage());
+        return MaterialPageRoute(builder: (_) => const SecurityPage(), settings: settings);
       case AppRoutes.profileAddresses:
-        return MaterialPageRoute(builder: (_) => const AddressBookPage());
+        return MaterialPageRoute(builder: (_) => const AddressBookPage(), settings: settings);
       case AppRoutes.profileNotifications:
-        return MaterialPageRoute(
-          builder: (_) => const NotificationSettingsPage(),
-        );
+        return MaterialPageRoute(builder: (_) => const NotificationSettingsPage(), settings: settings);
       case AppRoutes.profileHelp:
-        return MaterialPageRoute(builder: (_) => const HelpCenterPage());
+        return MaterialPageRoute(builder: (_) => const HelpCenterPage(), settings: settings);
 
+      // Customer
       case AppRoutes.customerHome:
-        return MaterialPageRoute(builder: (_) => const CustomerHomePage());
+        return MaterialPageRoute(builder: (_) => const CustomerHomePage(), settings: settings);
       case AppRoutes.customerMenu:
-        return MaterialPageRoute(builder: (_) => const MenuPage());
+        return MaterialPageRoute(builder: (_) => const MenuPage(), settings: settings);
       case AppRoutes.customerMealDetail:
-        final meal = settings.arguments;
-        return MaterialPageRoute(
-          builder:
-              (_) => MealDetailPage(
-                meal: meal is MealData ? meal : suggestedMeals.first,
-              ),
-        );
-      case AppRoutes.customerOrder:
-        return MaterialPageRoute(builder: (_) => const OrderPage());
-      case AppRoutes.customerOrderDetail:
-        return MaterialPageRoute(
-          builder: (_) => OrderDetailPage(data: settings.arguments),
-        );
-      case AppRoutes.customerPayment:
-        return MaterialPageRoute(builder: (_) => const PaymentPage());
-      case AppRoutes.customerRating:
-        return MaterialPageRoute(builder: (_) => const RatingPage());
-      case AppRoutes.customerHistory:
-        return MaterialPageRoute(builder: (_) => const OrderHistoryPage());
-      case AppRoutes.customerPromos:
-        return MaterialPageRoute(builder: (_) => const PromoCodesPage());
+        return MaterialPageRoute(builder: (_) => const MealDetailPage(), settings: settings);
 
-      case AppRoutes.courierHome:
-        return MaterialPageRoute(builder: (_) => const CourierHomePage());
-      case AppRoutes.courierDeliveryList:
-        return MaterialPageRoute(builder: (_) => const DeliveryListPage());
-      case AppRoutes.courierDeliveryDetail:
-        return MaterialPageRoute(builder: (_) => const DeliveryDetailPage());
-      case AppRoutes.courierRouteMap:
-        return MaterialPageRoute(builder: (_) => const RouteMapPage());
-      case AppRoutes.courierProof:
-        return MaterialPageRoute(builder: (_) => const ProofOfDeliveryPage());
-      case AppRoutes.courierProfile:
-        return MaterialPageRoute(builder: (_) => const CourierProfilePage());
-      case AppRoutes.courierNotifications:
+      // Shipper
+      case AppRoutes.shipperHome:
+        return MaterialPageRoute(builder: (_) => const ShipperHomePage(), settings: settings);
+      case AppRoutes.shipperDeliveryList:
+        return MaterialPageRoute(builder: (_) => const DeliveryListPage(), settings: settings);
+      case AppRoutes.shipperDeliveryDetail: {
+        final id = settings.arguments is int ? settings.arguments as int : 0;
         return MaterialPageRoute(
-          builder: (_) => const CourierNotificationsPage(),
+          builder: (_) => DeliveryDetailPage(deliveryId: id),
+          settings: settings,
         );
+      }
+      case AppRoutes.shipperRouteMap:
+        return MaterialPageRoute(builder: (_) => const RouteMapPage(), settings: settings);
+      case AppRoutes.shipperProof: {
+        final id = settings.arguments is int ? settings.arguments as int : 0;
+        return MaterialPageRoute(
+          builder: (_) => ProofOfDeliveryPage(deliveryId: id),
+          settings: settings,
+        );
+      }
+      case AppRoutes.shipperWeeklyMenu:
+        return MaterialPageRoute(
+          builder: (_) => const ShipperWeeklyMenuPage(),
+          settings: settings,
+        );
+      case AppRoutes.shipperProfile:
+        return MaterialPageRoute(builder: (_) => const ShipperProfilePage(), settings: settings);
+      case AppRoutes.shipperNotifications:
+        return MaterialPageRoute(builder: (_) => const ShipperNotificationsPage(), settings: settings);
+      case AppRoutes.shipperSchedule:
+        return MaterialPageRoute(builder: (_) => const DeliverySchedulePage(), settings: settings);
+      case AppRoutes.shipperHistory:
+        return MaterialPageRoute(builder: (_) => const DeliveryHistoryPage(), settings: settings);
 
+      // Organization
       case AppRoutes.orgHome:
-        return MaterialPageRoute(builder: (_) => const OrgHomePage());
+        return MaterialPageRoute(builder: (_) => const OrganizationHomePage(), settings: settings);
       case AppRoutes.orgStaff:
-        return MaterialPageRoute(builder: (_) => const StaffPage());
+        return MaterialPageRoute(builder: (_) => const StaffPage(), settings: settings);
       case AppRoutes.orgBulkOrder:
-        return MaterialPageRoute(builder: (_) => const BulkOrderPage());
+        return MaterialPageRoute(builder: (_) => const BulkOrderPage(), settings: settings);
+      case AppRoutes.orgMealOrderReview:
+        final draft = settings.arguments;
+        if (draft is! PrepareMealDraftModel) {
+          return MaterialPageRoute(
+            builder: (_) => const Scaffold(
+              body: Center(child: Text('Thiếu dữ liệu nháp hợp đồng.')),
+            ),
+            settings: settings,
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => OrgMealOrderReviewPage(draft: draft),
+          settings: settings,
+        );
       case AppRoutes.orgStatistics:
-        return MaterialPageRoute(builder: (_) => const StatisticsPage());
+        return MaterialPageRoute(builder: (_) => const OrgStatisticsPage(), settings: settings);
       case AppRoutes.orgReports:
-        return MaterialPageRoute(builder: (_) => const ReportsPage());
+        return MaterialPageRoute(builder: (_) => const OrgReportsPage(), settings: settings);
       case AppRoutes.orgReconciliation:
-        return MaterialPageRoute(builder: (_) => const ReconciliationPage());
+        return MaterialPageRoute(builder: (_) => const OrgReconciliationPage(), settings: settings);
       case AppRoutes.orgProfile:
-        return MaterialPageRoute(builder: (_) => const OrgProfilePage());
+        return MaterialPageRoute(builder: (_) => const OrganizationProfilePage(), settings: settings);
       case AppRoutes.orgNotifications:
-        return MaterialPageRoute(builder: (_) => const OrgNotificationsPage());
+        return MaterialPageRoute(builder: (_) => const OrgNotificationsPage(), settings: settings);
+      case AppRoutes.orgContractSettlement:
+        return MaterialPageRoute(builder: (_) => const ContractSettlementPage(), settings: settings);
 
+      // Shared
       case AppRoutes.chatbot:
-        return MaterialPageRoute(builder: (_) => const ChatbotPage());
+        return MaterialPageRoute(builder: (_) => const ChatbotPage(), settings: settings);
       case AppRoutes.notifications:
-        return MaterialPageRoute(builder: (_) => const NotificationsPage());
+        return MaterialPageRoute(builder: (_) => const NotificationsPage(), settings: settings);
+
+      // Manager
+      case AppRoutes.managerHome:
+        return MaterialPageRoute(builder: (_) => const ManagerHomePage(), settings: settings);
+      case AppRoutes.managerStatistics:
+        return MaterialPageRoute(builder: (_) => const ManagerStatisticsPage(), settings: settings);
+      case AppRoutes.managerReports:
+        return MaterialPageRoute(builder: (_) => const ManagerReportsPage(), settings: settings);
+      case AppRoutes.managerReconciliation:
+        return MaterialPageRoute(builder: (_) => const ManagerReconciliationPage(), settings: settings);
+      case AppRoutes.managerReportExport:
+        return MaterialPageRoute(builder: (_) => const ReportExportPage(), settings: settings);
+      case AppRoutes.managerCashFlow:
+        return MaterialPageRoute(builder: (_) => const CashFlowPage(), settings: settings);
+      case AppRoutes.managerFeedbackComplaints:
+        return MaterialPageRoute(builder: (_) => const FeedbackComplaintsPage(), settings: settings);
     }
 
     return MaterialPageRoute(

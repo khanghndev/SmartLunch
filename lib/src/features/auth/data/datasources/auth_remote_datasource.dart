@@ -64,6 +64,23 @@ class AuthRemoteDataSource {
     return RegisterData.fromJson(_extractData(response));
   }
 
+  Future<void> resetPassword({
+    required String email,
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    await _client.put(
+      '/api/v1/auth/reset-password',
+      body: {
+        'email': email,
+        'currentPassword': currentPassword,
+        'newPassword': newPassword,
+        'confirmPassword': confirmPassword,
+      },
+    );
+  }
+
   Map<String, dynamic> _extractData(Map<String, dynamic> response) {
     final data = response['data'];
     if (data is Map<String, dynamic>) {

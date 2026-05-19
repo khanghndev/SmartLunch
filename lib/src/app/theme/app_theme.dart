@@ -3,95 +3,77 @@ import 'package:google_fonts/google_fonts.dart';
 
 import '../app_config.dart';
 import '../../core/constants/app_colors.dart';
+import '../../core/theme/app_design_system.dart';
 
 class AppTheme {
   static ThemeData light([AppFlavor flavor = AppFlavor.all]) {
-    final accent = _accentFor(flavor);
-    final accentAlt = _accentAltFor(flavor);
+    final role = _roleFor(flavor);
+    final accent = role.primary;
 
     final scheme = ColorScheme.fromSeed(
       seedColor: accent,
       brightness: Brightness.light,
-      surface: AppColors.surface,
+      surface: AppDesignSystem.gray50,
     ).copyWith(
       primary: accent,
-      secondary: accentAlt,
-      tertiary: AppColors.info,
-      surface: AppColors.surface,
-      outline: AppColors.border,
+      tertiary: AppDesignSystem.info,
+      surface: AppDesignSystem.gray50,
+      outline: AppDesignSystem.gray200,
       shadow: AppColors.shadow,
-      error: AppColors.danger,
+      error: AppDesignSystem.danger,
     );
 
-    final textTheme = GoogleFonts.plusJakartaSansTextTheme().apply(
-      bodyColor: AppColors.ink,
-      displayColor: AppColors.ink,
+    final textTheme = GoogleFonts.outfitTextTheme().apply(
+      bodyColor: AppDesignSystem.gray900,
+      displayColor: AppDesignSystem.gray900,
     );
 
     return ThemeData(
       colorScheme: scheme,
       useMaterial3: true,
-      scaffoldBackgroundColor: AppColors.surface,
-      canvasColor: AppColors.surface,
+      scaffoldBackgroundColor: AppDesignSystem.gray50,
+      canvasColor: AppDesignSystem.gray50,
       textTheme: textTheme,
       appBarTheme: AppBarTheme(
         backgroundColor: Colors.white,
-        foregroundColor: AppColors.ink,
+        foregroundColor: AppDesignSystem.gray900,
         elevation: 0,
         scrolledUnderElevation: 0,
         surfaceTintColor: Colors.transparent,
         centerTitle: true,
-        titleTextStyle: textTheme.titleMedium?.copyWith(
-          fontWeight: FontWeight.w800,
-          color: AppColors.ink,
-          fontSize: 18,
-        ),
+        titleTextStyle: AppDesignSystem.sectionTitle(),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
-        hintStyle: textTheme.bodyMedium?.copyWith(
-          color: AppColors.inkSoft.withOpacity(0.7),
-        ),
-        labelStyle: textTheme.bodyMedium?.copyWith(
-          color: AppColors.inkSoft,
-          fontWeight: FontWeight.w600,
-        ),
+        fillColor: AppDesignSystem.inputFill,
+        hintStyle: AppDesignSystem.body(color: AppDesignSystem.gray400),
+        labelStyle: AppDesignSystem.label(),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppDesignSystem.radiusMd),
+          borderSide: const BorderSide(color: AppDesignSystem.gray200, width: 1.5),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppDesignSystem.radiusMd),
+          borderSide: const BorderSide(color: AppDesignSystem.gray200, width: 1.5),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: BorderSide(color: scheme.primary, width: 1.6),
+          borderRadius: BorderRadius.circular(AppDesignSystem.radiusMd),
+          borderSide: BorderSide(color: role.focus, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.danger, width: 1.2),
+          borderRadius: BorderRadius.circular(AppDesignSystem.radiusMd),
+          borderSide: const BorderSide(color: AppDesignSystem.danger, width: 1.2),
         ),
-        focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(14),
-          borderSide: const BorderSide(color: AppColors.danger, width: 1.6),
-        ),
-        contentPadding: const EdgeInsets.symmetric(
-          horizontal: 16,
-          vertical: 14,
-        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
       ),
       filledButtonTheme: FilledButtonThemeData(
         style: FilledButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 14, horizontal: 18),
-          textStyle: textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: AppDesignSystem.label().copyWith(color: Colors.white),
           backgroundColor: accent,
           foregroundColor: Colors.white,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppDesignSystem.radiusMd),
           ),
         ),
       ),
@@ -101,86 +83,66 @@ class AppTheme {
           backgroundColor: accent,
           foregroundColor: Colors.white,
           elevation: 0,
-          textStyle: textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w700,
-          ),
+          textStyle: AppDesignSystem.label().copyWith(color: Colors.white),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppDesignSystem.radiusMd),
           ),
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 14),
-          foregroundColor: AppColors.ink,
-          side: const BorderSide(color: AppColors.border),
-          textStyle: textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
-          ),
+          foregroundColor: AppDesignSystem.gray900,
+          side: const BorderSide(color: AppDesignSystem.gray200, width: 1.5),
+          textStyle: AppDesignSystem.body(color: AppDesignSystem.gray700),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppDesignSystem.radiusMd),
           ),
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: accent,
-          textStyle: textTheme.bodyMedium?.copyWith(
-            fontWeight: FontWeight.w600,
+          foregroundColor: role.link,
+          textStyle: AppDesignSystem.body(color: role.link).copyWith(
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),
-      floatingActionButtonTheme: FloatingActionButtonThemeData(
-        backgroundColor: accent,
-        foregroundColor: Colors.white,
-      ),
       chipTheme: ChipThemeData(
-        backgroundColor: AppColors.surfaceStrong,
-        selectedColor: AppColors.tint(accent, 0.16),
-        side: const BorderSide(color: AppColors.border),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        labelStyle: textTheme.labelLarge?.copyWith(
-          color: AppColors.ink,
-          fontWeight: FontWeight.w600,
+        backgroundColor: Colors.white,
+        selectedColor: role.primary.withValues(alpha: 0.15),
+        side: const BorderSide(color: AppDesignSystem.gray200),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppDesignSystem.radiusMd),
         ),
+        labelStyle: AppDesignSystem.body(color: AppDesignSystem.gray700),
       ),
-      dividerColor: AppColors.border.withOpacity(0.65),
+      dividerColor: AppDesignSystem.gray100,
       cardTheme: CardTheme(
-        color: AppColors.card,
+        color: Colors.white,
         elevation: 0,
         margin: EdgeInsets.zero,
         surfaceTintColor: Colors.transparent,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(18),
-          side: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppDesignSystem.radiusLg),
+          side: const BorderSide(color: AppDesignSystem.gray100),
         ),
       ),
     );
   }
 
-  static Color _accentFor(AppFlavor flavor) {
+  static RolePalette _roleFor(AppFlavor flavor) {
     switch (flavor) {
       case AppFlavor.customer:
-        return AppColors.customer;
-      case AppFlavor.courier:
-        return AppColors.courier;
-      case AppFlavor.org:
-        return AppColors.org;
-      case AppFlavor.all:
-        return AppColors.customer;
-    }
-  }
-
-  static Color _accentAltFor(AppFlavor flavor) {
-    switch (flavor) {
-      case AppFlavor.customer:
-        return AppColors.customerAlt;
-      case AppFlavor.courier:
-        return AppColors.courierAlt;
-      case AppFlavor.org:
-        return AppColors.orgAlt;
-      case AppFlavor.all:
-        return AppColors.customerAlt;
+        return RolePalette.customer;
+      case AppFlavor.shipper:
+        return RolePalette.shipper;
+      case AppFlavor.manager:
+        return RolePalette.manager;
+      case AppFlavor.organization:
+        return RolePalette.organization;
+      default:
+        return RolePalette.brand;
     }
   }
 }

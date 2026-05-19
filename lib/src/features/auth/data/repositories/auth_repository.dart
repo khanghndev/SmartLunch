@@ -1,37 +1,23 @@
 import '../../../../core/config/app_env.dart';
 import '../../../../core/network/api_client.dart';
-import '../../../../core/network/api_exception.dart';
-import '../../auth_types.dart';
+import '../../../profile/data/profile_repository.dart';
+import '../auth_types.dart';
 import '../auth_storage.dart';
 import '../datasources/auth_remote_datasource.dart';
 import '../models/auth_models.dart';
+import '../../../../core/utils/jwt_utils.dart';
 
 class AuthRepository {
   AuthRepository._({AuthRemoteDataSource? remote, AuthStorage? storage})
-      : _remote = remote ?? AuthRemoteDataSource(ApiClient(baseUrl: AppEnv.apiBaseUrl)),
-        _storage = storage ?? const AuthStorage();
+    : _remote =
+          remote ?? AuthRemoteDataSource(ApiClient(baseUrl: AppEnv.apiBaseUrl)),
+      _storage = storage ?? const AuthStorage();
 
   static final AuthRepository instance = AuthRepository._();
 
   final AuthRemoteDataSource _remote;
   final AuthStorage _storage;
 
-  static const String _mockEmail = 'khang@gmail.com';
-  static const String _mockPassword = '123456';
-  static const List<String> _mockUserRoles = [
-    'User',
-    'Student',
-    'Admin',
-    'SuperAdmin',
-    'Organization',
-    'Org',
-  ];
-  static const List<String> _mockCourierRoles = [
-    'Instructor',
-    'Courier',
-    'Shipper',
-    'Delivery',
-  ];
 
   Future<AuthSession> login({
     required String identifier,
@@ -39,13 +25,30 @@ class AuthRepository {
     AuthLoginMode mode = AuthLoginMode.user,
   }) async {
     final trimmedIdentifier = identifier.trim();
-    if (_isMockCredential(trimmedIdentifier, password)) {
-      final session = _buildMockSession(mode);
-      await _storage.saveSession(session);
-      return session;
-    }
 
-    throw ApiException('Email hoặc mật khẩu không đúng.');
+    try {
+      final loginData = await _remote.loginUser(
+        email: trimmedIdentifier,
+        password: password,
+      );
+
+      final roles = JwtUtils.extractRoles(loginData.accessToken);
+
+      final session = AuthSession(
+        userId: loginData.userId,
+        username: loginData.username,
+        email: loginData.email,
+        accessToken: loginData.accessToken,
+        refreshToken: loginData.refreshToken,
+        refreshTokenExpiresAt: loginData.refreshTokenExpiresAt,
+        roles: roles,
+      );
+
+      await _storage.saveSession(session);
+      return await _enrichSessionRolesFromProfile(session);
+    } catch (e) {
+      rethrow;
+    }
   }
 
   Future<LoginData> loginWithFirebase({required String idToken}) async {
@@ -64,35 +67,41 @@ class AuthRepository {
     );
   }
 
+  Future<void> resetPassword({
+    required String email,
+    required String currentPassword,
+    required String newPassword,
+    required String confirmPassword,
+  }) async {
+    return _remote.resetPassword(
+      email: email.trim(),
+      currentPassword: currentPassword,
+      newPassword: newPassword,
+      confirmPassword: confirmPassword,
+    );
+  }
+
   Future<AuthSession?> readSavedSession() => _storage.readSession();
 
   Future<void> clearSession() => _storage.clear();
 
-  bool _isMockCredential(String identifier, String password) {
-    return identifier.toLowerCase() == _mockEmail && password == _mockPassword;
-  }
 
-  AuthSession _buildMockSession(AuthLoginMode mode) {
-    final now = DateTime.now();
-    return AuthSession(
-      userId: 'mock-user',
-      username: 'Khang',
-      email: _mockEmail,
-      accessToken: 'mock-access-token',
-      refreshToken: 'mock-refresh-token',
-      refreshTokenExpiresAt: now.add(const Duration(days: 30)),
-      roles: _mockRolesForMode(mode),
-    );
-  }
 
-  List<String> _mockRolesForMode(AuthLoginMode mode) {
-    switch (mode) {
-      case AuthLoginMode.auto:
-        return _mockCourierRoles;
-      case AuthLoginMode.admin:
-      case AuthLoginMode.user:
-      default:
-        return _mockUserRoles;
+  /// Sau khi lưu token, gọi `GET /api/v1/Auth/profile` để lấy `roles` chuẩn từ BE (UserProfileResponse).
+  /// Nếu lỗi hoặc roles rỗng, giữ roles suy ra từ JWT.
+  Future<AuthSession> _enrichSessionRolesFromProfile(
+    AuthSession session,
+  ) async {
+    try {
+      final profile = await ProfileRepository.instance.getProfile();
+      if (profile.roles.isEmpty) {
+        return session;
+      }
+      final updated = session.copyWith(roles: profile.roles);
+      await _storage.saveSession(updated);
+      return updated;
+    } catch (_) {
+      return session;
     }
   }
 }
