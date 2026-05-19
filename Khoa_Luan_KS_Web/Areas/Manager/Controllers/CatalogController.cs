@@ -206,7 +206,7 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
 
             try
             {
-                var response = await _masterDataClient.GetDishesAsync(token, page, pageSize, searchTerm, category, ct);
+                var response = await _masterDataClient.GetDishesAsync(token, page, pageSize, searchTerm, category, ct: ct);
                 return View(response);
             }
             catch (Exception ex)

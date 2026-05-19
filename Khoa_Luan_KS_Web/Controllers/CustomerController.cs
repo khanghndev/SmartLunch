@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Khoa_Luan_KS_Web.Models;
+using Khoa_Luan_KS_Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -9,10 +10,14 @@ namespace Khoa_Luan_KS_Web.Controllers
     public class CustomerController : Controller
     {
         private readonly ILogger<CustomerController> _logger;
+        private readonly CustomerHomeFeaturedMenuService _featuredMenuService;
 
-        public CustomerController(ILogger<CustomerController> logger)
+        public CustomerController(
+            ILogger<CustomerController> logger,
+            CustomerHomeFeaturedMenuService featuredMenuService)
         {
             _logger = logger;
+            _featuredMenuService = featuredMenuService;
         }
 
         public override async Task OnActionExecutionAsync(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context, Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate next)
@@ -42,7 +47,12 @@ namespace Khoa_Luan_KS_Web.Controllers
             await next();
         }
 
-        public IActionResult Index() => View();
+        public async Task<IActionResult> Index(CancellationToken ct)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            var model = await _featuredMenuService.LoadFeaturedDishesAsync(token, ct);
+            return View(model);
+        }
         public IActionResult About() => View();
         public IActionResult Contact() => View();
         public IActionResult HuitMeal() => View();

@@ -184,11 +184,12 @@ public class BackendMasterDataClient
         return await PostAsync<PartnerDto>("/api/v1/master-data/Partner", payload, accessToken, ct);
     }
 
-    public async Task<GetDishesResponse> GetDishesAsync(string accessToken, int page = 1, int pageSize = 20, string? searchTerm = null, string? category = null, CancellationToken ct = default)
+    public async Task<GetDishesResponse> GetDishesAsync(string accessToken, int page = 1, int pageSize = 20, string? searchTerm = null, string? category = null, bool? isActive = null, CancellationToken ct = default)
     {
         var query = $"?Page={page}&PageSize={pageSize}";
         if (!string.IsNullOrEmpty(searchTerm)) query += $"&SearchTerm={Uri.EscapeDataString(searchTerm)}";
         if (!string.IsNullOrEmpty(category)) query += $"&Category={Uri.EscapeDataString(category)}";
+        if (isActive.HasValue) query += $"&IsActive={isActive.Value.ToString().ToLowerInvariant()}";
         return await GetAsync<GetDishesResponse>($"/api/v1/master-data/Dish{query}", accessToken, ct);
     }
 
@@ -670,10 +671,14 @@ public class DishDto
     public int Id { get; set; }
     public string? Code { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? NameEnglish { get; set; }
     public string? Description { get; set; }
 
     [JsonPropertyName("primarySlotKey")]
     public string? PrimarySlotKey { get; set; }
+
+    [JsonPropertyName("cookingMethod")]
+    public string? CookingMethod { get; set; }
 
     [JsonPropertyName("dishSlotCategoryCodes")]
     public List<string> DishSlotCategoryCodes { get; set; } = new();

@@ -119,13 +119,16 @@ namespace Khoa_Luan_KS_Web.Controllers
                         return NotFound();
 
                     Services.DishDetailResponse? dishDetail = null;
+                    string? dishLoadWarning = null;
                     try
                     {
                         dishDetail = await _masterDataClient.GetDishAsync(schedule.DishId, token, ct);
+                        if (dishDetail?.Dish == null || string.IsNullOrWhiteSpace(dishDetail.Dish.Name))
+                            dishLoadWarning = "Không tải đủ dữ liệu món từ hệ thống.";
                     }
-                    catch
+                    catch (Exception dishEx)
                     {
-                        // Tuỳ chọn: không có quyền / lỗi API vẫn hiển thị thông tin từ lịch tuần
+                        dishLoadWarning = $"Không tải chi tiết món: {dishEx.Message}";
                     }
 
                     var vm = new MenuMealDetailViewModel
@@ -133,6 +136,7 @@ namespace Khoa_Luan_KS_Web.Controllers
                         WeeklyMenu = detail.WeeklyMenu,
                         Schedule = schedule,
                         DishDetail = dishDetail,
+                        DishLoadWarning = dishLoadWarning,
                     };
                     return View("MealDetailFromMenu", vm);
                 }

@@ -103,6 +103,7 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendAuthClient>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendMasterDataClient>();
+builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.CustomerHomeFeaturedMenuService>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendMenuSuggestionClient>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendWarehouseClient>();
 

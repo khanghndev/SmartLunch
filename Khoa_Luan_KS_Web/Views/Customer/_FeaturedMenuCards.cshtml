@@ -1,0 +1,86 @@
+@model Khoa_Luan_KS_Web.Models.CustomerHomeIndexVm
+@{
+    var featured = Model?.FeaturedDishes ?? new List<Khoa_Luan_KS_Web.Models.CustomerFeaturedDishVm>();
+    var tagColors = new[] {
+        "bg-green-50 text-green-700 border-green-100",
+        "bg-orange-50 text-orange-700 border-orange-100",
+        "bg-blue-50 text-blue-700 border-blue-100",
+        "bg-purple-50 text-purple-700 border-purple-100"
+    };
+}
+
+@if (Model?.LoadError != null)
+{
+    <div class="mb-6 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-semibold text-amber-800">
+        <i class="fas fa-exclamation-circle mr-2"></i>Không tải được thực đơn: @Model.LoadError
+    </div>
+}
+
+@if (Model?.RequiresLogin == true)
+{
+    <div class="mb-8 rounded-2xl border border-orange-100 bg-white px-6 py-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <p class="text-sm text-slate-600 font-medium">Đăng nhập để xem món ăn từ thực đơn tuần thực tế trên hệ thống.</p>
+        <a href="/Auth/Login?returnUrl=/" class="inline-flex items-center justify-center gap-2 rounded-full bg-orange-500 px-6 py-2.5 text-sm font-bold text-white hover:bg-orange-600 transition-colors">
+            Đăng nhập ngay
+        </a>
+    </div>
+}
+
+<!-- Menu Cards Grid (API) -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    @if (!featured.Any() && Model?.RequiresLogin != true && string.IsNullOrEmpty(Model?.LoadError))
+    {
+        <div class="col-span-full rounded-2xl border border-slate-100 bg-white px-6 py-12 text-center text-slate-500 text-sm">
+            Chưa có món trong thực đơn tuần. <a href="/Menu" class="font-bold text-orange-600 hover:underline">Xem trang thực đơn</a>
+        </div>
+    }
+
+    @foreach (var dish in featured)
+    {
+        <a href="@dish.DetailUrl"
+           x-show="activeMenu === 'all' || activeMenu === '@dish.SegmentFilter'"
+           x-transition:enter="transition duration-300 ease-out"
+           x-transition:enter-start="opacity-0 scale-95"
+           x-transition:enter-end="opacity-100 scale-100"
+           class="group bg-white rounded-[24px] overflow-hidden border border-gray-100 hover:shadow-xl hover:border-orange-200 transition-all duration-400 block">
+            <div class="relative overflow-hidden h-52">
+                <img src="@dish.ImageUrl" alt="@dish.Name"
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                     loading="lazy" />
+                <div class="absolute top-3 left-3">
+                    <span class="@dish.BadgeClass text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">@dish.SegmentLabel</span>
+                </div>
+            </div>
+            <div class="p-5">
+                <h4 class="font-bold text-gray-900 text-base mb-1.5 line-clamp-2">@dish.Name</h4>
+                <p class="text-xs text-gray-500 mb-3 leading-relaxed line-clamp-2">@(dish.Description ?? "")</p>
+                <div class="flex flex-wrap gap-1.5">
+                    @for (var ti = 0; ti < dish.Tags.Count; ti++)
+                    {
+                        var tc = tagColors[ti % tagColors.Length];
+                        <span class="text-[10px] @tc border px-2 py-0.5 rounded-full font-semibold">@dish.Tags[ti]</span>
+                    }
+                </div>
+            </div>
+        </a>
+    }
+
+    <!-- CTA Card -->
+    <div x-show="activeMenu === 'all'"
+         x-transition:enter="transition duration-300 ease-out"
+         x-transition:enter-start="opacity-0 scale-95"
+         x-transition:enter-end="opacity-100 scale-100"
+         class="bg-gradient-to-br from-orange-500 to-orange-600 rounded-[24px] p-8 flex flex-col justify-between">
+        <div>
+            <div class="w-12 h-12 rounded-2xl bg-white/20 flex items-center justify-center mb-6">
+                <i data-lucide="utensils" class="w-6 h-6 text-white"></i>
+            </div>
+            <h4 class="text-xl font-black text-white mb-3 leading-tight">100+ Món trong thực đơn tuần</h4>
+            <p class="text-orange-100 text-sm leading-relaxed">Thực đơn xoay vòng đa dạng, lấy trực tiếp từ hệ thống HuitMeal.</p>
+        </div>
+        <a href="/Menu" class="mt-8 inline-flex items-center gap-2 bg-white text-orange-600 font-bold px-5 py-3 rounded-full text-sm hover:bg-orange-50 transition-all hover:gap-3">
+            Xem thực đơn đầy đủ
+            <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </a>
+    </div>
+</div>
