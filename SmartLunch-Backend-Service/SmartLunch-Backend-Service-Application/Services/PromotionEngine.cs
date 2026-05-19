@@ -26,28 +26,15 @@ public sealed class PromotionEngine : IPromotionEngine
             return NoDiscount(subtotal, "Subtotal must be greater than zero.");
         }
 
-        var placedAt = input.OrderPlacedAt ?? VietnamTime.Now;
-        var today = DateOnly.FromDateTime(placedAt);
-        var promotions = await _promotionRepository.GetActiveForEvaluationAsync(today, cancellationToken);
+        var eligible = await CollectEligibleAsync(input, subtotal, cancellationToken);
 
-        var eligible = new List<(Promotion Promo, decimal Discount)>();
-        foreach (var promo in promotions)
+        if (input.PromotionId is int promotionId)
         {
-            if (!IsChannelMatch(promo.Channel, input.Channel))
-                continue;
+            var byId = eligible.FirstOrDefault(e => e.Promo.Id == promotionId);
+            if (byId.Promo == null)
+                return NoDiscount(subtotal, "Promotion is not eligible for this order.");
 
-            if (!IsBookingWindowValid(promo, placedAt))
-                continue;
-
-            if (!await IsUsageLimitOkAsync(promo, input.UserId, cancellationToken))
-                continue;
-
-            if (!IsScopeEligible(promo, input))
-                continue;
-
-            var discount = ComputeDiscount(promo, input, subtotal);
-            if (discount > 0)
-                eligible.Add((promo, discount));
+            return ToResult(subtotal, byId.Promo, byId.Discount);
         }
 
         if (!string.IsNullOrWhiteSpace(input.PromotionCode))
@@ -84,6 +71,96 @@ public sealed class PromotionEngine : IPromotionEngine
         }
 
         return ToResult(subtotal, chosen.Promo, chosen.Discount);
+    }
+
+    public async Task<ListEligiblePromotionsResult> ListEligibleAsync(
+        OrderPromotionEvaluateInput input,
+        CancellationToken cancellationToken = default)
+    {
+        var subtotal = decimal.Round(input.Subtotal, 2, MidpointRounding.AwayFromZero);
+        if (subtotal <= 0)
+        {
+            return new ListEligiblePromotionsResult
+            {
+                Subtotal = subtotal,
+                Message = "Subtotal must be greater than zero.",
+            };
+        }
+
+        var eligible = await CollectEligibleAsync(input, subtotal, cancellationToken);
+        if (eligible.Count == 0)
+        {
+            return new ListEligiblePromotionsResult
+            {
+                Subtotal = subtotal,
+                Message = "Không có mã khuyến mãi phù hợp cho đơn này.",
+            };
+        }
+
+        var ordered = eligible
+            .OrderByDescending(e => e.Discount)
+            .ThenByDescending(e => e.Promo.Priority)
+            .ToList();
+
+        var recommendedId = ordered[0].Promo.Id;
+        var items = ordered.Select(e =>
+        {
+            var totalAfter = decimal.Round(subtotal - e.Discount, 2, MidpointRounding.AwayFromZero);
+            if (totalAfter < 0)
+                totalAfter = 0;
+
+            return new OrderPromotionEligibleItem
+            {
+                PromotionId = e.Promo.Id,
+                PromotionCode = e.Promo.Code,
+                PromotionName = e.Promo.Name,
+                Description = e.Promo.Description,
+                DiscountType = e.Promo.DiscountType,
+                DiscountValue = e.Promo.DiscountValue,
+                DiscountAmount = e.Discount,
+                TotalAfter = totalAfter,
+                IsRecommended = e.Promo.Id == recommendedId,
+            };
+        }).ToList();
+
+        return new ListEligiblePromotionsResult
+        {
+            Subtotal = subtotal,
+            Items = items,
+            RecommendedPromotionId = recommendedId,
+        };
+    }
+
+    private async Task<List<(Promotion Promo, decimal Discount)>> CollectEligibleAsync(
+        OrderPromotionEvaluateInput input,
+        decimal subtotal,
+        CancellationToken cancellationToken)
+    {
+        var placedAt = input.OrderPlacedAt ?? VietnamTime.Now;
+        var today = DateOnly.FromDateTime(placedAt);
+        var promotions = await _promotionRepository.GetActiveForEvaluationAsync(today, cancellationToken);
+
+        var eligible = new List<(Promotion Promo, decimal Discount)>();
+        foreach (var promo in promotions)
+        {
+            if (!IsChannelMatch(promo.Channel, input.Channel))
+                continue;
+
+            if (!IsBookingWindowValid(promo, placedAt))
+                continue;
+
+            if (!await IsUsageLimitOkAsync(promo, input.UserId, cancellationToken))
+                continue;
+
+            if (!IsScopeEligible(promo, input))
+                continue;
+
+            var discount = ComputeDiscount(promo, input, subtotal);
+            if (discount > 0)
+                eligible.Add((promo, discount));
+        }
+
+        return eligible;
     }
 
     public OrderPromotionApplication BuildApplication(

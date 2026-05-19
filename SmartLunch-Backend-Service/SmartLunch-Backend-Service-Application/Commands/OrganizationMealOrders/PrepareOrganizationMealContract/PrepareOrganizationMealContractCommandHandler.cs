@@ -164,6 +164,7 @@ public sealed class PrepareOrganizationMealContractCommandHandler
             ContractId = activeContract?.Id,
             ContractType = activeContract?.ContractType,
             PromotionCode = req.PromotionCode,
+            PromotionId = req.PromotionId,
             Subtotal = total,
             TotalQuantity = totalMainQty,
             Lines = promoLines,

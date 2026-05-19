@@ -46,6 +46,7 @@ public class PreviewPromotionRequest
     public int? ContractId { get; set; }
     public string? ContractType { get; set; }
     public string? PromotionCode { get; set; }
+    public int? PromotionId { get; set; }
     public decimal Subtotal { get; set; }
     public int TotalQuantity { get; set; }
     public List<PreviewPromotionLineRequest> Lines { get; set; } = new();

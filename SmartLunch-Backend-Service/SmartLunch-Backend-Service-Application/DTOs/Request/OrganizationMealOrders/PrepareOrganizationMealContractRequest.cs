@@ -15,6 +15,9 @@ public sealed class PrepareOrganizationMealContractRequest
 
     /// <summary>Mã khuyến mãi (tùy chọn).</summary>
     public string? PromotionCode { get; set; }
+
+    /// <summary>Id khuyến mãi chọn từ danh sách (ưu tiên hơn mã).</summary>
+    public int? PromotionId { get; set; }
 }
 
 public sealed class OrganizationMealDayRequest

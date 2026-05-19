@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartLunch.Backend.Service.Application.Commands.MasterData.Promotions.CreatePromotion;
 using SmartLunch.Backend.Service.Application.Commands.MasterData.Promotions.DeletePromotion;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Promotions.ListEligiblePromotions;
 using SmartLunch.Backend.Service.Application.Commands.MasterData.Promotions.PreviewPromotion;
 using SmartLunch.Backend.Service.Application.Commands.MasterData.Promotions.UpdatePromotion;
 using SmartLunch.Backend.Service.Application.DTOs;
@@ -52,7 +53,55 @@ public class PromotionController : ControllerBase
         }
     }
 
-    [HttpGet("{id}")]
+    /// <summary>Danh sách mã KM đủ điều kiện (sắp theo giảm tốt nhất).</summary>
+    [HttpPost("eligible")]
+    [Authorize]
+    public async Task<ActionResult<BaseApiResponse<ListEligiblePromotionsResponse>>> ListEligiblePromotions(
+        [FromBody] PreviewPromotionRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var response = await _mediator.Send(new ListEligiblePromotionsCommand(request, userId));
+            return Ok(BaseApiResponse<ListEligiblePromotionsResponse>.SuccessResult(response, "Eligible promotions retrieved"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<ListEligiblePromotionsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error listing eligible promotions");
+            return StatusCode((int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<ListEligiblePromotionsResponse>.ErrorResult(
+                    "An error occurred while listing eligible promotions", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Xem trước KM áp dụng (Manager + khách đặt hàng).</summary>
+    [HttpPost("preview")]
+    [Authorize]
+    public async Task<ActionResult<BaseApiResponse<PreviewPromotionResponse>>> PreviewPromotion([FromBody] PreviewPromotionRequest request)
+    {
+        try
+        {
+            var userId = GetUserId();
+            var response = await _mediator.Send(new PreviewPromotionCommand(request, userId));
+            return Ok(BaseApiResponse<PreviewPromotionResponse>.SuccessResult(response, "Promotion preview completed"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<PreviewPromotionResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error previewing promotion");
+            return StatusCode((int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<PreviewPromotionResponse>.ErrorResult("An error occurred while previewing promotion", new[] { ex.Message }));
+        }
+    }
+
+    [HttpGet("{id:int}")]
     [Authorize(Policy = "roles:Admin,Manager")]
     [Authorize(Policy = "permission:promotions.read")]
     public async Task<ActionResult<BaseApiResponse<GetPromotionResponse>>> GetPromotion(int id)
@@ -96,7 +145,7 @@ public class PromotionController : ControllerBase
         }
     }
 
-    [HttpPut("{id}")]
+    [HttpPut("{id:int}")]
     [Authorize(Policy = "roles:Admin,Manager")]
     [Authorize(Policy = "permission:promotions.update")]
     public async Task<ActionResult<BaseApiResponse<GetPromotionResponse>>> UpdatePromotion(int id, [FromBody] UpsertPromotionRequest request)
@@ -122,7 +171,7 @@ public class PromotionController : ControllerBase
         }
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:int}")]
     [Authorize(Policy = "roles:Admin,Manager")]
     [Authorize(Policy = "permission:promotions.delete")]
     public async Task<ActionResult<BaseApiResponse<object>>> DeletePromotion(int id)
@@ -141,29 +190,6 @@ public class PromotionController : ControllerBase
             _logger.LogError(ex, "Error deleting promotion {Id}", id);
             return StatusCode((int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<object>.ErrorResult("An error occurred while deleting promotion", new[] { ex.Message }));
-        }
-    }
-
-    /// <summary>Xem trước KM áp dụng (Manager + khách đặt hàng).</summary>
-    [HttpPost("preview")]
-    [Authorize]
-    public async Task<ActionResult<BaseApiResponse<PreviewPromotionResponse>>> PreviewPromotion([FromBody] PreviewPromotionRequest request)
-    {
-        try
-        {
-            var userId = GetUserId();
-            var response = await _mediator.Send(new PreviewPromotionCommand(request, userId));
-            return Ok(BaseApiResponse<PreviewPromotionResponse>.SuccessResult(response, "Promotion preview completed"));
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(BaseApiResponse<PreviewPromotionResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "Error previewing promotion");
-            return StatusCode((int)HttpStatusCode.InternalServerError,
-                BaseApiResponse<PreviewPromotionResponse>.ErrorResult("An error occurred while previewing promotion", new[] { ex.Message }));
         }
     }
 

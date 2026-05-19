@@ -9,6 +9,10 @@ public interface IPromotionEngine
         OrderPromotionEvaluateInput input,
         CancellationToken cancellationToken = default);
 
+    Task<ListEligiblePromotionsResult> ListEligibleAsync(
+        OrderPromotionEvaluateInput input,
+        CancellationToken cancellationToken = default);
+
     OrderPromotionApplication BuildApplication(
         Order order,
         Promotion promotion,

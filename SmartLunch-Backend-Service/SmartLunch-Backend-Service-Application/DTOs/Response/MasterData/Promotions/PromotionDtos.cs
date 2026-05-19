@@ -46,6 +46,46 @@ public class GetPromotionsResponse : PaginationResponse<PromotionDto>
 {
 }
 
+public class EligiblePromotionItemDto
+{
+    public int PromotionId { get; set; }
+    public string? PromotionCode { get; set; }
+    public string PromotionName { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string DiscountType { get; set; } = string.Empty;
+    public decimal DiscountValue { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public decimal TotalAfter { get; set; }
+    public bool IsRecommended { get; set; }
+}
+
+public class ListEligiblePromotionsResponse
+{
+    public decimal Subtotal { get; set; }
+    public List<EligiblePromotionItemDto> Items { get; set; } = new();
+    public int? RecommendedPromotionId { get; set; }
+    public string? Message { get; set; }
+
+    public static ListEligiblePromotionsResponse From(ListEligiblePromotionsResult r) => new()
+    {
+        Subtotal = r.Subtotal,
+        RecommendedPromotionId = r.RecommendedPromotionId,
+        Message = r.Message,
+        Items = r.Items.Select(i => new EligiblePromotionItemDto
+        {
+            PromotionId = i.PromotionId,
+            PromotionCode = i.PromotionCode,
+            PromotionName = i.PromotionName,
+            Description = i.Description,
+            DiscountType = i.DiscountType,
+            DiscountValue = i.DiscountValue,
+            DiscountAmount = i.DiscountAmount,
+            TotalAfter = i.TotalAfter,
+            IsRecommended = i.IsRecommended,
+        }).ToList(),
+    };
+}
+
 public class PreviewPromotionResponse
 {
     public decimal Subtotal { get; set; }

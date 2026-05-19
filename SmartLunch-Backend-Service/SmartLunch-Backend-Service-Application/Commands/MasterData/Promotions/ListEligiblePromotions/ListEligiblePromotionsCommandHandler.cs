@@ -4,15 +4,18 @@ using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Promotions
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.Promotions;
 
-namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Promotions.PreviewPromotion;
+namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Promotions.ListEligiblePromotions;
 
-public class PreviewPromotionCommandHandler : IRequestHandler<PreviewPromotionCommand, PreviewPromotionResponse>
+public sealed class ListEligiblePromotionsCommandHandler
+    : IRequestHandler<ListEligiblePromotionsCommand, ListEligiblePromotionsResponse>
 {
     private readonly IPromotionEngine _engine;
 
-    public PreviewPromotionCommandHandler(IPromotionEngine engine) => _engine = engine;
+    public ListEligiblePromotionsCommandHandler(IPromotionEngine engine) => _engine = engine;
 
-    public async Task<PreviewPromotionResponse> Handle(PreviewPromotionCommand command, CancellationToken cancellationToken)
+    public async Task<ListEligiblePromotionsResponse> Handle(
+        ListEligiblePromotionsCommand command,
+        CancellationToken cancellationToken)
     {
         var req = command.Request;
         if (req.Subtotal <= 0)
@@ -29,8 +32,6 @@ public class PreviewPromotionCommandHandler : IRequestHandler<PreviewPromotionCo
             OrganizationId = req.OrganizationId,
             ContractId = req.ContractId,
             ContractType = req.ContractType,
-            PromotionCode = req.PromotionCode,
-            PromotionId = req.PromotionId,
             Subtotal = req.Subtotal,
             TotalQuantity = req.TotalQuantity,
             Lines = req.Lines.Select(l => new OrderPromotionLineInput
@@ -41,7 +42,7 @@ public class PreviewPromotionCommandHandler : IRequestHandler<PreviewPromotionCo
             }).ToList(),
         };
 
-        var result = await _engine.EvaluateAsync(input, cancellationToken);
-        return PreviewPromotionResponse.From(result);
+        var result = await _engine.ListEligibleAsync(input, cancellationToken);
+        return ListEligiblePromotionsResponse.From(result);
     }
 }

@@ -3,11 +3,15 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Promotions.ListEligiblePromotions;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Promotions.PreviewPromotion;
 using SmartLunch.Backend.Service.Application.Commands.OrganizationMealOrders.CheckoutOrganizationMeal;
 using SmartLunch.Backend.Service.Application.Commands.OrganizationMealOrders.InitiateOrganizationMealPayment;
 using SmartLunch.Backend.Service.Application.Commands.OrganizationMealOrders.PrepareOrganizationMealContract;
 using SmartLunch.Backend.Service.Application.DTOs;
+using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Promotions;
 using SmartLunch.Backend.Service.Application.DTOs.Request.OrganizationMealOrders;
+using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Promotions;
 using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetOrganizationDishCategories;
 using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetOrganizationDishesByCategory;
@@ -79,6 +83,70 @@ public class OrganizationMealOrderController : ControllerBase
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetOrganizationDishesByCategoryResponse>.ErrorResult(
                     "An error occurred while retrieving dishes",
+                    new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Danh sách mã khuyến mãi đủ điều kiện cho đơn đặt suất (kênh b2b_org).</summary>
+    [HttpPost("promotions/eligible")]
+    public async Task<ActionResult<BaseApiResponse<ListEligiblePromotionsResponse>>> ListEligiblePromotions(
+        [FromBody] PreviewPromotionRequest request)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var response = await _mediator.Send(new ListEligiblePromotionsCommand(request, userId));
+            return Ok(BaseApiResponse<ListEligiblePromotionsResponse>.SuccessResult(
+                response,
+                "Eligible promotions retrieved"));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode((int)HttpStatusCode.Forbidden, BaseApiResponse<ListEligiblePromotionsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<ListEligiblePromotionsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Org meal order: list eligible promotions");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<ListEligiblePromotionsResponse>.ErrorResult(
+                    "An error occurred while listing eligible promotions",
+                    new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Xem trước áp dụng mã khuyến mãi cho đơn đặt suất.</summary>
+    [HttpPost("promotions/preview")]
+    public async Task<ActionResult<BaseApiResponse<PreviewPromotionResponse>>> PreviewPromotion(
+        [FromBody] PreviewPromotionRequest request)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var response = await _mediator.Send(new PreviewPromotionCommand(request, userId));
+            return Ok(BaseApiResponse<PreviewPromotionResponse>.SuccessResult(
+                response,
+                "Promotion preview completed"));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return StatusCode((int)HttpStatusCode.Forbidden, BaseApiResponse<PreviewPromotionResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<PreviewPromotionResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Org meal order: preview promotion");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<PreviewPromotionResponse>.ErrorResult(
+                    "An error occurred while previewing promotion",
                     new[] { ex.Message }));
         }
     }
