@@ -65,9 +65,9 @@ public class BackendMasterDataClient
             if (!existing.IsActive)
             {
                 // Update existing record to be active
-                var updateRequest = new { Id = existing.Id, IsActive = true };
+                var updateRequest = new { id = existing.Id, isActive = true };
                 var client = CreateClient(accessToken);
-                var json = System.Text.Json.JsonSerializer.Serialize(updateRequest);
+                var json = JsonSerializer.Serialize(updateRequest, JsonPostOptions);
                 using var content = new System.Net.Http.StringContent(json, System.Text.Encoding.UTF8, "application/json");
                 using var res = await client.PutAsync($"/api/v1/master-data/RolePermission/{existing.Id}", content, ct);
                 if (!res.IsSuccessStatusCode)
@@ -372,7 +372,13 @@ public class BackendMasterDataClient
     }
 
     public async Task<PreviewPromotionClientResponse> PreviewPromotionAsync(PreviewPromotionClientRequest request, string accessToken, CancellationToken ct = default)
-        => await PostAsync<PreviewPromotionClientResponse>("/api/v1/master-data/Promotion/preview", request, accessToken, ct);
+        => await PostAsync<PreviewPromotionClientResponse>("/api/v1/organization/meal-order/promotions/preview", request, accessToken, ct);
+
+    public async Task<ListEligiblePromotionsClientResponse> ListEligiblePromotionsAsync(
+        PreviewPromotionClientRequest request,
+        string accessToken,
+        CancellationToken ct = default)
+        => await PostAsync<ListEligiblePromotionsClientResponse>("/api/v1/organization/meal-order/promotions/eligible", request, accessToken, ct);
 
     // --- Organization meal order (B2B đặt suất theo đơn vị) ---
     public async Task<GetOrganizationDishCategoriesClientResponse> GetOrganizationDishCategoriesAsync(string accessToken, CancellationToken ct = default)
@@ -425,10 +431,16 @@ public class BackendMasterDataClient
         return await HandleResponse<T>(res, ct);
     }
 
+    private static readonly JsonSerializerOptions JsonPostOptions = new()
+    {
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+    };
+
     private async Task<T> PostAsync<T>(string path, object payload, string accessToken, CancellationToken ct)
     {
         var client = CreateClient(accessToken);
-        var json = JsonSerializer.Serialize(payload);
+        var json = JsonSerializer.Serialize(payload, JsonPostOptions);
         using var content = new StringContent(json, Encoding.UTF8, "application/json");
         using var res = await client.PostAsync(path, content, ct);
         return await HandleResponse<T>(res, ct);
@@ -921,7 +933,16 @@ public class OrderDetailClientDto
     public string? InvoiceCode { get; set; }
     public string? AnnexPdfUrl { get; set; }
     public DateTime? AnnexSignedAt { get; set; }
+    public OrderContractSummaryClientDto? ContractSummary { get; set; }
     public List<OrderItemLineClientDto> Items { get; set; } = new();
+}
+
+public class OrderContractSummaryClientDto
+{
+    public int Id { get; set; }
+    public string? ContractNumber { get; set; }
+    public string? ContractFileUrl { get; set; }
+    public bool IsDigitallySigned { get; set; }
 }
 
 public class SignOrderAnnexApiRequest
@@ -1032,6 +1053,7 @@ public class PrepareOrganizationMealContractClientRequest
     public decimal Price { get; set; }
     public List<OrganizationMealDayClientRequest> MealDays { get; set; } = new();
     public string? PromotionCode { get; set; }
+    public int? PromotionId { get; set; }
 }
 
 public class OrganizationMealDayClientRequest
@@ -1147,6 +1169,7 @@ public class PreviewPromotionClientRequest
     public int? OrganizationId { get; set; }
     public string? ContractType { get; set; }
     public string? PromotionCode { get; set; }
+    public int? PromotionId { get; set; }
     public decimal Subtotal { get; set; }
     public int TotalQuantity { get; set; }
     public List<PreviewPromotionLineClientRequest> Lines { get; set; } = new();
@@ -1168,6 +1191,27 @@ public class PreviewPromotionClientResponse
     public int? PromotionId { get; set; }
     public string? PromotionCode { get; set; }
     public string? PromotionName { get; set; }
+    public string? Message { get; set; }
+}
+
+public class EligiblePromotionItemClientDto
+{
+    public int PromotionId { get; set; }
+    public string? PromotionCode { get; set; }
+    public string PromotionName { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string DiscountType { get; set; } = string.Empty;
+    public decimal DiscountValue { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public decimal TotalAfter { get; set; }
+    public bool IsRecommended { get; set; }
+}
+
+public class ListEligiblePromotionsClientResponse
+{
+    public decimal Subtotal { get; set; }
+    public List<EligiblePromotionItemClientDto> Items { get; set; } = new();
+    public int? RecommendedPromotionId { get; set; }
     public string? Message { get; set; }
 }
 

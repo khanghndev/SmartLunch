@@ -1,174 +1,374 @@
 @model Khoa_Luan_KS_Web.Services.GetWeeklyMenuDetailClientResponse
+@using System.Globalization
 @{
-    ViewData["Title"] = "Chi Tiết Thực Đơn Tuần";
+    ViewData["Title"] = "Chi tiết thực đơn tuần";
     Layout = "_LayoutManager";
 
     var menu = Model?.WeeklyMenu;
     var schedules = Model?.Schedules ?? new List<Khoa_Luan_KS_Web.Services.WeeklyMenuScheduleDetailClientDto>();
+    var returnUrl = Url.Action("Weekly", "Menu", new { area = "Manager" }) ?? "/Manager/Menu/Weekly";
+    var vi = new CultureInfo("vi-VN");
 
-    // Nhóm schedule theo ngày
     var byDate = schedules
         .GroupBy(s => s.Date.Date)
         .OrderBy(g => g.Key)
         .ToList();
 
-    // Lấy tất cả các MealSlot có trong menu này (để render header cột)
     var allSlots = schedules
         .Select(s => s.MealSlot)
         .Distinct()
         .OrderBy(s => s)
         .ToList();
 
-    // Mapping màu cho MealSlot
+    var dayCount = menu != null ? (menu.EndDate.Date - menu.StartDate.Date).Days + 1 : 0;
+    var uniqueDishes = schedules.Select(s => s.DishId).Distinct().Count();
+    var avgPrice = schedules.Count > 0 ? schedules.Average(s => (double)s.Dish.Price) : 0;
+    var isCurrent = menu != null && menu.StartDate.Date <= DateTime.Today && menu.EndDate.Date >= DateTime.Today;
+    var isPast = menu != null && menu.EndDate.Date < DateTime.Today;
+    var cover = menu?.Images?.FirstOrDefault(i => i.Role == "cover")?.Url
+                  ?? menu?.Images?.FirstOrDefault()?.Url
+                  ?? menu?.ImageUrl;
+    var defaultDishImg = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop";
+
     static string SlotColor(string slot) => slot?.ToLower() switch
     {
-        "breakfast" => "bg-orange-100 text-orange-700 border-orange-200",
-        "lunch"     => "bg-green-100 text-green-700 border-green-200",
-        "dinner"    => "bg-indigo-100 text-indigo-700 border-indigo-200",
-        "snack"     => "bg-amber-100 text-amber-700 border-amber-200",
-        _           => "bg-slate-100 text-slate-700 border-slate-200"
+        "breakfast" => "bg-orange-100 text-orange-800 border-orange-200",
+        "lunch" => "bg-green-100 text-green-800 border-green-200",
+        "dinner" => "bg-indigo-100 text-indigo-800 border-indigo-200",
+        "snack" => "bg-amber-100 text-amber-800 border-amber-200",
+        _ => "bg-slate-100 text-slate-700 border-slate-200"
     };
 
     static string SlotDot(string slot) => slot?.ToLower() switch
     {
-        "breakfast" => "bg-orange-400",
-        "lunch"     => "bg-green-500",
-        "dinner"    => "bg-indigo-500",
-        "snack"     => "bg-amber-400",
-        _           => "bg-slate-400"
+        "breakfast" => "bg-orange-500",
+        "lunch" => "bg-green-500",
+        "dinner" => "bg-indigo-500",
+        "snack" => "bg-amber-400",
+        _ => "bg-slate-400"
     };
 
     static string SlotLabel(string slot) => slot?.ToLower() switch
     {
         "breakfast" => "Sáng",
-        "lunch"     => "Trưa",
-        "dinner"    => "Chiều / Tối",
-        "snack"     => "Bữa phụ",
-        _           => slot
+        "lunch" => "Trưa",
+        "dinner" => "Chiều / Tối",
+        "snack" => "Bữa phụ",
+        _ => slot ?? "—"
     };
 
-    static string DayLabel(DateTime d) => d.DayOfWeek switch
+    static string DayShort(DateTime d) => d.DayOfWeek switch
     {
-        DayOfWeek.Monday    => "Thứ 2",
-        DayOfWeek.Tuesday   => "Thứ 3",
-        DayOfWeek.Wednesday => "Thứ 4",
-        DayOfWeek.Thursday  => "Thứ 5",
-        DayOfWeek.Friday    => "Thứ 6",
-        DayOfWeek.Saturday  => "Thứ 7",
-        DayOfWeek.Sunday    => "Chủ nhật",
-        _                   => d.DayOfWeek.ToString()
+        DayOfWeek.Monday => "T2",
+        DayOfWeek.Tuesday => "T3",
+        DayOfWeek.Wednesday => "T4",
+        DayOfWeek.Thursday => "T5",
+        DayOfWeek.Friday => "T6",
+        DayOfWeek.Saturday => "T7",
+        DayOfWeek.Sunday => "CN",
+        _ => "?"
     };
 }
 
-<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans">
-
-    <!-- BACK & HEADER -->
-    <div class="flex flex-col sm:flex-row sm:items-center gap-4">
-        <a href="/Manager/Menu/Weekly"
-           class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 text-slate-600 text-sm font-bold rounded-xl hover:bg-slate-50 shadow-sm transition-all self-start">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-            </svg>
-            Quay lại
-        </a>
-        <div class="flex-1">
-            <p class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Thực đơn #@menu?.Id</p>
-            <h1 class="text-2xl font-black text-slate-800 tracking-tight">
-                @menu?.StartDate.ToString("dd/MM/yyyy") – @menu?.EndDate.ToString("dd/MM/yyyy")
-            </h1>
-        </div>
+@if (TempData["Error"] != null)
+{
+    <div class="mb-4 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-3.5 text-sm font-semibold text-red-800 shadow-sm">
+        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600"><i class="fas fa-circle-exclamation"></i></span>
+        @TempData["Error"]
     </div>
+}
 
-    <!-- ERROR BANNER -->
-    @if (TempData["Error"] != null)
-    {
-        <div class="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl flex items-center gap-2">
-            <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-            </svg>
-            <span class="text-sm font-medium">@TempData["Error"]</span>
-        </div>
-    }
+<div class="space-y-6 animate-in fade-in duration-700" x-data="{ activeDay: 'all', activeSlot: 'all', view: 'cards' }">
+
+    <!-- Breadcrumb -->
+    <nav class="flex text-xs font-bold uppercase tracking-widest text-slate-400" aria-label="Breadcrumb">
+        <ol class="inline-flex flex-wrap items-center gap-2">
+            <li>
+                <a href="@returnUrl" class="flex items-center gap-2 transition-colors hover:text-green-600">
+                    <i class="fas fa-calendar-week"></i> Thực đơn tuần
+                </a>
+            </li>
+            <li><i class="fas fa-chevron-right text-[8px] opacity-50"></i></li>
+            <li class="text-slate-900">Chi tiết #@(menu?.Id ?? 0)</li>
+        </ol>
+    </nav>
 
     @if (menu == null)
     {
-        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-16 text-center">
-            <p class="text-slate-400 font-semibold">Không tìm thấy thực đơn.</p>
+        <div class="rounded-3xl border border-slate-200 bg-white p-16 text-center shadow-sm">
+            <i class="fas fa-calendar-xmark mb-4 text-5xl text-slate-200"></i>
+            <p class="font-semibold text-slate-500">Không tìm thấy thực đơn.</p>
+            <a href="@returnUrl" class="mt-4 inline-flex items-center gap-2 text-sm font-bold text-green-600 hover:text-green-700">
+                <i class="fas fa-arrow-left"></i> Quay lại danh sách
+            </a>
         </div>
     }
     else
     {
-        <!-- INFO CARDS -->
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Bắt đầu</p>
-                <p class="font-black text-slate-800 text-base">@menu.StartDate.ToString("dd/MM/yyyy")</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Kết thúc</p>
-                <p class="font-black text-slate-800 text-base">@menu.EndDate.ToString("dd/MM/yyyy")</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Số ngày</p>
-                <p class="font-black text-slate-800 text-base">@((menu.EndDate.Date - menu.StartDate.Date).Days + 1) ngày</p>
-            </div>
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Tổng món</p>
-                <p class="font-black text-slate-800 text-base">@schedules.Count món</p>
+        <!-- Hero -->
+        <div class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+            @if (!string.IsNullOrEmpty(cover))
+            {
+                <div class="absolute inset-0">
+                    <img src="@cover" alt="" class="h-full w-full object-cover opacity-20" />
+                    <div class="absolute inset-0 bg-gradient-to-r from-white via-white/95 to-white/80"></div>
+                </div>
+            }
+            else
+            {
+                <div class="pointer-events-none absolute inset-0 bg-gradient-to-br from-green-50/90 via-white to-emerald-50/40"></div>
+                <div class="pointer-events-none absolute -right-20 -top-20 h-72 w-72 rounded-full bg-green-100/50 blur-3xl"></div>
+            }
+
+            <div class="relative z-10 p-6 md:p-8">
+                <div class="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+                    <div class="min-w-0 flex-1">
+                        <div class="mb-3 flex flex-wrap items-center gap-2">
+                            @if (isCurrent)
+                            {
+                                <span class="inline-flex items-center gap-1.5 rounded-lg border border-green-200 bg-green-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-tighter text-green-700">
+                                    <span class="h-2 w-2 animate-pulse rounded-full bg-green-500"></span> Tuần hiện tại
+                                </span>
+                            }
+                            else if (isPast)
+                            {
+                                <span class="rounded-lg border border-slate-200 bg-slate-100 px-2.5 py-1 text-[10px] font-black uppercase tracking-tighter text-slate-600">Đã qua</span>
+                            }
+                            else
+                            {
+                                <span class="rounded-lg border border-sky-200 bg-sky-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-tighter text-sky-700">Sắp diễn ra</span>
+                            }
+                            <span class="rounded-lg bg-slate-900 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white">#@menu.Id</span>
+                        </div>
+                        <p class="text-[11px] font-black uppercase tracking-[0.2em] text-green-600">Thực đơn tuần</p>
+                        <h1 class="mt-1 text-2xl font-black tracking-tight text-slate-900 sm:text-3xl md:text-4xl">
+                            @menu.StartDate.ToString("dd/MM/yyyy") – @menu.EndDate.ToString("dd/MM/yyyy")
+                        </h1>
+                        @if (!string.IsNullOrWhiteSpace(menu.Description))
+                        {
+                            <p class="mt-3 max-w-2xl text-sm font-medium leading-relaxed text-slate-600">@menu.Description</p>
+                        }
+                        @if (allSlots.Any())
+                        {
+                            <div class="mt-4 flex flex-wrap gap-2">
+                                @foreach (var slot in allSlots)
+                                {
+                                    <span class="inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold @SlotColor(slot)">
+                                        <span class="h-2 w-2 rounded-full @SlotDot(slot)"></span>
+                                        @SlotLabel(slot)
+                                    </span>
+                                }
+                            </div>
+                        }
+                    </div>
+
+                    <div class="flex shrink-0 flex-col gap-2 sm:flex-row lg:flex-col">
+                        <a href="@returnUrl"
+                           class="inline-flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 shadow-sm transition-all hover:border-green-200 hover:bg-green-50 hover:text-green-800">
+                            <i class="fas fa-arrow-left"></i> Danh sách
+                        </a>
+                    </div>
+                </div>
+
+                <!-- KPI strip -->
+                <div class="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    <div class="rounded-2xl border border-slate-100 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Số ngày</p>
+                        <p class="mt-1 text-2xl font-black text-slate-900">@dayCount</p>
+                    </div>
+                    <div class="rounded-2xl border border-slate-100 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Tổng lịch món</p>
+                        <p class="mt-1 text-2xl font-black text-green-600">@schedules.Count</p>
+                    </div>
+                    <div class="rounded-2xl border border-slate-100 bg-white/80 p-4 shadow-sm backdrop-blur-sm">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Món khác nhau</p>
+                        <p class="mt-1 text-2xl font-black text-slate-900">@uniqueDishes</p>
+                    </div>
+                    <div class="rounded-2xl border border-green-100 bg-green-50/80 p-4 shadow-sm">
+                        <p class="text-[9px] font-black uppercase tracking-widest text-green-700/80">Giá TB / món</p>
+                        <p class="mt-1 text-2xl font-black text-green-700">@avgPrice.ToString("N0")<span class="text-sm font-bold">đ</span></p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        @if (!string.IsNullOrEmpty(menu.Description))
-        {
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
-                <p class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-1">Mô tả</p>
-                <p class="text-slate-700 text-sm font-medium">@menu.Description</p>
-            </div>
-        }
-
-        <!-- SCHEDULE TABLE -->
         @if (!schedules.Any())
         {
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-16 text-center">
-                <svg class="w-14 h-14 mx-auto text-slate-200 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-                <p class="text-slate-400 font-semibold">Chưa có lịch món nào trong thực đơn này.</p>
+            <div class="rounded-3xl border border-dashed border-slate-200 bg-white p-16 text-center shadow-sm">
+                <i class="fas fa-utensils mb-4 text-5xl text-slate-200"></i>
+                <p class="font-semibold text-slate-600">Chưa có lịch món trong thực đơn này</p>
+                <p class="mt-1 text-sm text-slate-400">Thêm món vào lịch từ module quản lý thực đơn.</p>
             </div>
         }
         else
         {
-            <!-- LEGEND -->
-            <div class="flex flex-wrap gap-3">
-                @foreach (var slot in allSlots)
+            <!-- Toolbar: filters + view toggle -->
+            <div class="sticky top-0 z-20 rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-sm backdrop-blur-md">
+                <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+                    <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+                        <button type="button" @@click="activeDay = 'all'"
+                                :class="activeDay === 'all' ? 'border-green-600 bg-green-600 text-white shadow-md shadow-green-500/25' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-green-300'"
+                                class="shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition">
+                            Tất cả ngày
+                        </button>
+                        @foreach (var group in byDate)
+                        {
+                            var dayKey = group.Key.ToString("yyyy-MM-dd");
+                            var isToday = group.Key == DateTime.Today;
+                            <button type="button" @@click="activeDay = '@dayKey'"
+                                    :class="activeDay === '@dayKey' ? 'border-green-600 bg-green-600 text-white shadow-md shadow-green-500/25' : 'border-slate-200 bg-slate-50 text-slate-700 hover:border-green-300'"
+                                    class="shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition">
+                                @DayShort(group.Key) @group.Key.ToString("dd/MM")
+                                @if (isToday) { <span class="ml-1 opacity-90">· Hôm nay</span> }
+                            </button>
+                        }
+                    </div>
+
+                    <div class="flex flex-wrap items-center gap-3">
+                        @if (allSlots.Count > 1)
+                        {
+                            <div class="flex flex-wrap gap-1.5">
+                                <button type="button" @@click="activeSlot = 'all'"
+                                        :class="activeSlot === 'all' ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'"
+                                        class="rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition">
+                                    Tất cả ca
+                                </button>
+                                @foreach (var slot in allSlots)
+                                {
+                                    <button type="button" @@click="activeSlot = '@slot'"
+                                            :class="activeSlot === '@slot' ? 'bg-green-600 text-white' : 'bg-slate-100 text-slate-600 hover:bg-green-50'"
+                                            class="rounded-lg px-3 py-1.5 text-[10px] font-black uppercase tracking-wide transition">
+                                        @SlotLabel(slot)
+                                    </button>
+                                }
+                            </div>
+                        }
+                        <div class="flex rounded-xl border border-slate-200 bg-slate-50 p-1">
+                            <button type="button" @@click="view = 'cards'"
+                                    :class="view === 'cards' ? 'bg-white text-green-700 shadow-sm' : 'text-slate-500'"
+                                    class="rounded-lg px-3 py-1.5 text-xs font-bold transition" title="Dạng thẻ">
+                                <i class="fas fa-grip"></i>
+                            </button>
+                            <button type="button" @@click="view = 'matrix'"
+                                    :class="view === 'matrix' ? 'bg-white text-green-700 shadow-sm' : 'text-slate-500'"
+                                    class="rounded-lg px-3 py-1.5 text-xs font-bold transition" title="Bảng tuần">
+                                <i class="fas fa-table-cells"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card view by day -->
+            <div x-show="view === 'cards'" class="space-y-6">
+                @foreach (var group in byDate)
                 {
-                    <span class="inline-flex items-center gap-1.5 text-xs font-bold px-3 py-1.5 rounded-full border @SlotColor(slot)">
-                        <span class="w-2 h-2 rounded-full @SlotDot(slot)"></span>
-                        @SlotLabel(slot)
-                    </span>
+                    var dayKey = group.Key.ToString("yyyy-MM-dd");
+                    var isToday = group.Key == DateTime.Today;
+                    var dayList = group.ToList();
+
+                    <section x-show="activeDay === 'all' || activeDay === '@dayKey'" x-cloak
+                             class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                        <header class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-green-50/30 px-5 py-4 sm:px-6">
+                            <div class="flex items-center gap-4">
+                                <div class="flex h-14 w-14 flex-col items-center justify-center rounded-2xl font-black @(isToday ? "bg-green-600 text-white shadow-lg shadow-green-500/30" : "bg-green-50 text-green-800 ring-1 ring-green-100")">
+                                    <span class="text-lg leading-none">@DayShort(group.Key)</span>
+                                    <span class="mt-0.5 text-[10px] font-bold opacity-90">@group.Key.ToString("dd/MM")</span>
+                                </div>
+                                <div>
+                                    <h2 class="text-lg font-black capitalize text-slate-900 sm:text-xl">
+                                        @group.Key.ToString("dddd", vi)
+                                    </h2>
+                                    <p class="text-xs font-medium text-slate-500">@dayList.Count món trong ngày</p>
+                                </div>
+                            </div>
+                            @if (isToday)
+                            {
+                                <span class="rounded-full bg-orange-100 px-3 py-1 text-[10px] font-black uppercase tracking-wider text-orange-700">Hôm nay</span>
+                            }
+                        </header>
+
+                        <div class="p-5 sm:p-6">
+                            @{
+                                var slotGroups = dayList
+                                    .GroupBy(s => s.MealSlot)
+                                    .OrderBy(g => allSlots.IndexOf(g.Key))
+                                    .ToList();
+                            }
+                            @foreach (var slotGroup in slotGroups)
+                            {
+                                <div x-show="activeSlot === 'all' || activeSlot === '@slotGroup.Key'" class="mb-8 last:mb-0">
+                                    @if (allSlots.Count > 1)
+                                    {
+                                        <div class="mb-4 flex items-center gap-2">
+                                            <span class="inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[10px] font-black uppercase tracking-wider @SlotColor(slotGroup.Key)">
+                                                <span class="h-2 w-2 rounded-full @SlotDot(slotGroup.Key)"></span>
+                                                @SlotLabel(slotGroup.Key)
+                                            </span>
+                                            <span class="h-px flex-1 bg-slate-100"></span>
+                                            <span class="text-[10px] font-bold text-slate-400">@slotGroup.Count() món</span>
+                                        </div>
+                                    }
+
+                                    <ul class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+                                        @foreach (var s in slotGroup)
+                                        {
+                                            var img = !string.IsNullOrEmpty(s.Dish.ImageUrl) ? s.Dish.ImageUrl : defaultDishImg;
+                                            <li class="group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm transition-all hover:border-green-200 hover:shadow-lg">
+                                                <a href="/Manager/Catalog/MealDetail/@s.Dish.Id" class="relative block aspect-[4/3] overflow-hidden bg-slate-100">
+                                                    <img src="@img" alt="@s.Dish.Name" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" />
+                                                    <span class="absolute left-2 top-2 rounded-md bg-black/50 px-2 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white backdrop-blur-sm">
+                                                        @SlotLabel(s.MealSlot)
+                                                    </span>
+                                                </a>
+                                                <div class="flex flex-1 flex-col p-4">
+                                                    <a href="/Manager/Catalog/MealDetail/@s.Dish.Id"
+                                                       class="line-clamp-2 text-sm font-black leading-snug text-slate-900 transition hover:text-green-600">
+                                                        @s.Dish.Name
+                                                    </a>
+                                                    @if (!string.IsNullOrEmpty(s.Dish.Category))
+                                                    {
+                                                        <p class="mt-1 line-clamp-1 text-[11px] font-semibold text-slate-500">@s.Dish.Category</p>
+                                                    }
+                                                    <div class="mt-auto flex items-center justify-between gap-2 pt-3">
+                                                        <span class="text-base font-black text-green-600">@s.Dish.Price.ToString("N0")đ</span>
+                                                        <a href="/Manager/Catalog/MealDetail/@s.Dish.Id"
+                                                           class="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1.5 text-[10px] font-bold text-slate-600 transition hover:border-green-300 hover:bg-green-50 hover:text-green-700">
+                                                            <i class="fas fa-eye"></i> Chi tiết
+                                                        </a>
+                                                    </div>
+                                                    @if (!string.IsNullOrEmpty(s.Code))
+                                                    {
+                                                        <p class="mt-2 font-mono text-[10px] text-slate-400">@s.Code</p>
+                                                    }
+                                                </div>
+                                            </li>
+                                        }
+                                    </ul>
+                                </div>
+                            }
+                        </div>
+                    </section>
                 }
             </div>
 
-            <!-- CALENDAR GRID -->
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div class="p-4 border-b border-slate-100 bg-slate-50/50">
-                    <h2 class="font-black text-slate-800 text-base flex items-center gap-2">
-                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                        </svg>
-                        Lịch thực đơn theo ngày
+            <!-- Matrix view -->
+            <div x-show="view === 'matrix'" x-cloak class="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+                <div class="border-b border-slate-100 bg-slate-50/80 px-5 py-4">
+                    <h2 class="flex items-center gap-2 text-sm font-black uppercase tracking-widest text-slate-800">
+                        <i class="fas fa-table-cells text-green-600"></i> Ma trận tuần
                     </h2>
                 </div>
                 <div class="overflow-x-auto">
-                    <table class="w-full min-w-[700px] border-collapse">
+                    <table class="w-full min-w-[720px] border-collapse">
                         <thead>
-                            <tr class="border-b border-slate-100">
-                                <th class="p-3 text-left text-[11px] font-black text-slate-500 uppercase tracking-wider bg-slate-50 w-24">Ngày</th>
+                            <tr class="border-b border-slate-100 bg-slate-50/50">
+                                <th class="w-28 p-4 text-left text-[10px] font-black uppercase tracking-widest text-slate-500">Ngày</th>
                                 @foreach (var slot in allSlots)
                                 {
-                                    <th class="p-3 text-left text-[11px] font-black uppercase tracking-wider bg-slate-50">
-                                        <span class="inline-flex items-center gap-1.5 @SlotColor(slot) px-2 py-1 rounded-lg border">
-                                            <span class="w-2 h-2 rounded-full @SlotDot(slot)"></span>
+                                    <th class="p-4 text-left" x-show="activeSlot === 'all' || activeSlot === '@slot'">
+                                        <span class="inline-flex items-center gap-1.5 rounded-lg border px-2 py-1 text-[10px] font-black uppercase @SlotColor(slot)">
+                                            <span class="h-1.5 w-1.5 rounded-full @SlotDot(slot)"></span>
                                             @SlotLabel(slot)
                                         </span>
                                     </th>
@@ -178,63 +378,43 @@
                         <tbody class="divide-y divide-slate-50">
                             @foreach (var group in byDate)
                             {
+                                var dayKey = group.Key.ToString("yyyy-MM-dd");
                                 var isToday = group.Key == DateTime.Today;
                                 var daySchedules = group.ToList();
 
-                                <tr class="@(isToday ? "bg-green-50/50" : "hover:bg-slate-50/50") transition-colors">
-                                    <!-- Ngày -->
-                                    <td class="p-3 align-top border-r border-slate-100">
-                                        <div class="flex flex-col items-start">
-                                            @if (isToday)
-                                            {
-                                                <span class="text-[9px] font-black bg-green-500 text-white px-1.5 py-0.5 rounded-full uppercase mb-1">Hôm nay</span>
-                                            }
-                                            <p class="font-black text-slate-800 text-sm">@DayLabel(group.Key)</p>
-                                            <p class="text-xs text-slate-400 font-medium">@group.Key.ToString("dd/MM")</p>
-                                        </div>
+                                <tr x-show="activeDay === 'all' || activeDay === '@dayKey'" class="@(isToday ? "bg-green-50/40" : "hover:bg-slate-50/50")">
+                                    <td class="border-r border-slate-100 p-4 align-top">
+                                        <p class="text-sm font-black text-slate-900">@DayShort(group.Key)</p>
+                                        <p class="text-xs text-slate-500">@group.Key.ToString("dd/MM/yyyy")</p>
+                                        @if (isToday)
+                                        {
+                                            <span class="mt-1 inline-block rounded-full bg-green-600 px-2 py-0.5 text-[9px] font-black text-white">Hôm nay</span>
+                                        }
                                     </td>
-
-                                    <!-- Mỗi slot -->
                                     @foreach (var slot in allSlots)
                                     {
                                         var slotDishes = daySchedules.Where(s => s.MealSlot == slot).ToList();
-                                        <td class="p-3 align-top">
+                                        <td class="p-3 align-top" x-show="activeSlot === 'all' || activeSlot === '@slot'">
                                             @if (!slotDishes.Any())
                                             {
-                                                <p class="text-slate-300 text-xs italic">—</p>
+                                                <span class="text-xs italic text-slate-300">—</span>
                                             }
                                             else
                                             {
                                                 <div class="space-y-2">
                                                     @foreach (var schedule in slotDishes)
                                                     {
-                                                        <div class="group/dish flex items-start gap-2 bg-white border border-slate-100 rounded-xl p-2.5 shadow-sm hover:shadow hover:border-green-200 transition-all">
-                                                            @if (!string.IsNullOrEmpty(schedule.Dish.ImageUrl))
-                                                            {
-                                                                <div class="w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-slate-100">
-                                                                    <img src="@schedule.Dish.ImageUrl" alt="@schedule.Dish.Name"
-                                                                         class="w-full h-full object-cover group-hover/dish:scale-105 transition-transform duration-200" />
-                                                                </div>
+                                                        <a href="/Manager/Catalog/MealDetail/@schedule.Dish.Id"
+                                                           class="flex items-center gap-2 rounded-xl border border-slate-100 bg-white p-2 shadow-sm transition hover:border-green-200 hover:shadow-md">
+                                                            @{
+                                                                var thumb = !string.IsNullOrEmpty(schedule.Dish.ImageUrl) ? schedule.Dish.ImageUrl : defaultDishImg;
                                                             }
-                                                            else
-                                                            {
-                                                                <div class="w-10 h-10 rounded-lg shrink-0 bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center">
-                                                                    <svg class="w-5 h-5 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                                                    </svg>
-                                                                </div>
-                                                            }
-                                                            <div class="min-w-0 flex-1">
-                                                                <p class="font-bold text-slate-800 text-xs leading-tight truncate">@schedule.Dish.Name</p>
-                                                                @if (!string.IsNullOrEmpty(schedule.Dish.Category))
-                                                                {
-                                                                    <p class="text-[10px] text-slate-400 mt-0.5 truncate">@schedule.Dish.Category</p>
-                                                                }
-                                                                <p class="text-[10px] font-black text-green-600 mt-0.5">
-                                                                    @schedule.Dish.Price.ToString("N0")đ
-                                                                </p>
+                                                            <img src="@thumb" alt="" class="h-10 w-10 shrink-0 rounded-lg object-cover" />
+                                                            <div class="min-w-0">
+                                                                <p class="truncate text-xs font-bold text-slate-800">@schedule.Dish.Name</p>
+                                                                <p class="text-[10px] font-black text-green-600">@schedule.Dish.Price.ToString("N0")đ</p>
                                                             </div>
-                                                        </div>
+                                                        </a>
                                                     }
                                                 </div>
                                             }
@@ -247,72 +427,16 @@
                 </div>
             </div>
 
-            <!-- DISH LIST (cards dạng flat, dễ nhìn tổng thể) -->
-            <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
-                <div class="p-4 border-b border-slate-100 bg-slate-50/50">
-                    <h2 class="font-black text-slate-800 text-base flex items-center gap-2">
-                        <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                        Tất cả món trong thực đơn
-                        <span class="ml-auto text-xs font-bold text-slate-400">@schedules.Count mục</span>
-                    </h2>
-                </div>
-                <div class="divide-y divide-slate-50">
-                    @foreach (var schedule in schedules.OrderBy(s => s.Date).ThenBy(s => s.MealSlot))
-                    {
-                        var isToday = schedule.Date.Date == DateTime.Today;
-                        <div class="flex items-center gap-4 px-4 py-3 hover:bg-slate-50/50 transition-colors">
-                            <!-- Ảnh -->
-                            @if (!string.IsNullOrEmpty(schedule.Dish.ImageUrl))
-                            {
-                                <div class="w-12 h-12 rounded-xl overflow-hidden shrink-0 bg-slate-100">
-                                    <img src="@schedule.Dish.ImageUrl" alt="@schedule.Dish.Name" class="w-full h-full object-cover" />
-                                </div>
-                            }
-                            else
-                            {
-                                <div class="w-12 h-12 rounded-xl shrink-0 bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center">
-                                    <svg class="w-6 h-6 text-green-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
-                                    </svg>
-                                </div>
-                            }
-                            <!-- Info -->
-                            <div class="flex-1 min-w-0">
-                                <div class="flex items-center gap-2 flex-wrap">
-                                    <p class="font-bold text-slate-800 text-sm truncate">@schedule.Dish.Name</p>
-                                    @if (!string.IsNullOrEmpty(schedule.Dish.Category))
-                                    {
-                                        <span class="text-[10px] font-bold text-slate-500 bg-slate-100 px-1.5 py-0.5 rounded-md">@schedule.Dish.Category</span>
-                                    }
-                                </div>
-                                <div class="flex items-center gap-3 mt-0.5">
-                                    <span class="text-[11px] text-slate-400 font-medium">
-                                        @DayLabel(schedule.Date.Date), @schedule.Date.ToString("dd/MM/yyyy")
-                                    </span>
-                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full border @SlotColor(schedule.MealSlot)">
-                                        <span class="w-1.5 h-1.5 rounded-full @SlotDot(schedule.MealSlot)"></span>
-                                        @SlotLabel(schedule.MealSlot)
-                                    </span>
-                                    @if (isToday)
-                                    {
-                                        <span class="text-[10px] font-black text-green-600 bg-green-50 border border-green-200 px-2 py-0.5 rounded-full">Hôm nay</span>
-                                    }
-                                </div>
-                            </div>
-                            <!-- Giá -->
-                            <div class="shrink-0 text-right">
-                                <p class="font-black text-green-600 text-sm">@schedule.Dish.Price.ToString("N0")đ</p>
-                                @if (!string.IsNullOrEmpty(schedule.Code))
-                                {
-                                    <p class="text-[10px] text-slate-400 font-medium">@schedule.Code</p>
-                                }
-                            </div>
-                        </div>
-                    }
-                </div>
-            </div>
+            <p class="text-center text-[11px] text-slate-400">
+                <i class="far fa-clock mr-1"></i>
+                Tạo lúc @menu.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+            </p>
         }
     }
 </div>
+
+<style>
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    [x-cloak] { display: none !important; }
+</style>

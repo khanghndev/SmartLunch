@@ -2,6 +2,8 @@
 @{
     ViewData["Title"] = Model.Name;
     Layout = "_LayoutManager";
+    var returnListUrl = Url.Action("Customers", "Catalog", new { area = "Manager" }) ?? "/Manager/Catalog/Customers";
+
     string TypeVi() => Model.UnitType switch
     {
         "School" => "Trường học",
@@ -9,146 +11,294 @@
         "Office" => "Văn phòng",
         _ => Model.UnitType ?? "—"
     };
-    var returnListUrl = Url.Action("Customers", "Catalog", new { area = "Manager" }) ?? "/Manager/Catalog/Customers";
+
+    string TypeIcon() => Model.UnitType switch
+    {
+        "School" => "fa-school",
+        "Factory" => "fa-industry",
+        _ => "fa-building"
+    };
+
+    var (avatarBg, avatarBorder, avatarText, badgeBg, badgeBorder, badgeText, heroGradient) = Model.UnitType switch
+    {
+        "School" => ("bg-emerald-50", "border-emerald-100", "text-emerald-600", "bg-emerald-50", "border-emerald-100", "text-emerald-700", "from-emerald-50/80 via-white to-green-50/50"),
+        "Factory" => ("bg-amber-50", "border-amber-100", "text-amber-600", "bg-amber-50", "border-amber-100", "text-amber-800", "from-amber-50/80 via-white to-orange-50/40"),
+        _ => ("bg-sky-50", "border-sky-100", "text-sky-600", "bg-sky-50", "border-sky-100", "text-sky-700", "from-sky-50/80 via-white to-green-50/50"),
+    };
+
+    var initial = !string.IsNullOrWhiteSpace(Model.Name) ? Model.Name.Trim()[0].ToString().ToUpperInvariant() : "K";
+    var contactInitial = !string.IsNullOrWhiteSpace(Model.ContactPerson) ? Model.ContactPerson.Trim()[0].ToString().ToUpperInvariant() : "?";
+    string Val(string? v) => string.IsNullOrWhiteSpace(v) ? "—" : v;
 }
 
 @if (TempData["Success"] != null)
 {
-    <div class="mb-4 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-800">@TempData["Success"]</div>
+    <div class="mb-4 flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-3.5 text-sm font-semibold text-emerald-800 shadow-sm">
+        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-600"><i class="fas fa-check"></i></span>
+        @TempData["Success"]
+    </div>
 }
 @if (TempData["Error"] != null)
 {
-    <div class="mb-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-800">@TempData["Error"]</div>
+    <div class="mb-4 flex items-center gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-3.5 text-sm font-semibold text-red-800 shadow-sm">
+        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-red-100 text-red-600"><i class="fas fa-circle-exclamation"></i></span>
+        @TempData["Error"]
+    </div>
 }
 
-<div class="px-4 py-6 md:p-8 space-y-6 max-w-5xl mx-auto">
-    <nav class="flex text-sm text-slate-500 font-medium" aria-label="Breadcrumb">
-        <a href="@returnListUrl" class="hover:text-green-600 transition flex items-center gap-2">
-            <i class="fas fa-building"></i> Khách hàng B2B
-        </a>
-        <span class="mx-2 text-slate-300">/</span>
-        <span class="text-slate-900 font-bold line-clamp-1">@Model.Name</span>
-    </nav>
-
-    <div class="flex flex-col md:flex-row md:items-start justify-between gap-4">
-        <div>
-            <h1 class="text-2xl font-black text-slate-900 tracking-tight flex items-center gap-3">
-                <span class="w-11 h-11 rounded-xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-700">
-                    @if (Model.UnitType == "School")
-                    { <i class="fas fa-school text-xl"></i> }
-                    else
-                    { <i class="fas fa-building text-xl"></i> }
-                </span>
-                <span class="line-clamp-2">@Model.Name</span>
-            </h1>
-            <p class="text-sm text-slate-500 mt-2">
-                Mã đơn vị: <span class="font-mono font-bold text-slate-700">@(string.IsNullOrEmpty(Model.Code) ? "—" : Model.Code)</span>
-                · Phân khúc: <span class="font-bold text-slate-700">@TypeVi()</span>
-            </p>
-        </div>
-        <div class="flex flex-wrap gap-2">
+<div class="space-y-6 animate-in fade-in duration-700">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <nav class="flex text-xs font-bold uppercase tracking-widest text-slate-400" aria-label="Breadcrumb">
+            <ol class="inline-flex flex-wrap items-center gap-2">
+                <li>
+                    <a href="@returnListUrl" class="flex items-center gap-2 transition-colors hover:text-green-600">
+                        <i class="fas fa-building"></i> Khách hàng B2B
+                    </a>
+                </li>
+                <li><i class="fas fa-chevron-right text-[8px] opacity-50"></i></li>
+                <li class="max-w-[200px] truncate text-slate-900 sm:max-w-xs">@Model.Name</li>
+            </ol>
+        </nav>
+        <div class="flex items-center gap-2">
             @if (Model.IsActive)
             {
-                <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-100 text-xs font-black uppercase">Đang phục vụ</span>
+                <span class="h-2 w-2 animate-pulse rounded-full bg-emerald-500"></span>
+                <span class="rounded-lg border border-emerald-100 bg-emerald-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-tighter text-emerald-700">Đang phục vụ</span>
             }
             else
             {
-                <span class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-red-50 text-red-700 border border-red-100 text-xs font-black uppercase">Tạm ngưng</span>
+                <span class="h-2 w-2 rounded-full bg-red-500"></span>
+                <span class="rounded-lg border border-red-100 bg-red-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-tighter text-red-700">Tạm ngưng</span>
             }
         </div>
     </div>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm md:col-span-2 space-y-4">
-            <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Thông tin đơn vị <span class="text-slate-400 font-normal normal-case">(chỉ đọc)</span></h2>
-            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
-                <div>
-                    <dt class="text-slate-400 text-xs font-bold uppercase">Địa chỉ</dt>
-                    <dd class="font-medium text-slate-900">@(string.IsNullOrWhiteSpace(Model.Address) ? "—" : Model.Address)</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-400 text-xs font-bold uppercase">Điện thoại</dt>
-                    <dd class="font-medium text-slate-900">@(string.IsNullOrWhiteSpace(Model.Phone) ? "—" : Model.Phone)</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-400 text-xs font-bold uppercase">Người liên hệ</dt>
-                    <dd class="font-medium text-slate-900">@(string.IsNullOrWhiteSpace(Model.ContactPerson) ? "—" : Model.ContactPerson)</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-400 text-xs font-bold uppercase">Email liên hệ</dt>
-                    <dd class="font-medium text-slate-900">@(string.IsNullOrWhiteSpace(Model.ContactEmail) ? "—" : Model.ContactEmail)</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-400 text-xs font-bold uppercase">Mã số thuế</dt>
-                    <dd class="font-medium text-slate-900">@(string.IsNullOrWhiteSpace(Model.TaxCode) ? "—" : Model.TaxCode)</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-400 text-xs font-bold uppercase">Đại diện pháp luật</dt>
-                    <dd class="font-medium text-slate-900">@(string.IsNullOrWhiteSpace(Model.LegalRepresentative) ? "—" : Model.LegalRepresentative)</dd>
-                </div>
-                <div>
-                    <dt class="text-slate-400 text-xs font-bold uppercase">Website</dt>
-                    <dd class="font-medium text-slate-900">
-                        @if (!string.IsNullOrWhiteSpace(Model.Website))
-                        {
-                            <a href="@Model.Website" class="text-green-600 hover:underline break-all" target="_blank" rel="noopener">@Model.Website</a>
-                        }
-                        else { <text>—</text> }
-                    </dd>
-                </div>
-                <div>
-                    <dt class="text-slate-400 text-xs font-bold uppercase">Bậc học</dt>
-                    <dd class="font-medium text-slate-900">@(string.IsNullOrWhiteSpace(Model.EducationLevel) ? "—" : Model.EducationLevel)</dd>
-                </div>
-            </dl>
-        </div>
-
-        <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm space-y-4">
-            <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">Vận hành</h2>
-            <div>
-                <p class="text-xs text-slate-500 mb-1">Suất ăn mặc định / ngày</p>
-                <p class="text-2xl font-black text-slate-900">@Model.DefaultDailyMeals.ToString("N0")</p>
-            </div>
-            <div>
-                <p class="text-xs text-slate-500 mb-1">Đăng ký định kỳ (subscription)</p>
-                <p class="text-sm font-bold @(Model.IsSubscriptionActive ? "text-emerald-700" : "text-slate-500")">@(Model.IsSubscriptionActive ? "Bật" : "Tắt")</p>
-            </div>
-            <div class="border-t border-slate-100 pt-4">
-                <p class="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">Trạng thái hoạt động</p>
-                <p class="text-xs text-slate-500 mb-3">Chỉ thay đổi cờ hoạt động trên hệ thống. Không chỉnh sửa tài khoản người dùng hay thông tin liên hệ từ đây.</p>
-                <form method="post" asp-area="Manager" asp-controller="Catalog" asp-action="UpdateCustomerStatus" class="space-y-3">
-                    @Html.AntiForgeryToken()
-                    <input type="hidden" name="id" value="@Model.Id" />
-                    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
-                    @if (Model.IsActive)
+    <div class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+        <div class="pointer-events-none absolute inset-0 bg-gradient-to-br @heroGradient"></div>
+        <div class="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-green-100/40 blur-3xl"></div>
+        <div class="relative z-10 p-6 md:p-8">
+            <div class="flex flex-col gap-8 lg:flex-row lg:items-center">
+                <div class="shrink-0">
+                    @if (!string.IsNullOrWhiteSpace(Model.LogoUrl))
                     {
-                        <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-emerald-800">
-                            <input type="radio" name="isActive" value="true" checked />
-                            Đang phục vụ
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-red-800">
-                            <input type="radio" name="isActive" value="false" />
-                            Tạm ngưng
-                        </label>
+                        <div class="flex h-24 w-24 items-center justify-center overflow-hidden rounded-2xl border border-slate-100 bg-white p-2 shadow-sm md:h-28 md:w-28">
+                            <img src="@Model.LogoUrl" alt="@Model.Name" class="max-h-full max-w-full object-contain" />
+                        </div>
                     }
                     else
                     {
-                        <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-emerald-800">
-                            <input type="radio" name="isActive" value="true" />
-                            Đang phục vụ
-                        </label>
-                        <label class="flex items-center gap-2 cursor-pointer text-sm font-bold text-red-800">
-                            <input type="radio" name="isActive" value="false" checked />
-                            Tạm ngưng
-                        </label>
+                        <div class="flex h-24 w-24 items-center justify-center rounded-2xl border @avatarBorder @avatarBg text-4xl font-black @avatarText shadow-sm transition-transform duration-500 hover:scale-105 md:h-28 md:w-28">
+                            @initial
+                        </div>
                     }
-                    <button type="submit" class="w-full mt-2 py-2.5 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-slate-800 transition">
-                        Cập nhật trạng thái
-                    </button>
-                </form>
+                </div>
+
+                <div class="min-w-0 flex-1 space-y-4">
+                    <div>
+                        <div class="mb-2 flex flex-wrap items-center gap-2">
+                            <span class="inline-flex items-center gap-1.5 rounded-lg border @badgeBorder @badgeBg px-2.5 py-1 text-[10px] font-black uppercase tracking-widest @badgeText">
+                                <i class="fas @TypeIcon()"></i> @TypeVi()
+                            </span>
+                            <span class="rounded-lg bg-slate-900 px-2 py-1 text-[10px] font-bold uppercase tracking-widest text-white shadow-sm">
+                                @(string.IsNullOrEmpty(Model.Code) ? $"ID #{Model.Id}" : Model.Code)
+                            </span>
+                        </div>
+                        <h1 class="text-2xl font-black tracking-tight text-slate-900 sm:text-3xl">@Model.Name</h1>
+                        <p class="mt-2 flex items-start gap-2 text-sm font-medium text-slate-500">
+                            <i class="fas fa-location-dot mt-0.5 shrink-0 text-green-500"></i>
+                            <span>@(string.IsNullOrWhiteSpace(Model.Address) ? "Chưa cập nhật địa chỉ" : Model.Address)</span>
+                        </p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 pt-1">
+                        <div class="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-2.5 transition-colors hover:bg-white hover:shadow-sm">
+                            <i class="fas fa-utensils text-slate-400"></i>
+                            <div>
+                                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Suất / ngày</p>
+                                <p class="text-sm font-bold text-slate-800">@Model.DefaultDailyMeals.ToString("N0")</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-2.5 transition-colors hover:bg-white hover:shadow-sm">
+                            <i class="fas fa-repeat text-slate-400"></i>
+                            <div>
+                                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Đăng ký định kỳ</p>
+                                <p class="text-sm font-bold @(Model.IsSubscriptionActive ? "text-emerald-700" : "text-slate-600")">@(Model.IsSubscriptionActive ? "Đang bật" : "Tắt")</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-3 rounded-xl border border-slate-100 bg-slate-50/80 px-4 py-2.5 transition-colors hover:bg-white hover:shadow-sm">
+                            <i class="fas fa-receipt text-slate-400"></i>
+                            <div>
+                                <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Mã số thuế</p>
+                                <p class="text-sm font-bold text-slate-800">@Val(Model.TaxCode)</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex shrink-0 flex-col gap-2 lg:w-44">
+                    <a href="@returnListUrl"
+                       class="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white py-2.5 text-xs font-bold text-slate-700 transition-all hover:border-green-200 hover:bg-green-50 hover:text-green-800">
+                        <i class="fas fa-arrow-left"></i> Danh sách
+                    </a>
+                </div>
             </div>
         </div>
     </div>
 
-    <p class="text-xs text-slate-400">Cập nhật gần nhất: @(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")</p>
+    <div class="grid grid-cols-1 gap-6 xl:grid-cols-3">
+        <div class="space-y-6">
+            <div class="relative overflow-hidden rounded-3xl bg-slate-900 p-6 text-white shadow-xl">
+                <div class="absolute -bottom-4 -right-4 h-32 w-32 rounded-full bg-green-500/10 blur-2xl"></div>
+                <div class="relative z-10">
+                    <h3 class="mb-4 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-green-400">
+                        <i class="fas fa-chart-pie"></i> Vận hành suất ăn
+                    </h3>
+                    <div class="space-y-5">
+                        <div>
+                            <p class="text-3xl font-black tracking-tight">@Model.DefaultDailyMeals.ToString("N0")</p>
+                            <p class="mt-1 text-[10px] font-medium uppercase tracking-widest text-slate-400">Suất ăn mặc định / ngày</p>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+                                <p class="text-lg font-bold @(Model.IsSubscriptionActive ? "text-emerald-400" : "text-slate-300")">@(Model.IsSubscriptionActive ? "ON" : "OFF")</p>
+                                <p class="text-[9px] font-black uppercase text-slate-500">Subscription</p>
+                            </div>
+                            <div class="rounded-2xl border border-white/10 bg-white/5 p-3">
+                                <p class="truncate text-sm font-bold">@TypeVi()</p>
+                                <p class="text-[9px] font-black uppercase text-slate-500">Phân khúc</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 class="mb-1 flex items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-900">
+                    <i class="fas fa-toggle-on text-green-500"></i> Trạng thái hoạt động
+                </h3>
+                <p class="mb-5 text-xs leading-relaxed text-slate-500">
+                    Chỉ thay đổi cờ phục vụ trên hệ thống. Không chỉnh sửa tài khoản hay thông tin liên hệ tại đây.
+                </p>
+                <form method="post" asp-area="Manager" asp-controller="Catalog" asp-action="UpdateCustomerStatus" class="space-y-4">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@Model.Id" />
+                    <input type="hidden" name="returnUrl" value="@Context.Request.Path@Context.Request.QueryString" />
+
+                    <label class="group flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 transition-all @(Model.IsActive ? "border-emerald-500 bg-emerald-50/80 ring-2 ring-emerald-100" : "border-slate-100 bg-slate-50/50 hover:border-emerald-200")">
+                        <input type="radio" name="isActive" value="true" class="h-4 w-4 border-slate-300 text-emerald-600 focus:ring-emerald-500" @(Model.IsActive ? "checked" : "") />
+                        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-100 text-emerald-600 transition-transform group-hover:scale-105">
+                            <i class="fas fa-circle-check"></i>
+                        </span>
+                        <span>
+                            <span class="block text-sm font-black text-slate-900">Đang phục vụ</span>
+                            <span class="block text-xs text-slate-500">Cho phép đặt suất &amp; hợp đồng</span>
+                        </span>
+                    </label>
+
+                    <label class="group flex cursor-pointer items-center gap-3 rounded-2xl border-2 p-4 transition-all @(!Model.IsActive ? "border-red-400 bg-red-50/80 ring-2 ring-red-100" : "border-slate-100 bg-slate-50/50 hover:border-red-200")">
+                        <input type="radio" name="isActive" value="false" class="h-4 w-4 border-slate-300 text-red-600 focus:ring-red-500" @(!Model.IsActive ? "checked" : "") />
+                        <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-red-600 transition-transform group-hover:scale-105">
+                            <i class="fas fa-pause-circle"></i>
+                        </span>
+                        <span>
+                            <span class="block text-sm font-black text-slate-900">Tạm ngưng</span>
+                            <span class="block text-xs text-slate-500">Ngừng phục vụ tạm thời</span>
+                        </span>
+                    </label>
+
+                    <button type="submit"
+                            class="flex w-full items-center justify-center gap-2 rounded-xl bg-green-600 py-3 text-sm font-bold text-white shadow-lg shadow-green-200 transition-all hover:bg-green-700 active:scale-[0.98]">
+                        <i class="fas fa-save"></i> Cập nhật trạng thái
+                    </button>
+                </form>
+            </div>
+
+            <p class="text-center text-[11px] text-slate-400">
+                <i class="far fa-clock mr-1"></i>
+                Cập nhật: @(Model.UpdatedAt?.ToString("dd/MM/yyyy HH:mm") ?? "—")
+                · Tạo: @Model.CreatedAt.ToString("dd/MM/yyyy")
+            </p>
+        </div>
+
+        <div class="space-y-6 xl:col-span-2">
+            <div class="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <h3 class="mb-6 flex items-center gap-2 border-b border-slate-50 pb-4 text-xs font-black uppercase tracking-widest text-slate-900">
+                    <i class="fas fa-id-badge text-green-500"></i> Liên hệ đầu mối
+                </h3>
+                <div class="flex flex-col gap-6 sm:flex-row sm:items-start">
+                    <div class="flex items-center gap-4">
+                        <div class="flex h-16 w-16 items-center justify-center rounded-2xl bg-green-100 text-2xl font-black text-green-700">
+                            @contactInitial
+                        </div>
+                        <div>
+                            <h4 class="text-lg font-black text-slate-900">@Val(Model.ContactPerson)</h4>
+                            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Người liên hệ chính</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-1 flex-col gap-3 sm:max-w-md">
+                        <a href="@(string.IsNullOrWhiteSpace(Model.Phone) ? "#" : $"tel:{Model.Phone}")"
+                           class="group flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-3.5 transition-all @(string.IsNullOrWhiteSpace(Model.Phone) ? "pointer-events-none opacity-50" : "hover:border-green-200 hover:bg-green-50")">
+                            <span class="flex items-center gap-3">
+                                <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-white text-slate-400 shadow-sm group-hover:text-green-600"><i class="fas fa-phone"></i></span>
+                                <span class="text-sm font-bold text-slate-700 group-hover:text-green-800">@Val(Model.Phone)</span>
+                            </span>
+                            <i class="fas fa-chevron-right text-xs text-slate-300 group-hover:text-green-500"></i>
+                        </a>
+                        <a href="@(string.IsNullOrWhiteSpace(Model.ContactEmail) ? "#" : $"mailto:{Model.ContactEmail}")"
+                           class="group flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-3.5 transition-all @(string.IsNullOrWhiteSpace(Model.ContactEmail) ? "pointer-events-none opacity-50" : "hover:border-green-200 hover:bg-green-50")">
+                            <span class="flex items-center gap-3 min-w-0">
+                                <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-slate-400 shadow-sm group-hover:text-green-600"><i class="fas fa-envelope"></i></span>
+                                <span class="truncate text-sm font-bold text-slate-700 group-hover:text-green-800">@Val(Model.ContactEmail)</span>
+                            </span>
+                            <i class="fas fa-chevron-right text-xs text-slate-300 group-hover:text-green-500"></i>
+                        </a>
+                        @if (!string.IsNullOrWhiteSpace(Model.Website))
+                        {
+                            <a href="@Model.Website" target="_blank" rel="noopener"
+                               class="group flex items-center justify-between rounded-xl border border-slate-100 bg-slate-50 p-3.5 transition-all hover:border-green-200 hover:bg-green-50">
+                                <span class="flex min-w-0 items-center gap-3">
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-white text-slate-400 shadow-sm group-hover:text-green-600"><i class="fas fa-globe"></i></span>
+                                    <span class="truncate text-sm font-bold text-green-700 group-hover:underline">@Model.Website</span>
+                                </span>
+                                <i class="fas fa-arrow-up-right-from-square text-xs text-slate-300 group-hover:text-green-500"></i>
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="relative overflow-hidden rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+                <div class="pointer-events-none absolute right-0 top-0 h-40 w-40 rounded-full bg-green-50/60 blur-3xl"></div>
+                <h3 class="relative z-10 mb-6 flex flex-wrap items-center gap-2 text-xs font-black uppercase tracking-widest text-slate-900">
+                    <i class="fas fa-shield-halved text-green-500"></i>
+                    Hồ sơ pháp lý &amp; đơn vị
+                    <span class="rounded-md bg-slate-100 px-2 py-0.5 text-[9px] font-bold normal-case tracking-normal text-slate-500">Chỉ đọc</span>
+                </h3>
+
+                <div class="relative z-10 grid grid-cols-1 gap-4 sm:grid-cols-2">
+                    @{
+                        var fields = new (string Label, string Value, string Icon)[]
+                        {
+                            ("Địa chỉ trụ sở", Val(Model.Address), "fa-map-pin"),
+                            ("Mã đơn vị", Val(Model.Code), "fa-barcode"),
+                            ("Mã số thuế", Val(Model.TaxCode), "fa-file-invoice"),
+                            ("Đại diện pháp luật", Val(Model.LegalRepresentative), "fa-user-tie"),
+                            ("Bậc học", Val(Model.EducationLevel), "fa-graduation-cap"),
+                            ("Phân khúc", TypeVi(), "fa-tags"),
+                        };
+                    }
+                    @foreach (var f in fields)
+                    {
+                        <div class="group rounded-2xl border border-slate-100 bg-slate-50/50 p-4 transition-all hover:border-green-100 hover:bg-white hover:shadow-md">
+                            <div class="mb-2 flex items-center gap-2">
+                                <i class="fas @f.Icon text-sm text-slate-300 transition-colors group-hover:text-green-500"></i>
+                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">@f.Label</p>
+                            </div>
+                            <p class="text-sm font-bold leading-snug text-slate-800">@f.Value</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

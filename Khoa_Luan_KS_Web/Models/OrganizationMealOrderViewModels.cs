@@ -14,6 +14,13 @@ public class OrganizationMealOrderIndexVm
     public string DateRuleHint { get; set; } = string.Empty;
 }
 
+public class OrganizationMealPreviewPromotionRequest
+{
+    public PrepareOrganizationMealContractClientRequest Order { get; set; } = new();
+    public string? PromotionCode { get; set; }
+    public int? PromotionId { get; set; }
+}
+
 public class OrganizationMealOrderReviewVm
 {
     public PrepareOrganizationMealContractClientResponse Draft { get; set; } = new();

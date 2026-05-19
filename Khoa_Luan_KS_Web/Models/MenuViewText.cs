@@ -32,10 +32,15 @@ public static class MenuViewText
     public const string SectionKicker = "L\u1ECBch ph\u1EE5c v\u1EE5";
     public const string SectionTitle = "Th\u1EF1c \u0111\u01a1n h\u00e0ng tu\u1ea7n";
     public const string SectionLead =
-        "B\u1ea3ng d\u01b0\u1edbi hi\u1ec3n th\u1ecb \u0111\u00fang l\u1ecbch ph\u1ee5c v\u1ee5. B\u1ea5m t\u00ean m\u00f3n \u0111\u1ec3 xem chi ti\u1ebft; d\u00f9ng ";
+        "L\u1ecbch theo t\u1eebng ng\u00e0y, m\u00f3n hi\u1ec3n th\u1ecb d\u1ea1ng th\u1ebb. B\u1ea5m m\u00f3n \u0111\u1ec3 xem chi ti\u1ebft ho\u1eb7c ";
 
     public const string SectionLeadStrong = "Th\u00eam c\u1ea3 tu\u1ea7n v\u00e0o gi\u1ecf";
     public const string SectionLeadEnd = " \u0111\u1ec3 ch\u1ecdn to\u00e0n b\u1ed9 su\u1ea5t, sau \u0111\u00f3 ch\u1ec9nh s\u1ed1 l\u01b0\u1ee3ng \u1edf trang gi\u1ecf h\u00e0ng.";
+
+    public const string BtnAddToCart = "Th\u00eam gi\u1ecf";
+    public const string BtnViewDetail = "Chi ti\u1ebft";
+    public const string TodayBadge = "H\u00f4m nay";
+    public const string DishPlaceholder = "Ch\u01b0a c\u00f3 \u1ea3nh";
 
     public const string BtnPrint = "In / PDF";
     public const string BtnCheckout = "\u0110\u1eb7t h\u00e0ng";
@@ -57,6 +62,9 @@ public static class MenuViewText
     public const string TableFootnote =
         "Th\u1ef1c \u0111\u01a1n c\u00f3 th\u1ec3 \u0111i\u1ec1u ch\u1ec9nh theo ngu\u1ed3n cung; gi\u00e1 theo c\u1ea5u h\u00ecnh h\u1ec7 th\u1ed1ng. Sau khi th\u00eam tu\u1ea7n v\u00e0o gi\u1ecf, b\u1ea1n ch\u1ec9nh s\u1ed1 l\u01b0\u1ee3ng t\u1eebng su\u1ea5t t\u1ea1i trang gi\u1ecf h\u00e0ng.";
 
+    public const string FilterAllDays = "T\u1ea5t c\u1ea3 ng\u00e0y";
+    public const string FilterAllSlots = "T\u1ea5t c\u1ea3 ca";
+
     public const string CertKicker = "Ti\u00eau chu\u1ea9n & ch\u1ee9ng nh\u1eadn";
     public const string CertB1 = "B\u1ed9 Y t\u1ebf";
     public const string CertB2 = "B\u1ed9 NN&PTNT";
@@ -74,7 +82,7 @@ public static class MenuViewText
     public const string BtnAddWholeWeek = "Th\u00eam c\u1ea3 tu\u1ea7n v\u00e0o gi\u1ecf";
 
     public const string BtnAddWholeWeekHint =
-        "M\u1ed7i \u00f4 trong l\u1ecbch = 1 su\u1ea5t (c\u00f3 th\u1ec3 t\u0103ng/gi\u1ea3m \u1edf gi\u1ecf h\u00e0ng).";
+        "M\u1ed7i m\u00f3n trong l\u1ecbch = 1 su\u1ea5t (c\u00f3 th\u1ec3 t\u0103ng/gi\u1ea3m \u1edf gi\u1ecf h\u00e0ng).";
 
     public const string CartWholeWeekInvalid = "Th\u1ef1c \u0111\u01a1n kh\u00f4ng h\u1ee3p l\u1ec7.";
     public const string CartWholeWeekEmpty = "Tu\u1ea7n n\u00e0y ch\u01b0a c\u00f3 m\u00f3n trong l\u1ecbch.";
@@ -82,6 +90,18 @@ public static class MenuViewText
 
     public const string CartWholeWeekSuccessBundle =
         "\u0110\u00e3 th\u00eam th\u1ef1c \u0111\u01a1n tu\u1ea7n v\u00e0o gi\u1ecf. Ch\u1ecdn ng\u00e0y d\u00f9ng su\u1ea5t v\u00e0 s\u1ed1 b\u1ed9 menu \u1edf trang gi\u1ecf.";
+
+    public static string DayLabelShort(DateTime d) => d.DayOfWeek switch
+    {
+        DayOfWeek.Monday => "T2",
+        DayOfWeek.Tuesday => "T3",
+        DayOfWeek.Wednesday => "T4",
+        DayOfWeek.Thursday => "T5",
+        DayOfWeek.Friday => "T6",
+        DayOfWeek.Saturday => "T7",
+        DayOfWeek.Sunday => "CN",
+        _ => d.DayOfWeek.ToString()
+    };
 
     public static string SlotLabel(string? slot) => slot?.ToLowerInvariant() switch
     {

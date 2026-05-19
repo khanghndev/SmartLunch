@@ -1,198 +1,182 @@
+@model Khoa_Luan_KS_Web.Areas.Admin.Models.RolePermissionIndexViewModel
+@using System.Text.Json
+@using System.Text.Json.Serialization
 @{
     ViewData["Title"] = "Phân quyền (Roles & Permissions)";
     Layout = "_LayoutAdmin";
 
-    var allRoles = ViewBag.Roles as List<Khoa_Luan_KS_Web.Services.RoleDto> ?? new();
-    var allPermissions = ViewBag.Permissions as List<Khoa_Luan_KS_Web.Services.PermissionDto> ?? new();
-
-    // Group permissions into modules
-    var modules = new Dictionary<string, string[]>
+    var jsonOptions = new JsonSerializerOptions
     {
-        { "Hệ thống", new[] { "users", "roles", "permissions", "user_roles", "user_permissions", "role_permissions", "user_tokens", "media_files", "systems" } },
-        { "Tổ chức & Đối tác", new[] { "organizations", "user_organizations", "partners", "contracts", "partner_payments" } },
-        { "Kho & Nguyên liệu", new[] { "ingredients", "ingredient_sources", "inventory", "internal_stock_issues", "internal_stock_issue_lines", "ingredient_intake_proposals", "ingredient_intake_proposal_lines", "ingredient_actual_intakes", "ingredient_actual_intake_lines" } },
-        { "Thực đơn & Món ăn", new[] { "dishes", "dish_ingredients", "weekly_menus", "menu_schedule", "menu_suggestions" } },
-        { "Kinh doanh & Đơn hàng", new[] { "orders", "order_items", "deliveries", "payments", "transactions" } },
-        { "Chăm sóc Khách hàng", new[] { "reviews", "sentiments", "complaints", "chatbot_logs" } }
+        PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    // Find all unique actions to build columns
-    var allActions = allPermissions.Select(p => p.Action).Distinct().OrderBy(a => a == "list" ? 1 : a == "read" ? 2 : a == "create" ? 3 : a == "update" ? 4 : a == "delete" ? 5 : 6).ToList();
+    var rolesJson = JsonSerializer.Serialize(Model.Roles, jsonOptions);
+    var modulesJson = JsonSerializer.Serialize(Model.Modules, jsonOptions);
+    var actionsJson = JsonSerializer.Serialize(Model.Actions, jsonOptions);
+    var permissionMapJson = JsonSerializer.Serialize(Model.PermissionMap, jsonOptions);
+    var firstModule = Model.Modules.FirstOrDefault()?.Name ?? "";
 }
 
-<div class="space-y-6" x-data="roleManager()">
-    <!-- Header -->
+<div class="space-y-6" x-data="roleManager()" x-cloak>
+    <div x-show="toast.show" x-transition
+         class="fixed bottom-6 right-6 z-50 max-w-sm rounded-2xl border px-4 py-3 shadow-xl flex items-start gap-3"
+         :class="toast.type === 'success' ? 'bg-white border-green-200 text-green-800' : 'bg-white border-red-200 text-red-800'">
+        <i class="fas mt-0.5" :class="toast.type === 'success' ? 'fa-check-circle text-green-500' : 'fa-exclamation-circle text-red-500'"></i>
+        <p class="text-sm font-semibold leading-snug" x-text="toast.message"></p>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">
+            <i class="fas fa-exclamation-triangle mr-2"></i>@TempData["Error"]
+        </div>
+    }
+
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Quản lý Phân quyền (Roles)</h1>
-            <p class="text-slate-500 mt-1 font-medium text-sm">Thiết lập quyền truy cập cho từng nhóm người dùng trong hệ thống.</p>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Quản lý phân quyền</h1>
+            <p class="text-slate-500 mt-1 font-medium text-sm">Gán quyền API (resource × action) cho từng vai trò trong hệ thống.</p>
         </div>
-        <div class="flex items-center gap-3">
-            <button class="px-5 py-2.5 admin-gradient text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:shadow-green-600/50 transition-all text-sm flex items-center gap-2">
-                <i class="fas fa-plus"></i> Tạo Role Mới
-            </button>
+        <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
+            <span class="px-3 py-1.5 rounded-lg bg-slate-100">@Model.Roles.Count vai trò</span>
+            <span class="px-3 py-1.5 rounded-lg bg-green-100 text-green-700">@Model.PermissionMap.Count tài nguyên</span>
         </div>
     </div>
 
-    <!-- Main Content Split -->
     <div class="flex flex-col lg:flex-row gap-6">
-        
-        <!-- Left: Roles List -->
-        <div class="w-full lg:w-1/3 flex flex-col gap-4">
+        <div class="w-full lg:w-1/3">
             <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col h-[calc(100vh-200px)]">
-                <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                    <h2 class="font-black text-lg text-slate-800">Danh sách Roles</h2>
-                    <span class="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-lg">@allRoles.Count Roles</span>
+                <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+                    <h2 class="font-black text-lg text-slate-800">Danh sách vai trò</h2>
                 </div>
-                
                 <div class="p-3 border-b border-slate-100">
                     <div class="relative">
                         <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                        <input type="text" x-model="searchRole" placeholder="Tìm Role..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm font-medium outline-none focus:border-green-500 transition-colors" />
+                        <input type="text" x-model="searchRole" placeholder="Tìm vai trò..."
+                               class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm font-medium outline-none focus:border-green-500" />
                     </div>
                 </div>
-
                 <div class="flex-1 overflow-y-auto custom-scrollbar p-2">
+                    <template x-if="filteredRoles.length === 0">
+                        <p class="text-center text-sm text-slate-400 py-8">Không có vai trò phù hợp.</p>
+                    </template>
                     <template x-for="role in filteredRoles" :key="role.id">
-                        <div @@click="selectRole(role)" 
-                             class="p-4 rounded-xl cursor-pointer transition-all border mb-2 group"
-                             :class="selectedRole && selectedRole.id === role.id ? 'bg-green-50 border-green-200 shadow-sm' : 'bg-white border-transparent hover:bg-slate-50 hover:border-slate-200'">
-                            <div class="flex items-center justify-between">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors"
-                                         :class="selectedRole && selectedRole.id === role.id ? 'bg-green-500 text-white shadow-md shadow-green-500/30' : 'bg-slate-100 text-slate-500 group-hover:bg-white group-hover:text-green-600'">
+                        <button type="button" @@click="selectRole(role)"
+                                class="w-full text-left p-4 rounded-xl transition-all border mb-2"
+                                :class="selectedRole?.id === role.id ? 'bg-green-50 border-green-200 shadow-sm' : 'bg-white border-transparent hover:bg-slate-50 hover:border-slate-200'">
+                            <div class="flex items-center justify-between gap-2">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
+                                         :class="selectedRole?.id === role.id ? 'bg-green-500 text-white' : 'bg-slate-100 text-slate-500'">
                                         <i class="fas" :class="role.isSystemRole ? 'fa-shield-alt' : 'fa-users'"></i>
                                     </div>
-                                    <div>
-                                        <h3 class="font-bold text-sm transition-colors"
-                                            :class="selectedRole && selectedRole.id === role.id ? 'text-green-800' : 'text-slate-700 group-hover:text-green-600'" 
-                                            x-text="role.name"></h3>
+                                    <div class="min-w-0">
+                                        <div class="flex items-center gap-2">
+                                            <h3 class="font-bold text-sm truncate" x-text="role.name"></h3>
+                                            <span x-show="!role.isActive" class="text-[10px] px-1.5 py-0.5 rounded bg-red-100 text-red-600 font-bold">OFF</span>
+                                        </div>
                                         <p class="text-xs text-slate-500 mt-0.5 line-clamp-1" x-text="role.description || 'Không có mô tả'"></p>
                                     </div>
                                 </div>
-                                <i class="fas fa-chevron-right text-xs transition-transform"
-                                   :class="selectedRole && selectedRole.id === role.id ? 'text-green-500 translate-x-1' : 'text-slate-300 opacity-0 group-hover:opacity-100'"></i>
+                                <span class="text-[10px] font-black text-slate-400 shrink-0" x-show="selectedRole?.id === role.id"
+                                      x-text="rolePermissionCount + ' quyền'"></span>
                             </div>
-                        </div>
+                        </button>
                     </template>
                 </div>
             </div>
         </div>
 
-        <!-- Right: Permission Matrix -->
         <div class="w-full lg:w-2/3">
             <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden flex flex-col h-[calc(100vh-200px)] relative">
-                
-                <!-- Loading Overlay -->
-                <div x-show="isLoading" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center" style="display:none;">
+                <div x-show="isLoading" class="absolute inset-0 bg-white/80 backdrop-blur-sm z-20 flex flex-col items-center justify-center">
                     <div class="w-12 h-12 border-4 border-slate-200 border-t-green-500 rounded-full animate-spin mb-3"></div>
                     <p class="text-sm font-bold text-slate-500">Đang tải phân quyền...</p>
                 </div>
 
-                <div x-show="!selectedRole" class="absolute inset-0 z-10 flex flex-col items-center justify-center bg-slate-50/50">
-                    <div class="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center text-slate-300 text-4xl mb-4">
-                        <i class="fas fa-hand-pointer"></i>
-                    </div>
-                    <h3 class="text-lg font-black text-slate-700">Chưa chọn Role</h3>
-                    <p class="text-sm text-slate-500 mt-1">Vui lòng chọn một Role bên trái để xem và cấu hình phân quyền.</p>
-                </div>
-
-                <!-- Detail Header -->
-                <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center" x-show="selectedRole" style="display:none;">
-                    <div>
-                        <h2 class="font-black text-xl text-slate-800 flex items-center gap-2">
-                            Chi tiết quyền: <span class="text-green-600" x-text="selectedRole ? selectedRole.name : ''"></span>
-                            <span x-show="selectedRole && selectedRole.isSystemRole" class="px-2 py-0.5 bg-slate-800 text-white text-[10px] uppercase tracking-widest rounded shadow-sm relative -top-0.5">System</span>
-                        </h2>
-                    </div>
-                </div>
-
-                <!-- Tabs -->
-                <div class="px-5 pt-3 border-b border-slate-200 bg-white overflow-x-auto custom-scrollbar" x-show="selectedRole" style="display:none;">
-                    <div class="flex gap-6 min-w-max">
-                        @foreach (var module in modules.Keys)
-                        {
-                            <button @@click="activeTab = '@module'"
-                                    class="pb-3 text-sm font-bold border-b-2 transition-all"
-                                    :class="activeTab === '@module' ? 'border-green-500 text-green-600' : 'border-transparent text-slate-500 hover:text-slate-800'">
-                                @module
-                            </button>
-                        }
-                    </div>
-                </div>
-
-                <!-- Matrix Content -->
-                <div class="flex-1 overflow-y-auto bg-slate-50/30 relative" x-show="selectedRole" style="display:none;">
-                    @foreach (var module in modules)
-                    {
-                        var moduleResources = module.Value;
-                        
-                        <div x-show="activeTab === '@module.Key'" class="p-0 animate-[fadeIn_0.3s_ease-out]">
-                            <table class="w-full text-left border-collapse">
-                                <thead class="sticky top-0 bg-white shadow-sm z-10 outline outline-1 outline-slate-200">
-                                    <tr class="text-[11px] uppercase tracking-widest text-slate-500 font-black">
-                                        <th class="p-4 pl-6 border-r border-slate-100 bg-slate-50">Resource (Tài nguyên)</th>
-                                        @foreach (var action in allActions)
-                                        {
-                                            <th class="p-4 text-center min-w-[80px]">
-                                                <div class="flex flex-col items-center gap-1">
-                                                    @{
-                                                        var icon = action switch {
-                                                            "read" => "fa-eye text-blue-500",
-                                                            "create" => "fa-plus-circle text-green-500",
-                                                            "update" => "fa-edit text-orange-500",
-                                                            "delete" => "fa-trash text-red-500",
-                                                            "list" => "fa-list text-purple-500",
-                                                            _ => "fa-cog text-slate-400"
-                                                        };
-                                                    }
-                                                    <i class="fas @icon"></i>
-                                                    @action
-                                                </div>
-                                            </th>
-                                        }
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-slate-100 text-sm bg-white">
-                                    @foreach (var resource in moduleResources)
-                                    {
-                                        <tr class="hover:bg-slate-50/80 transition-colors group">
-                                            <td class="p-4 pl-6 border-r border-slate-100 font-bold text-slate-700 bg-slate-50/30 group-hover:bg-slate-100/50">
-                                                @resource
-                                            </td>
-                                            @foreach (var action in allActions)
-                                            {
-                                                var permission = allPermissions.FirstOrDefault(p => p.Resource == resource && p.Action == action);
-                                                <td class="p-4 text-center">
-                                                    @if (permission != null)
-                                                    {
-                                                        <label class="relative inline-flex items-center cursor-pointer">
-                                                            <input type="checkbox" class="sr-only peer" 
-                                                                   :checked="hasPermission(@permission.Id)"
-                                                                   @@change="togglePermission(@permission.Id, $event.target.checked)"
-                                                                   :disabled="selectedRole.isSystemRole">
-                                                            <div class="w-11 h-6 bg-slate-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-green-500"
-                                                                 :class="selectedRole.isSystemRole ? 'opacity-50 cursor-not-allowed' : ''"></div>
-                                                        </label>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="text-slate-200"><i class="fas fa-minus"></i></span>
-                                                    }
-                                                </td>
-                                            }
-                                        </tr>
-                                    }
-                                </tbody>
-                            </table>
+                <template x-if="!selectedRole">
+                    <div class="flex-1 flex flex-col items-center justify-center bg-slate-50/50 p-8 text-center">
+                        <div class="w-20 h-20 bg-white rounded-full shadow-sm flex items-center justify-center text-slate-300 text-4xl mb-4">
+                            <i class="fas fa-hand-pointer"></i>
                         </div>
-                    }
-                </div>
-                
-                <div class="p-4 border-t border-slate-200 bg-yellow-50 flex items-center gap-3 text-sm text-yellow-800" x-show="selectedRole && selectedRole.isSystemRole" style="display:none;">
-                    <i class="fas fa-lock text-yellow-600"></i>
-                    <strong>Role Hệ thống:</strong> Bạn không thể thay đổi quyền của Role này.
-                </div>
+                        <h3 class="text-lg font-black text-slate-700">Chọn một vai trò</h3>
+                        <p class="text-sm text-slate-500 mt-1 max-w-xs">Chọn vai trò bên trái để xem và bật/tắt quyền.</p>
+                    </div>
+                </template>
+
+                <template x-if="selectedRole">
+                    <div class="flex flex-col flex-1 min-h-0">
+                        <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+                            <h2 class="font-black text-xl text-slate-800 flex flex-wrap items-center gap-2">
+                                <span>Quyền của</span>
+                                <span class="text-green-600" x-text="selectedRole.name"></span>
+                                <span x-show="selectedRole.isSystemRole"
+                                      class="px-2 py-0.5 bg-slate-800 text-white text-[10px] uppercase tracking-widest rounded">Vai trò hệ thống</span>
+                            </h2>
+                            <p class="text-xs text-slate-500 mt-1 font-medium">Bật/tắt từng ô để gán hoặc thu hồi quyền.</p>
+                        </div>
+
+                        <div class="px-5 pt-3 border-b border-slate-200 bg-white overflow-x-auto custom-scrollbar shrink-0">
+                            <div class="flex gap-4 min-w-max">
+                                <template x-for="mod in modules" :key="mod.name">
+                                    <button type="button" @@click="activeTab = mod.name"
+                                            class="pb-3 text-sm font-bold border-b-2 transition-all whitespace-nowrap"
+                                            :class="activeTab === mod.name ? 'border-green-500 text-green-600' : 'border-transparent text-slate-500 hover:text-slate-800'"
+                                            x-text="mod.name"></button>
+                                </template>
+                            </div>
+                        </div>
+
+                        <div class="flex-1 overflow-y-auto bg-slate-50/30 min-h-0">
+                            <template x-for="mod in modules" :key="'panel-' + mod.name">
+                                <div x-show="activeTab === mod.name" class="p-0">
+                                    <table class="w-full text-left border-collapse">
+                                        <thead class="sticky top-0 bg-white shadow-sm z-10 outline outline-1 outline-slate-200">
+                                            <tr class="text-[11px] uppercase tracking-widest text-slate-500 font-black">
+                                                <th class="p-4 pl-6 border-r border-slate-100 bg-slate-50 min-w-[200px]">Resource</th>
+                                                <template x-for="action in actions" :key="action">
+                                                    <th class="p-3 text-center min-w-[72px]" x-text="action"></th>
+                                                </template>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="divide-y divide-slate-100 text-sm bg-white">
+                                            <template x-for="resource in mod.resources" :key="resource">
+                                                <tr class="hover:bg-slate-50/80">
+                                                    <td class="p-3 pl-6 border-r border-slate-100 font-bold text-slate-700 bg-slate-50/30 text-xs" x-text="resource"></td>
+                                                    <template x-for="action in actions" :key="resource + '-' + action">
+                                                        <td class="p-2 text-center">
+                                                            <template x-if="getPermissionId(resource, action)">
+                                                                <label class="relative inline-flex items-center cursor-pointer"
+                                                                       :class="isSaving ? 'pointer-events-none opacity-60' : ''">
+                                                                    <input type="checkbox" class="sr-only peer"
+                                                                           :checked="hasPermission(getPermissionId(resource, action))"
+                                                                           @@change="togglePermission(getPermissionId(resource, action), $event.target.checked)" />
+                                                                    <div class="w-10 h-5 bg-slate-200 rounded-full peer peer-checked:bg-green-500
+                                                                         after:content-[''] after:absolute after:top-[2px] after:left-[2px]
+                                                                         after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all
+                                                                         peer-checked:after:translate-x-5"></div>
+                                                                </label>
+                                                            </template>
+                                                            <template x-if="!getPermissionId(resource, action)">
+                                                                <span class="text-slate-200 text-xs">—</span>
+                                                            </template>
+                                                        </td>
+                                                    </template>
+                                                </tr>
+                                            </template>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </template>
+                        </div>
+
+                        <div class="p-3 border-t border-slate-200 bg-slate-50 text-xs text-slate-600 flex items-center gap-2 shrink-0">
+                            <i class="fas fa-info-circle text-green-600"></i>
+                            <span>Vai trò hệ thống không thể xóa, nhưng vẫn chỉnh sửa được quyền gán.</span>
+                        </div>
+                    </div>
+                </template>
             </div>
         </div>
     </div>
@@ -202,77 +186,97 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('roleManager', () => ({
-                roles: @Html.Raw(Json.Serialize(allRoles.Select(r => new { r.Id, r.Name, r.Description, r.IsSystemRole }))),
+                roles: @Html.Raw(rolesJson),
+                modules: @Html.Raw(modulesJson),
+                actions: @Html.Raw(actionsJson),
+                permissionMap: @Html.Raw(permissionMapJson),
                 searchRole: '',
                 selectedRole: null,
-                activeTab: '@modules.Keys.First()',
+                activeTab: @Html.Raw(JsonSerializer.Serialize(firstModule, jsonOptions)),
                 isLoading: false,
-                rolePermissions: [], // array of permission IDs
+                isSaving: false,
+                rolePermissions: [],
+                toast: { show: false, message: '', type: 'success' },
 
                 get filteredRoles() {
-                    if (!this.searchRole) return this.roles;
-                    const query = this.searchRole.toLowerCase();
-                    return this.roles.filter(r => r.name.toLowerCase().includes(query));
+                    const q = (this.searchRole || '').trim().toLowerCase();
+                    if (!q) return this.roles;
+                    return this.roles.filter(r =>
+                        (r.name || '').toLowerCase().includes(q) ||
+                        (r.description || '').toLowerCase().includes(q));
+                },
+
+                get rolePermissionCount() {
+                    return this.rolePermissions.length;
+                },
+
+                getPermissionId(resource, action) {
+                    const res = this.permissionMap[resource];
+                    if (!res) return null;
+                    const id = res[action];
+                    return id ? Number(id) : null;
+                },
+
+                hasPermission(permissionId) {
+                    const pid = Number(permissionId);
+                    return this.rolePermissions.some(id => Number(id) === pid);
+                },
+
+                showToast(message, type = 'success') {
+                    this.toast = { show: true, message, type };
+                    clearTimeout(this._toastTimer);
+                    this._toastTimer = setTimeout(() => { this.toast.show = false; }, 3200);
                 },
 
                 async selectRole(role) {
                     this.selectedRole = role;
                     this.isLoading = true;
+                    this.rolePermissions = [];
                     try {
                         const res = await fetch(`/Admin/Role/GetRolePermissions?roleId=${role.id}`);
                         const data = await res.json();
                         if (data.success) {
-                            this.rolePermissions = data.permissionIds;
+                            this.rolePermissions = (data.permissionIds || []).map(id => Number(id));
                         } else {
-                            toastr.error('Lỗi tải quyền: ' + data.message);
+                            this.showToast(data.message || 'Không tải được quyền.', 'error');
                         }
-                    } catch (e) {
-                        toastr.error('Không thể kết nối đến server.');
+                    } catch {
+                        this.showToast('Không kết nối được máy chủ.', 'error');
                     } finally {
                         this.isLoading = false;
                     }
                 },
 
-                hasPermission(permissionId) {
-                    return this.rolePermissions.includes(permissionId);
-                },
-
                 async togglePermission(permissionId, isGranted) {
-                    if (!this.selectedRole) return;
-                    
-                    // Optimistic update
+                    if (!this.selectedRole || this.isSaving) return;
+                    const pid = Number(permissionId);
+                    const prev = [...this.rolePermissions];
+
                     if (isGranted) {
-                        this.rolePermissions.push(permissionId);
+                        if (!this.hasPermission(pid)) this.rolePermissions.push(pid);
                     } else {
-                        this.rolePermissions = this.rolePermissions.filter(id => id !== permissionId);
+                        this.rolePermissions = this.rolePermissions.filter(id => Number(id) !== pid);
                     }
 
+                    this.isSaving = true;
                     try {
                         const res = await fetch('/Admin/Role/TogglePermission', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
                             body: JSON.stringify({
                                 roleId: this.selectedRole.id,
-                                permissionId: permissionId,
+                                permissionId: pid,
                                 grant: isGranted
                             })
                         });
                         const data = await res.json();
-                        if (!data.success) {
-                            throw new Error(data.message);
-                        }
-                        toastr.success(isGranted ? 'Đã cấp quyền thành công.' : 'Đã thu hồi quyền thành công.');
+                        if (!data.success) throw new Error(data.message || 'Lưu thất bại');
+                        this.showToast(data.message || (isGranted ? 'Đã cấp quyền.' : 'Đã thu hồi quyền.'), 'success');
                     } catch (e) {
-                        // Revert optimistic update
-                        if (!isGranted) {
-                            this.rolePermissions.push(permissionId);
-                        } else {
-                            this.rolePermissions = this.rolePermissions.filter(id => id !== permissionId);
-                        }
-                        toastr.error('Lỗi lưu quyền: ' + e.message);
-                        
-                        // Force alpine to re-evaluate the checkbox checked state
-                        this.rolePermissions = [...this.rolePermissions];
+                        this.rolePermissions = prev;
+                        this.showToast(e.message || 'Lỗi lưu quyền.', 'error');
+                    } finally {
+                        this.isSaving = false;
                     }
                 }
             }));

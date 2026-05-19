@@ -1,7 +1,9 @@
 @{
-    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? ""; var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+    var controller = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    var action = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
     var isCatalog = controller == "Catalog";
-    var isMenu = controller == "Menu";
+    // Bếp & Thực đơn: Menu + MenuSuggestion (Gợi ý AI) cùng nhóm sidebar
+    var isMenu = controller == "Menu" || controller == "MenuSuggestion";
     var defaultOpenMenu = isCatalog ? "'catalog'" : (isMenu ? "'menu'" : "null");
 }
 <!DOCTYPE html>

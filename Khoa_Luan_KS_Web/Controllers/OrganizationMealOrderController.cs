@@ -98,6 +98,77 @@ public class OrganizationMealOrderController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> EligiblePromotions(
+        [FromBody] PrepareOrganizationMealContractClientRequest request,
+        CancellationToken ct)
+    {
+        if (!IsOrganizationMealOrderUser(User))
+            return Forbid();
+
+        var accessToken = HttpContext.Session.GetString("access_token");
+        if (string.IsNullOrEmpty(accessToken))
+            return Unauthorized();
+
+        try
+        {
+            var profile = await _authClient.GetProfileAsync(accessToken, ct);
+            if (profile.Unit == null || profile.Unit.Id <= 0)
+                return BadRequest(new { message = "Tài khoản chưa được gán đơn vị." });
+
+            request.OrganizationId = profile.Unit.Id;
+            var previewReq = OrganizationMealPromotionPreviewBuilder.ToPreviewRequest(request, profile.Unit.Id);
+            if (previewReq.Subtotal <= 0)
+                return BadRequest(new { message = "Đơn chưa có suất món chính để áp dụng khuyến mãi." });
+
+            var result = await _masterDataClient.ListEligiblePromotionsAsync(previewReq, accessToken, ct);
+            return Json(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> PreviewPromotion(
+        [FromBody] OrganizationMealPreviewPromotionRequest request,
+        CancellationToken ct)
+    {
+        if (!IsOrganizationMealOrderUser(User))
+            return Forbid();
+
+        var accessToken = HttpContext.Session.GetString("access_token");
+        if (string.IsNullOrEmpty(accessToken))
+            return Unauthorized();
+
+        try
+        {
+            var profile = await _authClient.GetProfileAsync(accessToken, ct);
+            if (profile.Unit == null || profile.Unit.Id <= 0)
+                return BadRequest(new { message = "Tài khoản chưa được gán đơn vị." });
+
+            request.Order.OrganizationId = profile.Unit.Id;
+            var previewReq = OrganizationMealPromotionPreviewBuilder.ToPreviewRequest(
+                request.Order,
+                profile.Unit.Id,
+                request.PromotionCode);
+            previewReq.PromotionId = request.PromotionId;
+
+            if (previewReq.Subtotal <= 0)
+                return BadRequest(new { message = "Đơn chưa có suất món chính." });
+
+            var result = await _masterDataClient.PreviewPromotionAsync(previewReq, accessToken, ct);
+            return Json(result);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> PrepareContract([FromBody] PrepareOrganizationMealContractClientRequest request, CancellationToken ct)
     {
         if (!IsOrganizationMealOrderUser(User))

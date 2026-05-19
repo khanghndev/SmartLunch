@@ -87,6 +87,7 @@
                     {
                         @foreach (var o in orders)
                         {
+                            var signedPdfUrl = OrderSignedDocumentHelper.GetSignedPdfUrl(o);
                             <tr class="transition-colors hover:bg-gray-50/80">
                                 <td class="px-6 py-4 font-bold text-gray-900">@(string.IsNullOrEmpty(o.InvoiceCode) ? "#" + o.Id : o.InvoiceCode)</td>
                                 <td class="px-6 py-4 text-gray-600">@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
@@ -119,7 +120,18 @@
                                     }
                                     <a asp-action="OrderDetail" asp-route-id="@o.Id" class="font-bold text-orange-600 hover:text-orange-800">Chi tiết</a>
                                     <span class="text-gray-300">|</span>
-                                    <a asp-action="Invoice" asp-route-id="@o.Id" target="_blank" class="font-bold text-slate-600 hover:text-slate-900">Hóa đơn</a>
+                                    @if (!string.IsNullOrEmpty(signedPdfUrl))
+                                    {
+                                        <a href="@signedPdfUrl" target="_blank" rel="noopener" class="font-bold text-slate-600 hover:text-slate-900">Hóa đơn</a>
+                                    }
+                                    else if (isOrg)
+                                    {
+                                        <a asp-action="Contracts" asp-route-orderId="@o.Id" class="font-bold text-slate-600 hover:text-slate-900" title="Ký phụ lục để tạo PDF">Hóa đơn</a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-action="Invoice" asp-route-id="@o.Id" target="_blank" class="font-bold text-slate-600 hover:text-slate-900">Hóa đơn</a>
+                                    }
                                 </td>
                             </tr>
                         }

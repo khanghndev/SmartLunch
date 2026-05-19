@@ -6,6 +6,7 @@
     ViewData["Title"] = "Chi tiết đơn hàng";
     Layout = "_LayoutCustomer";
     var sig = ViewBag.SignatureDataUrl as string;
+    var signedPdfUrl = OrderSignedDocumentHelper.GetSignedPdfUrl(Model);
 }
 
 <div class="mx-auto max-w-3xl px-4 py-10 sm:px-6">
@@ -50,15 +51,11 @@
     }
 
     <div class="mb-6 flex flex-wrap gap-2">
-        <a asp-action="Invoice" asp-route-id="@Model.Id" target="_blank"
-           class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-slate-800 sm:text-sm">
-            Xuất hóa đơn (in / PDF)
-        </a>
-        @if (!string.IsNullOrEmpty(Model.AnnexPdfUrl))
+        @if (!string.IsNullOrEmpty(signedPdfUrl))
         {
-            <a href="@Model.AnnexPdfUrl" target="_blank" rel="noopener"
-               class="inline-flex items-center gap-2 rounded-xl border border-emerald-300 bg-emerald-50 px-4 py-2.5 text-xs font-bold text-emerald-900 hover:bg-emerald-100 sm:text-sm">
-                Xem / tải PDF phụ lục đặt hàng
+            <a href="@signedPdfUrl" target="_blank" rel="noopener"
+               class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-slate-800 sm:text-sm">
+                <i data-lucide="file-text" class="h-4 w-4"></i> Xem / tải PDF hợp đồng đã ký
             </a>
         }
         else if (User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp"))
@@ -66,6 +63,13 @@
             <a asp-action="Contracts" asp-route-orderId="@Model.Id"
                class="inline-flex items-center gap-2 rounded-xl border border-violet-300 bg-violet-50 px-4 py-2.5 text-xs font-bold text-violet-900 hover:bg-violet-100 sm:text-sm">
                 Ký phụ lục đặt hàng
+            </a>
+        }
+        else
+        {
+            <a asp-action="Invoice" asp-route-id="@Model.Id" target="_blank"
+               class="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-4 py-2.5 text-xs font-bold text-white hover:bg-slate-800 sm:text-sm">
+                Xuất hóa đơn (in / PDF)
             </a>
         }
         @if ((User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp"))

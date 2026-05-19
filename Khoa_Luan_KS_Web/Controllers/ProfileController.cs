@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using System.Text.Encodings.Web;
 using System.Text.Json;
+using Khoa_Luan_KS_Web.Helpers;
 using Khoa_Luan_KS_Web.Models;
 using Khoa_Luan_KS_Web.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -104,8 +105,21 @@ namespace Khoa_Luan_KS_Web.Controllers
             try
             {
                 var res = await _masterDataClient.GetOrderAsync(id, accessToken, ct);
+                var order = res.Order;
+
+                var signedPdfUrl = OrderSignedDocumentHelper.GetSignedPdfUrl(order);
+                if (!string.IsNullOrEmpty(signedPdfUrl))
+                    return Redirect(signedPdfUrl);
+
+                if (IsOrganizationAccount(User))
+                {
+                    TempData["Error"] =
+                        "Đơn này chưa có file PDF hợp đồng/phụ lục đã ký. Vui lòng ký phụ lục trước khi tải.";
+                    return RedirectToAction(nameof(Contracts), new { orderId = id });
+                }
+
                 ViewBag.SignatureDataUrl = HttpContext.Session.GetString($"order_sig_{id}");
-                return View(res.Order);
+                return View(order);
             }
             catch
             {
