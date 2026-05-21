@@ -1,260 +1,298 @@
+@model Khoa_Luan_KS_Web.Areas.Manager.Models.ManagerOrdersPageVm
+@using System.Globalization
+@using Khoa_Luan_KS_Web.Helpers
 @{
     ViewData["Title"] = "Quản lý Đơn hàng";
     Layout = "_LayoutManager";
+    var vi = CultureInfo.GetCultureInfo("vi-VN");
+    string FmtMoney(decimal v) => v.ToString("N0", vi) + " đ";
+    int TotalQty(Khoa_Luan_KS_Web.Services.OrderDetailClientDto o) => o.Items.Sum(i => i.Quantity);
+    string MealSummary(Khoa_Luan_KS_Web.Services.OrderDetailClientDto o) => o.Items.Count switch
+    {
+        0 => "—",
+        1 => o.Items[0].DishName,
+        _ => o.Items[0].DishName + $" +{o.Items.Count - 1} món"
+    };
 }
 
 <div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="orderManager()">
-    
-    <!-- HEADER -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-3xl font-black text-slate-800 tracking-tight">Quản lý Đơn Hàng</h1>
-            <p class="text-slate-500 mt-1 font-medium text-sm">Quản lý, điều phối và theo dõi các đơn đặt hàng từ đối tác B2B.</p>
-        </div>
-        
-        <div class="flex items-center gap-3">
-            <button class="px-5 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2 text-sm">
-                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                Tạo đơn thủ công
-            </button>
-            <button class="px-5 py-2 bg-slate-800 text-white font-bold rounded-xl shadow-lg hover:bg-slate-900 transition-all flex items-center gap-2 text-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                Xuất Báo Cáo
-            </button>
+            <p class="text-slate-500 mt-1 font-medium text-sm">Tiếp nhận, xác nhận và theo dõi đơn đặt suất ăn B2B từ hệ thống.</p>
         </div>
     </div>
 
-    <!-- STATS WIDGETS -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-green-300 transition-colors cursor-pointer">
+        <a href="@Url.Action("Index", new { page = 1, pageSize = Model.PageSize, status = "pending" })"
+           class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between hover:border-slate-300 transition-colors">
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Chờ xác nhận</p>
-                <p class="text-2xl font-black text-slate-800">12</p>
+                <p class="text-2xl font-black text-slate-800">@Model.CountPending</p>
             </div>
-            <div class="w-12 h-12 rounded-full bg-slate-50 text-slate-400 flex items-center justify-center group-hover:bg-slate-100 group-hover:text-slate-600 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div class="w-12 h-12 rounded-full bg-slate-50 text-slate-500 flex items-center justify-center">
+                <i class="fas fa-clock text-lg"></i>
             </div>
-        </div>
-        
-        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-yellow-300 transition-colors cursor-pointer">
+        </a>
+        <a href="@Url.Action("Index", new { page = 1, pageSize = Model.PageSize, status = "confirmed" })"
+           class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between hover:border-yellow-300 transition-colors">
+            <div>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Đã xác nhận / Chuẩn bị</p>
+                <p class="text-2xl font-black text-slate-800">@Model.CountConfirmed</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center">
+                <i class="fas fa-utensils text-lg"></i>
+            </div>
+        </a>
+        <a href="@Url.Action("Index", new { page = 1, pageSize = Model.PageSize, status = "preparing" })"
+           class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between hover:border-amber-300 transition-colors">
             <div>
                 <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Đang chuẩn bị</p>
-                <p class="text-2xl font-black text-slate-800">45</p>
+                <p class="text-2xl font-black text-slate-800">@Model.CountPreparing</p>
             </div>
-            <div class="w-12 h-12 rounded-full bg-yellow-50 text-yellow-500 flex items-center justify-center group-hover:bg-yellow-100 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+            <div class="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center">
+                <i class="fas fa-fire text-lg"></i>
             </div>
-        </div>
-        
-        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-blue-300 transition-colors cursor-pointer">
+        </a>
+        <a href="@Url.Action("Index", new { page = 1, pageSize = Model.PageSize, status = "delivered" })"
+           class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between hover:border-green-300 transition-colors">
             <div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Đang giao hàng</p>
-                <p class="text-2xl font-black text-slate-800">18</p>
+                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Đã giao (giao hôm nay)</p>
+                <p class="text-2xl font-black text-green-600">@Model.CountDeliveredToday</p>
+                <p class="text-[10px] text-slate-400 font-medium">Tổng đã giao: @Model.CountDelivered</p>
             </div>
-            <div class="w-12 h-12 rounded-full bg-blue-50 text-blue-500 flex items-center justify-center group-hover:bg-blue-100 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+            <div class="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center">
+                <i class="fas fa-check-circle text-lg"></i>
             </div>
-        </div>
-
-        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm flex items-center justify-between group hover:border-green-300 transition-colors cursor-pointer">
-            <div>
-                <p class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Hoàn thành (Hôm nay)</p>
-                <p class="text-2xl font-black text-green-600">120</p>
-            </div>
-            <div class="w-12 h-12 rounded-full bg-green-50 text-green-600 flex items-center justify-center group-hover:bg-green-100 transition-colors">
-                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-            </div>
-        </div>
+        </a>
     </div>
 
-    <!-- MAIN DATA GRID -->
     <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden flex flex-col">
-        <!-- Toolbar -->
-        <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-4 justify-between items-center bg-slate-50/50">
-            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto">
-                <div class="relative w-full sm:w-72">
-                    <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                    <input type="text" x-model="searchQuery" placeholder="Tìm mã đơn, tên khách hàng..." class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm font-medium outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+        <form method="get" asp-area="Manager" asp-controller="Order" asp-action="Index"
+              class="p-4 border-b border-slate-100 flex flex-col lg:flex-row gap-4 justify-between items-end bg-slate-50/50">
+            <input type="hidden" name="page" value="1" />
+            <input type="hidden" name="pageSize" value="@Model.PageSize" />
+            <div class="flex flex-wrap items-end gap-3 w-full">
+                <div class="relative flex-1 min-w-[200px] max-w-sm">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Tìm kiếm</label>
+                    <input type="text" name="search" value="@Model.Search" placeholder="Mã HĐ, ID đơn, tên đơn vị..."
+                           class="w-full bg-white border border-slate-200 rounded-xl pl-9 pr-4 py-2 text-sm font-medium outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" />
+                    <i class="fas fa-search text-slate-400 absolute left-3 bottom-2.5 text-sm"></i>
                 </div>
-                
-                <select x-model="statusFilter" class="w-full sm:w-auto bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500">
-                    <option value="all">Tất cả trạng thái</option>
-                    <option value="Chờ xác nhận">Chờ xác nhận</option>
-                    <option value="Đang chuẩn bị">Đang chuẩn bị</option>
-                    <option value="Đang giao">Đang giao</option>
-                    <option value="Đã hoàn thành">Đã hoàn thành</option>
-                </select>
-                
-                <input type="date" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500" />
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Trạng thái</label>
+                    <select name="status" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2 outline-none focus:border-green-500 min-w-[160px]">
+                        <option value="">Tất cả</option>
+                        <option value="pending" selected="@(Model.FilterStatus == "pending")">Chờ xác nhận</option>
+                        <option value="confirmed" selected="@(Model.FilterStatus == "confirmed")">Đã xác nhận</option>
+                        <option value="preparing" selected="@(Model.FilterStatus == "preparing")">Đang chuẩn bị</option>
+                        <option value="delivered" selected="@(Model.FilterStatus == "delivered")">Đã giao</option>
+                        <option value="cancelled" selected="@(Model.FilterStatus == "cancelled")">Đã hủy</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Ngày giao</label>
+                    <input type="date" name="scheduledOn" value="@(Model.ScheduledOn?.ToString("yyyy-MM-dd"))"
+                           class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2 outline-none focus:border-green-500" />
+                </div>
+                <button type="submit" class="px-4 py-2 rounded-xl bg-slate-800 text-white text-sm font-bold hover:bg-slate-900">Lọc</button>
+                <a asp-area="Manager" asp-controller="Order" asp-action="Index"
+                   class="px-4 py-2 rounded-xl border border-slate-200 text-sm font-bold text-slate-600 hover:bg-white">Xóa lọc</a>
             </div>
-        </div>
-        
-        <!-- Table -->
+        </form>
+
         <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-white border-b border-slate-200 text-xs uppercase tracking-wider text-slate-400 font-black">
-                        <th class="p-4 pl-6">Mã Đơn</th>
-                        <th class="p-4">Khách hàng / Doanh nghiệp</th>
-                        <th class="p-4">Suất ăn & Số lượng</th>
-                        <th class="p-4">Thời gian giao</th>
-                        <th class="p-4 text-center">Tổng tiền</th>
-                        <th class="p-4 text-center">Trạng thái</th>
-                        <th class="p-4 pr-6 text-right">Thao tác</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50 text-sm">
-                    <template x-for="order in filteredOrders" :key="order.id">
-                        <tr class="hover:bg-slate-50/50 transition-colors group cursor-pointer" @@click="openDetail(order)">
-                            <td class="p-4 pl-6 font-black text-slate-700" x-text="order.code"></td>
-                            <td class="p-4">
-                                <div class="font-bold text-slate-800" x-text="order.customer"></div>
-                                <div class="text-xs text-slate-500 font-medium" x-text="order.address"></div>
-                            </td>
-                            <td class="p-4">
-                                <div class="flex items-center gap-2">
-                                    <div class="font-bold text-slate-700 truncate max-w-[200px]" x-text="order.type"></div>
-                                    <span class="text-xs font-black bg-slate-100 text-slate-600 px-1.5 py-0.5 rounded" x-text="'x' + order.quantity"></span>
-                                </div>
-                            </td>
-                            <td class="p-4">
-                                <div class="font-bold text-slate-700" x-text="order.time"></div>
-                            </td>
-                            <td class="p-4 text-center font-bold text-slate-800" x-text="order.total"></td>
-                            <td class="p-4 text-center">
-                                <span class="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg border" :class="getStatusColor(order.status)" x-text="order.status"></span>
-                            </td>
-                            <td class="p-4 pr-6 text-right">
-                                <button @@click.stop="openDetail(order)" class="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                                </button>
-                            </td>
+            @if (!Model.Orders.Items.Any())
+            {
+                <div class="p-12 text-center text-slate-400">
+                    <i class="fas fa-inbox text-4xl mb-3 opacity-40"></i>
+                    <p class="font-medium">Không có đơn hàng phù hợp bộ lọc.</p>
+                </div>
+            }
+            else
+            {
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white border-b border-slate-200 text-xs uppercase tracking-wider text-slate-400 font-black">
+                            <th class="p-4 pl-6">Mã đơn</th>
+                            <th class="p-4">Khách hàng / Đơn vị</th>
+                            <th class="p-4">Suất ăn</th>
+                            <th class="p-4">Ngày giao</th>
+                            <th class="p-4 text-right">Tổng tiền</th>
+                            <th class="p-4 text-center">Trạng thái</th>
+                            <th class="p-4 text-center">Thanh toán</th>
+                            <th class="p-4 pr-6 text-right">Thao tác</th>
                         </tr>
-                    </template>
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50 text-sm">
+                        @foreach (var o in Model.Orders.Items)
+                        {
+                            var code = string.IsNullOrWhiteSpace(o.InvoiceCode) ? $"ĐH-{o.Id}" : o.InvoiceCode;
+                            <tr class="hover:bg-slate-50/50 transition-colors cursor-pointer" @@click="openDetail(@o.Id)">
+                                <td class="p-4 pl-6 font-black text-slate-700">@code</td>
+                                <td class="p-4">
+                                    <div class="font-bold text-slate-800">@(o.OrganizationName ?? "—")</div>
+                                    @if (o.AppliedPromotion != null)
+                                    {
+                                        <div class="text-[10px] text-green-700 font-medium mt-0.5">
+                                            <i class="fas fa-tag"></i> @o.AppliedPromotion.PromotionName
+                                        </div>
+                                    }
+                                </td>
+                                <td class="p-4">
+                                    <div class="font-medium text-slate-700 truncate max-w-[180px]">@MealSummary(o)</div>
+                                    <span class="text-xs font-bold text-slate-500">@TotalQty(o) suất</span>
+                                </td>
+                                <td class="p-4 font-medium text-slate-700">@o.ScheduledDate.ToString("dd/MM/yyyy HH:mm", vi)</td>
+                                <td class="p-4 text-right">
+                                    <div class="font-black text-slate-800">@FmtMoney(o.TotalAmount)</div>
+                                    @if (o.DiscountAmount > 0)
+                                    {
+                                        <div class="text-[10px] text-green-600 font-medium">−@FmtMoney(o.DiscountAmount)</div>
+                                    }
+                                </td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border @OrderStatusHelper.BadgeClass(o.Status)">
+                                        @OrderStatusHelper.ToDisplay(o.Status)
+                                    </span>
+                                </td>
+                                <td class="p-4 text-center">
+                                    <span class="px-2 py-0.5 text-[10px] font-bold rounded @OrderStatusHelper.PaymentBadgeClass(o.PaymentStatus)">
+                                        @OrderStatusHelper.PaymentDisplay(o.PaymentStatus)
+                                    </span>
+                                </td>
+                                <td class="p-4 pr-6 text-right">
+                                    <button type="button" @@click.stop="openDetail(@o.Id)"
+                                            class="p-2 text-slate-400 hover:text-green-600 hover:bg-green-50 rounded-lg">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
         </div>
-        
-        <!-- Pagination -->
-        <div class="p-4 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center text-sm">
-            <span class="text-slate-500 font-medium">Hiển thị <span class="font-bold text-slate-700" x-text="filteredOrders.length"></span> đơn hàng</span>
-            <div class="flex gap-1">
-                <button class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-400 cursor-not-allowed">Trước</button>
-                <button class="px-3 py-1.5 rounded-lg border border-green-500 bg-green-50 text-green-700 font-bold">1</button>
-                <button class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">2</button>
-                <button class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50">Tiếp</button>
-            </div>
-        </div>
+
+        <partial name="_PaginationBar" model="Model.Pagination" />
     </div>
 
-    <!-- MODAL: ORDER DETAILS -->
-    <div x-show="isDetailOpen" style="display: none;" class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div x-show="isDetailOpen" 
-             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
-             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @@click="closeDetail()"></div>
-
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div x-show="isDetailOpen" 
-                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
-                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl" @@click.stop>
-                    
-                    <template x-if="currentOrder">
-                        <div>
-                            <!-- Header -->
-                            <div class="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-start">
-                                <div>
-                                    <div class="flex items-center gap-3 mb-2">
-                                        <h2 class="text-2xl font-black text-slate-800" x-text="'Chi tiết Đơn hàng ' + currentOrder.code"></h2>
-                                        <span class="px-2.5 py-1 text-[11px] font-bold uppercase tracking-wider rounded-lg border" :class="getStatusColor(currentOrder.status)" x-text="currentOrder.status"></span>
-                                    </div>
-                                    <p class="text-sm text-slate-500 font-medium flex items-center gap-2">
-                                        <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        Thời gian giao dự kiến: <span class="font-bold text-slate-700" x-text="currentOrder.time"></span>
-                                    </p>
-                                </div>
-                                <button @@click="closeDetail()" class="p-2 text-slate-400 hover:bg-slate-200 hover:text-slate-600 rounded-full transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
+    <!-- Modal chi tiết -->
+    <div x-show="isDetailOpen" style="display: none;" class="relative z-50" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @@click="closeDetail()"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
+            <div class="relative w-full max-w-2xl rounded-[32px] bg-white shadow-2xl" @@click.stop>
+                <template x-if="currentOrder">
+                    <div>
+                        <div class="px-8 py-6 border-b bg-slate-50/50 flex justify-between items-start">
+                            <div>
+                                <h2 class="text-xl font-black text-slate-800" x-text="'Đơn ' + currentOrder.code"></h2>
+                                <p class="text-sm text-slate-500 mt-1" x-text="currentOrder.customer"></p>
+                                <span class="inline-block mt-2 px-2.5 py-1 text-[10px] font-bold uppercase rounded-lg border"
+                                      :class="currentOrder.statusClass" x-text="currentOrder.statusLabel"></span>
                             </div>
-                            
-                            <!-- Body Info -->
-                            <div class="px-8 py-6 space-y-6">
-                                <!-- Khách hàng -->
-                                <div class="bg-white border border-slate-200 rounded-[20px] p-5 shadow-sm">
-                                    <h3 class="text-sm font-bold text-slate-800 mb-4 border-b border-slate-100 pb-2">Thông tin Khách hàng</h3>
-                                    <div class="grid grid-cols-2 gap-4 text-sm">
-                                        <div>
-                                            <p class="text-slate-500 mb-1">Tên khách hàng / Đơn vị</p>
-                                            <p class="font-bold text-slate-800" x-text="currentOrder.customer"></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-slate-500 mb-1">Địa chỉ giao hàng</p>
-                                            <p class="font-bold text-slate-800" x-text="currentOrder.address"></p>
-                                        </div>
-                                        <div>
-                                            <p class="text-slate-500 mb-1">Người liên hệ (SĐT)</p>
-                                            <p class="font-bold text-slate-800">0988.123.456 (Anh Tuấn)</p>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- Nội dung đơn -->
-                                <div class="bg-white border border-slate-200 rounded-[20px] shadow-sm overflow-hidden">
-                                    <div class="px-5 py-3 border-b border-slate-100 bg-slate-50">
-                                        <h3 class="text-sm font-bold text-slate-800">Chi tiết sản phẩm</h3>
-                                    </div>
-                                    <table class="w-full text-sm">
-                                        <thead class="bg-white border-b border-slate-100 text-slate-500">
-                                            <tr>
-                                                <th class="p-3 pl-5 text-left font-medium">Tên suất ăn</th>
-                                                <th class="p-3 text-center font-medium">Đơn giá</th>
-                                                <th class="p-3 text-center font-medium">Số lượng</th>
-                                                <th class="p-3 pr-5 text-right font-medium">Thành tiền</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <tr class="border-b border-slate-50">
-                                                <td class="p-3 pl-5 font-bold text-slate-800" x-text="currentOrder.type"></td>
-                                                <td class="p-3 text-center text-slate-600">45,000đ</td>
-                                                <td class="p-3 text-center font-bold text-slate-800" x-text="currentOrder.quantity"></td>
-                                                <td class="p-3 pr-5 text-right font-black text-green-600" x-text="currentOrder.total"></td>
-                                            </tr>
-                                        </tbody>
-                                        <tfoot class="bg-slate-50/50">
-                                            <tr>
-                                                <td colspan="3" class="p-4 text-right font-bold text-slate-600 uppercase tracking-wider text-xs">Tổng cộng (Đã gồm VAT)</td>
-                                                <td class="p-4 pr-5 text-right font-black text-xl text-slate-800" x-text="currentOrder.total"></td>
-                                            </tr>
-                                        </tfoot>
-                                    </table>
-                                </div>
-                                
-                                <!-- Update Status -->
-                                <div>
-                                    <label class="block text-sm font-bold text-slate-700 mb-2">Cập nhật Trạng thái đơn</label>
-                                    <select x-model="currentOrder.status" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold focus:border-green-500 focus:ring-1 focus:ring-green-500 shadow-sm">
-                                        <option value="Chờ xác nhận">Chờ xác nhận</option>
-                                        <option value="Đang chuẩn bị">Đang chuẩn bị (Bếp đang nấu)</option>
-                                        <option value="Đang giao">Đang giao hàng</option>
-                                        <option value="Đã hoàn thành">Đã giao thành công</option>
-                                        <option value="Đã hủy">Hủy đơn</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- Footer -->
-                            <div class="px-8 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px]">
-                                <button @@click="closeDetail()" class="px-5 py-2.5 rounded-xl text-slate-600 font-bold hover:bg-white border border-slate-200 transition-colors text-sm shadow-sm">Đóng</button>
-                                <button @@click="closeDetail()" class="px-6 py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-colors flex items-center gap-2 text-sm shadow-lg shadow-green-600/30">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                    Lưu thay đổi
-                                </button>
-                            </div>
+                            <button type="button" @@click="closeDetail()" class="p-2 text-slate-400 hover:bg-slate-200 rounded-full">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
-                    </template>
+
+                        <div class="px-8 py-6 space-y-5 max-h-[60vh] overflow-y-auto">
+                            <div class="grid grid-cols-2 gap-4 text-sm">
+                                <div>
+                                    <p class="text-slate-400 text-xs font-bold uppercase">Ngày đặt</p>
+                                    <p class="font-bold text-slate-800" x-text="currentOrder.orderDate"></p>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-xs font-bold uppercase">Ngày giao</p>
+                                    <p class="font-bold text-slate-800" x-text="currentOrder.time"></p>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-xs font-bold uppercase">Thanh toán</p>
+                                    <p class="font-bold" :class="currentOrder.paymentClass" x-text="currentOrder.paymentLabel"></p>
+                                </div>
+                                <div>
+                                    <p class="text-slate-400 text-xs font-bold uppercase">Phụ lục đã ký</p>
+                                    <template x-if="currentOrder.annexPdfUrl">
+                                        <a :href="currentOrder.annexPdfUrl" target="_blank" rel="noopener"
+                                           class="font-bold text-green-600 hover:underline text-sm">Xem PDF phụ lục</a>
+                                    </template>
+                                    <p x-show="!currentOrder.annexPdfUrl" class="font-bold text-slate-500">Chưa ký</p>
+                                </div>
+                            </div>
+
+                            <div class="border rounded-xl overflow-hidden">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-slate-50 text-slate-500 text-xs">
+                                        <tr>
+                                            <th class="p-3 text-left">Món</th>
+                                            <th class="p-3 text-center">SL</th>
+                                            <th class="p-3 text-right">Đơn giá</th>
+                                            <th class="p-3 pr-3 text-right">Thành tiền</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <template x-for="line in currentOrder.items" :key="line.dishName + line.quantity">
+                                            <tr class="border-t border-slate-50">
+                                                <td class="p-3 font-medium" x-text="line.dishName"></td>
+                                                <td class="p-3 text-center font-bold" x-text="line.quantity"></td>
+                                                <td class="p-3 text-right text-slate-600" x-text="line.unitPrice"></td>
+                                                <td class="p-3 pr-3 text-right font-bold" x-text="line.totalPrice"></td>
+                                            </tr>
+                                        </template>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="bg-slate-50 rounded-xl p-4 space-y-1 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-slate-500">Thành tiền</span>
+                                    <span class="font-bold" x-text="currentOrder.subtotal"></span>
+                                </div>
+                                <template x-if="currentOrder.promotionName">
+                                    <div class="flex justify-between text-green-700">
+                                        <span>
+                                            KM: <span class="font-bold" x-text="currentOrder.promotionName"></span>
+                                            <span class="text-xs" x-text="currentOrder.promotionCode ? '(' + currentOrder.promotionCode + ')' : ''"></span>
+                                        </span>
+                                        <span class="font-bold" x-text="'−' + currentOrder.discount"></span>
+                                    </div>
+                                </template>
+                                <div class="flex justify-between pt-2 border-t border-slate-200">
+                                    <span class="font-black text-slate-800">Tổng phải trả</span>
+                                    <span class="font-black text-green-600 text-lg" x-text="currentOrder.total"></span>
+                                </div>
+                            </div>
+
+                            <template x-if="currentOrder.editableStatuses && currentOrder.editableStatuses.length > 0 && currentOrder.status !== 'delivered' && currentOrder.status !== 'cancelled'">
+                                <form :action="'/Manager/Order/UpdateStatus'" method="post" class="space-y-2">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" :value="currentOrder.id" />
+                                    <input type="hidden" name="page" value="@Model.Page" />
+                                    <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                                    <input type="hidden" name="filterStatus" value="@Model.FilterStatus" />
+                                    <input type="hidden" name="search" value="@Model.Search" />
+                                    <input type="hidden" name="scheduledOn" value="@(Model.ScheduledOn?.ToString("yyyy-MM-dd"))" />
+                                    <label class="block text-sm font-bold text-slate-700">Cập nhật trạng thái</label>
+                                    <select name="status" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-bold" required>
+                                        <template x-for="opt in currentOrder.editableStatuses" :key="opt.value">
+                                            <option :value="opt.value" x-text="opt.label"></option>
+                                        </template>
+                                    </select>
+                                    <button type="submit" class="w-full py-2.5 rounded-xl bg-green-600 text-white font-bold text-sm hover:bg-green-700">
+                                        <i class="fas fa-check mr-1"></i> Lưu trạng thái
+                                    </button>
+                                </form>
+                            </template>
+                        </div>
+
+                        <div class="px-8 py-4 border-t bg-slate-50 flex justify-end rounded-b-[32px]">
+                            <button type="button" @@click="closeDetail()" class="px-5 py-2 rounded-xl border font-bold text-sm text-slate-600">Đóng</button>
+                        </div>
+                    </div>
+                </template>
+                <div x-show="loading" class="p-12 text-center text-slate-400">
+                    <i class="fas fa-spinner fa-spin text-2xl"></i>
+                    <p class="mt-2 text-sm">Đang tải chi tiết...</p>
                 </div>
             </div>
         </div>
@@ -265,46 +303,31 @@
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('orderManager', () => ({
-                searchQuery: '',
-                statusFilter: 'all',
                 isDetailOpen: false,
+                loading: false,
                 currentOrder: null,
-                
-                orders: [
-                    { id: 1, code: 'ORD-1025', customer: 'Công ty TNHH Phần mềm B', address: 'Tòa nhà Etown 1, Cộng Hòa, Tân Bình', type: 'Cơm trưa VP Cao cấp', quantity: 150, time: '26/04/2026 11:30', total: '6,750,000đ', status: 'Đang chuẩn bị' },
-                    { id: 2, code: 'ORD-1026', customer: 'Nguyễn Văn A', address: '123 Lê Lợi, Quận 1', type: 'Văn Phòng Tiêu Chuẩn', quantity: 15, time: '26/04/2026 11:45', total: '675,000đ', status: 'Chờ xác nhận' },
-                    { id: 3, code: 'ORD-1024', customer: 'Nhà máy Sản xuất Giày', address: 'KCN Tân Bình, Tân Phú', type: 'Suất ăn Công nhân', quantity: 850, time: '26/04/2026 10:30', total: '21,250,000đ', status: 'Đang giao' },
-                    { id: 4, code: 'ORD-1023', customer: 'Trường Tiểu học Nguyễn Khuyến', address: 'Quận 10, TP.HCM', type: 'Suất ăn Học sinh Mẫu giáo', quantity: 320, time: '26/04/2026 10:00', total: '11,200,000đ', status: 'Đã hoàn thành' },
-                    { id: 5, code: 'ORD-1027', customer: 'Hội thảo Công nghệ TechTalk', address: 'Trung tâm Hội nghị GEM Center', type: 'Buffet Finger Food', quantity: 200, time: '27/04/2026 09:00', total: '15,000,000đ', status: 'Chờ xác nhận' }
-                ],
-                
-                get filteredOrders() {
-                    return this.orders.filter(order => {
-                        const matchSearch = order.code.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
-                                            order.customer.toLowerCase().includes(this.searchQuery.toLowerCase());
-                        
-                        const matchStatus = this.statusFilter === 'all' || order.status === this.statusFilter;
-                        
-                        return matchSearch && matchStatus;
-                    });
-                },
-                
-                getStatusColor(status) {
-                    if(status === 'Chờ xác nhận') return 'bg-slate-100 text-slate-600 border-slate-200';
-                    if(status === 'Đang chuẩn bị') return 'bg-yellow-50 text-yellow-600 border-yellow-200';
-                    if(status === 'Đang giao') return 'bg-blue-50 text-blue-600 border-blue-200';
-                    if(status === 'Đã hoàn thành') return 'bg-green-50 text-green-600 border-green-200';
-                    return 'bg-red-50 text-red-600 border-red-200';
-                },
-                
-                openDetail(order) {
-                    this.currentOrder = JSON.parse(JSON.stringify(order));
+
+                async openDetail(id) {
                     this.isDetailOpen = true;
+                    this.loading = true;
+                    this.currentOrder = null;
                     document.body.style.overflow = 'hidden';
+                    try {
+                        const res = await fetch('/Manager/Order/Detail?id=' + id);
+                        const data = await res.json();
+                        if (!data.success) throw new Error(data.message || 'Lỗi tải đơn');
+                        this.currentOrder = data.order;
+                    } catch (e) {
+                        alert(e.message || 'Không tải được chi tiết đơn');
+                        this.closeDetail();
+                    } finally {
+                        this.loading = false;
+                    }
                 },
-                
+
                 closeDetail() {
                     this.isDetailOpen = false;
+                    this.currentOrder = null;
                     document.body.style.overflow = '';
                 }
             }));

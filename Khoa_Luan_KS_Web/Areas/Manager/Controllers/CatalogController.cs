@@ -14,14 +14,60 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             _masterDataClient = masterDataClient;
         }
 
-        public async Task<IActionResult> Employees(int page = 1, int pageSize = 10, string? searchTerm = null, CancellationToken ct = default)
+        public async Task<IActionResult> Employees(
+            int page = 1,
+            int pageSize = 10,
+            string? searchTerm = null,
+            string? roleName = null,
+            CancellationToken ct = default)
         {
             var token = HttpContext.Session.GetString("access_token");
             if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
 
+            page = page < 1 ? 1 : page;
+            pageSize = pageSize switch
+            {
+                15 => 15,
+                20 => 20,
+                30 => 30,
+                50 => 50,
+                _ => 10
+            };
+
             try
             {
-                var response = await _masterDataClient.GetUsersAsync(token, page, pageSize, searchTerm, ct);
+                var response = await _masterDataClient.GetUsersAsync(
+                    token, page, pageSize, searchTerm, roleName, staffOnly: true, ct: ct);
+
+                var effectivePageSize = response.PageSize > 0 ? response.PageSize : pageSize;
+                var totalPages = effectivePageSize > 0
+                    ? Math.Max(1, (int)Math.Ceiling(response.TotalCount / (double)effectivePageSize))
+                    : 1;
+                var effectivePage = response.Page > 0 ? response.Page : page;
+
+                if (response.TotalCount > 0 && effectivePage > totalPages)
+                {
+                    return RedirectToAction(nameof(Employees), new { page = totalPages, pageSize = effectivePageSize, searchTerm, roleName });
+                }
+
+                ViewBag.CurrentPage = effectivePage;
+                ViewBag.PageSize = effectivePageSize;
+                ViewBag.TotalPages = totalPages;
+                ViewBag.SearchTerm = searchTerm ?? "";
+                ViewBag.RoleName = roleName ?? "";
+                ViewBag.Pagination = new Models.ManagerPaginationVm
+                {
+                    Controller = "Catalog",
+                    Action = "Employees",
+                    Page = effectivePage,
+                    PageSize = effectivePageSize,
+                    TotalCount = response.TotalCount,
+                    ItemCount = response.Items.Count,
+                    TotalPages = totalPages,
+                    SearchTerm = searchTerm,
+                    RoleName = roleName
+                };
+
                 return View(response);
             }
             catch (Exception ex)
@@ -29,6 +75,17 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
                 TempData["Error"] = ex.Message;
                 return View(new Services.AdminGetUsersResponse());
             }
+        }
+
+        private IActionResult RedirectToEmployeesList()
+        {
+            var page = 1;
+            var pageSize = 10;
+            if (int.TryParse(Request.Form["page"].FirstOrDefault() ?? Request.Query["page"], out var p)) page = p;
+            if (int.TryParse(Request.Form["pageSize"].FirstOrDefault() ?? Request.Query["pageSize"], out var ps)) pageSize = ps;
+            var searchTerm = Request.Form["searchTerm"].FirstOrDefault() ?? Request.Query["searchTerm"].FirstOrDefault();
+            var roleName = Request.Form["roleName"].FirstOrDefault() ?? Request.Query["roleName"].FirstOrDefault();
+            return RedirectToAction(nameof(Employees), new { page, pageSize, searchTerm, roleName });
         }
 
         [HttpPost]
@@ -44,7 +101,7 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             {
                 TempData["Error"] = ex.Message;
             }
-            return RedirectToAction(nameof(Employees));
+            return RedirectToEmployeesList();
         }
 
         [HttpPost]
@@ -60,7 +117,7 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             {
                 TempData["Error"] = ex.Message;
             }
-            return RedirectToAction(nameof(Employees));
+            return RedirectToEmployeesList();
         }
 
         [HttpPost]
@@ -76,7 +133,7 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             {
                 TempData["Error"] = ex.Message;
             }
-            return RedirectToAction(nameof(Employees));
+            return RedirectToEmployeesList();
         }
 
         public IActionResult EmployeeDetail(string id) => View();

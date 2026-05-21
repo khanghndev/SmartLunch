@@ -21,7 +21,7 @@ namespace Khoa_Luan_KS_Web.Areas.Admin.Controllers
 
             try
             {
-                var response = await _adminClient.GetUsersAsync(token, page, pageSize, searchTerm, ct);
+                var response = await _adminClient.GetUsersAsync(token, page, pageSize, searchTerm, ct: ct);
                 return View(response);
             }
             catch (Exception ex)

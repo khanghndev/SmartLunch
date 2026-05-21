@@ -18,11 +18,20 @@ public class BackendMasterDataClient
         _configuration = configuration;
     }
 
-    public async Task<AdminGetUsersResponse> GetUsersAsync(string accessToken, int page = 1, int pageSize = 10, string? searchTerm = null, CancellationToken ct = default)
+    public async Task<AdminGetUsersResponse> GetUsersAsync(
+        string accessToken,
+        int page = 1,
+        int pageSize = 10,
+        string? searchTerm = null,
+        string? roleName = null,
+        bool? staffOnly = null,
+        CancellationToken ct = default)
     {
-        var query = $"?page={page}&pageSize={pageSize}";
-        if (!string.IsNullOrEmpty(searchTerm)) query += $"&searchTerm={searchTerm}";
-        
+        var query = $"?Page={page}&PageSize={pageSize}";
+        if (!string.IsNullOrWhiteSpace(searchTerm)) query += $"&SearchTerm={Uri.EscapeDataString(searchTerm)}";
+        if (!string.IsNullOrWhiteSpace(roleName)) query += $"&RoleName={Uri.EscapeDataString(roleName)}";
+        if (staffOnly == true) query += "&StaffOnly=true";
+
         return await GetAsync<AdminGetUsersResponse>($"/api/v1/master-data/User{query}", accessToken, ct);
     }
 
@@ -291,11 +300,29 @@ public class BackendMasterDataClient
         return await GetAsync<GetCustomerTypesClientResponse>("/api/v1/master-data/customer-types", accessToken, ct);
     }
 
-    public async Task<GetOrdersClientResponse> GetOrdersAsync(string accessToken, int page = 1, int pageSize = 20, string? status = null, CancellationToken ct = default)
+    public async Task<GetOrdersClientResponse> GetOrdersAsync(
+        string accessToken,
+        int page = 1,
+        int pageSize = 20,
+        string? status = null,
+        string? searchTerm = null,
+        DateOnly? scheduledOn = null,
+        CancellationToken ct = default)
     {
         var q = $"?Page={page}&PageSize={pageSize}";
         if (!string.IsNullOrEmpty(status)) q += $"&Status={Uri.EscapeDataString(status)}";
+        if (!string.IsNullOrWhiteSpace(searchTerm)) q += $"&SearchTerm={Uri.EscapeDataString(searchTerm)}";
+        if (scheduledOn.HasValue) q += $"&ScheduledOn={scheduledOn.Value:yyyy-MM-dd}";
         return await GetAsync<GetOrdersClientResponse>($"/api/v1/master-data/Order{q}", accessToken, ct);
+    }
+
+    public async Task<GetOrderClientResponse> UpdateOrderStatusAsync(int orderId, string status, string accessToken, CancellationToken ct = default)
+    {
+        return await PatchAsync<GetOrderClientResponse>(
+            $"/api/v1/master-data/Order/{orderId}/status",
+            new { status },
+            accessToken,
+            ct);
     }
 
     public async Task<GetOrderClientResponse> GetOrderAsync(int id, string accessToken, CancellationToken ct = default)
@@ -996,12 +1023,23 @@ public class OrderDetailClientDto
     public DateTime ScheduledDate { get; set; }
     public string Status { get; set; } = string.Empty;
     public decimal TotalAmount { get; set; }
+    public decimal? SubtotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public OrderPromotionSummaryClientDto? AppliedPromotion { get; set; }
     public string PaymentStatus { get; set; } = string.Empty;
     public string? InvoiceCode { get; set; }
     public string? AnnexPdfUrl { get; set; }
     public DateTime? AnnexSignedAt { get; set; }
     public OrderContractSummaryClientDto? ContractSummary { get; set; }
     public List<OrderItemLineClientDto> Items { get; set; } = new();
+}
+
+public class OrderPromotionSummaryClientDto
+{
+    public int PromotionId { get; set; }
+    public string? PromotionCode { get; set; }
+    public string PromotionName { get; set; } = string.Empty;
+    public decimal DiscountAmount { get; set; }
 }
 
 public class OrderContractSummaryClientDto

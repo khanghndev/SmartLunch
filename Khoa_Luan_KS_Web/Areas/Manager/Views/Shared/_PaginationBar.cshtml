@@ -1,0 +1,116 @@
+@model Khoa_Luan_KS_Web.Areas.Manager.Models.ManagerPaginationVm
+@{
+    var totalPages = Model.TotalPages < 1 ? 1 : Model.TotalPages;
+    var currentPage = Model.Page < 1 ? 1 : (Model.Page > totalPages ? totalPages : Model.Page);
+    int startPage = Math.Max(1, currentPage - 2);
+    int endPage = Math.Min(totalPages, currentPage + 2);
+    if (endPage - startPage < 4)
+    {
+        startPage = Math.Max(1, endPage - 4);
+        endPage = Math.Min(totalPages, startPage + 4);
+    }
+
+    string PageUrl(int pg) => Url.Action(Model.Action, Model.Controller, new
+    {
+        area = Model.Area,
+        page = pg,
+        pageSize = Model.PageSize,
+        status = Model.Status,
+        search = Model.Search,
+        scheduledOn = Model.ScheduledOn,
+        searchTerm = Model.SearchTerm,
+        roleName = Model.RoleName
+    }) ?? "#";
+}
+
+<div class="p-4 border-t border-slate-100 bg-slate-50/50 flex flex-col lg:flex-row justify-between items-center gap-4 text-sm">
+    <div class="flex flex-col sm:flex-row sm:items-center gap-2 text-slate-500 font-medium">
+        <span>
+            Hiển thị <span class="font-bold text-slate-700">@Model.FromRecord</span>–<span class="font-bold text-slate-700">@Model.ToRecord</span>
+            trong <span class="font-bold text-slate-700">@Model.TotalCount</span> bản ghi
+            @if (totalPages > 1)
+            {
+                <span class="text-slate-400"> · Trang @currentPage/@totalPages</span>
+            }
+        </span>
+        <form method="get" asp-area="@Model.Area" asp-controller="@Model.Controller" asp-action="@Model.Action"
+              class="inline-flex items-center gap-2">
+            <input type="hidden" name="page" value="1" />
+            <input type="hidden" name="status" value="@Model.Status" />
+            <input type="hidden" name="search" value="@Model.Search" />
+            <input type="hidden" name="scheduledOn" value="@Model.ScheduledOn" />
+            <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
+            <input type="hidden" name="roleName" value="@Model.RoleName" />
+            <label class="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">Số dòng/trang</label>
+            <select name="pageSize" onchange="this.form.submit()"
+                    class="bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg px-2 py-1.5 outline-none focus:border-green-500">
+                @foreach (var size in new[] { 10, 15, 20, 30, 50 })
+                {
+                    <option value="@size" selected="@(Model.PageSize == size)">@size</option>
+                }
+            </select>
+        </form>
+    </div>
+
+    @if (totalPages > 1)
+    {
+        <nav class="flex flex-wrap items-center justify-center gap-1" aria-label="Phân trang">
+            @if (currentPage > 1)
+            {
+                <a href="@PageUrl(1)"
+                   class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 font-bold text-xs"
+                   title="Trang đầu">«</a>
+                <a href="@PageUrl(currentPage - 1)"
+                   class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-bold">Trước</a>
+            }
+            else
+            {
+                <span class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-300 font-bold text-xs cursor-not-allowed">«</span>
+                <span class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-300 font-bold cursor-not-allowed">Trước</span>
+            }
+
+            @if (startPage > 1)
+            {
+                <a href="@PageUrl(1)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium">1</a>
+                @if (startPage > 2)
+                {
+                    <span class="px-2 text-slate-400">…</span>
+                }
+            }
+
+            @for (int pg = startPage; pg <= endPage; pg++)
+            {
+                if (pg == currentPage)
+                {
+                    <span class="px-3 py-1.5 rounded-lg border border-green-500 bg-green-50 text-green-700 font-bold">@pg</span>
+                }
+                else
+                {
+                    <a href="@PageUrl(pg)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium">@pg</a>
+                }
+            }
+
+            @if (endPage < totalPages)
+            {
+                @if (endPage < totalPages - 1)
+                {
+                    <span class="px-2 text-slate-400">…</span>
+                }
+                <a href="@PageUrl(totalPages)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-medium">@totalPages</a>
+            }
+
+            @if (currentPage < totalPages)
+            {
+                <a href="@PageUrl(currentPage + 1)" class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 font-bold">Sau</a>
+                <a href="@PageUrl(totalPages)"
+                   class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-slate-50 font-bold text-xs"
+                   title="Trang cuối">»</a>
+            }
+            else
+            {
+                <span class="px-3 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-300 font-bold cursor-not-allowed">Sau</span>
+                <span class="px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-300 font-bold text-xs cursor-not-allowed">»</span>
+            }
+        </nav>
+    }
+</div>

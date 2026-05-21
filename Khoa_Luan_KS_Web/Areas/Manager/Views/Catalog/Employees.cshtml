@@ -1,54 +1,115 @@
 @model Khoa_Luan_KS_Web.Services.AdminGetUsersResponse
+@using Khoa_Luan_KS_Web.Areas.Manager.Models
 @{
     ViewData["Title"] = "Quản lý Nhân Viên";
     Layout = "_LayoutManager";
+    var curPage = (int)(ViewBag.CurrentPage ?? 1);
+    var pageSize = (int)(ViewBag.PageSize ?? 10);
+    var serverSearch = ViewBag.SearchTerm as string ?? "";
+    var roleFilter = ViewBag.RoleName as string ?? "";
+    var pagination = ViewBag.Pagination as ManagerPaginationVm ?? new ManagerPaginationVm
+    {
+        Controller = "Catalog",
+        Action = "Employees",
+        Page = curPage,
+        PageSize = pageSize,
+        TotalCount = Model.TotalCount,
+        ItemCount = Model.Items.Count,
+        SearchTerm = serverSearch,
+        RoleName = roleFilter
+    };
+
+    static string StaffRole(IReadOnlyList<string> roles)
+    {
+        var exclude = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "Customer", "Organization", "Company",
+            "Khách hàng cá nhân", "Khách hàng doanh nghiệp"
+        };
+        return roles.FirstOrDefault(r => !exclude.Contains(r)) ?? "Nhân viên";
+    }
+
+    static string RoleBadgeClass(string role) => role switch
+    {
+        "ChefStaff" => "bg-orange-50 text-orange-700 border-orange-100",
+        "WarehouseStaff" => "bg-purple-50 text-purple-700 border-purple-100",
+        "SalesStaff" => "bg-blue-50 text-blue-700 border-blue-100",
+        "Manager" => "bg-green-50 text-green-700 border-green-100",
+        "Admin" or "Super Admin" => "bg-slate-100 text-slate-700 border-slate-200",
+        "Shipper" => "bg-amber-50 text-amber-700 border-amber-100",
+        _ => "bg-gray-50 text-gray-700 border-gray-100"
+    };
+
+    string Initials(Khoa_Luan_KS_Web.Services.AdminUserDto u)
+    {
+        var a = u.FirstName?.Length > 0 ? u.FirstName[0].ToString() : "";
+        var b = u.LastName?.Length > 0 ? u.LastName[0].ToString() : "";
+        return string.IsNullOrEmpty(a + b) ? "NV" : a + b;
+    }
 }
 
 <div class="px-4 py-6 md:p-8 space-y-8" x-data="employeeManager()">
-    <!-- Header Page -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Hồ sơ Cán bộ Nhân viên</h1>
             <p class="text-sm text-gray-500 mt-1">Hệ thống quản lý định danh và hồ sơ vận hành bếp</p>
         </div>
-        <button x-on:click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2">
+        <button type="button" x-on:click="isModalOpen = true" class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all flex items-center gap-2">
             <i class="fas fa-plus"></i> Thêm Nhân Viên
         </button>
     </div>
 
-    <!-- Actions Forms -->
-    <form id="lockForm" method="post" asp-action="LockEmployee" style="display:none">
+    <form id="lockForm" method="post" asp-area="Manager" asp-controller="Catalog" asp-action="LockEmployee" style="display:none">
+        @Html.AntiForgeryToken()
         <input type="hidden" name="id" id="lockId" />
+        <input type="hidden" name="page" value="@curPage" />
+        <input type="hidden" name="pageSize" value="@pageSize" />
+        <input type="hidden" name="searchTerm" value="@serverSearch" />
+        <input type="hidden" name="roleName" value="@roleFilter" />
     </form>
-    <form id="unlockForm" method="post" asp-action="UnlockEmployee" style="display:none">
+    <form id="unlockForm" method="post" asp-area="Manager" asp-controller="Catalog" asp-action="UnlockEmployee" style="display:none">
+        @Html.AntiForgeryToken()
         <input type="hidden" name="id" id="unlockId" />
+        <input type="hidden" name="page" value="@curPage" />
+        <input type="hidden" name="pageSize" value="@pageSize" />
+        <input type="hidden" name="searchTerm" value="@serverSearch" />
+        <input type="hidden" name="roleName" value="@roleFilter" />
     </form>
-    <form id="resetPasswordForm" method="post" asp-action="ResetEmployeePassword" style="display:none">
+    <form id="resetPasswordForm" method="post" asp-area="Manager" asp-controller="Catalog" asp-action="ResetEmployeePassword" style="display:none">
+        @Html.AntiForgeryToken()
         <input type="hidden" name="id" id="resetId" />
         <input type="hidden" name="newPassword" id="resetNewPassword" />
+        <input type="hidden" name="page" value="@curPage" />
+        <input type="hidden" name="pageSize" value="@pageSize" />
+        <input type="hidden" name="searchTerm" value="@serverSearch" />
+        <input type="hidden" name="roleName" value="@roleFilter" />
     </form>
 
-    <!-- Toolbar Filters -->
-    <div class="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+    <form method="get" asp-area="Manager" asp-controller="Catalog" asp-action="Employees"
+          class="flex flex-col md:flex-row gap-4 justify-between items-center bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+        <input type="hidden" name="page" value="1" />
+        <input type="hidden" name="pageSize" value="@pageSize" />
         <div class="relative w-full md:w-96 text-gray-400 focus-within:text-green-600">
             <i class="fas fa-search absolute left-4 top-1/2 -translate-y-1/2"></i>
-            <input type="text" x-model="searchQuery" placeholder="Tìm tên nhân viên, email, mã NV..." class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block pl-10 p-2.5 transition-colors" />
+            <input type="text" name="searchTerm" value="@serverSearch" placeholder="Tìm tên nhân viên, email, mã NV..."
+                   class="w-full bg-gray-50 border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block pl-10 p-2.5 transition-colors" />
         </div>
         <div class="flex items-center gap-3 w-full md:w-auto">
-            <select class="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 flex-1 md:w-auto font-medium">
-                <option selected>Tất cả Bộ phận</option>
-                <option value="kitchen">Bếp Chính</option>
-                <option value="service">Phục vụ / Tạp vụ</option>
-                <option value="warehouse">Kho & Hậu cần</option>
-                <option value="management">Quản lý</option>
+            <select name="roleName" class="bg-white border border-gray-200 text-gray-700 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 flex-1 md:min-w-[180px] font-medium">
+                <option value="" selected="@(string.IsNullOrEmpty(roleFilter))">Tất cả Bộ phận</option>
+                @foreach (var role in new[] { "Admin", "Manager", "WarehouseStaff", "ChefStaff", "SalesStaff", "Shipper" })
+                {
+                    <option value="@role" selected="@(roleFilter == role)">@role</option>
+                }
             </select>
-            <button class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-lg flex items-center gap-2 shadow-sm transition">
-                <i class="fas fa-filter text-gray-400"></i> <span class="hidden sm:inline font-medium text-sm">Lọc thêm</span>
+            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-lg text-sm font-bold transition shadow-sm">
+                <i class="fas fa-filter mr-1"></i> Lọc
             </button>
+            <a asp-area="Manager" asp-controller="Catalog" asp-action="Employees"
+               class="bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 px-4 py-2.5 rounded-lg text-sm font-bold transition">Xóa lọc</a>
         </div>
-    </div>
+    </form>
 
-    <!-- Main Table Card -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full text-left text-sm whitespace-nowrap">
@@ -63,83 +124,92 @@
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100">
-                    <template x-for="emp in filteredEmployees" :key="emp.id">
-                        <tr class="hover:bg-gray-50/80 transition-colors group" :class="!emp.isActive ? 'opacity-60' : ''">
+                    @if (!Model.Items.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="px-6 py-12 text-center text-gray-400">
+                                <i class="fas fa-users text-3xl mb-2 opacity-40"></i>
+                                <p class="font-medium">Không có nhân viên phù hợp bộ lọc.</p>
+                            </td>
+                        </tr>
+                    }
+                    @foreach (var u in Model.Items)
+                    {
+                        var role = StaffRole(u.RoleNames);
+                        var inactive = !u.IsActive;
+                        <tr class="hover:bg-gray-50/80 transition-colors group @(inactive ? "opacity-60" : "")">
                             <td class="px-6 py-4">
                                 <div class="flex items-center gap-4">
-                                    <template x-if="emp.avatar">
-                                        <img :src="emp.avatar" alt="Avatar" class="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100 shadow-sm" :class="!emp.isActive ? 'grayscale' : ''" />
-                                    </template>
-                                    <template x-if="!emp.avatar">
-                                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold ring-2 ring-blue-50 shadow-sm" x-text="emp.initials"></div>
-                                    </template>
+                                    @if (u.Id % 2 == 0)
+                                    {
+                                        <img src="https://i.pravatar.cc/150?u=@u.Id" alt="" class="w-10 h-10 rounded-full object-cover ring-2 ring-gray-100 shadow-sm @(inactive ? "grayscale" : "")" />
+                                    }
+                                    else
+                                    {
+                                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center font-bold ring-2 ring-blue-50 shadow-sm">@Initials(u)</div>
+                                    }
                                     <div>
-                                        <div class="font-bold text-gray-900 text-sm" :class="!emp.isActive ? 'line-through decoration-gray-400' : ''" x-text="emp.name"></div>
-                                        <div class="text-[12px] text-gray-500 mt-0.5" x-text="emp.email"></div>
+                                        <div class="font-bold text-gray-900 text-sm @(inactive ? "line-through decoration-gray-400" : "")">@u.FullName</div>
+                                        <div class="text-[12px] text-gray-500 mt-0.5">@u.Email</div>
                                     </div>
                                 </div>
                             </td>
                             <td class="px-6 py-4 text-gray-600 font-medium tracking-wide">
-                                <span class="bg-gray-100/80 text-gray-600 px-2.5 py-1 rounded-md text-xs font-bold border border-gray-200" x-text="'#' + emp.code"></span>
+                                <span class="bg-gray-100/80 text-gray-600 px-2.5 py-1 rounded-md text-xs font-bold border border-gray-200">#@u.Id.ToString("D3")</span>
                             </td>
                             <td class="px-6 py-4">
-                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border" :class="getRoleBadgeClass(emp.role)" x-text="emp.role"></span>
+                                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border @RoleBadgeClass(role)">@role</span>
                             </td>
-                            <td class="px-6 py-4 text-gray-600 font-medium" x-text="emp.joinDate"></td>
+                            <td class="px-6 py-4 text-gray-600 font-medium">@(u.LastLoginAt?.ToString("dd/MM/yyyy") ?? "—")</td>
                             <td class="px-6 py-4">
-                                <div x-show="emp.isActive" class="flex items-center gap-2 text-green-600 font-bold text-xs bg-green-50 px-2.5 py-1 w-fit rounded-lg border border-green-100">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> Đang làm việc
-                                </div>
-                                <div x-show="!emp.isActive" class="flex items-center gap-2 text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 w-fit rounded-lg border border-red-100">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div> Đã nghỉ việc
-                                </div>
+                                @if (u.IsActive)
+                                {
+                                    <div class="flex items-center gap-2 text-green-600 font-bold text-xs bg-green-50 px-2.5 py-1 w-fit rounded-lg border border-green-100">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> Đang làm việc
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="flex items-center gap-2 text-red-600 font-bold text-xs bg-red-50 px-2.5 py-1 w-fit rounded-lg border border-red-100">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-red-500"></div> Đã nghỉ việc
+                                    </div>
+                                }
                             </td>
                             <td class="px-6 py-4 text-center opacity-70 group-hover:opacity-100 transition-opacity">
                                 <div class="flex items-center justify-center gap-2">
-                                    <a :href="'/Manager/EmployeeDetail/' + emp.id" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shadow-sm" title="Xem chi tiết">
+                                    <a href="/Manager/EmployeeDetail/@u.Id" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shadow-sm" title="Xem chi tiết">
                                         <i class="fas fa-eye text-xs"></i>
                                     </a>
-                                    <button @@click="resetPassword(emp.id)" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-200 hover:text-gray-900 transition border border-gray-200" title="Đặt lại mật khẩu">
+                                    <button type="button" @@click="resetPassword(@u.Id)" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-200 hover:text-gray-900 transition border border-gray-200" title="Đặt lại mật khẩu">
                                         <i class="fas fa-key text-xs"></i>
                                     </button>
-                                    <button x-show="emp.isActive" @@click="lockEmployee(emp.id)" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition border border-red-200" title="Khóa hồ sơ">
-                                        <i class="fas fa-lock text-xs"></i>
-                                    </button>
-                                    <button x-show="!emp.isActive" @@click="unlockEmployee(emp.id)" class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center hover:bg-green-600 hover:text-white transition border border-green-200" title="Khôi phục hồ sơ">
-                                        <i class="fas fa-unlock text-xs"></i>
-                                    </button>
+                                    @if (u.IsActive)
+                                    {
+                                        <button type="button" @@click="lockEmployee(@u.Id)" class="w-8 h-8 rounded-lg bg-red-50 text-red-600 flex items-center justify-center hover:bg-red-600 hover:text-white transition border border-red-200" title="Khóa hồ sơ">
+                                            <i class="fas fa-lock text-xs"></i>
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button type="button" @@click="unlockEmployee(@u.Id)" class="w-8 h-8 rounded-lg bg-green-50 text-green-600 flex items-center justify-center hover:bg-green-600 hover:text-white transition border border-green-200" title="Khôi phục hồ sơ">
+                                            <i class="fas fa-unlock text-xs"></i>
+                                        </button>
+                                    }
                                 </div>
                             </td>
                         </tr>
-                    </template>
+                    }
                 </tbody>
             </table>
         </div>
-        
-        <!-- Pagination -->
-        <div class="px-6 py-4 border-t border-gray-100 bg-gray-50 flex items-center justify-between">
-            <span class="text-sm font-medium text-gray-500">Hiển thị <span class="text-gray-900 font-bold">1-3</span> trên <span class="text-gray-900 font-bold">45</span> nhân viên</span>
-            <div class="flex gap-2">
-                <button class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-500 bg-white font-medium hover:bg-gray-50 transition shadow-sm disabled:opacity-50" disabled>Trước</button>
-                <div class="flex overflow-hidden border border-gray-300 rounded-lg shadow-sm">
-                    <button class="px-3.5 py-1.5 bg-green-600 text-white text-sm font-bold">1</button>
-                    <button class="px-3.5 py-1.5 bg-white text-gray-700 hover:bg-gray-50 text-sm font-medium border-l border-gray-300">2</button>
-                    <button class="px-3.5 py-1.5 bg-white text-gray-700 hover:bg-gray-50 text-sm font-medium border-l border-gray-300">3</button>
-                </div>
-                <button class="px-3 py-1.5 border border-gray-300 rounded-lg text-sm text-gray-700 bg-white font-medium hover:bg-gray-50 transition shadow-sm">Sau</button>
-            </div>
-        </div>
+
+        <partial name="_PaginationBar" model="pagination" />
     </div>
 
-    <!-- MODAL: Thêm Nhân Viên -->
+    <!-- MODAL: Thêm Nhân Viên (giữ UI, chưa nối API) -->
     <div x-show="isModalOpen" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4" x-transition.opacity.duration.300ms>
-        
-        <!-- Backdrop -->
         <div x-on:click="isModalOpen = false" class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"></div>
-        
-        <!-- Modal Content -->
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl z-10 overflow-hidden transform transition-all" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95">
-            
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl z-10 overflow-hidden transform transition-all relative">
             <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
                 <div class="flex items-center gap-3">
                     <div class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center font-bold shadow-sm">
@@ -147,145 +217,28 @@
                     </div>
                     <div>
                         <h3 class="text-xl font-bold text-gray-900 tracking-tight">Tạo Hồ Sơ Nhân Viên Mới</h3>
-                        <p class="text-xs font-medium text-gray-500 mt-0.5">Nhập đầy đủ thông tin pháp lý của Cán bộ nhân viên</p>
+                        <p class="text-xs font-medium text-gray-500 mt-0.5">Chức năng tạo mới sẽ được bổ sung qua API</p>
                     </div>
                 </div>
-                <button x-on:click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 bg-white hover:bg-gray-100 w-8 h-8 rounded-lg flex items-center justify-center transition border border-gray-100 shadow-sm">
+                <button type="button" x-on:click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 bg-white hover:bg-gray-100 w-8 h-8 rounded-lg flex items-center justify-center transition border border-gray-100 shadow-sm">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-
-            <div class="px-6 py-6 pb-8 overflow-y-auto max-h-[70vh] custom-scrollbar">
-                <form class="space-y-6">
-                    
-                    <!-- Basic Information -->
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4">1. Thông tin Định danh cơ bản</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Họ và Tên <span class="text-red-500">*</span></label>
-                                <input type="text" placeholder="Nguyễn Văn A" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
-                            </div>
-                            
-                            <!-- Image upload pretend -->
-                            <div class="md:row-span-2 relative">
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Ảnh Thẻ Sinh Trắc Học</label>
-                                <div class="w-full h-32 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50 flex flex-col items-center justify-center text-gray-500 hover:border-green-500 hover:bg-green-50/50 transition cursor-pointer group">
-                                    <i class="fas fa-image text-2xl mb-2 text-gray-400 group-hover:text-green-500 transition-colors"></i>
-                                    <span class="text-xs font-medium content-center">Bấm để tải ảnh lên (Max: 5MB)</span>
-                                </div>
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Số CCCD / Hộ Chiếu <span class="text-red-500">*</span></label>
-                                <input type="text" placeholder="001099002..." class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
-                            </div>
-
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Ngày sinh</label>
-                                <input type="date" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
-                            </div>
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Giới tính</label>
-                                <select class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm">
-                                    <option>Nam</option>
-                                    <option>Nữ</option>
-                                    <option>Khác</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Contact & Role -->
-                    <div>
-                        <h4 class="text-sm font-bold text-gray-900 border-b border-gray-100 pb-2 mb-4 mt-8">2. Thông tin Công tác & Liên hệ</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Mã Chọn Khối Bộ Phận <span class="text-red-500">*</span></label>
-                                <select class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm">
-                                    <option>Bếp (Bếp Trưởng / Bếp Phụ)</option>
-                                    <option>Sơ chế / Tạp vụ</option>
-                                    <option>Giám sát An toàn Thực phẩm</option>
-                                    <option>Vận chuyển / Logistic</option>
-                                    <option>Nhân viên Quản trị</option>
-                                </select>
-                            </div>
-                            
-                            <div>
-                                <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Ngày bắt đầu làm việc</label>
-                                <input type="date" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
-                            </div>
-
-                            <div class="col-span-1 md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-5">
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Số điện thoại liên lạc</label>
-                                    <div class="flex shadow-sm rounded-lg overflow-hidden">
-                                        <span class="inline-flex items-center px-3 bg-gray-50 border border-r-0 border-gray-300 text-gray-500 text-sm font-medium">
-                                            +84
-                                        </span>
-                                        <input type="text" class="rounded-none rounded-r-lg bg-white border border-gray-300 text-gray-900 text-sm focus:ring-green-500 focus:border-green-500 block flex-1 min-w-0 w-full p-2.5" placeholder="909 123 456">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-bold text-gray-700 uppercase tracking-wide mb-1.5">Email làm việc nội bộ</label>
-                                    <input type="email" placeholder="nv@huitmeal.com" class="w-full bg-white border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 shadow-sm" />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </form>
+            <div class="px-6 py-8 text-center text-gray-500 text-sm">
+                Vui lòng tạo nhân viên qua quản trị hệ thống hoặc API <code class="text-xs bg-gray-100 px-1 rounded">POST /api/v1/master-data/User</code>.
             </div>
-            
-            <!-- Modal Footer -->
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex items-center justify-end gap-3 rounded-b-2xl">
-                <button type="button" x-on:click="isModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100 focus:ring-4 focus:outline-none focus:ring-gray-200 transition shadow-sm">
-                    Hủy bỏ
-                </button>
-                <button type="button" class="px-6 py-2.5 text-sm font-bold text-white bg-green-600 rounded-xl hover:bg-green-700 focus:ring-4 focus:outline-none focus:ring-green-300 transition shadow-md flex items-center gap-2">
-                    <i class="fas fa-save"></i> Hoàn tất thêm mới
-                </button>
+            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
+                <button type="button" x-on:click="isModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100">Đóng</button>
             </div>
-
         </div>
     </div>
 </div>
+
 @section Scripts {
     <script>
         document.addEventListener('alpine:init', () => {
             Alpine.data('employeeManager', () => ({
                 isModalOpen: false,
-                searchQuery: '',
-                roleFilter: 'Tất cả Bộ phận',
-                
-                employees: @Html.Raw(Json.Serialize(Model.Items.Where(u => u.RoleNames.Any(r => !r.Equals("Customer", StringComparison.OrdinalIgnoreCase) && !r.Equals("Organization", StringComparison.OrdinalIgnoreCase))).Select(u => new {
-                    id = u.Id,
-                    name = u.FullName,
-                    email = u.Email,
-                    code = u.Id.ToString("D3"), // Fallback if Code is null
-                    role = u.RoleNames.FirstOrDefault(r => !r.Equals("Customer") && !r.Equals("Organization")) ?? "Nhân viên",
-                    joinDate = "01/01/2026", // Fallback for demo
-                    isActive = u.IsActive,
-                    avatar = u.Id % 2 == 0 ? $"https://i.pravatar.cc/150?u={u.Id}" : null,
-                    initials = (u.FirstName?.Length > 0 ? u.FirstName[0].ToString() : "") + (u.LastName?.Length > 0 ? u.LastName[0].ToString() : "")
-                }))),
-
-                get filteredEmployees() {
-                    return this.employees.filter(emp => {
-                        const matchSearch = emp.name.toLowerCase().includes(this.searchQuery.toLowerCase()) || 
-                                           emp.email.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
-                                           emp.code.includes(this.searchQuery);
-                        const matchRole = this.roleFilter === 'Tất cả Bộ phận' || emp.role === this.roleFilter;
-                        return matchSearch && matchRole;
-                    });
-                },
-
-                getRoleBadgeClass(role) {
-                    if (role === 'ChefStaff' || role === 'Bếp Trưởng') return 'bg-orange-50 text-orange-700 border-orange-100';
-                    if (role === 'WarehouseStaff' || role === 'Kho & Hậu cần') return 'bg-purple-50 text-purple-700 border-purple-100';
-                    if (role === 'SalesStaff' || role === 'Phục vụ') return 'bg-blue-50 text-blue-700 border-blue-100';
-                    return 'bg-gray-50 text-gray-700 border-gray-100';
-                },
 
                 lockEmployee(id) {
                     if (confirm('Bạn có chắc chắn muốn khóa hồ sơ nhân viên này?')) {
