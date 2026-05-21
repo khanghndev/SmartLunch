@@ -38,6 +38,16 @@ public class PermissionRequirementHandler : AuthorizationHandler<PermissionRequi
             return;
         }
 
+        // Get user roles using MediatR Command
+        var userRoles = await _mediator.Send(new GetUserRolesQuery(userId));
+        if (userRoles != null && userRoles.Any(r =>
+                string.Equals(r, "Super Admin", StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(r, "Admin", StringComparison.OrdinalIgnoreCase)))
+        {
+            context.Succeed(requirement);
+            return;
+        }
+
         // Get user permissions using MediatR Command
         var userPermissions = await _mediator.Send(new GetUserPermissionsQuery(userId));
 

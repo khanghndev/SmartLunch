@@ -291,3 +291,9 @@ INSERT INTO permissions (Name, Description, Resource, Action) VALUES
 ('menu_suggestions.delete', 'Xóa gợi ý thực đơn', 'menu_suggestions', 'delete'),
 ('menu_suggestions.list', 'Danh sách gợi ý', 'menu_suggestions', 'list'),
 ('menu_suggestions.generate', 'Tạo gợi ý thực đơn', 'menu_suggestions', 'generate');
+
+-- 37. systems (backup / restore / audit log)
+INSERT INTO permissions (Name, Description, Resource, Action) VALUES
+('systems.log', 'Xem nhật ký hệ thống', 'systems', 'log'),
+('systems.backup', 'Sao lưu & quản lý backup', 'systems', 'backup'),
+('systems.restore', 'Khôi phục từ backup', 'systems', 'restore');
