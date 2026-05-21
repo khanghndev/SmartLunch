@@ -71,6 +71,9 @@ public class OrderRepository : IOrderRepository
             query = query.Where(e =>
                 e.Status.Contains(term) ||
                 e.PaymentStatus.Contains(term) ||
+                (e.InvoiceCode != null && e.InvoiceCode.Contains(term)) ||
+                (e.Code != null && e.Code.Contains(term)) ||
+                e.Id.ToString() == term ||
                 (e.Contract != null && e.Contract.Organization != null && e.Contract.Organization.Name.Contains(term)));
         }
 

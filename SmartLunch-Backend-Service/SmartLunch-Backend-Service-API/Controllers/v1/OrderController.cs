@@ -45,7 +45,7 @@ public class OrderController : ControllerBase
         try
         {
             int? restrictUser = null;
-            if (User.IsInRole("Customer") && !User.IsInRole("Admin") && !User.IsInRole("Manager"))
+            if (User.IsInRole("Customer") && !User.IsInRole("Admin") && !User.IsInRole("Manager") && !User.IsInRole("Super Admin"))
                 restrictUser = RequireUserId();
 
             var query = new GetOrdersQuery(
@@ -86,7 +86,7 @@ public class OrderController : ControllerBase
             if (response.Order.Id == 0)
                 return NotFound(BaseApiResponse<GetOrderResponse>.ErrorResult("Order not found", new[] { "Order not found" }));
 
-            if (!User.IsInRole("Admin") && !User.IsInRole("Manager"))
+            if (!User.IsInRole("Admin") && !User.IsInRole("Manager") && !User.IsInRole("Super Admin"))
             {
                 var uid = RequireUserId();
                 if (response.Order.UserId != uid)
@@ -112,7 +112,7 @@ public class OrderController : ControllerBase
     /// Update meal-order workflow status: pending → confirmed → delivered. Creates or completes a delivery record when status becomes delivered.
     /// </summary>
     [HttpPatch("{id:int}/status")]
-    [Authorize(Policy = "roles:Admin")]
+    [Authorize(Policy = "roles:Admin,Manager,Super Admin")]
     [Authorize(Policy = "permission:orders.update")]
     public async Task<ActionResult<BaseApiResponse<GetOrderResponse>>> UpdateStatus(int id, [FromBody] UpdateOrderStatusRequest request)
     {
