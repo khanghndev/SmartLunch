@@ -37,6 +37,7 @@ public class OrganizationMealOrderController : ControllerBase
     }
 
     /// <summary>Lấy thể loại món (bảng dish_categories) + cửa sổ ngày được phép đặt (VN).</summary>
+    [AllowAnonymous]
     [HttpGet("dish-category")]
     public async Task<ActionResult<BaseApiResponse<GetOrganizationDishCategoriesResponse>>> GetDishCategories()
     {
@@ -59,6 +60,7 @@ public class OrganizationMealOrderController : ControllerBase
     }
 
     /// <summary>Lấy món theo thể loại (Id bản ghi dish_categories).</summary>
+    [AllowAnonymous]
     [HttpGet("dish/category")]
     public async Task<ActionResult<BaseApiResponse<GetOrganizationDishesByCategoryResponse>>> GetDishesByCategory(
         [FromQuery] int categoryId,

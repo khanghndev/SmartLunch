@@ -7,8 +7,11 @@ using SmartLunch.Backend.Service.Application.Commands.CompanyContracts.SignOrgan
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Contracts;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Contracts;
+using SmartLunch.Backend.Service.Application.DTOs.Request.Finance;
+using SmartLunch.Backend.Service.Application.DTOs.Response.Finance;
 using SmartLunch.Backend.Service.Application.Queries.CompanyContracts.GetMyOrganizationContracts;
 using SmartLunch.Backend.Service.Application.Queries.CompanyContracts.GetOrganizationContract;
+using SmartLunch.Backend.Service.Application.Queries.Finance.GetContractPayments;
 
 namespace SmartLunch.Backend.Service.API.Controllers;
 
@@ -85,6 +88,48 @@ public class CompanyContractController : ControllerBase
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetContractResponse>.ErrorResult("An error occurred while retrieving the contract", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>
+    /// Thanh toán / đối soát theo hợp đồng (đơn thu khách + dòng chi NCC) — chỉ khi user thuộc đúng tổ chức của HĐ.
+    /// </summary>
+    [HttpGet("{id:int}/payments")]
+    public async Task<ActionResult<BaseApiResponse<GetContractPaymentsResponse>>> GetContractPayments(
+        int id,
+        [FromQuery] GetContractPaymentsRequest request)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            await _mediator.Send(new GetOrganizationContractQuery(id, userId));
+            var response = await _mediator.Send(new GetContractPaymentsQuery(id, request));
+            return Ok(BaseApiResponse<GetContractPaymentsResponse>.SuccessResult(
+                response,
+                "Contract payments retrieved successfully"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetContractPaymentsResponse>.NotFoundResult(ex.Message));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            if (IsInvalidUserContext(ex))
+                return Unauthorized(BaseApiResponse<GetContractPaymentsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            return StatusCode((int)HttpStatusCode.Forbidden, BaseApiResponse<GetContractPaymentsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetContractPaymentsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Company get contract payments {ContractId}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetContractPaymentsResponse>.ErrorResult(
+                    "An error occurred while loading contract payments",
+                    new[] { ex.Message }));
         }
     }
 

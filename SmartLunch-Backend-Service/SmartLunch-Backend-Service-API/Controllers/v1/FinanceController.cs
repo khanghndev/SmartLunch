@@ -21,7 +21,7 @@ namespace SmartLunch.Backend.Service.API.Controllers;
 [ApiController]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/finance")]
-[Authorize(Policy = "roles:Admin,Manager,WarehouseStaff")]
+[Authorize(Policy = "roles:Admin,Manager,WarehouseStaff,Organization")]
 public class FinanceController : ControllerBase
 {
     private readonly ILogger<FinanceController> _logger;
@@ -94,7 +94,6 @@ public class FinanceController : ControllerBase
     [Authorize(Policy = "permission:payments.read")]
     [Authorize(Policy = "permission:orders.read")]
     [Authorize(Policy = "permission:contracts.read")]
-    [Authorize(Policy = "permission:partner_payments.read")]
     public async Task<ActionResult<BaseApiResponse<GetContractPaymentsResponse>>> GetContractPayments(
         int contractId,
         [FromQuery] GetContractPaymentsRequest request)

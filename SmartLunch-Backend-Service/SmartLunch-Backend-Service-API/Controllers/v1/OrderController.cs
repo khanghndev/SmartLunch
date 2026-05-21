@@ -141,7 +141,7 @@ public class OrderController : ControllerBase
 
     /// <summary>Xem trước PDF phụ lục đặt hàng (cùng bố cục bản ký chính thức).</summary>
     [HttpGet("{id:int}/annex-preview")]
-    [Authorize(Policy = "roles:Customer,Organization,Company,Khách hàng cá nhân,Khách hàng doanh nghiệp")]
+    [Authorize(Policy = "roles:Organization,Company,Khách hàng cá nhân,Khách hàng doanh nghiệp")]
     [Authorize(Policy = "permission:orders.read")]
     public async Task<IActionResult> GetOrderAnnexPreview(int id)
     {
@@ -168,7 +168,7 @@ public class OrderController : ControllerBase
 
     /// <summary>Ký phụ lục đặt hàng (mô phỏng): ghép chữ ký vào PDF, upload cloud, cập nhật AnnexPdfUrl.</summary>
     [HttpPost("{id:int}/sign-annex")]
-    [Authorize(Policy = "roles:Customer,Organization,Company,Khách hàng cá nhân,Khách hàng doanh nghiệp")]
+    [Authorize(Policy = "roles:Organization,Company,Khách hàng cá nhân,Khách hàng doanh nghiệp")]
     [Authorize(Policy = "permission:orders.create")]
     public async Task<ActionResult<BaseApiResponse<GetOrderResponse>>> SignOrderAnnex(int id, [FromBody] SignOrderAnnexRequest request)
     {
@@ -201,7 +201,7 @@ public class OrderController : ControllerBase
 
     /// <summary>Đặt món trực tuyến (B2C + B2B đại diện đơn vị): tạo đơn chờ xác nhận.</summary>
     [HttpPost("customer")]
-    [Authorize(Policy = "roles:Customer,Organization,Company,Khách hàng cá nhân,Khách hàng doanh nghiệp")]
+    [Authorize(Policy = "roles:Organization,Company,Khách hàng cá nhân,Khách hàng doanh nghiệp")]
     [Authorize(Policy = "permission:orders.create")]
     public async Task<ActionResult<BaseApiResponse<GetOrderResponse>>> CreateCustomerOrder([FromBody] CreateCustomerMealOrderRequest request)
     {
@@ -240,7 +240,7 @@ public class OrderController : ControllerBase
     /// Thống kê suất ăn theo ngày / ca / bộ phận (Dành cho Admin và Công ty).
     /// </summary>
     [HttpGet("statistics/meal-count")]
-    [Authorize(Policy = "roles:Admin,Company")]
+    [Authorize(Policy = "roles:Admin,Company,Manager,Organization")]
     [Authorize(Policy = "permission:orders.read")]
     public async Task<ActionResult<BaseApiResponse<GetMealStatisticsResponse>>> GetMealStatistics([FromQuery] GetMealStatisticsRequest request)
     {
@@ -266,7 +266,7 @@ public class OrderController : ControllerBase
     /// Thống kê chi tiết suất ăn (theo từng món) cho ngày / ca / bộ phận.
     /// </summary>
     [HttpGet("statistics/details")]
-    [Authorize(Policy = "roles:Admin,Company")]
+    [Authorize(Policy = "roles:Admin,Company,Manager,Organization")]
     [Authorize(Policy = "permission:orders.read")]
     public async Task<ActionResult<BaseApiResponse<GetDetailedMealStatisticsResponse>>> GetDetailedMealStatistics([FromQuery] GetMealStatisticsRequest request)
     {

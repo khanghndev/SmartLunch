@@ -2,7 +2,10 @@
 -- SmartLunch Database - Master Runner
 -- MySQL 8.0+ | UTF-8 (utf8mb4)
 --
--- Usage: mysql -u root -p < run_all.sql
+-- Full reset: mysql -u root -p < run_all.sql
+-- Hoặc: run_sql.bat reset
+--
+-- Bao gồm run_update.sql (maintenance idempotent) ở cuối.
 -- =====================================
 
 -- Step 0: Init Database + UTF-8
@@ -62,6 +65,7 @@ SOURCE 01_tables/39_banners.sql;
 SOURCE 01_tables/40_notifications.sql;
 SOURCE 01_tables/41_system_logs.sql;
 SOURCE 01_tables/42_system_backups.sql;
+SOURCE 01_tables/50_system_backup_schedule.sql;
 SOURCE 01_tables/43_dish_images.sql;
 SOURCE 01_tables/44_weekly_menu_images.sql;
 SOURCE 01_tables/45_partner_documents.sql;
@@ -103,13 +107,7 @@ SOURCE 04_seed_data/15_seed_menus.sql;
 SOURCE 04_seed_data/16_seed_orders.sql;
 SOURCE 04_seed_data/17_seed_remaining_tables.sql;
 
--- Step 5: Maintenance
-SOURCE 05_maintenance/02_orders_annex_columns.sql;
-SOURCE 05_maintenance/03_warehousestaff_grant_partner_perms.sql;
-SOURCE 05_maintenance/01_analyze_optimize.sql;
-SOURCE 05_maintenance/05_order_items_service_date.sql;
-SOURCE 05_maintenance/06_orders_promotion_columns.sql;
-SOURCE 05_maintenance/07_promotions_permissions.sql;
-SOURCE 05_maintenance/08_promotions_tables.sql;
+-- Step 5: Incremental maintenance (gộp từ run_update.sql — idempotent)
+SOURCE run_update.sql;
 
 SELECT 'SmartLunch database setup completed!' AS Status;
