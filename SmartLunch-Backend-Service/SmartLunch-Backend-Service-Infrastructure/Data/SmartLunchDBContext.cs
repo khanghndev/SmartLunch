@@ -26,6 +26,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         #region DbSets
         public DbSet<SystemLog> SystemLogs { get; set; }
         public DbSet<SystemBackup> SystemBackups { get; set; }
+        public DbSet<SystemBackupSchedule> SystemBackupSchedules { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Role> Roles { get; set; }
         public DbSet<Permission> Permissions { get; set; }
@@ -228,6 +229,10 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                     .HasMaxLength(1024);
 
                 entity.Property(e => e.SizeBytes);
+                entity.Property(e => e.BackupSource)
+                    .IsRequired()
+                    .HasMaxLength(16)
+                    .HasDefaultValue("Manual");
                 entity.Property(e => e.CreatedAtUtc);
                 entity.Property(e => e.RestoredAtUtc);
                 entity.Property(e => e.DeletedAtUtc);
@@ -235,6 +240,21 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
 
                 entity.HasIndex(e => e.CreatedAtUtc);
                 entity.HasIndex(e => e.IsDeleted);
+            });
+
+            modelBuilder.Entity<SystemBackupSchedule>(entity =>
+            {
+                entity.ToTable("system_backup_schedule");
+                entity.HasKey(e => e.Id);
+                entity.Property(e => e.ScheduleMode).IsRequired().HasMaxLength(16);
+                entity.Property(e => e.TimeOfDayMinutes);
+                entity.Property(e => e.DayOfWeek);
+                entity.Property(e => e.OnceScheduledAt);
+                entity.Property(e => e.LastRunAt);
+                entity.Property(e => e.NextRunAt);
+                entity.Property(e => e.UpdatedAt);
+                entity.Property(e => e.UpdatedByUserId);
+                entity.Property(e => e.IsEnabled);
             });
 
             modelBuilder.Entity<WeeklyMenuImage>(entity =>

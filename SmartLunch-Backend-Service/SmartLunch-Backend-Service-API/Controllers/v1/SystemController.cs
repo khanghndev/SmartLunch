@@ -13,6 +13,8 @@ using SmartLunch.Backend.Service.Application.Queries.Systems.GetSystemBackups;
 using SmartLunch.Backend.Service.Application.Queries.Systems.GetSystemBackupFile;
 using SmartLunch.Backend.Service.Application.Commands.Systems.DeleteSystemBackup;
 using SmartLunch.Backend.Service.Application.Commands.Systems.RestoreSystem;
+using SmartLunch.Backend.Service.Application.Commands.Systems.UpdateBackupSchedule;
+using SmartLunch.Backend.Service.Application.Queries.Systems.GetBackupSchedule;
 
 namespace SmartLunch.Backend.Service.API.Controllers.MasterData;
 
@@ -62,6 +64,49 @@ public class SystemController : ControllerBase
         }
     }
 
+    /// <summary>Lấy cấu hình lịch sao lưu tự động.</summary>
+    [HttpGet("backup/schedule")]
+    [Authorize(Policy = "permission:systems.backup")]
+    public async Task<ActionResult<BaseApiResponse<BackupScheduleDto>>> GetBackupSchedule()
+    {
+        try
+        {
+            var response = await _mediator.Send(new GetBackupScheduleQuery());
+            return Ok(BaseApiResponse<BackupScheduleDto>.SuccessResult(response, "Backup schedule retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving backup schedule");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<BackupScheduleDto>.ErrorResult("An error occurred while retrieving backup schedule", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Cập nhật lịch sao lưu tự động (ngày/giờ theo giờ VN).</summary>
+    [HttpPut("backup/schedule")]
+    [Authorize(Policy = "permission:systems.backup")]
+    public async Task<ActionResult<BaseApiResponse<BackupScheduleDto>>> UpdateBackupSchedule([FromBody] UpdateBackupScheduleRequest request)
+    {
+        try
+        {
+            var actorId = RequireUserId();
+            var response = await _mediator.Send(new UpdateBackupScheduleCommand(request, actorId));
+            return Ok(BaseApiResponse<BackupScheduleDto>.SuccessResult(response, "Backup schedule updated successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<BackupScheduleDto>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating backup schedule");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<BackupScheduleDto>.ErrorResult("An error occurred while updating backup schedule", new[] { ex.Message }));
+        }
+    }
+
     /// <summary>
     /// Backup
     /// </summary>
@@ -98,7 +143,7 @@ public class SystemController : ControllerBase
     {
         try
         {
-            var query = new GetSystemBackupsQuery(request.Page, request.PageSize, request.IncludeDeleted);
+            var query = new GetSystemBackupsQuery(request.Page, request.PageSize, request.IncludeDeleted, request.From, request.To);
             var response = await _mediator.Send(query);
             return Ok(BaseApiResponse<GetSystemBackupsResponse>.SuccessResult(response, "System backups retrieved successfully"));
         }
@@ -124,6 +169,28 @@ public class SystemController : ControllerBase
     {
         var meta = await _mediator.Send(new GetSystemBackupFileQuery(id));
         return Redirect(meta.DownloadUrl);
+    }
+
+    /// <summary>Trả URL tải file (Appwrite) cho proxy MVC.</summary>
+    [HttpGet("backup/{id:int}/url")]
+    [Authorize(Policy = "permission:systems.backup")]
+    public async Task<ActionResult<BaseApiResponse<GetSystemBackupFileResponse>>> GetBackupDownloadUrl([FromRoute] int id)
+    {
+        try
+        {
+            var meta = await _mediator.Send(new GetSystemBackupFileQuery(id));
+            return Ok(BaseApiResponse<GetSystemBackupFileResponse>.SuccessResult(meta, "Download URL retrieved"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetSystemBackupFileResponse>.NotFoundResult(ex.Message));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting backup download URL {BackupId}", id);
+            return StatusCode((int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetSystemBackupFileResponse>.ErrorResult("An error occurred", new[] { ex.Message }));
+        }
     }
 
     /// <summary>

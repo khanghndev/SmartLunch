@@ -29,7 +29,9 @@ public class DatabaseBackupService : IDatabaseBackupService
         _httpClient = new HttpClient();
     }
 
-    public async Task<(string FilePath, long SizeBytes, DateTime CreatedAtUtc)> CreateBackupAsync(CancellationToken cancellationToken = default)
+    public async Task<(string FilePath, long SizeBytes, DateTime CreatedAtUtc)> CreateBackupAsync(
+        string backupSource = "Manual",
+        CancellationToken cancellationToken = default)
     {
         var opts = ReadOptions();
         Directory.CreateDirectory(opts.OutputDirectory);
@@ -89,6 +91,7 @@ public class DatabaseBackupService : IDatabaseBackupService
                 StorageBucket = bucketId,
                 StorageObjectName = objectName,
                 SizeBytes = size,
+                BackupSource = string.IsNullOrWhiteSpace(backupSource) ? "Manual" : backupSource,
                 CreatedAtUtc = createdAt,
                 IsDeleted = false
             });

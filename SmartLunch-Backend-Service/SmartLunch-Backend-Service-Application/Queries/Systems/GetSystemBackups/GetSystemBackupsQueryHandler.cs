@@ -21,7 +21,8 @@ public class GetSystemBackupsQueryHandler : IRequestHandler<GetSystemBackupsQuer
         var page = request.Page < 1 ? 1 : request.Page;
         var pageSize = request.PageSize is < 1 or > 200 ? 10 : request.PageSize;
 
-        var (backups, totalCount) = await _systemBackupRepository.GetBackupsAsync(page, pageSize, request.IncludeDeleted);
+        var (backups, totalCount) = await _systemBackupRepository.GetBackupsAsync(
+            page, pageSize, request.IncludeDeleted, request.From, request.To);
 
         var dtos = backups.Select(e => new SystemBackupDto
         {
@@ -30,6 +31,7 @@ public class GetSystemBackupsQueryHandler : IRequestHandler<GetSystemBackupsQuer
             StorageBucket = e.StorageBucket,
             StorageObjectName = e.StorageObjectName,
             SizeBytes = e.SizeBytes,
+            BackupSource = e.BackupSource,
             CreatedAtUtc = e.CreatedAtUtc,
             RestoredAtUtc = e.RestoredAtUtc,
             IsDeleted = e.IsDeleted

@@ -7,6 +7,7 @@ public class SystemBackupDto
     public string StorageBucket { get; set; } = string.Empty;
     public string StorageObjectName { get; set; } = string.Empty;
     public long SizeBytes { get; set; }
+    public string BackupSource { get; set; } = "Manual";
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? RestoredAtUtc { get; set; }
     public bool IsDeleted { get; set; }

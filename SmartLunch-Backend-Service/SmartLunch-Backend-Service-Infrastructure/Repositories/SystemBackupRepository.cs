@@ -27,11 +27,20 @@ public class SystemBackupRepository : ISystemBackupRepository
             .FirstOrDefaultAsync();
     }
 
-    public async Task<(List<SystemBackup> Backups, int TotalCount)> GetBackupsAsync(int page, int pageSize, bool includeDeleted = false)
+    public async Task<(List<SystemBackup> Backups, int TotalCount)> GetBackupsAsync(
+        int page,
+        int pageSize,
+        bool includeDeleted = false,
+        DateTime? from = null,
+        DateTime? to = null)
     {
         var query = _context.SystemBackups.AsNoTracking().AsQueryable();
         if (!includeDeleted)
             query = query.Where(e => !e.IsDeleted);
+        if (from.HasValue)
+            query = query.Where(e => e.CreatedAtUtc >= from.Value);
+        if (to.HasValue)
+            query = query.Where(e => e.CreatedAtUtc <= to.Value);
 
         var totalCount = await query.CountAsync();
 
@@ -42,6 +51,14 @@ public class SystemBackupRepository : ISystemBackupRepository
             .ToListAsync();
 
         return (backups, totalCount);
+    }
+
+    public async Task<(long TotalBytes, int TotalCount)> GetStorageStatsAsync()
+    {
+        var query = _context.SystemBackups.AsNoTracking().Where(e => !e.IsDeleted);
+        var count = await query.CountAsync();
+        var bytes = await query.SumAsync(e => (long?)e.SizeBytes) ?? 0L;
+        return (bytes, count);
     }
 
     public async Task<SystemBackup> CreateAsync(SystemBackup backup)

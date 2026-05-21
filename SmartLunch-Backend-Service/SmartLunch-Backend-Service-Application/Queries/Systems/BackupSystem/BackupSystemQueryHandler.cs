@@ -29,7 +29,7 @@ public class BackupSystemQueryHandler : IRequestHandler<BackupSystemQuery, Backu
     {
         // NOTE: This backup exports the whole MySQL database using mysqldump (file extension .bak by convention).
         // The `id` parameter is reserved for future extension (multi-tenant/system-id).
-        var (filePath, sizeBytes, createdAtUtc) = await _databaseBackupService.CreateBackupAsync(cancellationToken);
+        var (filePath, sizeBytes, createdAtUtc) = await _databaseBackupService.CreateBackupAsync("Manual", cancellationToken);
         var fileName = Path.GetFileName(filePath);
 
         _logger.LogInformation("Created database backup. File={FileName} SizeBytes={SizeBytes}", fileName, sizeBytes);

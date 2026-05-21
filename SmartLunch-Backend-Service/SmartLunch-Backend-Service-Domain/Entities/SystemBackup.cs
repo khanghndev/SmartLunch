@@ -7,6 +7,8 @@ public class SystemBackup
     public string StorageBucket { get; set; } = string.Empty;
     public string StorageObjectName { get; set; } = string.Empty;
     public long SizeBytes { get; set; }
+    /// <summary>Manual | Scheduled</summary>
+    public string BackupSource { get; set; } = "Manual";
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? RestoredAtUtc { get; set; }
     public DateTime? DeletedAtUtc { get; set; }
