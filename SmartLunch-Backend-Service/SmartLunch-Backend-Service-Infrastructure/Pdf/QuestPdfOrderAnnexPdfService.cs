@@ -210,73 +210,118 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
                         }
                     });
 
-                    col.Item().AlignRight().PaddingTop(8).Background(Colors.Blue.Lighten5).Border(1).BorderColor(Colors.Blue.Lighten2)
-                        .Padding(10).Column(summary =>
+                    col.Item().PaddingTop(8).Background(Colors.Blue.Lighten5).Border(1).BorderColor(Colors.Blue.Lighten2)
+                        .Padding(12).Column(summary =>
                         {
-                            summary.Spacing(4);
-                            summary.Item().Text("TỔNG HỢP SUẤT ĂN VÀ GIÁ TRỊ").Bold().FontSize(11).FontColor(Colors.Blue.Darken4);
+                            summary.Spacing(8);
+                            summary.Item().AlignCenter().Text("TỔNG HỢP SUẤT ĂN, KHUYẾN MÃI VÀ THANH TOÁN")
+                                .Bold().FontSize(11).FontColor(Colors.Blue.Darken4);
 
-                            if (dailyPortions.Count > 0)
+                            summary.Item().Row(row =>
                             {
-                                foreach (var day in dailyPortions)
-                                {
-                                    summary.Item().Text(
-                                            $"Ngày {day.Date.ToString("dd/MM/yyyy", vi)}: {day.Portions.ToString("N0", vi)} suất")
-                                        .FontSize(10);
-                                }
-                            }
-                            else
-                            {
-                                summary.Item().Text(
-                                        $"Ngày {DateOnly.FromDateTime(order.ScheduledDate):dd/MM/yyyy}: {totalMainPortions.ToString("N0", vi)} suất")
-                                    .FontSize(10);
-                            }
+                                row.Spacing(12);
 
-                            summary.Item().PaddingTop(4).Text(
-                                    $"Tổng cộng suất (tất cả các ngày): {totalMainPortions.ToString("N0", vi)} suất")
-                                .SemiBold().FontSize(10.5f);
-                            summary.Item().Text($"Đơn giá một suất: {Money(pricePerPortion)}").FontSize(10);
-                            summary.Item().PaddingTop(4).Text(
-                                    $"Thành tiền ({totalMainPortions.ToString("N0", vi)} suất × {Money(pricePerPortion)}): {Money(subtotalBeforePromo)}")
-                                .SemiBold().FontSize(10.5f);
-
-                            if (hasPromotion)
-                            {
-                                summary.Item().PaddingTop(6).Text("KHUYẾN MÃI ĐÃ ÁP DỤNG")
-                                    .Bold().FontSize(10).FontColor(Colors.Green.Darken3);
-
-                                if (promoApps.Count > 0)
-                                {
-                                    foreach (var promo in promoApps)
+                                row.RelativeItem().Background(Colors.White).Border(1).BorderColor(Colors.Blue.Lighten3)
+                                    .Padding(10).Column(left =>
                                     {
-                                        summary.Item().PaddingTop(2).Text(txt =>
+                                        left.Spacing(4);
+                                        left.Item().Text("Suất ăn & thành tiền").Bold().FontSize(9.5f)
+                                            .FontColor(Colors.Blue.Darken3);
+                                        left.Item().PaddingTop(2).LineHorizontal(0.5f).LineColor(Colors.Blue.Lighten3);
+
+                                        if (dailyPortions.Count > 0)
                                         {
-                                            txt.Span("• ").FontSize(10);
-                                            txt.Span(promo.PromotionName).SemiBold().FontSize(10);
-                                            if (!string.IsNullOrWhiteSpace(promo.PromotionCode))
+                                            foreach (var day in dailyPortions)
                                             {
-                                                txt.Span(" (mã: ").FontSize(9.5f);
-                                                txt.Span(promo.PromotionCode.Trim()).SemiBold().FontSize(9.5f);
-                                                txt.Span(")").FontSize(9.5f);
+                                                left.Item().Text(
+                                                        $"Ngày {day.Date.ToString("dd/MM/yyyy", vi)}: {day.Portions.ToString("N0", vi)} suất")
+                                                    .FontSize(9.5f);
                                             }
+                                        }
+                                        else
+                                        {
+                                            left.Item().Text(
+                                                    $"Ngày {DateOnly.FromDateTime(order.ScheduledDate):dd/MM/yyyy}: {totalMainPortions.ToString("N0", vi)} suất")
+                                                .FontSize(9.5f);
+                                        }
+
+                                        left.Item().PaddingTop(4).Text(
+                                                $"Tổng suất: {totalMainPortions.ToString("N0", vi)} suất")
+                                            .SemiBold().FontSize(10);
+                                        left.Item().Text($"Đơn giá / suất: {Money(pricePerPortion)}").FontSize(9.5f);
+                                        left.Item().PaddingTop(6).Background(Colors.Blue.Lighten5).Padding(6).Text(txt =>
+                                        {
+                                            txt.Span("Thành tiền: ").FontSize(9.5f);
+                                            txt.Span(Money(subtotalBeforePromo)).Bold().FontSize(10.5f).FontColor(Colors.Blue.Darken4);
                                         });
-                                        summary.Item().Text(
-                                                $"  Mức giảm: {FormatDiscountLabel(promo)}  ·  Giảm: {Money(promo.DiscountAmount)}")
-                                            .FontSize(9.5f).FontColor(Colors.Grey.Darken2);
-                                    }
-                                }
-                                else
-                                {
-                                    summary.Item().PaddingTop(2).Text("• Đơn hàng được giảm giá theo chương trình khuyến mãi")
-                                        .FontSize(10);
-                                }
+                                        left.Item().Text(
+                                                $"{totalMainPortions.ToString("N0", vi)} × {Money(pricePerPortion)}")
+                                            .FontSize(8.5f).FontColor(Colors.Grey.Darken1);
+                                    });
 
-                                summary.Item().PaddingTop(2).Text($"Tổng tiền khuyến mãi: −{Money(discountTotal)}")
-                                    .SemiBold().FontSize(10.5f).FontColor(Colors.Green.Darken3);
-                            }
+                                row.RelativeItem().Background(Colors.White).Border(1).BorderColor(Colors.Green.Lighten2)
+                                    .Padding(10).Column(right =>
+                                    {
+                                        right.Spacing(4);
+                                        right.Item().Text("Khuyến mãi").Bold().FontSize(9.5f)
+                                            .FontColor(Colors.Green.Darken3);
+                                        right.Item().PaddingTop(2).LineHorizontal(0.5f).LineColor(Colors.Green.Lighten2);
 
-                            summary.Item().PaddingTop(6).Text($"TỔNG TIỀN PHẢI TRẢ: {Money(totalPayable)}")
-                                .Bold().FontSize(12).FontColor(Colors.Blue.Darken4);
+                                        if (hasPromotion)
+                                        {
+                                            if (promoApps.Count > 0)
+                                            {
+                                                foreach (var promo in promoApps)
+                                                {
+                                                    right.Item().PaddingTop(2).Text(txt =>
+                                                    {
+                                                        txt.Span("• ").FontSize(9.5f);
+                                                        txt.Span(promo.PromotionName).SemiBold().FontSize(9.5f);
+                                                        if (!string.IsNullOrWhiteSpace(promo.PromotionCode))
+                                                        {
+                                                            txt.Span(" (").FontSize(9f);
+                                                            txt.Span(promo.PromotionCode.Trim()).SemiBold().FontSize(9f);
+                                                            txt.Span(")").FontSize(9f);
+                                                        }
+                                                    });
+                                                    right.Item().Text(
+                                                            $"Mức giảm: {FormatDiscountLabel(promo)}")
+                                                        .FontSize(9f).FontColor(Colors.Grey.Darken2);
+                                                    right.Item().Text(
+                                                            $"Tiền giảm: {Money(promo.DiscountAmount)}")
+                                                        .FontSize(9.5f).SemiBold().FontColor(Colors.Green.Darken3);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                right.Item().Text("• Có áp dụng giảm giá theo chương trình KM")
+                                                    .FontSize(9.5f);
+                                            }
+
+                                            right.Item().PaddingTop(6).Background(Colors.Green.Lighten5).Padding(6).Text(txt =>
+                                            {
+                                                txt.Span("Tổng KM: ").FontSize(9.5f);
+                                                txt.Span("−" + Money(discountTotal)).Bold().FontSize(10.5f).FontColor(Colors.Green.Darken3);
+                                            });
+                                        }
+                                        else
+                                        {
+                                            right.Item().PaddingTop(8).AlignCenter().Text("Không áp dụng khuyến mãi")
+                                                .Italic().FontSize(10).FontColor(Colors.Grey.Medium);
+                                            right.Item().AlignCenter().Text("Thành tiền = tổng phải trả")
+                                                .FontSize(8.5f).FontColor(Colors.Grey.Darken1);
+                                        }
+                                    });
+                            });
+
+                            summary.Item().Background(Colors.Blue.Medium).Padding(10).Row(totalRow =>
+                            {
+                                totalRow.RelativeItem().AlignMiddle().Text("TỔNG TIỀN PHẢI TRẢ")
+                                    .Bold().FontSize(11).FontColor(Colors.White);
+                                totalRow.ConstantItem(200).AlignMiddle().AlignRight()
+                                    .Text(Money(totalPayable))
+                                    .Bold().FontSize(13).FontColor(Colors.White);
+                            });
                         });
 
                     col.Item().PaddingTop(10).DefaultTextStyle(x => x.Italic().FontColor(Colors.Grey.Darken2).FontSize(8.5f))
