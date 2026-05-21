@@ -125,9 +125,35 @@ public class BackendMasterDataClient
         return await GetAsync<GetSystemLogsResponse>($"/api/v1/master-data/System/log?page={page}&pageSize={pageSize}", accessToken, ct);
     }
 
-    public async Task<GetSystemBackupsResponse> GetSystemBackupsAsync(string accessToken, int page = 1, int pageSize = 10, bool includeDeleted = false, CancellationToken ct = default)
+    public async Task<GetSystemBackupsResponse> GetSystemBackupsAsync(
+        string accessToken,
+        int page = 1,
+        int pageSize = 10,
+        bool includeDeleted = false,
+        DateTime? from = null,
+        DateTime? to = null,
+        CancellationToken ct = default)
     {
-        return await GetAsync<GetSystemBackupsResponse>($"/api/v1/master-data/System/backup?page={page}&pageSize={pageSize}&includeDeleted={includeDeleted}", accessToken, ct);
+        var q = $"/api/v1/master-data/System/backup?page={page}&pageSize={pageSize}&includeDeleted={includeDeleted}";
+        if (from.HasValue) q += $"&from={Uri.EscapeDataString(from.Value.ToString("o"))}";
+        if (to.HasValue) q += $"&to={Uri.EscapeDataString(to.Value.ToString("o"))}";
+        return await GetAsync<GetSystemBackupsResponse>(q, accessToken, ct);
+    }
+
+    public async Task<BackupScheduleDto> GetBackupScheduleAsync(string accessToken, CancellationToken ct = default)
+    {
+        return await GetAsync<BackupScheduleDto>("/api/v1/master-data/System/backup/schedule", accessToken, ct);
+    }
+
+    public async Task<BackupScheduleDto> UpdateBackupScheduleAsync(UpdateBackupScheduleRequest request, string accessToken, CancellationToken ct = default)
+    {
+        return await PutAsync<BackupScheduleDto>("/api/v1/master-data/System/backup/schedule", request, accessToken, ct);
+    }
+
+    public async Task<string> GetSystemBackupDownloadUrlAsync(int backupId, string accessToken, CancellationToken ct = default)
+    {
+        var res = await GetAsync<SystemBackupDownloadResponse>($"/api/v1/master-data/System/backup/{backupId}/url", accessToken, ct);
+        return res.DownloadUrl;
     }
 
     public async Task<SystemBackupDto> BackupSystemAsync(string accessToken, CancellationToken ct = default)
@@ -652,7 +678,10 @@ public class SystemBackupDto
     public int Id { get; set; }
     public string FileName { get; set; } = string.Empty;
     public string FilePath { get; set; } = string.Empty;
+    public string StorageBucket { get; set; } = string.Empty;
+    public string StorageObjectName { get; set; } = string.Empty;
     public long SizeBytes { get; set; }
+    public string BackupSource { get; set; } = "Manual";
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? RestoredAtUtc { get; set; }
     public bool IsDeleted { get; set; }
@@ -660,9 +689,42 @@ public class SystemBackupDto
 
 public class GetSystemBackupsResponse : PaginationResponse<SystemBackupDto> { }
 
-public class RestoreSystemRequest
+public class BackupScheduleDto
+{
+    public bool IsEnabled { get; set; }
+    public string ScheduleMode { get; set; } = "Daily";
+    public string TimeOfDay { get; set; } = "03:00";
+    public int? DayOfWeek { get; set; }
+    public DateTime? OnceScheduledAt { get; set; }
+    public DateTime? LastRunAt { get; set; }
+    public DateTime? NextRunAt { get; set; }
+    public DateTime UpdatedAt { get; set; }
+    public DateTime? LatestBackupAt { get; set; }
+    public string? LatestBackupFileName { get; set; }
+    public long TotalBackupBytes { get; set; }
+    public int TotalBackupCount { get; set; }
+    public string StorageProvider { get; set; } = "Appwrite";
+}
+
+public class UpdateBackupScheduleRequest
+{
+    public bool IsEnabled { get; set; }
+    public string ScheduleMode { get; set; } = "Daily";
+    public string? TimeOfDay { get; set; }
+    public int? DayOfWeek { get; set; }
+    public DateTime? OnceScheduledAt { get; set; }
+}
+
+public class SystemBackupDownloadResponse
 {
     public int BackupId { get; set; }
+    public string FileName { get; set; } = string.Empty;
+    public string DownloadUrl { get; set; } = string.Empty;
+}
+
+public class RestoreSystemRequest
+{
+    public int? BackupId { get; set; }
 }
 
 // ─── Dish / Menu DTOs ───────────────────────────────────────────────────────

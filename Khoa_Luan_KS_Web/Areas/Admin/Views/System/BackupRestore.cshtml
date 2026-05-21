@@ -1,198 +1,273 @@
-@model Khoa_Luan_KS_Web.Services.GetSystemBackupsResponse
+@model Khoa_Luan_KS_Web.Areas.Admin.Models.BackupRestorePageVm
+@using System.Globalization
 @{
     ViewData["Title"] = "Backup & Restore";
     Layout = "_LayoutAdmin";
+    var vi = new CultureInfo("vi-VN");
+    string FmtSize(long bytes) => bytes < 1024 * 1024
+        ? $"{bytes / 1024.0:0.##} KB"
+        : $"{bytes / 1024.0 / 1024.0:0.##} MB";
+    string FmtDt(DateTime? dt) => dt.HasValue ? dt.Value.ToString("dd/MM/yyyy HH:mm", vi) : "—";
+    var schedule = Model.Schedule;
+    var backups = Model.Backups;
+    var totalPages = backups.PageSize > 0 ? (int)Math.Ceiling(backups.TotalCount / (double)backups.PageSize) : 1;
+    if (totalPages < 1) totalPages = 1;
+    var dailyTime = string.IsNullOrWhiteSpace(schedule.TimeOfDay) ? "21:00" : schedule.TimeOfDay;
 }
 
 <div class="space-y-8" x-data="backupManager()">
-    <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Backup & Disaster Recovery</h1>
-            <p class="text-slate-500 mt-1 font-medium text-sm">Quản lý các bản sao lưu Database, đồng bộ Cloud Storage và Khôi phục dữ liệu hệ thống.</p>
+    <div>
+        <h1 class="text-3xl font-black text-slate-800 tracking-tight">Backup & Khôi phục</h1>
+        <p class="text-slate-500 mt-1 font-medium text-sm">Hai cách sao lưu: <strong>nhấn nút ngay</strong> hoặc <strong>đặt lịch hàng ngày</strong> (chạy đúng một lần vào giờ đã chọn).</p>
+    </div>
+
+    <!-- Hai lựa chọn rõ ràng -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- 1. Backup thủ công -->
+        <div class="bg-white rounded-[24px] border-2 border-blue-100 shadow-sm p-6 md:p-8 flex flex-col">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center">
+                    <i class="fas fa-bolt text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-slate-800">1. Sao lưu ngay</h2>
+                    <p class="text-xs text-slate-500 font-medium">Tạo bản backup và upload lên Appwrite ngay lập tức</p>
+                </div>
+            </div>
+            <p class="text-sm text-slate-600 flex-1 mb-6">Dùng khi cần snapshot dữ liệu trước khi cập nhật hệ thống hoặc thử nghiệm. Không ảnh hưởng lịch tự động.</p>
+            <form method="post" action="/Admin/System/CreateBackup" onsubmit="return confirm('Tạo bản sao lưu database ngay bây giờ?');">
+                <button type="submit" class="w-full px-5 py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg shadow-blue-600/25 transition-all text-sm flex items-center justify-center gap-2">
+                    <i class="fas fa-database"></i>
+                    Backup dữ liệu ngay
+                </button>
+            </form>
         </div>
-        
-        <div class="flex items-center gap-3">
-            <form method="post" action="/Admin/System/CreateBackup">
-                <button type="submit" class="px-5 py-2.5 admin-gradient text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:shadow-green-600/50 transition-all text-sm flex items-center gap-2">
-                    <i class="fas fa-save"></i>
-                    Tạo Bản Sao lưu mới ngay
+
+        <!-- 2. Lịch hàng ngày -->
+        <div class="bg-white rounded-[24px] border-2 border-green-100 shadow-sm p-6 md:p-8 flex flex-col">
+            <div class="flex items-center gap-3 mb-4">
+                <div class="w-12 h-12 rounded-xl bg-green-100 text-green-600 flex items-center justify-center">
+                    <i class="fas fa-clock text-xl"></i>
+                </div>
+                <div>
+                    <h2 class="text-lg font-black text-slate-800">2. Đặt lịch hàng ngày</h2>
+                    <p class="text-xs text-slate-500 font-medium">Hệ thống chỉ chạy backup <strong>một lần</strong> mỗi ngày đúng giờ</p>
+                </div>
+            </div>
+            <form method="post" action="/Admin/System/SaveBackupSchedule" class="space-y-4 flex-1 flex flex-col">
+                <input type="hidden" name="scheduleMode" value="Daily" />
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" name="isEnabled" value="true" class="rounded border-slate-300 text-green-600 focus:ring-green-500"
+                           @(schedule.IsEnabled ? "checked" : "") />
+                    <span class="text-sm font-bold text-slate-700">Bật sao lưu tự động mỗi ngày</span>
+                </label>
+                <div>
+                    <label class="block text-xs font-bold text-slate-500 uppercase mb-1">Giờ chạy (giờ Việt Nam)</label>
+                    <input type="time" name="timeOfDay" value="@dailyTime"
+                           class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-medium" required />
+                    <p class="text-[11px] text-slate-400 mt-1">Ví dụ: 21:00 — backup chỉ chạy lúc 21h tối, không lặp liên tục.</p>
+                </div>
+                @if (schedule.IsEnabled && schedule.NextRunAt.HasValue)
+                {
+                    <p class="text-xs text-green-700 bg-green-50 border border-green-100 rounded-lg px-3 py-2">
+                        <i class="fas fa-calendar-check mr-1"></i>
+                        Lần chạy tiếp theo: <strong>@FmtDt(schedule.NextRunAt)</strong>
+                    </p>
+                }
+                @if (schedule.LastRunAt.HasValue)
+                {
+                    <p class="text-xs text-slate-500">Lần chạy gần nhất: @FmtDt(schedule.LastRunAt)</p>
+                }
+                <button type="submit" class="w-full mt-auto py-3 rounded-xl admin-gradient text-white font-bold text-sm shadow-md">
+                    <i class="fas fa-save mr-1"></i> Lưu lịch
                 </button>
             </form>
         </div>
     </div>
 
-    <!-- Status Overview -->
-    <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden relative">
-        <div class="absolute inset-0 bg-gradient-to-r from-green-50/50 to-transparent pointer-events-none"></div>
-        <div class="p-6 md:p-8 flex flex-col md:flex-row items-center gap-8 relative z-10">
-            <div class="w-32 h-32 rounded-full border-8 border-green-100 flex items-center justify-center shrink-0 relative">
-                <div class="absolute inset-0 rounded-full border-8 border-green-500 border-t-transparent animate-[spin_3s_linear_infinite]"></div>
-                <i class="fas fa-cloud-upload-alt text-4xl text-green-600 relative z-10"></i>
+    <!-- Trạng thái -->
+    <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm p-6 md:p-8 relative overflow-hidden">
+        <div class="absolute inset-0 bg-gradient-to-r from-green-50/60 to-transparent pointer-events-none"></div>
+        <div class="relative z-10 flex flex-col md:flex-row gap-6 items-start">
+            <div class="w-16 h-16 rounded-2xl bg-green-100 text-green-600 flex items-center justify-center shrink-0 border border-green-200">
+                <i class="fas fa-cloud text-2xl"></i>
             </div>
-            
-            <div class="flex-1 space-y-4 text-center md:text-left">
+            <div class="flex-1 space-y-3">
+                <div class="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest border
+                    @(schedule.IsEnabled ? "bg-green-100 text-green-700 border-green-200" : "bg-slate-100 text-slate-500 border-slate-200")">
+                    @if (schedule.IsEnabled)
+                    {
+                        <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span>
+                        <span>Lịch @dailyTime hàng ngày: Bật</span>
+                    }
+                    else
+                    {
+                        <span>Chỉ backup thủ công</span>
+                    }
+                </div>
+                <p class="text-sm text-slate-500">File dump MySQL lưu trên Appwrite dạng <code class="text-xs bg-slate-100 px-1 rounded">.bak</code> (bucket không cho phép .sql).</p>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-2 border-t border-slate-100">
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-slate-400">Backup gần nhất</p>
+                        <p class="text-sm font-black text-slate-800">@FmtDt(schedule.LatestBackupAt)</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-slate-400">Tổng dung lượng</p>
+                        <p class="text-sm font-black text-slate-800">@FmtSize(schedule.TotalBackupBytes)</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-slate-400">Số bản lưu</p>
+                        <p class="text-sm font-black text-slate-800">@schedule.TotalBackupCount</p>
+                    </div>
+                    <div>
+                        <p class="text-[10px] font-bold uppercase text-slate-400">Lần chạy tiếp theo</p>
+                        <p class="text-sm font-black text-green-600">@(schedule.IsEnabled ? FmtDt(schedule.NextRunAt) : "—")</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bảng backup -->
+    <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-4 bg-slate-50/50">
+            <h3 class="font-black text-lg text-slate-800">Điểm khôi phục (Backup Points)</h3>
+            <form method="get" action="/Admin/System/BackupRestore" class="flex flex-wrap items-end gap-2">
                 <div>
-                    <div class="inline-flex items-center gap-1.5 px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black uppercase tracking-widest rounded-lg border border-green-200 mb-2">
-                        <div class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></div> Auto-Sync Active
-                    </div>
-                    <h2 class="text-2xl font-black text-slate-800">Bảo vệ dữ liệu đang hoạt động tốt</h2>
-                    <p class="text-sm font-medium text-slate-500 mt-1">Hệ thống đang tự động sao lưu Database (SQL Server) và File Uploads (Assets) lên Amazon S3 mỗi 12 giờ.</p>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Từ ngày</label>
+                    <input type="date" name="from" value="@(Model.FilterFrom?.ToString("yyyy-MM-dd"))"
+                           class="block rounded-lg border border-slate-200 px-2 py-1.5 text-xs" />
                 </div>
-                
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-slate-200">
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Bản Backup cuối</p>
-                        <p class="text-sm font-black text-slate-800">Hôm nay, 03:00 AM</p>
-                    </div>
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Tổng kích thước</p>
-                        <p class="text-sm font-black text-slate-800">45.2 GB</p>
-                    </div>
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Điểm sao lưu</p>
-                        <p class="text-sm font-black text-slate-800">AWS S3 (ap-southeast-1)</p>
-                    </div>
-                    <div>
-                        <p class="text-[10px] font-bold uppercase tracking-wider text-slate-400">Chu kỳ tiếp theo</p>
-                        <p class="text-sm font-black text-green-600">Trong 5 giờ tới</p>
-                    </div>
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase">Đến ngày</label>
+                    <input type="date" name="to" value="@(Model.FilterTo?.ToString("yyyy-MM-dd"))"
+                           class="block rounded-lg border border-slate-200 px-2 py-1.5 text-xs" />
                 </div>
-            </div>
+                <button type="submit" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-xs font-bold text-slate-600 hover:bg-slate-50">Lọc</button>
+                <a href="/Admin/System/BackupRestore" class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:underline">Xóa lọc</a>
+            </form>
         </div>
-    </div>
 
-    <!-- Backup History Table -->
-    <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden flex flex-col">
-        <div class="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-            <h3 class="font-black text-lg text-slate-800">Lịch sử Sao lưu (Backup Points)</h3>
-            <div class="flex gap-2">
-                <span class="px-3 py-1 bg-white border border-slate-200 rounded-lg text-xs font-bold text-slate-600 shadow-sm">Lưu trữ: 30 ngày gần nhất</span>
+        @if (!backups.Items.Any())
+        {
+            <div class="p-12 text-center text-slate-400">
+                <i class="fas fa-inbox text-4xl mb-3 opacity-40"></i>
+                <p class="font-medium">Chưa có bản sao lưu. Dùng <strong>Backup dữ liệu ngay</strong> hoặc bật lịch hàng ngày.</p>
             </div>
-        </div>
-        
-        <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse">
-                <thead>
-                    <tr class="bg-white border-b border-slate-200 text-xs uppercase tracking-widest text-slate-400 font-black">
-                        <th class="p-5 pl-6">Phiên bản / Mã Hash</th>
-                        <th class="p-5">Loại Backup</th>
-                        <th class="p-5 text-right">Kích thước</th>
-                        <th class="p-5">Thời điểm tạo</th>
-                        <th class="p-5">Trạng thái</th>
-                        <th class="p-5 pr-6 text-right">Hành động</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-50 text-sm">
-                    <template x-for="item in backups" :key="item.id">
-                        <tr class="hover:bg-slate-50/80 transition-colors group">
-                            <td class="p-5 pl-6">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center shrink-0 border border-green-100">
-                                        <i class="fas fa-file-archive text-lg"></i>
-                                    </div>
-                                    <div>
-                                        <div class="font-bold text-slate-800" x-text="item.filename"></div>
-                                        <div class="text-[11px] font-medium text-slate-400 font-mono mt-0.5" x-text="'MD5: ' + item.hash"></div>
-                                    </div>
-                                </div>
-                            </td>
-                            
-                            <td class="p-5">
-                                <span class="px-2 py-1 text-[10px] font-bold rounded uppercase tracking-wider" 
-                                      :class="item.type === 'Tự động' ? 'bg-slate-100 text-slate-600' : 'bg-blue-100 text-blue-700'" 
-                                      x-text="item.type"></span>
-                            </td>
-                            
-                            <td class="p-5 text-right font-bold text-slate-700" x-text="item.size"></td>
-                            
-                            <td class="p-5">
-                                <div class="font-medium text-slate-800" x-text="item.date"></div>
-                                <div class="text-[10px] font-medium text-slate-400" x-text="item.time"></div>
-                            </td>
-                            
-                            <td class="p-5">
-                                <div class="flex items-center gap-1.5">
-                                    <i class="fas fa-check-circle text-green-500 text-xs"></i>
-                                    <span class="font-bold text-slate-700 text-xs">Thành công</span>
-                                </div>
-                            </td>
-                            
-                            <td class="p-5 pr-6 text-right">
-                                <div class="flex items-center justify-end gap-2">
-                                    <form method="post" action="/Admin/System/DeleteBackup" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa bản sao lưu này?');">
-                                        <input type="hidden" name="id" :value="item.id" />
-                                        <input type="hidden" name="deleteFile" value="true" />
-                                        <button type="submit" class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-500 font-bold hover:text-red-600 hover:border-red-300 hover:bg-red-50 transition-all text-xs flex items-center gap-1.5" title="Xóa bản sao lưu">
-                                            <i class="fas fa-trash"></i>
-                                        </button>
-                                    </form>
-                                    <button @@click="openRestoreModal(item)" class="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 font-bold hover:bg-red-100 transition-all text-xs flex items-center gap-1.5 border border-red-100">
-                                        <i class="fas fa-history"></i> Khôi phục
-                                    </button>
-                                </div>
-                            </td>
+        }
+        else
+        {
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-white border-b border-slate-200 text-xs uppercase tracking-widest text-slate-400 font-black">
+                            <th class="p-5 pl-6">Tệp / ID</th>
+                            <th class="p-5">Nguồn</th>
+                            <th class="p-5 text-right">Kích thước</th>
+                            <th class="p-5">Thời điểm tạo</th>
+                            <th class="p-5">Trạng thái</th>
+                            <th class="p-5 pr-6 text-right">Thao tác</th>
                         </tr>
-                    </template>
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody class="divide-y divide-slate-50 text-sm">
+                        <template x-for="item in backups" :key="item.id">
+                            <tr class="hover:bg-slate-50/80 transition-colors">
+                                <td class="p-5 pl-6">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center border border-green-100">
+                                            <i class="fas fa-file-archive"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-bold text-slate-800" x-text="item.filename"></div>
+                                            <div class="text-[11px] text-slate-400 font-mono" x-text="'#' + item.id"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="p-5">
+                                    <span class="px-2 py-1 text-[10px] font-bold rounded uppercase"
+                                          :class="item.type === 'Tự động' ? 'bg-slate-100 text-slate-600' : 'bg-blue-100 text-blue-700'"
+                                          x-text="item.type"></span>
+                                </td>
+                                <td class="p-5 text-right font-bold text-slate-700" x-text="item.size"></td>
+                                <td class="p-5">
+                                    <div class="font-medium text-slate-800" x-text="item.date"></div>
+                                    <div class="text-[10px] text-slate-400" x-text="item.time"></div>
+                                </td>
+                                <td class="p-5">
+                                    <span class="text-xs font-bold" :class="item.statusClass" x-text="item.status"></span>
+                                </td>
+                                <td class="p-5 pr-6 text-right">
+                                    <div class="flex items-center justify-end gap-2">
+                                        <a :href="'/Admin/System/DownloadBackup?id=' + item.id"
+                                           class="px-3 py-1.5 rounded-lg bg-white border border-slate-200 text-slate-600 font-bold hover:bg-slate-50 text-xs"
+                                           title="Tải file backup">
+                                            <i class="fas fa-download"></i>
+                                        </a>
+                                        <form method="post" action="/Admin/System/DeleteBackup" style="display:inline;"
+                                              onsubmit="return confirm('Xóa bản sao lưu này trên Appwrite?');">
+                                            <input type="hidden" name="id" :value="item.id" />
+                                            <input type="hidden" name="deleteFile" value="true" />
+                                            <button type="submit" class="px-3 py-1.5 rounded-lg border border-slate-200 text-slate-500 hover:text-red-600 text-xs">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                        <button type="button" @@click="openRestoreModal(item)"
+                                                class="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 font-bold border border-red-100 hover:bg-red-100 text-xs">
+                                            <i class="fas fa-history"></i> Khôi phục
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        </template>
+                    </tbody>
+                </table>
+            </div>
+
+            @if (totalPages > 1)
+            {
+                <div class="p-4 border-t border-slate-100 flex justify-center gap-2">
+                    @if (Model.Page > 1)
+                    {
+                        <a href="/Admin/System/BackupRestore?page=@(Model.Page - 1)@(Model.FilterFrom.HasValue ? $"&from={Model.FilterFrom:yyyy-MM-dd}" : "")@(Model.FilterTo.HasValue ? $"&to={Model.FilterTo:yyyy-MM-dd}" : "")"
+                           class="px-4 py-2 rounded-lg border text-sm font-bold text-slate-600">← Trước</a>
+                    }
+                    <span class="px-4 py-2 text-sm font-medium text-slate-500">Trang @Model.Page / @totalPages</span>
+                    @if (Model.Page < totalPages)
+                    {
+                        <a href="/Admin/System/BackupRestore?page=@(Model.Page + 1)@(Model.FilterFrom.HasValue ? $"&from={Model.FilterFrom:yyyy-MM-dd}" : "")@(Model.FilterTo.HasValue ? $"&to={Model.FilterTo:yyyy-MM-dd}" : "")"
+                           class="px-4 py-2 rounded-lg border text-sm font-bold text-slate-600">Sau →</a>
+                    }
+                </div>
+            }
+        }
     </div>
 
-    <!-- MODAL: RESTORE CONFIRMATION -->
-    <div x-show="isRestoreModalOpen" style="display: none;" class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div x-show="isRestoreModalOpen" 
-             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
-             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm transition-opacity" @@click="closeRestoreModal()"></div>
-
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div x-show="isRestoreModalOpen" 
-                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
-                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-md border border-red-100" @@click.stop>
-                    
-                    <div class="px-6 py-6 border-b border-slate-100 text-center relative overflow-hidden">
-                        <div class="absolute inset-0 bg-red-50 opacity-50"></div>
-                        <div class="w-16 h-16 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-3 relative z-10 shadow-sm border border-red-200">
-                            <i class="fas fa-exclamation-triangle text-2xl"></i>
-                        </div>
-                        <h3 class="text-xl font-black text-slate-800 relative z-10">Xác nhận Khôi phục Hệ thống</h3>
-                        <p class="text-sm text-slate-500 font-medium mt-2 relative z-10">Hành động này sẽ ghi đè toàn bộ Database hiện tại.</p>
+    <!-- Modal khôi phục -->
+    <div x-show="isRestoreModalOpen" style="display: none;" class="relative z-50" role="dialog" aria-modal="true">
+        <div class="fixed inset-0 bg-slate-900/80 backdrop-blur-sm" @@click="closeRestoreModal()"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto flex items-center justify-center p-4">
+            <div class="relative w-full max-w-md rounded-[32px] bg-white shadow-2xl border border-red-100" @@click.stop>
+                <div class="px-6 py-6 border-b text-center bg-red-50/50">
+                    <div class="w-14 h-14 bg-red-100 text-red-600 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i class="fas fa-exclamation-triangle text-xl"></i>
                     </div>
-                    
-                    <div class="p-6 space-y-4">
-                        <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 flex items-center gap-4">
-                            <i class="fas fa-file-archive text-2xl text-green-400"></i>
-                            <div>
-                                <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Điểm khôi phục (Restore Point)</p>
-                                <p class="text-sm font-black text-slate-800" x-text="selectedBackup ? selectedBackup.filename : ''"></p>
-                                <p class="text-xs text-slate-500 font-medium mt-0.5" x-text="selectedBackup ? selectedBackup.date + ' ' + selectedBackup.time : ''"></p>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">Nhập mã xác thực Admin</label>
-                            <input type="password" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-red-500 focus:ring-1 focus:ring-red-500 shadow-sm" placeholder="Nhập mật khẩu của bạn để xác nhận..." />
-                        </div>
-                        
-                        <div class="bg-yellow-50 text-yellow-800 text-xs p-3 rounded-xl border border-yellow-200 flex gap-2">
-                            <i class="fas fa-info-circle mt-0.5 shrink-0"></i>
-                            <p>Hệ thống sẽ bảo trì trong khoảng 5-10 phút trong quá trình Restore. Tất cả người dùng sẽ bị đăng xuất.</p>
-                        </div>
-                    </div>
-                    
-                    <form id="restoreForm" method="post" action="/Admin/System/RestoreBackup">
-                        <input type="hidden" name="id" :value="selectedBackup ? selectedBackup.id : ''" />
-                    <div class="px-6 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px]">
-                        <button type="button" @@click="closeRestoreModal()" class="px-5 py-2.5 rounded-xl text-slate-600 font-bold hover:bg-white border border-slate-200 transition-colors text-sm">Hủy bỏ</button>
-                        <button type="submit" class="px-6 py-2.5 rounded-xl bg-red-600 text-white font-bold hover:bg-red-700 shadow-lg shadow-red-600/30 transition-all text-sm flex items-center gap-2">
-                            <i class="fas fa-exclamation"></i> Tiến hành Khôi phục
-                        </button>
-                    </div>
-                    </form>
+                    <h3 class="text-lg font-black text-slate-800">Khôi phục cơ sở dữ liệu</h3>
+                    <p class="text-sm text-slate-500 mt-1">Ghi đè toàn bộ DB hiện tại bằng bản đã chọn.</p>
                 </div>
+                <div class="p-6">
+                    <div class="bg-slate-50 border rounded-xl p-4 mb-4">
+                        <p class="text-[10px] font-bold text-slate-400 uppercase">Điểm khôi phục</p>
+                        <p class="font-black text-slate-800" x-text="selectedBackup?.filename"></p>
+                        <p class="text-xs text-slate-500" x-text="selectedBackup ? (selectedBackup.date + ' ' + selectedBackup.time) : ''"></p>
+                    </div>
+                </div>
+                <form method="post" action="/Admin/System/RestoreBackup">
+                    <input type="hidden" name="id" :value="selectedBackup?.id ?? ''" />
+                    <div class="px-6 py-4 bg-slate-50 border-t flex justify-end gap-2 rounded-b-[32px]">
+                        <button type="button" @@click="closeRestoreModal()" class="px-4 py-2 rounded-xl border font-bold text-sm text-slate-600">Hủy</button>
+                        <button type="submit" class="px-5 py-2 rounded-xl bg-red-600 text-white font-bold text-sm hover:bg-red-700">Xác nhận khôi phục</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -204,23 +279,30 @@
             Alpine.data('backupManager', () => ({
                 isRestoreModalOpen: false,
                 selectedBackup: null,
-                
-                backups: @Html.Raw(Json.Serialize(Model.Items.Select(b => new {
-                    id = b.Id,
-                    filename = b.FileName,
-                    hash = "N/A",
-                    type = "Thủ công",
-                    size = (b.SizeBytes / 1024.0 / 1024.0).ToString("0.00") + " MB",
-                    date = b.CreatedAtUtc.ToLocalTime().ToString("dd/MM/yyyy"),
-                    time = b.CreatedAtUtc.ToLocalTime().ToString("HH:mm:ss")
+                backups: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(backups.Items.Select(b => {
+                    var local = b.CreatedAtUtc;
+                    var typeLabel = string.Equals(b.BackupSource, "Scheduled", StringComparison.OrdinalIgnoreCase) ? "Tự động" : "Thủ công";
+                    var status = b.RestoredAtUtc.HasValue ? "Đã khôi phục" : (b.IsDeleted ? "Đã xóa" : "Sẵn sàng");
+                    var statusClass = b.RestoredAtUtc.HasValue ? "text-blue-600" : (b.IsDeleted ? "text-slate-400" : "text-green-600");
+                    return new {
+                        id = b.Id,
+                        filename = b.FileName,
+                        type = typeLabel,
+                        size = b.SizeBytes < 1048576
+                            ? $"{b.SizeBytes / 1024.0:0.##} KB"
+                            : $"{b.SizeBytes / 1024.0 / 1024.0:0.##} MB",
+                        date = local.ToString("dd/MM/yyyy"),
+                        time = local.ToString("HH:mm:ss"),
+                        status,
+                        statusClass
+                    };
                 }))),
-                
+
                 openRestoreModal(item) {
                     this.selectedBackup = item;
                     this.isRestoreModalOpen = true;
                     document.body.style.overflow = 'hidden';
                 },
-                
                 closeRestoreModal() {
                     this.isRestoreModalOpen = false;
                     document.body.style.overflow = '';
