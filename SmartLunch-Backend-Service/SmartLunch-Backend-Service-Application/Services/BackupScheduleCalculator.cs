@@ -64,7 +64,7 @@ public static class BackupScheduleCalculator
     public static int ParseTimeOfDayMinutes(string? hhmm)
     {
         if (string.IsNullOrWhiteSpace(hhmm))
-            return 180;
+            return 21 * 60; // 21:00 mặc định
 
         var parts = hhmm.Split(':', StringSplitOptions.RemoveEmptyEntries);
         if (parts.Length < 2 || !int.TryParse(parts[0], out var h) || !int.TryParse(parts[1], out var m))

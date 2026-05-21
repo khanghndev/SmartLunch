@@ -13,5 +13,5 @@ CREATE TABLE IF NOT EXISTS system_backup_schedule (
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'Auto backup schedule (singleton)';
 
 INSERT INTO system_backup_schedule (Id, IsEnabled, ScheduleMode, TimeOfDayMinutes, DayOfWeek, UpdatedAt)
-SELECT 1, 0, 'Daily', 180, NULL, NOW()
+SELECT 1, 0, 'Daily', 1260, NULL, NOW()
 WHERE NOT EXISTS (SELECT 1 FROM system_backup_schedule WHERE Id = 1);

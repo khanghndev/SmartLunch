@@ -37,9 +37,14 @@ public class DatabaseBackupService : IDatabaseBackupService
         Directory.CreateDirectory(opts.OutputDirectory);
 
         var createdAt = VietnamTime.Now;
-        var extension = string.IsNullOrWhiteSpace(opts.FileExtension) ? "sql" : opts.FileExtension.Trim().TrimStart('.');
-        var fileName = $"{opts.FilePrefix}-{createdAt:yyyyMMddHHmmss}.{extension}";
-        var filePath = Path.Combine(opts.OutputDirectory, fileName);
+        var dumpExtension = string.IsNullOrWhiteSpace(opts.FileExtension) ? "sql" : opts.FileExtension.Trim().TrimStart('.');
+        var storageExtension = string.IsNullOrWhiteSpace(opts.StorageFileExtension)
+            ? "bak"
+            : opts.StorageFileExtension.Trim().TrimStart('.');
+
+        var dumpFileName = $"{opts.FilePrefix}-{createdAt:yyyyMMddHHmmss}.{dumpExtension}";
+        var storageFileName = $"{opts.FilePrefix}-{createdAt:yyyyMMddHHmmss}.{storageExtension}";
+        var filePath = Path.Combine(opts.OutputDirectory, dumpFileName);
 
         var (host, port, database, user, password) = ParseConnectionString(opts.ConnectionString);
 
@@ -77,17 +82,17 @@ public class DatabaseBackupService : IDatabaseBackupService
 
         // Upload to Appwrite immediately (do not keep local backups).
         var bucketId = _configuration["Appwrite:BucketId"] ?? string.Empty;
-        var objectName = $"backups/{createdAt:yyyy}/{createdAt:MM}/{fileName}";
+        var objectName = $"backups/{createdAt:yyyy}/{createdAt:MM}/{storageFileName}";
         await using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-            await _storage.UploadObjectAsync(objectName, fs, "application/sql", cancellationToken);
+            await _storage.UploadObjectAsync(objectName, fs, "application/octet-stream", cancellationToken);
         }
 
         try
         {
             await _systemBackupRepository.CreateAsync(new Domain.Entities.SystemBackup
             {
-                FileName = fileName,
+                FileName = storageFileName,
                 StorageBucket = bucketId,
                 StorageObjectName = objectName,
                 SizeBytes = size,
@@ -417,6 +422,8 @@ public class DatabaseBackupService : IDatabaseBackupService
         public string OutputDirectory { get; set; } = string.Empty;
         public string FilePrefix { get; set; } = "smartlunch";
         public string FileExtension { get; set; } = "sql";
+        /// <summary>Đuôi file upload Appwrite (bucket thường không cho .sql — dùng .bak).</summary>
+        public string StorageFileExtension { get; set; } = "bak";
         public int RetentionDays { get; set; } = 7;
         public string? ToolsDirectory { get; set; }
         public bool UseDocker { get; set; } = false;

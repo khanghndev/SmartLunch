@@ -26,7 +26,7 @@ public class SystemBackupScheduleRepository : ISystemBackupScheduleRepository
             Id = 1,
             IsEnabled = false,
             ScheduleMode = "Daily",
-            TimeOfDayMinutes = 180,
+            TimeOfDayMinutes = 21 * 60,
             UpdatedAt = VietnamTime.Now
         };
         _context.SystemBackupSchedules.Add(row);
