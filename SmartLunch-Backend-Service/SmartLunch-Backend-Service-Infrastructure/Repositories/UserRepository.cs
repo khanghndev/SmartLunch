@@ -79,12 +79,19 @@ public class UserRepository : IUserRepository
         return await _context.Users.AnyAsync(u => u.Email == email && u.Id != excludeUserId);
     }
 
+    private static readonly HashSet<string> CustomerFacingRoles = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Customer", "Organization", "Company",
+        "Khách hàng cá nhân", "Khách hàng doanh nghiệp"
+    };
+
     public async Task<(List<User> Users, int TotalCount)> GetUsersAsync(
         int page,
         int pageSize,
         string? searchTerm = null,
         bool? isActive = null,
-        string? roleName = null)
+        string? roleName = null,
+        bool? staffOnly = null)
     {
         var query = _context.Users
             .Include(u => u.UserRoles)
@@ -98,12 +105,19 @@ public class UserRepository : IUserRepository
                 u.Username.Contains(searchTerm) || 
                 u.Email.Contains(searchTerm) ||
                 (u.FirstName != null && u.FirstName.Contains(searchTerm)) ||
-                (u.LastName != null && u.LastName.Contains(searchTerm)));
+                (u.LastName != null && u.LastName.Contains(searchTerm)) ||
+                u.Id.ToString() == searchTerm.Trim());
         }
 
         if (isActive.HasValue)
         {
             query = query.Where(u => u.IsActive == isActive.Value);
+        }
+
+        if (staffOnly == true)
+        {
+            query = query.Where(u => u.UserRoles.Any(ur =>
+                ur.Role != null && !CustomerFacingRoles.Contains(ur.Role.Name)));
         }
 
         if (!string.IsNullOrWhiteSpace(roleName))

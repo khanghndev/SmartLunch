@@ -18,5 +18,6 @@ public interface IUserRepository
         int pageSize,
         string? searchTerm = null,
         bool? isActive = null,
-        string? roleName = null);
+        string? roleName = null,
+        bool? staffOnly = null);
 }

@@ -23,7 +23,8 @@ public class GetUsersQueryHandler : IRequestHandler<GetUsersQuery, GetUsersRespo
             request.PageSize,
             request.SearchTerm,
             request.IsActive,
-            request.RoleName);
+            request.RoleName,
+            request.StaffOnly);
 
         var userDtos = users.Select(u => new UserDto
         {

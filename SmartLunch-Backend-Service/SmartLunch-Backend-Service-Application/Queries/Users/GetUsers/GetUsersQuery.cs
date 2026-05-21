@@ -13,18 +13,21 @@ public class GetUsersQuery : IRequest<GetUsersResponse>
     public string? SearchTerm { get; set; }
     public bool? IsActive { get; set; }
     public string? RoleName { get; set; }
+    public bool? StaffOnly { get; set; }
 
     public GetUsersQuery(
         int page = 1,
         int pageSize = 10,
         string? searchTerm = null,
         bool? isActive = null,
-        string? roleName = null)
+        string? roleName = null,
+        bool? staffOnly = null)
     {
         Page = page;
         PageSize = pageSize;
         SearchTerm = searchTerm;
         IsActive = isActive;
         RoleName = roleName;
+        StaffOnly = staffOnly;
     }
 }

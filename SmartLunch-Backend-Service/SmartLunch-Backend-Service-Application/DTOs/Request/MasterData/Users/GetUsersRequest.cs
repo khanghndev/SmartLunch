@@ -9,4 +9,7 @@ public class GetUsersRequest
 
     /// <summary>Lọc user có role trùng tên (không phân biệt hoa thường), vd. Staff, Customer.</summary>
     public string? RoleName { get; set; }
+
+    /// <summary>Chỉ user có ít nhất một role vận hành (loại Customer/Organization/Khách hàng).</summary>
+    public bool? StaffOnly { get; set; }
 }

@@ -45,7 +45,8 @@ public class UserController : ControllerBase
                 request.PageSize,
                 request.SearchTerm,
                 request.IsActive,
-                request.RoleName);
+                request.RoleName,
+                request.StaffOnly);
             var response = await _mediator.Send(query);
             return Ok(BaseApiResponse<GetUsersResponse>.SuccessResult(response, "Users retrieved successfully"));
         }
