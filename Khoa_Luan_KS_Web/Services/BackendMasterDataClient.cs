@@ -1186,6 +1186,9 @@ public class OrganizationMealLineClientRequest
 public class PrepareOrganizationMealContractClientResponse
 {
     public string DraftId { get; set; } = string.Empty;
+    public int ContractId { get; set; }
+    public string? ContractNumber { get; set; }
+    public string? ContractFileUrl { get; set; }
     public DateOnly AllowedFirstServiceDate { get; set; }
     public DateOnly AllowedLastServiceDate { get; set; }
     public decimal PricePerPortion { get; set; }
