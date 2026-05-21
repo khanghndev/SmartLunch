@@ -22,6 +22,10 @@ public sealed class PrepareOrganizationMealContractResponse
     /// <summary>Mã nháy — gửi lại khi POST checkout.</summary>
     public string DraftId { get; set; } = string.Empty;
 
+    public int ContractId { get; set; }
+    public string? ContractNumber { get; set; }
+    public string? ContractFileUrl { get; set; }
+
     public DateOnly AllowedFirstServiceDate { get; set; }
     public DateOnly AllowedLastServiceDate { get; set; }
 
@@ -35,7 +39,7 @@ public sealed class PrepareOrganizationMealContractResponse
     public string? PromotionCode { get; set; }
     public List<OrganizationMealDraftLineSummaryDto> Lines { get; set; } = new();
 
-    /// <summary>Gợi ý hiển thị: dữ liệu chỉ lưu cache, chưa ghi CSDL.</summary>
+    /// <summary>Thông báo trạng thái lưu hợp đồng / đơn hàng.</summary>
     public string PersistenceNotice { get; set; } =
-        "Dữ liệu đang ở bước xem/ký hợp đồng — chưa lưu database. Gọi POST checkout để xác nhận đơn và thanh toán.";
+        "Hợp đồng đã được lưu vào hệ thống. Hoàn tất ký số và checkout để tạo đơn hàng & thanh toán đặt cọc.";
 }

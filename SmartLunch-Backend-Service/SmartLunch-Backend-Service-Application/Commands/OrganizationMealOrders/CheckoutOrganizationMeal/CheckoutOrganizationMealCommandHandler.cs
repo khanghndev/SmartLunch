@@ -105,7 +105,10 @@ public sealed class CheckoutOrganizationMealCommandHandler
         if (checkoutOrg == null || !checkoutOrg.IsActive)
             throw new ArgumentException("Organization is not available.");
 
-        var existingContract = await _contractRepository.GetActiveForOrganizationAsync(checkoutOrg.Id, cancellationToken);
+        Contract? existingContract = null;
+        if (draft.ContractId > 0)
+            existingContract = await _contractRepository.GetByIdAsync(draft.ContractId);
+        existingContract ??= await _contractRepository.GetActiveForOrganizationAsync(checkoutOrg.Id, cancellationToken);
 
         var promoLines = BuildPromotionLines(draft);
         var evaluation = await _promotionEngine.EvaluateAsync(new OrderPromotionEvaluateInput

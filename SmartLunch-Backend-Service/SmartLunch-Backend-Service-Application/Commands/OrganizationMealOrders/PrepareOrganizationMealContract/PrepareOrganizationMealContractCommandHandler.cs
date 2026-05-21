@@ -18,19 +18,22 @@ public sealed class PrepareOrganizationMealContractCommandHandler
     private readonly IOrganizationMealOrderDraftCache _draftCache;
     private readonly IPromotionEngine _promotionEngine;
     private readonly IContractRepository _contractRepository;
+    private readonly OrganizationMealContractDraftPersistence _contractPersistence;
 
     public PrepareOrganizationMealContractCommandHandler(
         IUserOrganizationRepository userOrganizationRepository,
         IDishRepository dishRepository,
         IOrganizationMealOrderDraftCache draftCache,
         IPromotionEngine promotionEngine,
-        IContractRepository contractRepository)
+        IContractRepository contractRepository,
+        OrganizationMealContractDraftPersistence contractPersistence)
     {
         _userOrganizationRepository = userOrganizationRepository;
         _dishRepository = dishRepository;
         _draftCache = draftCache;
         _promotionEngine = promotionEngine;
         _contractRepository = contractRepository;
+        _contractPersistence = contractPersistence;
     }
 
     public async Task<PrepareOrganizationMealContractResponse> Handle(
@@ -187,6 +190,8 @@ public sealed class PrepareOrganizationMealContractCommandHandler
             CreatedAtUtc = utcNow,
         };
 
+        var persistedContract = await _contractPersistence.EnsurePersistedAsync(payload, cancellationToken);
+
         await _draftCache.SaveAsync(command.UserId, draftId, payload, cancellationToken);
 
         var lineSummaries = new List<OrganizationMealDraftLineSummaryDto>();
@@ -228,6 +233,9 @@ public sealed class PrepareOrganizationMealContractCommandHandler
         return new PrepareOrganizationMealContractResponse
         {
             DraftId = draftId,
+            ContractId = persistedContract.Id,
+            ContractNumber = persistedContract.ContractNumber,
+            ContractFileUrl = persistedContract.ContractFileUrl,
             // AllowedFirstServiceDate = allowedFirst,
             // AllowedLastServiceDate = allowedLast,
             PricePerPortion = price,

@@ -19,7 +19,7 @@ using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetO
 namespace SmartLunch.Backend.Service.API.Controllers;
 
 /// <summary>
-/// Đặt suất ăn theo đơn vị (Organization): danh mục món, nháp hợp đồng (chưa DB), checkout PayOS.
+/// Đặt suất ăn theo đơn vị (Organization): danh mục món, lập hợp đồng (ghi contracts), checkout PayOS.
 /// </summary>
 [ApiController]
 [ApiVersion("1.0")]

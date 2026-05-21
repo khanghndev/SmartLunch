@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Application.Services;
 
 namespace SmartLunch.Backend.Service.Application.DependencyInjection
@@ -44,6 +45,7 @@ namespace SmartLunch.Backend.Service.Application.DependencyInjection
 
             // sealed classes are excluded by the scan above
             services.AddScoped<IPromotionEngine, PromotionEngine>();
+            services.AddScoped<OrganizationMealContractDraftPersistence>();
         }
     }
 }
