@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Net;
+using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Domain.Time;
 using SmartLunch.Backend.Service.Application.Interfaces;
@@ -92,11 +93,33 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
                 MidpointRounding.AwayFromZero);
         }
 
-        var computedTotal = decimal.Round(
+        var computedGross = decimal.Round(
             pricePerPortion * totalMainPortions,
             2,
             MidpointRounding.AwayFromZero);
-        var displayTotal = order.TotalAmount > 0m ? order.TotalAmount : computedTotal;
+
+        var promoApps = order.PromotionApplications?.OrderBy(p => p.Id).ToList() ?? new List<OrderPromotionApplication>();
+        var discountTotal = order.DiscountAmount;
+        if (discountTotal <= 0m && promoApps.Count > 0)
+            discountTotal = promoApps.Sum(p => p.DiscountAmount);
+
+        var subtotalBeforePromo = order.SubtotalAmount ?? computedGross;
+        if (promoApps.Count > 0 && promoApps[0].SubtotalBefore > 0m)
+            subtotalBeforePromo = promoApps[0].SubtotalBefore;
+        else if (!order.SubtotalAmount.HasValue && discountTotal > 0m && order.TotalAmount > 0m)
+            subtotalBeforePromo = order.TotalAmount + discountTotal;
+
+        var totalPayable = order.TotalAmount > 0m ? order.TotalAmount : Math.Max(0m, subtotalBeforePromo - discountTotal);
+        var hasPromotion = discountTotal > 0m || promoApps.Count > 0;
+
+        static string FormatDiscountLabel(OrderPromotionApplication app)
+        {
+            if (string.Equals(app.DiscountType, PromotionConstants.DiscountPercent, StringComparison.OrdinalIgnoreCase))
+                return $"{app.DiscountValue.ToString("0.##", CultureInfo.InvariantCulture)}%";
+            if (string.Equals(app.DiscountType, PromotionConstants.DiscountFixedAmount, StringComparison.OrdinalIgnoreCase))
+                return app.DiscountValue.ToString("N0", CultureInfo.GetCultureInfo("vi-VN")) + " đ / suất hoặc đơn";
+            return app.DiscountValue.ToString("N0", CultureInfo.GetCultureInfo("vi-VN"));
+        }
 
         var sigPng = TryDecodeSignaturePng(signatureDataUrl);
         var invoiceRef = string.IsNullOrEmpty(order.InvoiceCode) ? $"ĐH-{order.Id}" : order.InvoiceCode!;
@@ -214,7 +237,45 @@ public sealed class QuestPdfOrderAnnexPdfService : IOrderAnnexPdfService
                                 .SemiBold().FontSize(10.5f);
                             summary.Item().Text($"Đơn giá một suất: {Money(pricePerPortion)}").FontSize(10);
                             summary.Item().PaddingTop(4).Text(
-                                    $"Tổng giá trị = {totalMainPortions.ToString("N0", vi)} suất × {Money(pricePerPortion)} = {Money(displayTotal)}")
+                                    $"Thành tiền ({totalMainPortions.ToString("N0", vi)} suất × {Money(pricePerPortion)}): {Money(subtotalBeforePromo)}")
+                                .SemiBold().FontSize(10.5f);
+
+                            if (hasPromotion)
+                            {
+                                summary.Item().PaddingTop(6).Text("KHUYẾN MÃI ĐÃ ÁP DỤNG")
+                                    .Bold().FontSize(10).FontColor(Colors.Green.Darken3);
+
+                                if (promoApps.Count > 0)
+                                {
+                                    foreach (var promo in promoApps)
+                                    {
+                                        summary.Item().PaddingTop(2).Text(txt =>
+                                        {
+                                            txt.Span("• ").FontSize(10);
+                                            txt.Span(promo.PromotionName).SemiBold().FontSize(10);
+                                            if (!string.IsNullOrWhiteSpace(promo.PromotionCode))
+                                            {
+                                                txt.Span(" (mã: ").FontSize(9.5f);
+                                                txt.Span(promo.PromotionCode.Trim()).SemiBold().FontSize(9.5f);
+                                                txt.Span(")").FontSize(9.5f);
+                                            }
+                                        });
+                                        summary.Item().Text(
+                                                $"  Mức giảm: {FormatDiscountLabel(promo)}  ·  Giảm: {Money(promo.DiscountAmount)}")
+                                            .FontSize(9.5f).FontColor(Colors.Grey.Darken2);
+                                    }
+                                }
+                                else
+                                {
+                                    summary.Item().PaddingTop(2).Text("• Đơn hàng được giảm giá theo chương trình khuyến mãi")
+                                        .FontSize(10);
+                                }
+
+                                summary.Item().PaddingTop(2).Text($"Tổng tiền khuyến mãi: −{Money(discountTotal)}")
+                                    .SemiBold().FontSize(10.5f).FontColor(Colors.Green.Darken3);
+                            }
+
+                            summary.Item().PaddingTop(6).Text($"TỔNG TIỀN PHẢI TRẢ: {Money(totalPayable)}")
                                 .Bold().FontSize(12).FontColor(Colors.Blue.Darken4);
                         });
 
