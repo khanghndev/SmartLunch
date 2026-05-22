@@ -116,6 +116,8 @@ public sealed class PrepareOrganizationMealContractCommandHandler
             AddSlot("soup", soup, draftDay.Soup);
         }
 
+        OrganizationMealSlotBalance.ValidateDraftDays(mergedByDate.Values);
+
         var dishIds = dishSlot.Keys.ToList();
         var dishes = await _dishRepository.GetByIdsWithIngredientsAsync(dishIds, cancellationToken);
         if (dishes.Count != dishIds.Count)

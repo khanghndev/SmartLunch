@@ -203,6 +203,7 @@ internal static class MealSupplyContractDocumentComposer
         Body(col, "Những tiêu chuẩn, số lượng dưới đây được tính trên một lần giao hàng / theo phụ lục đơn hàng:");
         Body(col, $"Bên A cung cấp suất ăn với đơn giá thỏa thuận: {Money(unitPrice)}/suất (không theo giá catalog công khai).");
         col.Item().PaddingTop(4).Element(c => ComposeMealTable(c, contract, order, unitPrice));
+        Body(col, "Mỗi suất ăn gồm một phần món chính kèm món phụ và canh với cùng số lượng theo từng ngày (chi tiết tại Phụ lục).");
         Body(col, "Trong đó, tiêu chuẩn thành phần suất ăn phải đáp ứng:");
         Bullet(col, "Yêu cầu chung: đáp ứng điều kiện an toàn thực phẩm theo quy định pháp luật;");
         Bullet(col, "Nguyên liệu, quy trình chế biến, bảo quản và vận chuyển đảm bảo VSATTP, có thể kiểm tra hồ sơ truy xuất khi cần;");
@@ -239,22 +240,21 @@ internal static class MealSupplyContractDocumentComposer
         {
             t.ColumnsDefinition(c =>
             {
-                c.RelativeColumn(2.2f);
-                c.RelativeColumn(2.5f);
+                c.RelativeColumn(2.4f);
+                c.RelativeColumn(2.6f);
                 c.RelativeColumn(1.2f);
                 c.RelativeColumn(1f);
-                c.RelativeColumn(1.3f);
             });
             t.Header(h =>
             {
-                foreach (var title in new[] { "Tên suất ăn", "Thành phần", "Giá (nghìn đ)", "Số lượng", "Thành tiền" })
+                foreach (var title in new[] { "Tên suất ăn", "Thành phần", "Giá (nghìn đ)", "Số lượng" })
                     h.Cell().Element(ContractTableHeader).Text(title).Bold().FontSize(10);
             });
 
-            var rows = BuildMealRows(order, contract, unitPrice);
+            var rows = BuildMealRows(order, unitPrice);
             if (rows.Count == 0)
             {
-                t.Cell().ColumnSpan(5).Element(ContractTableCell)
+                t.Cell().ColumnSpan(4).Element(ContractTableCell)
                     .Text("Chi tiết món ăn, số lượng theo từng ngày — xem Phụ lục đính kèm (Phần II).")
                     .Italic().FontSize(10);
             }
@@ -266,36 +266,30 @@ internal static class MealSupplyContractDocumentComposer
                     t.Cell().Element(ContractTableCell).Text(r.Components).FontSize(10);
                     t.Cell().Element(ContractTableCell).AlignRight().Text(r.PriceThousands).FontSize(10);
                     t.Cell().Element(ContractTableCell).AlignRight().Text(r.Qty).FontSize(10);
-                    t.Cell().Element(ContractTableCell).AlignRight().Text(r.Amount).FontSize(10);
                 }
             }
 
             var total = contract.TotalValue ?? order?.TotalAmount ?? 0;
-            t.Cell().ColumnSpan(4).Element(ContractTableCell).AlignRight().Text("Tổng:").Bold().FontSize(10);
+            t.Cell().ColumnSpan(3).Element(ContractTableCell).AlignRight().Text("Tổng:").Bold().FontSize(10);
             t.Cell().Element(ContractTableCell).AlignRight().Text(Money(total)).Bold().FontSize(10);
         });
     }
 
-    private static List<MealTableRow> BuildMealRows(Order? order, Contract contract, decimal unitPrice)
+    private static List<MealTableRow> BuildMealRows(Order? order, decimal unitPrice)
     {
         if (order?.OrderItems == null || order.OrderItems.Count == 0)
             return new List<MealTableRow>();
 
         var priceK = unitPrice > 0 ? (unitPrice / 1000m).ToString("N1", Vi) : "—";
         return order.OrderItems
+            .Where(i => i.UnitPrice > 0)
             .GroupBy(i => i.Dish?.Name ?? "Suất ăn")
-            .Select(g =>
-            {
-                var qty = g.Sum(x => x.Quantity);
-                var amt = unitPrice > 0 ? unitPrice * qty : g.Sum(x => x.UnitPrice * x.Quantity);
-                return new MealTableRow(
-                    g.Key,
-                    "Món chính, món phụ, canh theo thực đơn",
-                    priceK,
-                    qty.ToString("N0", Vi),
-                    Money(amt));
-            })
-            .Take(12)
+            .Select(g => new MealTableRow(
+                g.Key,
+                "Món chính (kèm món phụ, canh cùng số suất)",
+                priceK,
+                g.Sum(x => x.Quantity).ToString("N0", Vi)))
+            .Take(20)
             .ToList();
     }
 
@@ -312,24 +306,24 @@ internal static class MealSupplyContractDocumentComposer
 
         container.Row(row =>
         {
-            row.RelativeItem().Column(left =>
+            row.RelativeItem().Column(partyA =>
             {
-                left.Item().AlignCenter().Text("BÊN B").Bold().FontSize(12);
-                left.Item().AlignCenter().PaddingTop(2).Text("(Ký, ghi rõ họ tên, đóng dấu)").Italic().FontSize(10);
-                if (sigBytes is { Length: > 0 })
-                    left.Item().PaddingTop(8).AlignCenter().Height(70).Image(sigBytes).FitArea();
-                else
-                    left.Item().PaddingTop(40).AlignCenter().Text("………………………………").FontSize(11);
-                left.Item().PaddingTop(8).AlignCenter().Text(buyer?.Name ?? "………………………………").SemiBold().FontSize(11);
-                if (signedAt.HasValue)
-                    left.Item().AlignCenter().Text($"Ngày ký: {FmtDateTime(signedAt.Value)}").FontSize(9);
+                partyA.Item().AlignCenter().Text("BÊN A").Bold().FontSize(12);
+                partyA.Item().AlignCenter().PaddingTop(2).Text("(Ký, ghi rõ họ tên, đóng dấu)").Italic().FontSize(10);
+                partyA.Item().PaddingTop(8).Element(ProviderPartyStamp.Compose);
             });
 
-            row.RelativeItem().Column(right =>
+            row.RelativeItem().Column(partyB =>
             {
-                right.Item().AlignCenter().Text("BÊN A").Bold().FontSize(12);
-                right.Item().AlignCenter().PaddingTop(2).Text("(Ký, ghi rõ họ tên, đóng dấu)").Italic().FontSize(10);
-                right.Item().PaddingTop(8).Element(ProviderPartyStamp.Compose);
+                partyB.Item().AlignCenter().Text("BÊN B").Bold().FontSize(12);
+                partyB.Item().AlignCenter().PaddingTop(2).Text("(Ký, ghi rõ họ tên, đóng dấu)").Italic().FontSize(10);
+                if (sigBytes is { Length: > 0 })
+                    partyB.Item().PaddingTop(8).AlignCenter().Height(70).Image(sigBytes).FitArea();
+                else
+                    partyB.Item().PaddingTop(40).AlignCenter().Text("………………………………").FontSize(11);
+                partyB.Item().PaddingTop(8).AlignCenter().Text(buyer?.Name ?? "………………………………").SemiBold().FontSize(11);
+                if (signedAt.HasValue)
+                    partyB.Item().AlignCenter().Text($"Ngày ký: {FmtDateTime(signedAt.Value)}").FontSize(9);
             });
         });
     }
@@ -369,5 +363,5 @@ internal static class MealSupplyContractDocumentComposer
         catch { return null; }
     }
 
-    private sealed record MealTableRow(string Name, string Components, string PriceThousands, string Qty, string Amount);
+    private sealed record MealTableRow(string Name, string Components, string PriceThousands, string Qty);
 }

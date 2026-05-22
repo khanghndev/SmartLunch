@@ -138,22 +138,22 @@ internal static class MealContractPdfSections
         var sig = TryDecodeSignatureUrl(signatureDataUrl);
         container.Row(row =>
         {
-            row.RelativeItem().Column(left =>
+            row.RelativeItem().Column(partyA =>
             {
-                left.Item().AlignCenter().Text("BÊN B").Bold();
-                left.Item().AlignCenter().Text("(Ký, ghi rõ họ tên)").Italic().FontSize(10);
-                if (sig is { Length: > 0 })
-                    left.Item().PaddingTop(6).AlignCenter().Height(70).Image(sig).FitArea();
-                else
-                    left.Item().PaddingTop(36).AlignCenter().Text("…………………………");
-                left.Item().PaddingTop(6).AlignCenter().Text(buyerDisplayName).SemiBold();
-                left.Item().AlignCenter().Text($"Ngày: {FmtDateTime(VietnamTime.Now)}").FontSize(10);
+                partyA.Item().AlignCenter().Text("BÊN A").Bold();
+                partyA.Item().AlignCenter().Text("(Ký, ghi rõ họ tên)").Italic().FontSize(10);
+                partyA.Item().PaddingTop(8).Element(ProviderPartyStamp.Compose);
             });
-            row.RelativeItem().Column(right =>
+            row.RelativeItem().Column(partyB =>
             {
-                right.Item().AlignCenter().Text("BÊN A").Bold();
-                right.Item().AlignCenter().Text("(Ký, ghi rõ họ tên)").Italic().FontSize(10);
-                right.Item().PaddingTop(8).Element(ProviderPartyStamp.Compose);
+                partyB.Item().AlignCenter().Text("BÊN B").Bold();
+                partyB.Item().AlignCenter().Text("(Ký, ghi rõ họ tên)").Italic().FontSize(10);
+                if (sig is { Length: > 0 })
+                    partyB.Item().PaddingTop(6).AlignCenter().Height(70).Image(sig).FitArea();
+                else
+                    partyB.Item().PaddingTop(36).AlignCenter().Text("…………………………");
+                partyB.Item().PaddingTop(6).AlignCenter().Text(buyerDisplayName).SemiBold();
+                partyB.Item().AlignCenter().Text($"Ngày: {FmtDateTime(VietnamTime.Now)}").FontSize(10);
             });
         });
     }

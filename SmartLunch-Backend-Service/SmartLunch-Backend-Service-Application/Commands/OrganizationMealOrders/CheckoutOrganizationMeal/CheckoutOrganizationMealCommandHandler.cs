@@ -98,6 +98,8 @@ public sealed class CheckoutOrganizationMealCommandHandler
         if (draftSubtotal != recomputedSubtotal)
             throw new ArgumentException("Draft subtotal is inconsistent. Call POST contract again.");
 
+        OrganizationMealSlotBalance.ValidateDraftDays(draft.Days);
+
         var checkoutOrg = await _organizationRepository.GetByIdAsync(draft.OrganizationId);
         if (checkoutOrg == null || !checkoutOrg.IsActive)
             throw new ArgumentException("Organization is not available.");
