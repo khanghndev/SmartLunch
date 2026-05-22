@@ -5,7 +5,7 @@ using SmartLunch.Backend.Service.Infrastructure.Data;
 
 namespace SmartLunch.Backend.Service.Infrastructure.Repositories;
 
-public sealed class CompanyPublicDocumentRepository : ICompanyPublicDocumentRepository
+public class CompanyPublicDocumentRepository : ICompanyPublicDocumentRepository
 {
     private readonly SmartLunchDBContext _db;
 
