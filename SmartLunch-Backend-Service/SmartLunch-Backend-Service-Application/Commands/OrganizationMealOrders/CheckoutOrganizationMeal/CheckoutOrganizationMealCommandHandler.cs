@@ -24,7 +24,6 @@ public sealed class CheckoutOrganizationMealCommandHandler
     private readonly IPartnerRepository _partnerRepository;
     private readonly IOrderRepository _orderRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IOrganizationMealDocumentPdfService _documentPdfService;
     private readonly IPromotionEngine _promotionEngine;
     private readonly IPromotionRepository _promotionRepository;
     private readonly ILogger<CheckoutOrganizationMealCommandHandler> _logger;
@@ -38,7 +37,6 @@ public sealed class CheckoutOrganizationMealCommandHandler
         IPartnerRepository partnerRepository,
         IOrderRepository orderRepository,
         IUnitOfWork unitOfWork,
-        IOrganizationMealDocumentPdfService documentPdfService,
         IPromotionEngine promotionEngine,
         IPromotionRepository promotionRepository,
         ILogger<CheckoutOrganizationMealCommandHandler> logger)
@@ -51,7 +49,6 @@ public sealed class CheckoutOrganizationMealCommandHandler
         _partnerRepository = partnerRepository;
         _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
-        _documentPdfService = documentPdfService;
         _promotionEngine = promotionEngine;
         _promotionRepository = promotionRepository;
         _logger = logger;
@@ -108,7 +105,9 @@ public sealed class CheckoutOrganizationMealCommandHandler
         Contract? existingContract = null;
         if (draft.ContractId > 0)
             existingContract = await _contractRepository.GetByIdAsync(draft.ContractId);
-        existingContract ??= await _contractRepository.GetActiveForOrganizationAsync(checkoutOrg.Id, cancellationToken);
+
+        if (existingContract != null && (existingContract.IsDigitallySigned || existingContract.SourceOrderId.HasValue))
+            existingContract = null;
 
         var promoLines = BuildPromotionLines(draft);
         var evaluation = await _promotionEngine.EvaluateAsync(new OrderPromotionEvaluateInput
@@ -268,33 +267,15 @@ public sealed class CheckoutOrganizationMealCommandHandler
             var persistedContract = await _contractRepository.GetByIdAsync(cid)
                 ?? throw new InvalidOperationException("Contract not found after checkout.");
 
-            if (persistedContract.Partner != null && persistedContract.Organization != null)
-            {
-                persistedContract.SourceOrderId = reloaded.Id;
-                persistedContract.DepositAmount = depositDecimal;
-                persistedContract.TotalValue = total;
-                persistedContract.MealUnitPrice = draft.PricePerPortion;
-                persistedContract.UpdatedAt = VietnamTime.Now;
-                await _contractRepository.UpdateAsync(persistedContract);
-
-                var pdfUrl = await _documentPdfService.GenerateCombinedUploadAndResolveUrlAsync(
-                    persistedContract,
-                    persistedContract.Partner,
-                    persistedContract.Organization,
-                    reloaded,
-                    persistedContract.Organization.Name,
-                    signatureDataUrl: null,
-                    cancellationToken);
-
-                persistedContract.ContractFileUrl = pdfUrl;
-                persistedContract.UpdatedAt = VietnamTime.Now;
-                await _contractRepository.UpdateAsync(persistedContract);
-
-                reloaded.AnnexPdfUrl = pdfUrl;
-                reloaded.UpdatedAt = VietnamTime.Now;
-                await _orderRepository.CommitAsync();
-                reloaded = await _orderRepository.GetByIdWithDetailsAsync(order.Id) ?? reloaded;
-            }
+            persistedContract.SourceOrderId = reloaded.Id;
+            persistedContract.DepositAmount = depositDecimal;
+            persistedContract.TotalValue = total;
+            persistedContract.MealUnitPrice = draft.PricePerPortion;
+            persistedContract.IsDigitallySigned = false;
+            persistedContract.DigitalSignature = null;
+            persistedContract.DigitallySignedAt = null;
+            persistedContract.UpdatedAt = VietnamTime.Now;
+            await _contractRepository.UpdateAsync(persistedContract);
         }
         else if (contract != null && contract.Id > 0)
         {

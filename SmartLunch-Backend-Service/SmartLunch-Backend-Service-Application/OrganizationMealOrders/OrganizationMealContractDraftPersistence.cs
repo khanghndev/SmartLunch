@@ -36,7 +36,9 @@ public sealed class OrganizationMealContractDraftPersistence
         if (draft.ContractId > 0)
             contract = await _contractRepository.GetByIdAsync(draft.ContractId);
 
-        contract ??= await _contractRepository.GetActiveForOrganizationAsync(draft.OrganizationId, cancellationToken);
+        // Mỗi đơn đặt mới = hợp đồng mới; không tái sử dụng HĐ đã ký hoặc đã gắn đơn trước.
+        if (contract != null && (contract.IsDigitallySigned || contract.SourceOrderId.HasValue))
+            contract = null;
 
         var orderedDays = draft.Days.OrderBy(d => d.ServiceDate).ToList();
         var minDate = orderedDays.Min(d => d.ServiceDate);

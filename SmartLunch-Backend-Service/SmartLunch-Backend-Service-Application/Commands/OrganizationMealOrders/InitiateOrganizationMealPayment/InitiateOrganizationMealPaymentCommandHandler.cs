@@ -42,8 +42,8 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
         if (order.UserId != command.UserId)
             throw new UnauthorizedAccessException("You do not have access to this order.");
 
-        if (string.IsNullOrWhiteSpace(order.AnnexPdfUrl))
-            throw new InvalidOperationException("Vui lòng ký phụ lục đặt hàng trước khi thanh toán.");
+        if (!order.AnnexSignedAt.HasValue)
+            throw new InvalidOperationException("Vui lòng ký phụ lục / hợp đồng đặt hàng trước khi thanh toán.");
 
         if (!string.Equals(order.PaymentStatus, OrderPaymentStatus.AwaitingPayment, StringComparison.OrdinalIgnoreCase))
         {

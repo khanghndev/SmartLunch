@@ -305,8 +305,10 @@ internal static class MealSupplyContractDocumentComposer
         Organization? buyer,
         string? buyerSignatureDataUrl)
     {
-        var sigBytes = TryDecodeSignatureUrl(buyerSignatureDataUrl)
-            ?? (contract.IsDigitallySigned ? TryDecodeSignature(contract) : null);
+        var sigBytes = TryDecodeSignatureUrl(buyerSignatureDataUrl);
+        var signedAt = sigBytes is { Length: > 0 }
+            ? VietnamTime.Now
+            : contract.DigitallySignedAt;
 
         container.Row(row =>
         {
@@ -319,17 +321,15 @@ internal static class MealSupplyContractDocumentComposer
                 else
                     left.Item().PaddingTop(40).AlignCenter().Text("………………………………").FontSize(11);
                 left.Item().PaddingTop(8).AlignCenter().Text(buyer?.Name ?? "………………………………").SemiBold().FontSize(11);
-                if (contract.DigitallySignedAt.HasValue)
-                    left.Item().AlignCenter().Text($"Ngày ký: {FmtDateTime(contract.DigitallySignedAt.Value)}").FontSize(9);
+                if (signedAt.HasValue)
+                    left.Item().AlignCenter().Text($"Ngày ký: {FmtDateTime(signedAt.Value)}").FontSize(9);
             });
 
             row.RelativeItem().Column(right =>
             {
                 right.Item().AlignCenter().Text("BÊN A").Bold().FontSize(12);
                 right.Item().AlignCenter().PaddingTop(2).Text("(Ký, ghi rõ họ tên, đóng dấu)").Italic().FontSize(10);
-                right.Item().PaddingTop(28).AlignCenter().Text("CÔNG TY CỔ PHẦN HUITMEAL").SemiBold().FontSize(10);
-                right.Item().AlignCenter().PaddingTop(4).Text("Đã xác thực hệ thống").FontSize(9).Italic();
-                right.Item().AlignCenter().Text(FmtDateTime(VietnamTime.Now)).FontSize(9);
+                right.Item().PaddingTop(8).Element(ProviderPartyStamp.Compose);
             });
         });
     }
@@ -358,12 +358,6 @@ internal static class MealSupplyContractDocumentComposer
     private static string FmtDate(DateTime d) => d.ToString("dd/MM/yyyy", Vi);
     private static string FmtDateTime(DateTime d) => d.ToString("dd/MM/yyyy HH:mm", Vi);
     private static string Money(decimal v) => v.ToString("N0", Vi) + " VNĐ";
-
-    private static byte[]? TryDecodeSignature(Contract contract)
-    {
-        var url = contract.DigitalSignature ?? contract.SignatureImage;
-        return TryDecodeSignatureUrl(url);
-    }
 
     private static byte[]? TryDecodeSignatureUrl(string? dataUrl)
     {

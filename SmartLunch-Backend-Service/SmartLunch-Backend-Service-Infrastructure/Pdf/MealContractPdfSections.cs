@@ -153,8 +153,7 @@ internal static class MealContractPdfSections
             {
                 right.Item().AlignCenter().Text("BÊN A").Bold();
                 right.Item().AlignCenter().Text("(Ký, ghi rõ họ tên)").Italic().FontSize(10);
-                right.Item().PaddingTop(32).AlignCenter().Text("CÔNG TY CỔ PHẦN HUITMEAL").SemiBold().FontSize(10);
-                right.Item().AlignCenter().Text("Đã xác thực hệ thống").Italic().FontSize(9);
+                right.Item().PaddingTop(8).Element(ProviderPartyStamp.Compose);
             });
         });
     }

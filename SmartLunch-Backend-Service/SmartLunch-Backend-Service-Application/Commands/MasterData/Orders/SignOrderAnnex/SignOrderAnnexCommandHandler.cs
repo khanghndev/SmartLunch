@@ -35,6 +35,9 @@ public class SignOrderAnnexCommandHandler : IRequestHandler<SignOrderAnnexComman
         if (order.UserId != request.UserId)
             throw new UnauthorizedAccessException("You may only sign annex for your own orders.");
 
+        if (order.AnnexSignedAt.HasValue)
+            throw new InvalidOperationException("Đơn hàng này đã được ký phụ lục / hợp đồng. Không thể ký lại.");
+
         var buyer = ResolveBuyerDisplayName(order);
         var pdfUrl = await _orderAnnexPdfService.GenerateUploadAndResolveUrlAsync(
             order,
@@ -58,7 +61,11 @@ public class SignOrderAnnexCommandHandler : IRequestHandler<SignOrderAnnexComman
             var contract = await _contractRepository.GetByIdAsync(contractId);
             if (contract != null)
             {
+                contract.IsDigitallySigned = true;
+                contract.DigitalSignature = sig;
+                contract.DigitallySignedAt = VietnamTime.Now;
                 contract.ContractFileUrl = pdfUrl;
+                contract.SourceOrderId ??= order.Id;
                 contract.UpdatedAt = VietnamTime.Now;
                 if (pendingDeposit != null)
                     contract.DepositAmount = pendingDeposit.Amount;
