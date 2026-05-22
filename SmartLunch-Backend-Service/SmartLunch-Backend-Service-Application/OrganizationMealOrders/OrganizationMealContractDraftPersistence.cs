@@ -128,8 +128,16 @@ public sealed class OrganizationMealContractDraftPersistence
         DateOnly minDate,
         DateOnly maxDate)
     {
-        return $"Hợp đồng đặt suất — {org.Name} ({minDate:dd/MM/yyyy}–{maxDate:dd/MM/yyyy}), " +
-               $"{draft.TotalMainQuantity} suất chính, giá {draft.PricePerPortion:N0} đ/suất.";
+        var contact = string.Join(" · ", new[]
+        {
+            org.ContactPerson,
+            org.Phone,
+            org.ContactEmail
+        }.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+        return $"Hợp đồng đặt suất — {org.Name} ({minDate:dd/MM/yyyy}–{maxDate:dd/MM/yyyy}). " +
+               $"{draft.TotalMainQuantity} suất chính, đơn giá {draft.PricePerPortion:N0} đ/suất, tổng {draft.TotalAmount:N0} đ." +
+               (string.IsNullOrEmpty(contact) ? "" : $" Liên hệ: {contact}.");
     }
 
     private static string BuildSupplySchedule(IReadOnlyList<OrganizationMealOrderDraftDay> days)

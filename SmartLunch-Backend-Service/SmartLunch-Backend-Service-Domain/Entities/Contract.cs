@@ -10,6 +10,9 @@ public class Contract
     public int PartnerId { get; set; }
     public int? OrganizationId { get; set; }
 
+    /// <summary>Đơn hàng tạo ra hợp đồng Order-Based (đặt suất đơn vị).</summary>
+    public int? SourceOrderId { get; set; }
+
     /// <summary>Số hợp đồng (ký hiệu nội bộ hoặc theo văn bản pháp lý).</summary>
     public string? ContractNumber { get; set; }
     public string ContractType { get; set; } = "Framework"; // Framework | Order-Based

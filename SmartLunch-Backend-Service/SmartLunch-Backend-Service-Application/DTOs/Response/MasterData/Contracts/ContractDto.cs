@@ -7,6 +7,8 @@ public class ContractDto
     public string? PartnerLegalName { get; set; }
     public int? OrganizationId { get; set; }
     public string? OrganizationName { get; set; }
+    public int? SourceOrderId { get; set; }
+    public string ContractType { get; set; } = "Framework";
     public string? ContractNumber { get; set; }
     public string? Description { get; set; }
     public string? SupplySchedule { get; set; }

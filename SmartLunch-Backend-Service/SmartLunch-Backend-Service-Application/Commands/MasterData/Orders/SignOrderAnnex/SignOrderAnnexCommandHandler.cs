@@ -35,12 +35,6 @@ public class SignOrderAnnexCommandHandler : IRequestHandler<SignOrderAnnexComman
         if (order.UserId != request.UserId)
             throw new UnauthorizedAccessException("You may only sign annex for your own orders.");
 
-        if (!string.IsNullOrWhiteSpace(order.AnnexPdfUrl))
-        {
-            var existing = await _orderRepository.GetByIdWithDetailsAsync(order.Id);
-            return new GetOrderResponse { Order = OrderDtoMapping.ToDto(existing ?? order) };
-        }
-
         var buyer = ResolveBuyerDisplayName(order);
         var pdfUrl = await _orderAnnexPdfService.GenerateUploadAndResolveUrlAsync(
             order,
@@ -59,13 +53,15 @@ public class SignOrderAnnexCommandHandler : IRequestHandler<SignOrderAnnexComman
             string.Equals(p.Method, "payos", StringComparison.OrdinalIgnoreCase) &&
             string.Equals(p.Status, "pending", StringComparison.OrdinalIgnoreCase));
 
-        if (pendingDeposit != null && order.ContractId is int contractId && contractId > 0)
+        if (order.ContractId is int contractId && contractId > 0)
         {
             var contract = await _contractRepository.GetByIdAsync(contractId);
             if (contract != null)
             {
-                contract.DepositAmount = pendingDeposit.Amount;
+                contract.ContractFileUrl = pdfUrl;
                 contract.UpdatedAt = VietnamTime.Now;
+                if (pendingDeposit != null)
+                    contract.DepositAmount = pendingDeposit.Amount;
                 await _contractRepository.UpdateAsync(contract);
             }
         }

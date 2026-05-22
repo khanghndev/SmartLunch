@@ -24,7 +24,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
     private readonly IPartnerRepository _partnerRepository;
     private readonly IOrderRepository _orderRepository;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IContractPdfService _contractPdfService;
+    private readonly IOrganizationMealDocumentPdfService _documentPdfService;
     private readonly IPromotionEngine _promotionEngine;
     private readonly IPromotionRepository _promotionRepository;
     private readonly ILogger<CheckoutOrganizationMealCommandHandler> _logger;
@@ -38,7 +38,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
         IPartnerRepository partnerRepository,
         IOrderRepository orderRepository,
         IUnitOfWork unitOfWork,
-        IContractPdfService contractPdfService,
+        IOrganizationMealDocumentPdfService documentPdfService,
         IPromotionEngine promotionEngine,
         IPromotionRepository promotionRepository,
         ILogger<CheckoutOrganizationMealCommandHandler> logger)
@@ -51,7 +51,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
         _partnerRepository = partnerRepository;
         _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
-        _contractPdfService = contractPdfService;
+        _documentPdfService = documentPdfService;
         _promotionEngine = promotionEngine;
         _promotionRepository = promotionRepository;
         _logger = logger;
@@ -147,7 +147,6 @@ public sealed class CheckoutOrganizationMealCommandHandler
         var total = draft.TotalAmount;
 
         Contract? contract = existingContract;
-        var wasNewContract = false;
         if (contract == null)
         {
             var (partners, _) = await _partnerRepository.GetPartnersAsync(
@@ -174,7 +173,6 @@ public sealed class CheckoutOrganizationMealCommandHandler
                 Status = "active",
                 CreatedAt = VietnamTime.Now,
             };
-            wasNewContract = true;
         }
 
         var scheduledDate = draft.MinServiceDate;
@@ -262,37 +260,46 @@ public sealed class CheckoutOrganizationMealCommandHandler
 
         await _draftCache.RemoveAsync(command.UserId, draftId, cancellationToken);
 
-        if (contract != null)
-        {
-            contract.DepositAmount = depositDecimal;
-            contract.UpdatedAt = VietnamTime.Now;
-            await _contractRepository.UpdateAsync(contract);
-        }
-
-        if (wasNewContract && contract != null)
-        {
-            var forPdf = await _contractRepository.GetByIdAsync(contract.Id)
-                         ?? throw new InvalidOperationException("Contract created but reload failed before PDF.");
-
-            if (forPdf.Partner != null)
-            {
-                var url = await _contractPdfService.GenerateUploadAndResolveUrlAsync(
-                    forPdf,
-                    forPdf.Partner,
-                    checkoutOrg,
-                    cancellationToken);
-                forPdf.ContractFileUrl = url;
-                forPdf.DepositAmount = depositDecimal;
-                forPdf.UpdatedAt = VietnamTime.Now;
-                await _contractRepository.UpdateAsync(forPdf);
-            }
-        }
-
-        if (!wasNewContract && contract != null && contract.Id > 0)
-            await SyncExistingContractMealPricingAsync(contract.Id, draft, total, cancellationToken);
-
         var reloaded = await _orderRepository.GetByIdWithDetailsAsync(order.Id)
             ?? throw new InvalidOperationException("Order created but failed to reload.");
+
+        if (reloaded.ContractId is int cid && cid > 0)
+        {
+            var persistedContract = await _contractRepository.GetByIdAsync(cid)
+                ?? throw new InvalidOperationException("Contract not found after checkout.");
+
+            if (persistedContract.Partner != null && persistedContract.Organization != null)
+            {
+                persistedContract.SourceOrderId = reloaded.Id;
+                persistedContract.DepositAmount = depositDecimal;
+                persistedContract.TotalValue = total;
+                persistedContract.MealUnitPrice = draft.PricePerPortion;
+                persistedContract.UpdatedAt = VietnamTime.Now;
+                await _contractRepository.UpdateAsync(persistedContract);
+
+                var pdfUrl = await _documentPdfService.GenerateCombinedUploadAndResolveUrlAsync(
+                    persistedContract,
+                    persistedContract.Partner,
+                    persistedContract.Organization,
+                    reloaded,
+                    persistedContract.Organization.Name,
+                    signatureDataUrl: null,
+                    cancellationToken);
+
+                persistedContract.ContractFileUrl = pdfUrl;
+                persistedContract.UpdatedAt = VietnamTime.Now;
+                await _contractRepository.UpdateAsync(persistedContract);
+
+                reloaded.AnnexPdfUrl = pdfUrl;
+                reloaded.UpdatedAt = VietnamTime.Now;
+                await _orderRepository.CommitAsync();
+                reloaded = await _orderRepository.GetByIdWithDetailsAsync(order.Id) ?? reloaded;
+            }
+        }
+        else if (contract != null && contract.Id > 0)
+        {
+            await SyncExistingContractMealPricingAsync(contract.Id, draft, total, cancellationToken);
+        }
 
         return new CheckoutOrganizationMealResponse
         {

@@ -21,6 +21,8 @@ public static class ContractDtoMapping
         PartnerLegalName = c.Partner?.LegalName,
         OrganizationId = c.OrganizationId,
         OrganizationName = c.Organization?.Name,
+        SourceOrderId = c.SourceOrderId,
+        ContractType = c.ContractType,
         ContractNumber = c.ContractNumber,
         Description = c.Description,
         SupplySchedule = c.SupplySchedule,

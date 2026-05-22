@@ -23,6 +23,7 @@ SOURCE 05_maintenance/08_systems_backup_permissions.sql;
 
 SOURCE 01_tables/50_system_backup_schedule.sql;
 SOURCE 01_tables/51_system_backups_add_source.sql;
+SOURCE migrations/52_contracts_add_source_order_id.sql;
 
 -- Tối ưu thống kê (tùy chọn, an toàn)
 SOURCE 05_maintenance/01_analyze_optimize.sql;
