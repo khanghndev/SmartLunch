@@ -219,6 +219,27 @@ public class BackendMasterDataClient
         return await PostAsync<PartnerDto>("/api/v1/master-data/Partner", payload, accessToken, ct);
     }
 
+    // ─── Contracts (manager / master-data) ─────────────────────────────────────
+    public async Task<GetContractsClientResponse> GetContractsAsync(
+        string accessToken,
+        int page = 1,
+        int pageSize = 12,
+        string? searchTerm = null,
+        int? partnerId = null,
+        CancellationToken ct = default)
+    {
+        var query = $"?Page={page}&PageSize={pageSize}";
+        if (!string.IsNullOrWhiteSpace(searchTerm)) query += $"&SearchTerm={Uri.EscapeDataString(searchTerm)}";
+        if (partnerId.HasValue) query += $"&PartnerId={partnerId.Value}";
+        return await GetAsync<GetContractsClientResponse>($"/api/v1/master-data/Contract{query}", accessToken, ct);
+    }
+
+    public async Task<GetManagerContractResponse> GetManagerContractAsync(int id, string accessToken, CancellationToken ct = default)
+        => await GetAsync<GetManagerContractResponse>($"/api/v1/master-data/Contract/{id}", accessToken, ct);
+
+    public async Task<GetManagerContractResponse> CreateContractAsync(CreateContractClientRequest payload, string accessToken, CancellationToken ct = default)
+        => await PostAsync<GetManagerContractResponse>("/api/v1/master-data/Contract", payload, accessToken, ct);
+
     public async Task<GetDishesResponse> GetDishesAsync(string accessToken, int page = 1, int pageSize = 20, string? searchTerm = null, string? category = null, bool? isActive = null, CancellationToken ct = default)
     {
         var query = $"?Page={page}&PageSize={pageSize}";
@@ -1303,6 +1324,52 @@ public class CreateCustomerMealOrderLineApi
 {
     public int DishId { get; set; }
     public int Quantity { get; set; } = 1;
+}
+
+// ─── Contracts (manager master-data) ─────────────────────────────────────────
+public class ContractListDto
+{
+    public int Id { get; set; }
+    public int PartnerId { get; set; }
+    public string? PartnerLegalName { get; set; }
+    public int? OrganizationId { get; set; }
+    public string? OrganizationName { get; set; }
+    public int? SourceOrderId { get; set; }
+    public string ContractType { get; set; } = "Framework";
+    public string? ContractNumber { get; set; }
+    public string? Description { get; set; }
+    public string? SupplySchedule { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public decimal? TotalValue { get; set; }
+    public decimal? MealUnitPrice { get; set; }
+    public decimal? DepositAmount { get; set; }
+    public string? ContractFileUrl { get; set; }
+    public bool IsDigitallySigned { get; set; }
+    public DateTime? DigitallySignedAt { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+}
+
+public class GetContractsClientResponse : PaginationResponse<ContractListDto> { }
+
+public class GetManagerContractResponse
+{
+    public ContractListDto Contract { get; set; } = new();
+}
+
+public class CreateContractClientRequest
+{
+    public int PartnerId { get; set; }
+    public string? ContractNumber { get; set; }
+    public string? Description { get; set; }
+    public string? SupplySchedule { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
+    public decimal? TotalValue { get; set; }
+    public decimal? DepositAmount { get; set; }
+    public string Status { get; set; } = "active";
 }
 
 // ─── Company contracts (B2B self-service) ───────────────────────────────────
