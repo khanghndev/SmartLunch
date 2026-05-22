@@ -3,6 +3,7 @@
     Layout = "_LayoutManager";
 }
 
+@Html.AntiForgeryToken()
 <div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="feedbackManager()">
     
     <!-- HEADER -->
@@ -18,7 +19,7 @@
                     <span class="text-xs font-bold text-slate-400 uppercase">Điểm trung bình</span>
                 </div>
                 <div class="flex items-center gap-1.5 px-2">
-                    <span class="text-xl font-black text-slate-800">4.8</span>
+                    <span class="text-xl font-black text-slate-800" x-text="averageRating.toFixed(1)">—</span>
                     <svg class="w-5 h-5 text-yellow-400 mb-0.5" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                 </div>
             </div>
@@ -29,70 +30,58 @@
     <div class="grid grid-cols-1 gap-4">
         <!-- Toolbar -->
         <div class="flex items-center gap-3 mb-2">
-            <button class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-colors text-sm" :class="filter === 'all' ? 'border-blue-500 text-blue-600 bg-blue-50' : ''" @@click="filter = 'all'">Tất cả phản hồi</button>
-            <button class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-colors text-sm flex items-center gap-1.5" :class="filter === 'bad' ? 'border-red-500 text-red-600 bg-red-50' : ''" @@click="filter = 'bad'">
+            <button type="button" class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-colors text-sm" :class="filter === 'all' ? 'border-blue-500 text-blue-600 bg-blue-50' : ''" @@click="filter = 'all'; load()">Tất cả phản hồi</button>
+            <button type="button" class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-colors text-sm flex items-center gap-1.5" :class="filter === 'bad' ? 'border-red-500 text-red-600 bg-red-50' : ''" @@click="filter = 'bad'; load()">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
                 Dưới 3 sao (Cần xử lý)
             </button>
         </div>
 
+        <div x-show="loadError" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3" x-text="loadError"></div>
+        <div x-show="loading" class="text-center py-12 text-slate-400 font-medium">Đang tải phản hồi...</div>
+
         <template x-for="feedback in filteredFeedbacks" :key="feedback.id">
             <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 p-6 flex flex-col md:flex-row gap-6 relative overflow-hidden group hover:shadow-md transition-shadow">
-                
-                <!-- Accent Line for Bad Reviews -->
                 <div x-show="feedback.rating <= 3" class="absolute left-0 top-0 bottom-0 w-1.5 bg-red-500"></div>
-
-                <!-- Customer Info -->
                 <div class="md:w-1/4 border-b md:border-b-0 md:border-r border-slate-100 pb-4 md:pb-0 pr-6">
                     <div class="flex items-center gap-3 mb-3">
-                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-black flex items-center justify-center text-lg uppercase" x-text="feedback.customer.charAt(0)"></div>
+                        <div class="w-10 h-10 rounded-full bg-blue-100 text-blue-600 font-black flex items-center justify-center text-lg uppercase" x-text="(feedback.customerName||'?').charAt(0)"></div>
                         <div>
-                            <h4 class="font-bold text-slate-800 text-sm" x-text="feedback.customer"></h4>
-                            <p class="text-[11px] font-bold text-slate-400" x-text="feedback.date"></p>
+                            <h4 class="font-bold text-slate-800 text-sm" x-text="feedback.customerName"></h4>
+                            <p class="text-[11px] font-bold text-slate-400" x-text="formatDate(feedback.createdAt)"></p>
                         </div>
                     </div>
                     <div class="bg-slate-50 rounded-lg p-2.5 border border-slate-100">
                         <p class="text-xs font-bold text-slate-500 mb-1">Mã đơn hàng</p>
-                        <p class="text-sm font-black text-slate-800" x-text="feedback.orderCode"></p>
-                        <p class="text-xs font-medium text-slate-500 mt-0.5 truncate" x-text="feedback.type"></p>
+                        <p class="text-sm font-black text-slate-800" x-text="feedback.orderCode || feedback.invoiceCode || ('#' + feedback.orderId)"></p>
+                        <p class="text-xs font-medium text-slate-500 mt-0.5 truncate" x-text="feedback.organizationName || 'Khách doanh nghiệp'"></p>
                     </div>
                 </div>
-                
-                <!-- Feedback Content -->
                 <div class="md:w-2/4 flex flex-col justify-center">
                     <div class="flex items-center gap-1 mb-2">
                         <template x-for="i in 5">
                             <svg class="w-5 h-5" :class="i <= feedback.rating ? 'text-yellow-400' : 'text-slate-200'" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                         </template>
                     </div>
-                    <p class="text-lg font-bold text-slate-800 leading-snug" x-text="'&quot;' + feedback.content + '&quot;'"></p>
-                    
-                    <!-- Admin Reply Tag -->
+                    <p class="text-lg font-bold text-slate-800 leading-snug" x-text="feedback.comment ? ('&quot;' + feedback.comment + '&quot;') : '(Không có nội dung)'"></p>
                     <div x-show="feedback.isReplied" class="mt-4 bg-blue-50 border border-blue-100 rounded-xl p-3 flex gap-3">
                         <svg class="w-4 h-4 text-blue-500 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
                         <div>
-                            <p class="text-xs font-bold text-blue-800 mb-0.5">Phản hồi từ CSKH</p>
-                            <p class="text-sm font-medium text-blue-900/80" x-text="feedback.replyContent"></p>
+                            <p class="text-xs font-bold text-blue-800 mb-0.5">Phản hồi từ HuitMeal</p>
+                            <p class="text-sm font-medium text-blue-900/80" x-text="feedback.managerReply"></p>
                         </div>
                     </div>
                 </div>
-                
-                <!-- Actions -->
                 <div class="md:w-1/4 flex flex-col justify-center items-end border-t md:border-t-0 border-slate-100 pt-4 md:pt-0">
                     <button x-show="!feedback.isReplied" @@click="openReplyModal(feedback)" class="px-5 py-2.5 bg-blue-600 text-white font-bold rounded-xl shadow-md hover:bg-blue-700 transition-colors w-full sm:w-auto text-sm flex items-center justify-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"></path></svg>
                         Trả lời khách hàng
                     </button>
-                    <span x-show="feedback.isReplied" class="px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded border border-green-200">
-                        <i class="fas fa-check mr-1"></i> Đã phản hồi
-                    </span>
-                    
-                    <button class="mt-2 text-xs font-bold text-slate-400 hover:text-slate-600 transition-colors">Xem chi tiết đơn hàng</button>
+                    <span x-show="feedback.isReplied" class="px-3 py-1 bg-green-50 text-green-600 text-xs font-bold rounded border border-green-200">Đã phản hồi</span>
                 </div>
             </div>
         </template>
         
-        <div x-show="filteredFeedbacks.length === 0" class="text-center py-12 bg-white rounded-[24px] border border-slate-100 border-dashed">
+        <div x-show="!loading && filteredFeedbacks.length === 0" class="text-center py-12 bg-white rounded-[24px] border border-slate-100 border-dashed">
             <svg class="mx-auto h-12 w-12 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
             <h3 class="mt-2 text-sm font-bold text-slate-800">Không có phản hồi nào</h3>
         </div>
@@ -129,24 +118,20 @@
                                             <svg class="w-4 h-4" :class="i <= currentFeedback.rating ? 'text-yellow-400' : 'text-slate-200'" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
                                         </template>
                                     </div>
-                                    <p class="text-sm font-bold text-slate-700 italic" x-text="'&quot;' + currentFeedback.content + '&quot;'"></p>
-                                    <p class="text-xs text-slate-400 mt-2 text-right" x-text="'- ' + currentFeedback.customer"></p>
+                                    <p class="text-sm font-bold text-slate-700 italic" x-text="currentFeedback.comment ? ('&quot;' + currentFeedback.comment + '&quot;') : ''"></p>
+                                    <p class="text-xs text-slate-400 mt-2 text-right" x-text="'- ' + currentFeedback.customerName"></p>
                                 </div>
                                 
                                 <div>
                                     <label class="block text-sm font-bold text-slate-700 mb-2">Nội dung trả lời từ Hệ thống HuitMeal</label>
-                                    <textarea rows="5" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" placeholder="Xin lỗi quý khách vì sự bất tiện này. Chúng tôi sẽ ghi nhận lại bộ phận Bếp để cải thiện..."></textarea>
+                                    <textarea x-model="replyText" rows="5" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm" placeholder="Xin lỗi quý khách vì sự bất tiện này..."></textarea>
                                 </div>
-                                
-                                <div class="flex items-center gap-2">
-                                    <input type="checkbox" id="sendEmail" class="rounded text-blue-600 border-slate-300 focus:ring-blue-500" checked>
-                                    <label for="sendEmail" class="text-sm text-slate-600 font-medium cursor-pointer">Gửi bản sao phản hồi này qua Email khách hàng</label>
-                                </div>
+                                <p x-show="replyError" class="text-sm text-red-600" x-text="replyError"></p>
                             </div>
                             
                             <div class="px-6 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px]">
                                 <button @@click="closeModal()" class="px-5 py-2.5 rounded-xl text-slate-600 font-bold hover:bg-white border border-slate-200 transition-colors text-sm">Hủy</button>
-                                <button @@click="submitReply()" class="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors text-sm shadow-lg shadow-blue-600/30 flex items-center gap-2">
+                                <button @@click="submitReply()" :disabled="replying" class="px-6 py-2.5 rounded-xl bg-blue-600 text-white font-bold hover:bg-blue-700 transition-colors text-sm shadow-lg disabled:opacity-50 flex items-center gap-2">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
                                     Gửi Phản hồi
                                 </button>
@@ -166,35 +151,71 @@
                 filter: 'all',
                 isReplyModalOpen: false,
                 currentFeedback: null,
-                
-                feedbacks: [
-                    { id: 1, customer: 'Anh Bình', orderCode: 'ORD-998', type: 'Văn Phòng Tiêu Chuẩn', date: '26/04/2026', rating: 2, content: 'Thức ăn giao hôm nay hơi nguội, sườn xào chua ngọt hơi dai.', isReplied: false, replyContent: '' },
-                    { id: 2, customer: 'Công ty May Mặc TNHH ABC', orderCode: 'ORD-950', type: 'Cơm trưa Nhà Máy', date: '25/04/2026', rating: 5, content: 'Dịch vụ rất chu đáo, nhân viên thân thiện, đồ ăn dạo này ngon hơn rất nhiều.', isReplied: true, replyContent: 'Cảm ơn quý công ty đã tin tưởng dịch vụ của HuitMeal. Chúng tôi sẽ luôn cố gắng phát huy!' },
-                    { id: 3, customer: 'Chị Mai (Trường MN Họa Mi)', orderCode: 'ORD-945', type: 'Suất ăn Học sinh Mẫu giáo', date: '24/04/2026', rating: 4, content: 'Súp cua hôm nay các bé rất thích, tuy nhiên canh rau ngót hơi lạt.', isReplied: false, replyContent: '' },
-                    { id: 4, customer: 'Phòng Nhân sự cty TMA', orderCode: 'ORD-920', type: 'Cơm trưa VP Cao cấp', date: '22/04/2026', rating: 3, content: 'Giao hàng trễ 15 phút so với quy định làm ảnh hưởng giờ nghỉ trưa của nhân viên.', isReplied: true, replyContent: 'Thành thật xin lỗi bộ phận nhân sự TMA. Do sự cố xe hỏng đột xuất nên bị trễ. Chúng tôi đã làm việc lại với đội giao hàng.' }
-                ],
-                
-                get filteredFeedbacks() {
-                    if (this.filter === 'bad') {
-                        return this.feedbacks.filter(f => f.rating <= 3);
+                feedbacks: [],
+                loading: true,
+                loadError: '',
+                averageRating: 0,
+                replyText: '',
+                replyError: '',
+                replying: false,
+                init() { this.load(); },
+                csrf() { return document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''; },
+                async load() {
+                    this.loading = true;
+                    this.loadError = '';
+                    try {
+                        const maxRating = this.filter === 'bad' ? 3 : null;
+                        const q = maxRating ? `?maxRating=${maxRating}` : '';
+                        const res = await fetch('@Url.Action("FeedbackList", "Operation", new { area = "Manager" })' + q);
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) throw new Error(data.message || 'Không tải được');
+                        this.feedbacks = data.data || [];
+                        this.averageRating = data.averageRating || 0;
+                    } catch (e) {
+                        this.loadError = e.message || 'Lỗi tải dữ liệu';
+                    } finally {
+                        this.loading = false;
                     }
-                    return this.feedbacks;
                 },
-                
+                get filteredFeedbacks() { return this.feedbacks; },
+                formatDate(iso) {
+                    if (!iso) return '';
+                    const d = new Date(iso);
+                    return isNaN(d) ? '' : d.toLocaleDateString('vi-VN');
+                },
                 openReplyModal(feedback) {
-                    this.currentFeedback = JSON.parse(JSON.stringify(feedback));
+                    this.currentFeedback = feedback;
+                    this.replyText = feedback.managerReply || '';
+                    this.replyError = '';
                     this.isReplyModalOpen = true;
                     document.body.style.overflow = 'hidden';
                 },
-                
                 closeModal() {
                     this.isReplyModalOpen = false;
                     document.body.style.overflow = '';
                 },
-                
-                submitReply() {
-                    alert('Đã gửi phản hồi đến Khách hàng thành công!');
-                    this.closeModal();
+                async submitReply() {
+                    if (!this.currentFeedback || !this.replyText.trim()) {
+                        this.replyError = 'Vui lòng nhập nội dung trả lời';
+                        return;
+                    }
+                    this.replying = true;
+                    this.replyError = '';
+                    try {
+                        const res = await fetch('@Url.Action("ReplyFeedback", "Operation", new { area = "Manager" })?id=' + this.currentFeedback.id, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': this.csrf() },
+                            body: JSON.stringify({ reply: this.replyText.trim() })
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) throw new Error(data.message || 'Gửi thất bại');
+                        this.closeModal();
+                        await this.load();
+                    } catch (e) {
+                        this.replyError = e.message;
+                    } finally {
+                        this.replying = false;
+                    }
                 }
             }));
         });

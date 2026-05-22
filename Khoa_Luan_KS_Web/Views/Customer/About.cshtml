@@ -1,6 +1,11 @@
-﻿@{
+﻿@model AboutPageViewModel
+@{
     ViewData["Title"] = "Về chúng tôi - HuitMeal";
     Layout = "_LayoutCustomer";
+    var certs = Model.Documents.Where(d => d.DocumentType is "food_safety" or "iso" or "business_license" or "inspection").ToList();
+    var contracts = Model.Documents.Where(d => d.DocumentType == "contract").ToList();
+    var others = Model.Documents.Where(d => d.DocumentType == "other").ToList();
+    string FmtDate(DateTime? d) => d.HasValue ? d.Value.ToString("dd/MM/yyyy") : "—";
 }
 
 <style>
@@ -120,6 +125,127 @@
         </div>
     </section>
 
+    <!-- ===== LEGAL & TRUST DOCUMENTS ===== -->
+    @if (Model.Documents.Count > 0)
+    {
+        <section class="py-24 bg-white border-t border-gray-100" x-data="aboutDocuments()">
+            <div class="max-w-7xl mx-auto px-6">
+                <div class="text-center mb-14">
+                    <span class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold uppercase tracking-[0.2em] mb-4">
+                        <i data-lucide="shield-check" class="w-3.5 h-3.5"></i>
+                        Minh bạch & Tuân thủ
+                    </span>
+                    <h2 class="text-4xl md:text-5xl font-black text-gray-900 tracking-tight mb-4">Hồ sơ pháp lý & Chứng từ</h2>
+                    <p class="text-gray-500 max-w-2xl mx-auto leading-relaxed">HuitMeal công khai chứng nhận VSATTP, biên bản kiểm tra và các văn bản liên quan để quý khách hàng an tâm khi hợp tác.</p>
+                </div>
+
+                <div class="flex flex-wrap justify-center gap-2 mb-10">
+                    <button type="button" @@click="tab='certs'" :class="tab==='certs' ? 'bg-gray-900 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'" class="px-5 py-2.5 rounded-full text-sm font-bold transition-all">
+                        Chứng nhận & Kiểm định (@certs.Count)
+                    </button>
+                    <button type="button" @@click="tab='contracts'" :class="tab==='contracts' ? 'bg-gray-900 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'" class="px-5 py-2.5 rounded-full text-sm font-bold transition-all">
+                        Hợp đồng & Khung thỏa thuận (@contracts.Count)
+                    </button>
+                    @if (others.Count > 0)
+                    {
+                        <button type="button" @@click="tab='other'" :class="tab==='other' ? 'bg-gray-900 text-white shadow-lg' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'" class="px-5 py-2.5 rounded-full text-sm font-bold transition-all">
+                            Chứng từ khác (@others.Count)
+                        </button>
+                    }
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" x-show="tab==='certs'" x-cloak>
+                    @foreach (var doc in certs)
+                    {
+                        <article class="group relative bg-white rounded-[28px] border border-gray-100 shadow-premium hover:shadow-2xl hover:-translate-y-1 transition-all duration-300 overflow-hidden">
+                            <div class="h-2 @(doc.IsExpired ? "bg-red-400" : "bg-emerald-500")"></div>
+                            <div class="p-7">
+                                <div class="flex items-start justify-between gap-3 mb-4">
+                                    <div class="w-12 h-12 rounded-2xl bg-red-50 flex items-center justify-center shrink-0">
+                                        <i data-lucide="file-badge" class="w-6 h-6 text-red-500"></i>
+                                    </div>
+                                    <span class="text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full @(doc.IsExpired ? "bg-red-50 text-red-600" : "bg-emerald-50 text-emerald-700")">
+                                        @(doc.IsExpired ? "Hết hạn" : "Hiệu lực")
+                                    </span>
+                                </div>
+                                <p class="text-[10px] font-bold text-orange-600 uppercase tracking-wider mb-1">@doc.DocumentTypeLabel</p>
+                                <h4 class="text-lg font-bold text-gray-900 mb-2 leading-snug">@doc.Title</h4>
+                                @if (!string.IsNullOrWhiteSpace(doc.Description))
+                                {
+                                    <p class="text-sm text-gray-500 mb-4 line-clamp-2">@doc.Description</p>
+                                }
+                                <dl class="text-xs text-gray-500 space-y-1 mb-6">
+                                    <div class="flex justify-between"><dt>Cấp ngày</dt><dd class="font-semibold text-gray-700">@FmtDate(doc.IssuedDate)</dd></div>
+                                    <div class="flex justify-between"><dt>Hết hạn</dt><dd class="font-semibold text-gray-700">@FmtDate(doc.ExpiryDate)</dd></div>
+                                </dl>
+                                <div class="flex gap-2">
+                                    <a href="@doc.FileUrl" target="_blank" rel="noopener" class="flex-1 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-900 text-white text-sm font-bold hover:bg-orange-600 transition-colors">
+                                        <i data-lucide="external-link" class="w-4 h-4"></i> Xem tài liệu
+                                    </a>
+                                    <button type="button" @@click="preview($el.dataset.url, $el.dataset.title)" data-url="@doc.FileUrl" data-title="@doc.Title" class="px-3 py-2.5 rounded-xl border border-gray-200 text-gray-600 hover:border-orange-300 hover:text-orange-600 transition-colors" title="Xem nhanh">
+                                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </article>
+                    }
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6" x-show="tab==='contracts'" x-cloak style="display:none;">
+                    @foreach (var doc in contracts)
+                    {
+                        <article class="flex flex-col md:flex-row gap-6 p-8 rounded-[32px] bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-2xl">
+                            <div class="w-16 h-16 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
+                                <i data-lucide="file-signature" class="w-8 h-8 text-orange-400"></i>
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-[10px] font-bold text-orange-400 uppercase tracking-widest mb-2">@doc.DocumentTypeLabel</p>
+                                <h4 class="text-xl font-bold mb-2">@doc.Title</h4>
+                                @if (!string.IsNullOrWhiteSpace(doc.Description))
+                                {
+                                    <p class="text-sm text-slate-300 mb-4">@doc.Description</p>
+                                }
+                                <p class="text-xs text-slate-400 mb-5">Cập nhật: @doc.CreatedAt.ToString("dd/MM/yyyy")</p>
+                                <a href="@doc.FileUrl" target="_blank" rel="noopener" class="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-orange-500 hover:bg-orange-400 text-white text-sm font-bold transition-colors">
+                                    <i data-lucide="download" class="w-4 h-4"></i> Tải / Xem hợp đồng
+                                </a>
+                            </div>
+                        </article>
+                    }
+                    @if (contracts.Count == 0)
+                    {
+                        <p class="col-span-2 text-center text-gray-400 py-12">Chưa có hợp đồng công khai.</p>
+                    }
+                </div>
+
+                @if (others.Count > 0)
+                {
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" x-show="tab==='other'" x-cloak style="display:none;">
+                        @foreach (var doc in others)
+                        {
+                            <article class="p-6 rounded-[24px] border border-gray-100 bg-gray-50 hover:bg-white hover:shadow-lg transition-all">
+                                <h4 class="font-bold text-gray-900 mb-1">@doc.Title</h4>
+                                <p class="text-xs text-gray-500 mb-4">@doc.DocumentTypeLabel</p>
+                                <a href="@doc.FileUrl" target="_blank" class="text-sm font-bold text-orange-600 hover:underline">Xem tài liệu →</a>
+                            </article>
+                        }
+                    </div>
+                }
+            </div>
+
+            <div x-show="previewOpen" style="display:none;" class="fixed inset-0 z-[120] flex items-center justify-center p-4 md:p-8">
+                <div class="absolute inset-0 bg-black/70 backdrop-blur-sm" @@click="closePreview()"></div>
+                <div class="relative bg-white w-full max-w-5xl max-h-[90vh] rounded-[32px] shadow-2xl overflow-hidden flex flex-col" @@click.stop>
+                    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                        <h3 class="font-bold text-gray-900 truncate pr-4" x-text="previewTitle"></h3>
+                        <button type="button" @@click="closePreview()" class="p-2 rounded-full hover:bg-gray-100 text-gray-500"><i data-lucide="x" class="w-6 h-6"></i></button>
+                    </div>
+                    <iframe :src="previewUrl" class="flex-1 w-full min-h-[70vh] border-0 bg-gray-50" title="Xem tài liệu"></iframe>
+                </div>
+            </div>
+        </section>
+    }
+
     <!-- ===== VISION & MISSION GRID ===== -->
     <section class="py-24 bg-gray-50">
         <div class="max-w-7xl mx-auto px-6">
@@ -193,9 +319,27 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('aboutDocuments', () => ({
+                tab: '@(contracts.Count > 0 && certs.Count == 0 ? "contracts" : "certs")',
+                previewOpen: false,
+                previewUrl: '',
+                previewTitle: '',
+                preview(url, title) {
+                    this.previewUrl = url;
+                    this.previewTitle = title;
+                    this.previewOpen = true;
+                    document.body.style.overflow = 'hidden';
+                    this.$nextTick(() => lucide.createIcons());
+                },
+                closePreview() {
+                    this.previewOpen = false;
+                    this.previewUrl = '';
+                    document.body.style.overflow = '';
+                }
+            }));
         });
+        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
     </script>
 }
 

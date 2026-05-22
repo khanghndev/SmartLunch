@@ -478,6 +478,123 @@ public class BackendMasterDataClient
         return await HandleResponse<InitiateOrganizationMealPaymentClientResponse>(res, ct);
     }
 
+    // --- Company public documents (hồ sơ công khai / Giới thiệu) ---
+    public async Task<CompanyPublicDocumentListClientResponse> GetPublicCompanyDocumentsAsync(CancellationToken ct = default)
+    {
+        var client = CreateAnonymousClient();
+        using var res = await client.GetAsync("/api/v1/company-public-documents/public", ct);
+        return await HandleResponse<CompanyPublicDocumentListClientResponse>(res, ct);
+    }
+
+    public async Task<CompanyPublicDocumentListClientResponse> GetCompanyDocumentsAsync(string accessToken, CancellationToken ct = default)
+        => await GetAsync<CompanyPublicDocumentListClientResponse>("/api/v1/company-public-documents", accessToken, ct);
+
+    public async Task<CompanyPublicDocumentClientDto> UploadCompanyDocumentAsync(
+        IFormFile file,
+        string accessToken,
+        string title,
+        string documentType,
+        string? description = null,
+        DateTime? issuedDate = null,
+        DateTime? expiryDate = null,
+        bool isPublished = true,
+        int sortOrder = 0,
+        CancellationToken ct = default)
+    {
+        if (file == null || file.Length <= 0)
+            throw new InvalidOperationException("File is required");
+
+        var client = CreateClient(accessToken);
+        using var form = new MultipartFormDataContent();
+        await using var stream = file.OpenReadStream();
+        using var fileContent = new StreamContent(stream);
+        if (!string.IsNullOrWhiteSpace(file.ContentType))
+            fileContent.Headers.ContentType = new MediaTypeHeaderValue(file.ContentType);
+        form.Add(fileContent, "file", file.FileName);
+        form.Add(new StringContent(title), "title");
+        form.Add(new StringContent(documentType), "documentType");
+        if (!string.IsNullOrWhiteSpace(description))
+            form.Add(new StringContent(description), "description");
+        if (issuedDate.HasValue)
+            form.Add(new StringContent(issuedDate.Value.ToString("yyyy-MM-dd")), "issuedDate");
+        if (expiryDate.HasValue)
+            form.Add(new StringContent(expiryDate.Value.ToString("yyyy-MM-dd")), "expiryDate");
+        form.Add(new StringContent(isPublished ? "true" : "false"), "isPublished");
+        form.Add(new StringContent(sortOrder.ToString()), "sortOrder");
+
+        using var res = await client.PostAsync("/api/v1/company-public-documents", form, ct);
+        return await HandleResponse<CompanyPublicDocumentClientDto>(res, ct);
+    }
+
+    public async Task<CompanyPublicDocumentClientDto> UpdateCompanyDocumentAsync(
+        int id,
+        UpdateCompanyPublicDocumentClientRequest request,
+        string accessToken,
+        CancellationToken ct = default)
+        => await PutAsync<CompanyPublicDocumentClientDto>($"/api/v1/company-public-documents/{id}", request, accessToken, ct);
+
+    public async Task DeleteCompanyDocumentAsync(int id, string accessToken, CancellationToken ct = default)
+    {
+        var client = CreateClient(accessToken);
+        using var res = await client.DeleteAsync($"/api/v1/company-public-documents/{id}", ct);
+        if (!res.IsSuccessStatusCode)
+        {
+            var body = await res.Content.ReadAsStringAsync(ct);
+            var msg = TryExtractBackendMessage(body) ?? $"Backend request failed ({(int)res.StatusCode})";
+            throw new InvalidOperationException(msg);
+        }
+    }
+
+    private HttpClient CreateAnonymousClient()
+    {
+        var baseUrl = _configuration["BackendApi:BaseUrl"]?.TrimEnd('/');
+        var client = _httpClientFactory.CreateClient();
+        client.BaseAddress = new Uri(baseUrl!);
+        return client;
+    }
+
+    // --- Customer reviews / feedback ---
+    public async Task<GetPublicReviewsClientResponse> GetPublicReviewsAsync(int page = 1, int pageSize = 50, CancellationToken ct = default)
+    {
+        var client = CreateAnonymousClient();
+        using var res = await client.GetAsync($"/api/v1/customer-reviews/public?page={page}&pageSize={pageSize}", ct);
+        return await HandleResponse<GetPublicReviewsClientResponse>(res, ct);
+    }
+
+    public async Task<GetReviewMeContextClientResponse> GetReviewMeContextAsync(string accessToken, CancellationToken ct = default)
+        => await GetAsync<GetReviewMeContextClientResponse>("/api/v1/customer-reviews/me", accessToken, ct);
+
+    public async Task<CreateCustomerReviewClientResponse> CreateCustomerReviewAsync(
+        CreateCustomerReviewClientRequest request,
+        string accessToken,
+        CancellationToken ct = default)
+        => await PostAsync<CreateCustomerReviewClientResponse>("/api/v1/customer-reviews", request, accessToken, ct);
+
+    public async Task<GetManagerReviewsClientResponse> GetManagerReviewsAsync(
+        string accessToken,
+        int page = 1,
+        int pageSize = 20,
+        string? searchTerm = null,
+        int? maxRating = null,
+        CancellationToken ct = default)
+    {
+        var q = $"?page={page}&pageSize={pageSize}";
+        if (!string.IsNullOrWhiteSpace(searchTerm)) q += $"&searchTerm={Uri.EscapeDataString(searchTerm)}";
+        if (maxRating.HasValue) q += $"&maxRating={maxRating.Value}";
+        return await GetAsync<GetManagerReviewsClientResponse>($"/api/v1/customer-reviews/manager{q}", accessToken, ct);
+    }
+
+    public async Task<ManagerReviewListItemClientDto> ReplyToReviewAsync(
+        int reviewId,
+        string reply,
+        string accessToken,
+        CancellationToken ct = default)
+        => await PostAsync<ManagerReviewListItemClientDto>(
+            $"/api/v1/customer-reviews/{reviewId}/reply",
+            new { reply },
+            accessToken,
+            ct);
+
     private async Task<T> GetAsync<T>(string path, string accessToken, CancellationToken ct)
     {
         var client = CreateClient(accessToken);
@@ -567,6 +684,116 @@ public class BackendMasterDataClient
         }
         catch { return null; }
     }
+}
+
+public class GetPublicReviewsClientResponse
+{
+    public List<PublicReviewClientDto> Reviews { get; set; } = new();
+    public double AverageRating { get; set; }
+    public int TotalCount { get; set; }
+}
+
+public class PublicReviewClientDto
+{
+    public int Id { get; set; }
+    public int Rating { get; set; }
+    public string? Comment { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string AuthorName { get; set; } = string.Empty;
+    public string? OrganizationName { get; set; }
+    public string? OrderCode { get; set; }
+    public string? ManagerReply { get; set; }
+    public DateTime? RepliedAt { get; set; }
+}
+
+public class GetReviewMeContextClientResponse
+{
+    public bool CanSubmitReview { get; set; }
+    public bool IsEnterpriseMember { get; set; }
+    public string? Message { get; set; }
+    public List<ReviewableOrderClientDto> ReviewableOrders { get; set; } = new();
+}
+
+public class ReviewableOrderClientDto
+{
+    public int OrderId { get; set; }
+    public string? OrderCode { get; set; }
+    public string? InvoiceCode { get; set; }
+    public DateTime ScheduledDate { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string? OrganizationName { get; set; }
+    public bool AlreadyReviewed { get; set; }
+}
+
+public class CreateCustomerReviewClientRequest
+{
+    public int OrderId { get; set; }
+    public int Rating { get; set; }
+    public string? Comment { get; set; }
+}
+
+public class CreateCustomerReviewClientResponse
+{
+    public object? Review { get; set; }
+}
+
+public class GetManagerReviewsClientResponse
+{
+    public List<ManagerReviewListItemClientDto> Data { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public double AverageRating { get; set; }
+}
+
+public class ManagerReviewListItemClientDto
+{
+    public int Id { get; set; }
+    public int Rating { get; set; }
+    public string? Comment { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public string CustomerName { get; set; } = string.Empty;
+    public string? OrganizationName { get; set; }
+    public string? OrderCode { get; set; }
+    public string? InvoiceCode { get; set; }
+    public string? ManagerReply { get; set; }
+    public DateTime? RepliedAt { get; set; }
+    public bool IsReplied { get; set; }
+}
+
+public class CompanyPublicDocumentListClientResponse
+{
+    public List<CompanyPublicDocumentClientDto> Documents { get; set; } = new();
+}
+
+public class CompanyPublicDocumentClientDto
+{
+    public int Id { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public string DocumentType { get; set; } = "other";
+    public string DocumentTypeLabel { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string FileUrl { get; set; } = string.Empty;
+    public string? ContentType { get; set; }
+    public string? OriginalFileName { get; set; }
+    public long SizeBytes { get; set; }
+    public int SortOrder { get; set; }
+    public bool IsPublished { get; set; }
+    public DateTime? IssuedDate { get; set; }
+    public DateTime? ExpiryDate { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public bool IsExpired { get; set; }
+}
+
+public class UpdateCompanyPublicDocumentClientRequest
+{
+    public string? Title { get; set; }
+    public string? DocumentType { get; set; }
+    public string? Description { get; set; }
+    public int? SortOrder { get; set; }
+    public bool? IsPublished { get; set; }
+    public DateTime? IssuedDate { get; set; }
+    public DateTime? ExpiryDate { get; set; }
 }
 
 public class GetPartnerResponse

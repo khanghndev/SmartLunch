@@ -1,28 +1,12 @@
-﻿@{
+﻿@model ReviewsPageViewModel
+@{
     ViewData["Title"] = "Đánh giá - HuitMeal";
     Layout = "_LayoutCustomer";
-
-    var reviews = new[] {
-        new { Name = "Nguyễn Văn An", Role = "Giám đốc Hành chính NS", Company = "Samsung Vina", Stars = 5, 
-              Avatar = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&q=80",
-              Quote = "Suất ăn luôn đảm bảo độ tươi mới và nóng hổi. Quy trình kiểm duyệt an toàn vệ sinh thực phẩm đạt chuẩn ISO giúp chúng tôi hoàn toàn yên tâm khi giao phó 2.000 bữa ăn mỗi ca cho toàn thể cán bộ chuyên gia." },
-        new { Name = "Trần Thị Bích", Role = "Trưởng phòng Nhân sự", Company = "Tập đoàn Canon", Stars = 5, 
-              Avatar = "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&q=80",
-              Quote = "Thực đơn đa dạng thay đổi suốt cả tháng, nhân viên phục vụ chuyên nghiệp và niềm nở. Từ khi sử dụng dịch vụ HuitMeal, tỷ lệ nhân viên từ chối ăn tại nhà máy giảm xuống 0%." },
-        new { Name = "Lê Hoàng", Role = "Giám đốc Điều hành", Company = "Thiết bị KCN Sóng Thần", Stars = 5, 
-              Avatar = "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&q=80",
-              Quote = "Đánh giá rất cao khả năng cung ứng lượng lớn thực phẩm một lúc mà vẫn đảm bảo tính đồng đều về định lượng và hương vị. Lắng nghe phản hồi nhanh chóng, sửa đổi ngay lập tức. Thật sự xuất sắc!" },
-        new { Name = "Phan Mai Lan", Role = "Hiệu trưởng", Company = "Trường Liên Cấp Alpha", Stars = 5, 
-              Avatar = "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&q=80",
-              Quote = "Học sinh rất thích các bữa trưa vì đồ ăn mang đậm tính truyền thống nhưng có biến tấu hiện đại. Phụ huynh cũng khen hết lời vì mô hình kiểm tra thực phẩm bằng công nghệ quét mã QR." },
-        new { Name = "Đặng Minh Tuấn", Role = "Quản lý Vận hành", Company = "Khu CN Việt Nam - Singapore", Stars = 5, 
-              Avatar = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&q=80",
-              Quote = "Sau 3 năm hợp tác, chúng tôi không có lý do gì để thay đổi nhà cung cấp. HuitMeal luôn đáp ứng đúng thời hạn, chất lượng ổn định và đội ngũ hỗ trợ rất chuyên nghiệp." },
-        new { Name = "Võ Thị Thu", Role = "Trưởng ban Đời sống", Company = "Tổng công ty Dệt May Gia Định", Stars = 5, 
-              Avatar = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=100&q=80",
-              Quote = "Chúng tôi ấn tượng với sự linh hoạt trong việc điều chỉnh thực đơn theo yêu cầu đặc thù của công nhân. HuitMeal thực sự hiểu nhu cầu của người lao động trong môi trường công nghiệp." },
-    };
+    var canSubmit = Model.Context?.CanSubmitReview == true;
+    var ctxMsg = Model.Context?.Message;
+    var avgDisplay = Model.AverageRating > 0 ? Model.AverageRating.ToString("0.0") : "—";
 }
+@Html.AntiForgeryToken()
 
 <style>
     [x-cloak] { display: none !important; }
@@ -134,7 +118,7 @@
                 </div>
                 <div>
                     <p class="text-xs text-slate-400 font-bold uppercase">Đánh giá TB</p>
-                    <p class="text-sm font-black text-white">4.9/5.0</p>
+                    <p class="text-sm font-black text-white">@avgDisplay/5.0</p>
                 </div>
             </div>
         </div>
@@ -169,6 +153,63 @@
         </div>
     </section>
 
+    <!-- ===== SUBMIT REVIEW (enterprise only) ===== -->
+    <section class="py-16 px-6 bg-orange-50/50 border-y border-orange-100" x-data="reviewSubmitForm()" x-cloak>
+        <div class="max-w-3xl mx-auto">
+            @if (canSubmit)
+            {
+                <div class="bg-white rounded-[32px] shadow-xl border border-orange-100 p-8 md:p-10">
+                    <h3 class="text-2xl font-black text-slate-900 mb-2">Gửi đánh giá của đơn vị bạn</h3>
+                    <p class="text-slate-500 text-sm mb-6">Chỉ áp dụng cho khách hàng doanh nghiệp đã đặt suất ăn và đơn đủ điều kiện (đã giao hoặc đã thanh toán).</p>
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Chọn đơn hàng</label>
+                            <select x-model="orderId" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium">
+                                <option value="">-- Chọn đơn --</option>
+                                @foreach (var o in Model.Context!.ReviewableOrders)
+                                {
+                                    <option value="@o.OrderId">@(o.InvoiceCode ?? o.OrderCode ?? ("Đơn #" + o.OrderId)) — @o.OrganizationName (@o.ScheduledDate.ToString("dd/MM/yyyy"))</option>
+                                }
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Số sao</label>
+                            <div class="flex gap-2">
+                                <template x-for="i in 5">
+                                    <button type="button" @@click="rating = i" class="p-1">
+                                        <i data-lucide="star" class="w-8 h-8" :class="i <= rating ? 'fill-amber-400 text-amber-400' : 'text-slate-200'"></i>
+                                    </button>
+                                </template>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Nội dung</label>
+                            <textarea x-model="comment" rows="4" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" placeholder="Chia sẻ trải nghiệm về chất lượng suất ăn, giao hàng, dịch vụ..."></textarea>
+                        </div>
+                        <p x-show="error" class="text-sm text-red-600" x-text="error"></p>
+                        <p x-show="success" class="text-sm text-emerald-600 font-medium">Cảm ơn bạn! Đánh giá đã được gửi.</p>
+                        <button type="button" @@click="submit()" :disabled="submitting" class="w-full py-4 bg-orange-500 hover:bg-orange-600 text-white font-bold rounded-2xl shadow-lg disabled:opacity-50">
+                            Gửi đánh giá
+                        </button>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="bg-white/80 backdrop-blur rounded-[24px] border border-slate-200 p-8 text-center">
+                    <i data-lucide="info" class="w-10 h-10 text-slate-400 mx-auto mb-3"></i>
+                    <p class="text-slate-600 font-medium leading-relaxed">
+                        @(ctxMsg ?? "Bạn có thể xem đánh giá từ các đối tác doanh nghiệp bên dưới. Chỉ tài khoản doanh nghiệp đã đặt suất ăn mới được gửi đánh giá.")
+                    </p>
+                    @if (User.Identity?.IsAuthenticated != true)
+                    {
+                        <a href="/Auth/Login?role=Organization&returnUrl=/Customer/Reviews" class="inline-block mt-4 text-sm font-bold text-orange-600 hover:underline">Đăng nhập tài khoản doanh nghiệp</a>
+                    }
+                </div>
+            }
+        </div>
+    </section>
+
     <!-- ===== TESTIMONIALS MASONRY ===== -->
     <section id="reviews-section" class="pb-32 px-6">
         <div class="max-w-7xl mx-auto">
@@ -183,38 +224,46 @@
             </div>
 
             <div class="masonry-grid">
-                @foreach (var rv in reviews)
+                @if (Model.Reviews.Count == 0)
                 {
+                    <p class="text-center text-slate-400 col-span-full py-12">Chưa có đánh giá nào từ đối tác doanh nghiệp.</p>
+                }
+                @foreach (var rv in Model.Reviews)
+                {
+                    var initial = string.IsNullOrEmpty(rv.AuthorName) ? "K" : rv.AuthorName.Trim()[0].ToString().ToUpperInvariant();
                     <div class="masonry-item">
                         <div class="review-card-hover bg-white rounded-[32px] p-8 md:p-10 border border-slate-100 relative overflow-hidden group">
-                            <!-- Watermark Quote Icon -->
                             <i data-lucide="quote" class="absolute -top-6 -right-6 w-32 h-32 text-slate-50 opacity-50 group-hover:text-orange-50 group-hover:opacity-100 transition-colors duration-500 -rotate-12 pointer-events-none"></i>
-                            
                             <div class="relative z-10">
-                                <!-- Stars -->
                                 <div class="flex gap-1 mb-6 bg-slate-50 inline-flex px-3 py-1.5 rounded-full border border-slate-100">
-                                    @for (int s = 0; s < rv.Stars; s++)
+                                    @for (int s = 0; s < rv.Rating; s++)
                                     {
                                         <i data-lucide="star" class="w-3.5 h-3.5 fill-amber-400 text-amber-400"></i>
                                     }
-                                    <span class="text-xs font-bold text-slate-600 ml-2">5.0</span>
+                                    <span class="text-xs font-bold text-slate-600 ml-2">@rv.Rating</span>
                                 </div>
-
-                                <!-- Quote -->
                                 <p class="text-slate-700 leading-relaxed text-base md:text-lg mb-8 font-medium italic relative">
                                     <span class="text-orange-400 font-serif text-3xl leading-none absolute -left-2 top-0">"</span>
-                                    <span class="pl-2 relative z-10">@rv.Quote</span>
+                                    <span class="pl-2 relative z-10">@(rv.Comment ?? "")</span>
                                 </p>
-
-                                <!-- Author Profile -->
-                                <div class="flex items-center gap-5 pt-6 border-t border-slate-100 border-dashed">
-                                    <div class="relative">
-                                        <img src="@rv.Avatar" alt="@rv.Name" class="w-14 h-14 rounded-full object-cover border-2 border-white shadow-md group-hover:border-orange-200 transition-colors" />
-                                        <div class="absolute bottom-0 right-0 w-4 h-4 bg-green-500 border-2 border-white rounded-full"></div>
+                                @if (!string.IsNullOrWhiteSpace(rv.ManagerReply))
+                                {
+                                    <div class="mb-6 p-4 rounded-2xl bg-blue-50 border border-blue-100 text-sm text-blue-900">
+                                        <p class="font-bold text-blue-800 text-xs uppercase mb-1">Phản hồi từ HuitMeal</p>
+                                        <p>@rv.ManagerReply</p>
                                     </div>
+                                }
+                                <div class="flex items-center gap-5 pt-6 border-t border-slate-100 border-dashed">
+                                    <div class="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-amber-500 flex items-center justify-center text-white font-black text-xl shadow-md">@initial</div>
                                     <div>
-                                        <p class="font-black text-slate-900 text-base group-hover:text-orange-500 transition-colors">@rv.Name</p>
-                                        <p class="text-xs text-slate-500 mt-1">@rv.Role tại <span class="font-bold text-slate-700">@rv.Company</span></p>
+                                        <p class="font-black text-slate-900 text-base group-hover:text-orange-500 transition-colors">@rv.AuthorName</p>
+                                        <p class="text-xs text-slate-500 mt-1">
+                                            @if (!string.IsNullOrWhiteSpace(rv.OrganizationName))
+                                            {
+                                                <span class="font-bold text-slate-700">@rv.OrganizationName</span>
+                                            }
+                                            · @rv.CreatedAt.ToString("dd/MM/yyyy")
+                                        </p>
                                     </div>
                                 </div>
                             </div>
@@ -304,9 +353,43 @@
 
 @section Scripts {
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();
+        document.addEventListener('alpine:init', () => {
+            Alpine.data('reviewSubmitForm', () => ({
+                orderId: '',
+                rating: 5,
+                comment: '',
+                submitting: false,
+                error: '',
+                success: false,
+                csrf() { return document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''; },
+                async submit() {
+                    if (!this.orderId) { this.error = 'Vui lòng chọn đơn hàng'; return; }
+                    if (!this.comment.trim()) { this.error = 'Vui lòng nhập nội dung đánh giá'; return; }
+                    this.submitting = true;
+                    this.error = '';
+                    try {
+                        const res = await fetch('@Url.Action("SubmitReview", "Customer")', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': this.csrf() },
+                            body: JSON.stringify({
+                                orderId: parseInt(this.orderId, 10),
+                                rating: this.rating,
+                                comment: this.comment.trim()
+                            })
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) throw new Error(data.message || 'Gửi thất bại');
+                        this.success = true;
+                        setTimeout(() => location.reload(), 1500);
+                    } catch (e) {
+                        this.error = e.message;
+                    } finally {
+                        this.submitting = false;
+                    }
+                }
+            }));
         });
+        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
     </script>
 }
 

@@ -3,6 +3,7 @@
     Layout = "_LayoutManager";
 }
 
+@Html.AntiForgeryToken()
 <div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="foodSafetyManager()">
     
     <!-- HEADER -->
@@ -62,7 +63,7 @@
             </div>
         </div>
         
-        <!-- MODULE 2: CHỨNG NHẬN -->
+        <!-- MODULE 2: HỒ SƠ CÔNG KHAI (cloud → trang Giới thiệu) -->
         <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden flex flex-col">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                 <div class="flex items-center gap-3">
@@ -70,54 +71,121 @@
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path></svg>
                     </div>
                     <div>
-                        <h3 class="text-lg font-black text-slate-800">Hồ sơ / Chứng nhận</h3>
-                        <p class="text-xs text-slate-500 font-medium">Quản lý giấy phép và biên bản kiểm tra</p>
+                        <h3 class="text-lg font-black text-slate-800">Hồ sơ công khai công ty</h3>
+                        <p class="text-xs text-slate-500 font-medium">Lưu cloud — hiển thị tại trang <span class="text-purple-600 font-bold">Giới thiệu</span> khách hàng</p>
                     </div>
                 </div>
+                <span class="text-[10px] font-bold uppercase tracking-wider px-2 py-1 rounded-full" :class="docsLoading ? 'bg-amber-100 text-amber-700' : 'bg-emerald-100 text-emerald-700'" x-text="docsLoading ? 'Đang tải...' : (documents.length + ' tài liệu')"></span>
             </div>
             
-            <div class="p-6 space-y-4">
-                <!-- Upload Zone -->
-                <button @@click="openCertModal()" class="w-full rounded-[16px] border-2 border-dashed border-slate-300 px-6 py-8 hover:border-purple-400 hover:bg-purple-50 transition-colors cursor-pointer group flex flex-col items-center justify-center">
+            <div class="p-6 space-y-4 flex-1 flex flex-col">
+                <div x-show="docError" class="text-sm font-medium text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3" x-text="docError"></div>
+                <div x-show="docSuccess" class="text-sm font-medium text-emerald-700 bg-emerald-50 border border-emerald-100 rounded-xl px-4 py-3" x-text="docSuccess"></div>
+
+                <button type="button" @@click="openCertModal()" class="w-full rounded-[16px] border-2 border-dashed border-slate-300 px-6 py-8 hover:border-purple-400 hover:bg-purple-50 transition-colors cursor-pointer group flex flex-col items-center justify-center">
                     <div class="w-12 h-12 rounded-full bg-slate-100 group-hover:bg-white flex items-center justify-center mb-3 transition-colors shadow-sm">
                         <svg class="w-6 h-6 text-slate-400 group-hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
                     </div>
-                    <span class="font-bold text-slate-700 group-hover:text-purple-700 mb-1">Tải lên tài liệu mới</span>
-                    <span class="text-xs text-slate-400">PDF, JPG (Max 10MB)</span>
+                    <span class="font-bold text-slate-700 group-hover:text-purple-700 mb-1">Tải lên chứng từ / hợp đồng</span>
+                    <span class="text-xs text-slate-400">PDF, JPG, PNG, WEBP — tối đa 10MB</span>
                 </button>
                 
-                <h4 class="font-bold text-sm text-slate-800 pt-4 border-t border-slate-100">Tài liệu đang hiệu lực</h4>
-                <div class="grid grid-cols-1 gap-3">
-                    <!-- Cert Item -->
-                    <div class="flex items-center justify-between p-3 border border-slate-200 rounded-xl hover:border-slate-300 hover:shadow-sm transition-all cursor-pointer">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded bg-red-50 flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
+                <h4 class="font-bold text-sm text-slate-800 pt-4 border-t border-slate-100">Danh sách hồ sơ</h4>
+                <div class="grid grid-cols-1 gap-3 flex-1 min-h-[120px]">
+                    <template x-if="!docsLoading && documents.length === 0">
+                        <p class="text-sm text-slate-400 text-center py-8">Chưa có tài liệu. Tải lên để hiển thị trên trang Giới thiệu.</p>
+                    </template>
+                    <template x-for="doc in documents" :key="doc.id">
+                        <div class="flex items-center justify-between p-3 border rounded-xl transition-all" :class="doc.isPublished ? 'border-slate-200 hover:border-purple-200 hover:shadow-sm' : 'border-dashed border-slate-300 bg-slate-50 opacity-80'">
+                            <div class="flex items-center gap-3 min-w-0 flex-1">
+                                <div class="w-10 h-10 rounded shrink-0 flex items-center justify-center" :class="doc.contentType && doc.contentType.includes('pdf') ? 'bg-red-50' : 'bg-blue-50'">
+                                    <svg class="w-5 h-5" :class="doc.contentType && doc.contentType.includes('pdf') ? 'text-red-500' : 'text-blue-500'" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4z" clip-rule="evenodd"></path></svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <h5 class="text-sm font-bold text-slate-800 truncate" x-text="doc.title"></h5>
+                                    <p class="text-[10px] font-bold uppercase tracking-wider text-purple-600" x-text="doc.documentTypeLabel"></p>
+                                    <p class="text-xs font-medium text-slate-500" x-text="formatDocDates(doc)"></p>
+                                    <div class="flex gap-2 mt-1 flex-wrap">
+                                        <span class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded" :class="doc.isPublished ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-200 text-slate-600'" x-text="doc.isPublished ? 'Công khai' : 'Ẩn'"></span>
+                                        <span x-show="doc.isExpired" class="px-1.5 py-0.5 text-[9px] font-bold uppercase rounded bg-red-50 text-red-600">Hết hạn</span>
+                                    </div>
+                                </div>
                             </div>
-                            <div>
-                                <h5 class="text-sm font-bold text-slate-800">GiayChungNhan_VSATTP_2026.pdf</h5>
-                                <p class="text-xs font-medium text-slate-500">Cấp ngày: 15/01/2026 - Hết hạn: 15/01/2027</p>
+                            <div class="flex items-center gap-1 shrink-0 ml-2">
+                                <a :href="doc.fileUrl" target="_blank" rel="noopener" class="p-1.5 text-slate-400 hover:text-blue-600 rounded" title="Mở file">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                                </a>
+                                <button type="button" @@click="togglePublish(doc)" class="p-1.5 text-slate-400 hover:text-purple-600 rounded" :title="doc.isPublished ? 'Ẩn khỏi trang Giới thiệu' : 'Hiển thị công khai'">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                </button>
+                                <button type="button" @@click="deleteDoc(doc.id)" class="p-1.5 text-slate-400 hover:text-red-600 rounded" title="Xóa">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
+                                </button>
                             </div>
                         </div>
-                        <button class="p-1.5 text-slate-400 hover:text-blue-600 rounded">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        </button>
+                    </template>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: TẢI HỒ SƠ CÔNG KHAI -->
+    <div x-show="isCertModalOpen" style="display: none;" class="relative z-50" role="dialog" aria-modal="true">
+        <div x-show="isCertModalOpen" x-transition.opacity class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm" @@click="closeModals()"></div>
+        <div class="fixed inset-0 z-10 overflow-y-auto flex min-h-full items-center justify-center p-4">
+            <div x-show="isCertModalOpen" x-transition class="relative w-full max-w-lg rounded-[32px] bg-white shadow-2xl" @@click.stop>
+                <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center">
+                    <h3 class="text-lg font-black text-slate-800">Tải hồ sơ lên cloud</h3>
+                    <button type="button" @@click="closeModals()" class="text-slate-400 hover:text-slate-600 bg-slate-100 p-1.5 rounded-full">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div class="p-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Tiêu đề hiển thị *</label>
+                        <input type="text" x-model="uploadForm.title" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-purple-500 focus:ring-1 focus:ring-purple-500" placeholder="VD: Giấy chứng nhận VSATTP 2026" />
                     </div>
-                    
-                    <div class="flex items-center justify-between p-3 border border-slate-200 rounded-xl hover:border-slate-300 hover:shadow-sm transition-all cursor-pointer">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded bg-red-50 flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path></svg>
-                            </div>
-                            <div>
-                                <h5 class="text-sm font-bold text-slate-800">BienBanKiemTra_Dot1_Thang4.pdf</h5>
-                                <p class="text-xs font-medium text-slate-500">Ngày lưu: 05/04/2026 (Đoàn kiểm tra Y tế)</p>
-                            </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Loại hồ sơ</label>
+                        <select x-model="uploadForm.documentType" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium bg-white">
+                            <option value="food_safety">Chứng nhận VSATTP / ATTP</option>
+                            <option value="iso">ISO / HACCP</option>
+                            <option value="business_license">Giấy phép kinh doanh</option>
+                            <option value="inspection">Biên bản kiểm tra</option>
+                            <option value="contract">Hợp đồng / Khung thỏa thuận</option>
+                            <option value="other">Chứng từ khác</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">Mô tả ngắn</label>
+                        <textarea x-model="uploadForm.description" rows="2" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium" placeholder="Tùy chọn"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Ngày cấp</label>
+                            <input type="date" x-model="uploadForm.issuedDate" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
                         </div>
-                        <button class="p-1.5 text-slate-400 hover:text-blue-600 rounded">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                        </button>
+                        <div>
+                            <label class="block text-sm font-bold text-slate-700 mb-2">Hết hạn</label>
+                            <input type="date" x-model="uploadForm.expiryDate" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm" />
+                        </div>
                     </div>
+                    <div>
+                        <label class="block text-sm font-bold text-slate-700 mb-2">File *</label>
+                        <input type="file" accept=".pdf,image/*" @@change="onFileSelected($event)" class="w-full text-sm text-slate-600 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-50 file:text-purple-700 file:font-bold" />
+                        <p class="text-xs text-slate-400 mt-1" x-show="uploadForm.fileName" x-text="'Đã chọn: ' + uploadForm.fileName"></p>
+                    </div>
+                    <label class="flex items-center gap-2 cursor-pointer">
+                        <input type="checkbox" x-model="uploadForm.isPublished" class="rounded border-slate-300 text-purple-600 focus:ring-purple-500" />
+                        <span class="text-sm font-medium text-slate-700">Hiển thị ngay trên trang Giới thiệu khách hàng</span>
+                    </label>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px]">
+                    <button type="button" @@click="closeModals()" class="px-5 py-2.5 rounded-xl text-slate-600 font-bold border border-slate-200 text-sm">Hủy</button>
+                    <button type="button" @@click="submitUpload()" :disabled="uploading" class="px-6 py-2.5 rounded-xl bg-purple-600 text-white font-bold text-sm shadow-md disabled:opacity-50 flex items-center gap-2">
+                        <span x-show="!uploading">Tải lên</span>
+                        <span x-show="uploading">Đang tải...</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -194,28 +262,146 @@
             Alpine.data('foodSafetyManager', () => ({
                 isSampleModalOpen: false,
                 isCertModalOpen: false,
-                
+                documents: [],
+                docsLoading: true,
+                uploading: false,
+                docError: '',
+                docSuccess: '',
+                uploadForm: {
+                    title: '',
+                    documentType: 'food_safety',
+                    description: '',
+                    issuedDate: '',
+                    expiryDate: '',
+                    isPublished: true,
+                    file: null,
+                    fileName: ''
+                },
                 samples: [
                     { id: 1, day: '26', month: 'T04', shift: 'Trưa', person: 'Lê Văn C', fridge: 'Tủ số 1', status: 'Đã lưu', expireDate: '27/04 11:30' },
                     { id: 2, day: '25', month: 'T04', shift: 'Trưa', person: 'Nguyễn Thị B', fridge: 'Tủ số 1', status: 'Đã lưu', expireDate: 'Hôm nay 11:30' },
                     { id: 3, day: '24', month: 'T04', shift: 'Chiều', person: 'Lê Văn C', fridge: 'Tủ số 2', status: 'Đã hủy (Hết 24h)', expireDate: 'Đã xong' }
                 ],
-                
+                init() {
+                    this.loadDocuments();
+                },
+                csrf() {
+                    return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+                },
+                async loadDocuments() {
+                    this.docsLoading = true;
+                    this.docError = '';
+                    try {
+                        const res = await fetch('@Url.Action("CompanyDocuments", "Operation", new { area = "Manager" })');
+                        if (!res.ok) {
+                            const err = await res.json().catch(() => ({}));
+                            throw new Error(err.message || 'Không tải được danh sách');
+                        }
+                        const data = await res.json();
+                        this.documents = data.documents || [];
+                    } catch (e) {
+                        this.docError = e.message || 'Lỗi tải hồ sơ';
+                    } finally {
+                        this.docsLoading = false;
+                    }
+                },
+                formatDocDates(doc) {
+                    const fmt = (s) => {
+                        if (!s) return null;
+                        const d = new Date(s);
+                        if (isNaN(d)) return null;
+                        return d.toLocaleDateString('vi-VN');
+                    };
+                    const issued = fmt(doc.issuedDate);
+                    const exp = fmt(doc.expiryDate);
+                    if (issued && exp) return `Cấp: ${issued} — Hết hạn: ${exp}`;
+                    if (issued) return `Cấp: ${issued}`;
+                    return 'Không ghi ngày';
+                },
                 openSampleModal() {
                     this.isSampleModalOpen = true;
                     document.body.style.overflow = 'hidden';
                 },
-                
                 openCertModal() {
-                    alert('Chức năng mở File Explorer chọn file PDF/JPG để tải lên Server.');
+                    this.uploadForm = { title: '', documentType: 'food_safety', description: '', issuedDate: '', expiryDate: '', isPublished: true, file: null, fileName: '' };
+                    this.isCertModalOpen = true;
+                    document.body.style.overflow = 'hidden';
                 },
-                
+                onFileSelected(ev) {
+                    const f = ev.target.files?.[0];
+                    this.uploadForm.file = f || null;
+                    this.uploadForm.fileName = f ? f.name : '';
+                    if (f && !this.uploadForm.title) {
+                        this.uploadForm.title = f.name.replace(/\.[^.]+$/, '');
+                    }
+                },
+                async submitUpload() {
+                    if (!this.uploadForm.file) { this.docError = 'Vui lòng chọn file'; return; }
+                    if (!this.uploadForm.title?.trim()) { this.docError = 'Vui lòng nhập tiêu đề'; return; }
+                    this.uploading = true;
+                    this.docError = '';
+                    const fd = new FormData();
+                    fd.append('file', this.uploadForm.file);
+                    fd.append('title', this.uploadForm.title.trim());
+                    fd.append('documentType', this.uploadForm.documentType);
+                    if (this.uploadForm.description) fd.append('description', this.uploadForm.description);
+                    if (this.uploadForm.issuedDate) fd.append('issuedDate', this.uploadForm.issuedDate);
+                    if (this.uploadForm.expiryDate) fd.append('expiryDate', this.uploadForm.expiryDate);
+                    fd.append('isPublished', this.uploadForm.isPublished ? 'true' : 'false');
+                    fd.append('__RequestVerificationToken', this.csrf());
+                    try {
+                        const res = await fetch('@Url.Action("UploadCompanyDocument", "Operation", new { area = "Manager" })', {
+                            method: 'POST',
+                            headers: { 'RequestVerificationToken': this.csrf() },
+                            body: fd
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) throw new Error(data.message || 'Upload thất bại');
+                        this.docSuccess = 'Đã tải lên và lưu trên cloud.';
+                        this.closeModals();
+                        await this.loadDocuments();
+                        setTimeout(() => { this.docSuccess = ''; }, 4000);
+                    } catch (e) {
+                        this.docError = e.message || 'Upload thất bại';
+                    } finally {
+                        this.uploading = false;
+                    }
+                },
+                async togglePublish(doc) {
+                    try {
+                        const res = await fetch('@Url.Action("UpdateCompanyDocument", "Operation", new { area = "Manager" })?id=' + doc.id, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': this.csrf() },
+                            body: JSON.stringify({ isPublished: !doc.isPublished })
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) throw new Error(data.message || 'Cập nhật thất bại');
+                        await this.loadDocuments();
+                    } catch (e) {
+                        this.docError = e.message;
+                    }
+                },
+                async deleteDoc(id) {
+                    if (!confirm('Xóa tài liệu này? File trên cloud vẫn có thể còn trong kho lưu trữ.')) return;
+                    try {
+                        const res = await fetch('@Url.Action("DeleteCompanyDocument", "Operation", new { area = "Manager" })?id=' + id, {
+                            method: 'DELETE',
+                            headers: { 'RequestVerificationToken': this.csrf() }
+                        });
+                        const data = await res.json().catch(() => ({}));
+                        if (!res.ok) throw new Error(data.message || 'Xóa thất bại');
+                        await this.loadDocuments();
+                        this.docSuccess = 'Đã xóa.';
+                        setTimeout(() => { this.docSuccess = ''; }, 3000);
+                    } catch (e) {
+                        this.docError = e.message;
+                    }
+                },
                 closeModals() {
                     this.isSampleModalOpen = false;
                     this.isCertModalOpen = false;
                     document.body.style.overflow = '';
                 },
-                
                 submitForm() {
                     alert('Đã ghi nhận lưu mẫu thành công vào hệ thống nhật ký!');
                     this.closeModals();

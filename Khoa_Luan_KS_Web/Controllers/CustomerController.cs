@@ -11,13 +11,16 @@ namespace Khoa_Luan_KS_Web.Controllers
     {
         private readonly ILogger<CustomerController> _logger;
         private readonly CustomerHomeFeaturedMenuService _featuredMenuService;
+        private readonly BackendMasterDataClient _masterDataClient;
 
         public CustomerController(
             ILogger<CustomerController> logger,
-            CustomerHomeFeaturedMenuService featuredMenuService)
+            CustomerHomeFeaturedMenuService featuredMenuService,
+            BackendMasterDataClient masterDataClient)
         {
             _logger = logger;
             _featuredMenuService = featuredMenuService;
+            _masterDataClient = masterDataClient;
         }
 
         public override async Task OnActionExecutionAsync(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context, Microsoft.AspNetCore.Mvc.Filters.ActionExecutionDelegate next)
@@ -53,12 +56,71 @@ namespace Khoa_Luan_KS_Web.Controllers
             var model = await _featuredMenuService.LoadFeaturedDishesAsync(token, ct);
             return View(model);
         }
-        public IActionResult About() => View();
+        public async Task<IActionResult> About(CancellationToken ct)
+        {
+            var model = new AboutPageViewModel();
+            try
+            {
+                var data = await _masterDataClient.GetPublicCompanyDocumentsAsync(ct);
+                model.Documents = data.Documents;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not load public company documents for About page");
+            }
+            return View(model);
+        }
         public IActionResult Contact() => View();
         public IActionResult HuitMeal() => View();
         public IActionResult Achievements() => View();
         public IActionResult ChooseHuitMeal() => View();
-        public IActionResult Reviews() => View();
+        public async Task<IActionResult> Reviews(CancellationToken ct)
+        {
+            var model = new ReviewsPageViewModel();
+            try
+            {
+                var pub = await _masterDataClient.GetPublicReviewsAsync(ct: ct);
+                model.Reviews = pub.Reviews;
+                model.AverageRating = pub.AverageRating;
+                model.TotalCount = pub.TotalCount;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Could not load public reviews");
+            }
+
+            var token = HttpContext.Session.GetString("access_token");
+            if (!string.IsNullOrEmpty(token))
+            {
+                try
+                {
+                    model.Context = await _masterDataClient.GetReviewMeContextAsync(token, ct);
+                    model.CanSubmitLoaded = true;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Could not load review context for user");
+                }
+            }
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitReview([FromBody] CreateCustomerReviewClientRequest request, CancellationToken ct)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return Unauthorized(new { message = "Vui lòng đăng nhập tài khoản doanh nghiệp." });
+            try
+            {
+                await _masterDataClient.CreateCustomerReviewAsync(request, token, ct);
+                return Json(new { ok = true });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
         public IActionResult Partners() => View();
         public IActionResult Recruitment() => View();
         
