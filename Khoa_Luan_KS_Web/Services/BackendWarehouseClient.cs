@@ -117,6 +117,18 @@ public class BackendWarehouseClient
     public Task<CreateActualReceiptClientResponse> CreateActualReceiptAsync(int proposalId, CreateActualReceiptClientRequest payload, string accessToken, CancellationToken ct = default)
         => PostAsync<CreateActualReceiptClientResponse>($"/api/v1/ingredient-intake-proposals/{proposalId}/actual-receipt", payload, accessToken, ct);
 
+    public Task<ReviewIntakeProposalClientResponse> ReviewIntakeProposalAsync(
+        int proposalId,
+        bool approve,
+        string? reviewNote,
+        string accessToken,
+        CancellationToken ct = default)
+        => PostAsync<ReviewIntakeProposalClientResponse>(
+            $"/api/v1/ingredient-intake-proposals/{proposalId}/review",
+            new { approve, reviewNote },
+            accessToken,
+            ct);
+
     // ───────────────────────────── Finance ──────────────────────────────────────────────
     public Task<SupplierPayablesClientResponse> GetSupplierPayablesAsync(string accessToken, bool onlyOutstanding = true, int? partnerId = null, CancellationToken ct = default)
     {
@@ -494,6 +506,11 @@ public sealed class CreateIntakeProposalLineClientRequest
 }
 
 public sealed class CreateIntakeProposalClientResponse
+{
+    public IntakeProposalDetailClientDto Proposal { get; set; } = new();
+}
+
+public sealed class ReviewIntakeProposalClientResponse
 {
     public IntakeProposalDetailClientDto Proposal { get; set; } = new();
 }

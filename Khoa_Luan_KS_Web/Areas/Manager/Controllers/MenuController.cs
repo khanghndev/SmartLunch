@@ -15,7 +15,39 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
         }
 
         public IActionResult Dashboard() => View();
-        public IActionResult Dish() => View();
+        /// <summary>
+        /// Kho món ăn — danh sách có phân trang, lọc theo danh mục và tìm kiếm.
+        /// </summary>
+        public async Task<IActionResult> Dish(
+            int page = 1,
+            int pageSize = 12,
+            string? searchTerm = null,
+            string? category = null,
+            CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token))
+                return RedirectToAction("Login", "Auth", new { area = "" });
+
+            try
+            {
+                var response = await _masterDataClient.GetDishesAsync(token, page, pageSize, searchTerm, category, ct: ct);
+                ViewData["SearchTerm"] = searchTerm;
+                ViewData["Category"] = category ?? "";
+                ViewData["CurrentPage"] = page;
+                ViewData["PageSize"] = pageSize;
+                return View(response);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                ViewData["SearchTerm"] = searchTerm;
+                ViewData["Category"] = category ?? "";
+                ViewData["CurrentPage"] = page;
+                ViewData["PageSize"] = pageSize;
+                return View(new Services.GetDishesResponse());
+            }
+        }
         public IActionResult History() => View();
         public IActionResult Ingredients() => View();
         public IActionResult DishForm(string id) => View();

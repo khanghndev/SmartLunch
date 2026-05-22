@@ -1,455 +1,263 @@
+@model Khoa_Luan_KS_Web.Services.GetDishesResponse
 @{
     ViewData["Title"] = "Quản lý Món Ăn";
     Layout = "_LayoutManager";
+
+    int currentPage = (int)(ViewData["CurrentPage"] ?? 1);
+    int pageSize = (int)(ViewData["PageSize"] ?? 12);
+    string? searchTerm = ViewData["SearchTerm"] as string;
+    string curCat = ViewData["Category"] as string ?? "";
+    int totalCount = Model?.TotalCount ?? 0;
+    int totalPages = pageSize > 0 ? Math.Max(1, (int)Math.Ceiling((double)totalCount / pageSize)) : 1;
+    var items = Model?.Items ?? new List<Khoa_Luan_KS_Web.Services.DishDto>();
+
+    string CatLabel(string? cat) => cat?.ToLower() switch {
+        "man" => "Món chính",
+        "xao" => "Món phụ",
+        "canh" => "Canh",
+        "trang_mieng" => "Tráng miệng",
+        _ => "Khác"
+    };
+
+    string CatBadge(string? cat) => cat?.ToLower() switch {
+        "man" => "text-green-700 bg-green-50",
+        "xao" => "text-orange-700 bg-orange-50",
+        "canh" => "text-blue-700 bg-blue-50",
+        "trang_mieng" => "text-purple-700 bg-purple-50",
+        _ => "text-slate-600 bg-slate-50"
+    };
+
+    bool IsVegetarian(Khoa_Luan_KS_Web.Services.DishDto d)
+    {
+        var label = (d.DietaryLabel ?? "").ToLowerInvariant();
+        return label.Contains("chay") || label.Contains("vegetarian") || label.Contains("vegan");
+    }
+
+    string ImgUrl(Khoa_Luan_KS_Web.Services.DishDto d) =>
+        !string.IsNullOrWhiteSpace(d.ImageUrl)
+            ? d.ImageUrl!
+            : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80";
+
+    string KcalText(Khoa_Luan_KS_Web.Services.DishDto d) =>
+        d.Calories.HasValue ? $"{d.Calories.Value:0} Kcal" : "—";
+
+    string BuildUrl(int page, string? category = null)
+    {
+        var cat = category ?? curCat;
+        var q = $"?page={page}&pageSize={pageSize}";
+        if (!string.IsNullOrEmpty(cat)) q += $"&category={Uri.EscapeDataString(cat)}";
+        if (!string.IsNullOrEmpty(searchTerm)) q += $"&searchTerm={Uri.EscapeDataString(searchTerm)}";
+        return q;
+    }
 }
 
-<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="dishManager()">
-    
-    <!-- HEADER -->
+<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="{ viewMode: 'grid' }">
+
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-3xl font-black text-slate-800 tracking-tight">Kho Món Ăn</h1>
-            <p class="text-slate-500 mt-1 font-medium text-sm">Quản lý thư viện món ăn, công thức và định mức chi phí.</p>
+            <p class="text-slate-500 mt-1 font-medium text-sm">
+                Tổng <span class="font-bold text-green-600">@totalCount</span> món trong thư viện.
+            </p>
         </div>
-        
         <div class="flex items-center gap-3">
-            <button class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2 text-sm hidden sm:flex">
-                <svg class="w-4 h-4 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                Xuất Excel
-            </button>
-            <button @@click="openAdd()" class="px-6 py-2 bg-green-600 text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:bg-green-700 transition-all flex items-center gap-2 text-sm">
+            <a href="/Manager/Catalog/Meals"
+               class="px-6 py-2 bg-green-600 text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:bg-green-700 transition-all flex items-center gap-2 text-sm">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 Thêm món mới
-            </button>
+            </a>
         </div>
     </div>
 
-    <!-- TOOLBAR & FILTERS -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl px-4 py-3">@TempData["Error"]</div>
+    }
+
     <div class="bg-white p-4 rounded-[20px] shadow-sm border border-slate-100 flex flex-col md:flex-row gap-4 items-center justify-between">
-        <div class="flex flex-wrap items-center gap-4 w-full md:w-auto">
+        <form method="get" asp-area="Manager" asp-controller="Menu" asp-action="Dish" class="flex flex-wrap items-center gap-4 w-full md:w-auto flex-1">
+            <input type="hidden" name="page" value="1" />
+            <input type="hidden" name="pageSize" value="@pageSize" />
+            <input type="hidden" name="category" value="@curCat" />
             <div class="relative w-full md:w-72">
                 <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
-                <input type="text" x-model="searchQuery" placeholder="Tìm kiếm món ăn, nguyên liệu..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm font-medium outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
+                <input type="text" name="searchTerm" value="@searchTerm" placeholder="Tìm kiếm món ăn..." class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-4 py-2.5 text-sm font-medium outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-all" />
             </div>
-            
-            <div class="hidden sm:block h-6 w-px bg-slate-200"></div>
-            
-            <select x-model="categoryFilter" class="bg-white border border-slate-200 text-slate-700 text-sm font-bold rounded-xl px-4 py-2.5 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 w-full sm:w-auto">
-                <option value="all">Tất cả danh mục</option>
-                <option value="Món chính">Món chính</option>
-                <option value="Món phụ">Món phụ</option>
-                <option value="Canh">Canh</option>
-                <option value="Tráng miệng">Tráng miệng</option>
-            </select>
+            <button type="submit" class="px-4 py-2.5 bg-slate-800 text-white text-sm font-bold rounded-xl hover:bg-slate-700 transition-all">Tìm</button>
+            @if (!string.IsNullOrEmpty(searchTerm))
+            {
+                <a asp-area="Manager" asp-controller="Menu" asp-action="Dish" asp-route-page="1" asp-route-pageSize="@pageSize" asp-route-category="@curCat"
+                   class="text-sm font-bold text-slate-500 hover:text-slate-700">Xóa tìm kiếm</a>
+            }
+        </form>
+
+        <div class="flex flex-wrap items-center gap-2">
+            @{
+                var filterTabs = new[] {
+                    new { Key = "", Label = "Tất cả" },
+                    new { Key = "man", Label = "Món chính" },
+                    new { Key = "xao", Label = "Món phụ" },
+                    new { Key = "canh", Label = "Canh" },
+                    new { Key = "trang_mieng", Label = "Tráng miệng" },
+                };
+            }
+            @foreach (var t in filterTabs)
+            {
+                var active = curCat == t.Key;
+                <a href="@BuildUrl(1, t.Key)"
+                   class="px-3 py-1.5 text-xs font-bold rounded-lg transition-all @(active ? "bg-green-600 text-white shadow" : "bg-slate-100 text-slate-600 hover:bg-slate-200")">
+                    @t.Label
+                </a>
+            }
         </div>
-        
-        <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-lg">
-            <button @@click="viewMode = 'grid'" class="p-1.5 rounded-md transition-colors" :class="viewMode === 'grid' ? 'bg-white shadow-sm text-green-600' : 'text-slate-400 hover:text-slate-600'">
+
+        <div class="flex items-center gap-2 bg-slate-100 p-1 rounded-lg shrink-0">
+            <button type="button" @@click="viewMode = 'grid'" class="p-1.5 rounded-md transition-colors" :class="viewMode === 'grid' ? 'bg-white shadow-sm text-green-600' : 'text-slate-400 hover:text-slate-600'">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM11 13a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"></path></svg>
             </button>
-            <button @@click="viewMode = 'list'" class="p-1.5 rounded-md transition-colors" :class="viewMode === 'list' ? 'bg-white shadow-sm text-green-600' : 'text-slate-400 hover:text-slate-600'">
+            <button type="button" @@click="viewMode = 'list'" class="p-1.5 rounded-md transition-colors" :class="viewMode === 'list' ? 'bg-white shadow-sm text-green-600' : 'text-slate-400 hover:text-slate-600'">
                 <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path></svg>
             </button>
         </div>
     </div>
 
-    <!-- MAIN GRID -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" x-show="viewMode === 'grid'">
-        <template x-for="dish in filteredDishes" :key="dish.id">
-            <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group flex flex-col">
-                <!-- Image -->
-                <div class="h-48 bg-slate-100 relative overflow-hidden">
-                    <img :src="dish.img" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
-                    <!-- Overlays -->
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                    <div class="absolute top-3 left-3">
-                        <span class="px-2.5 py-1 bg-white/90 backdrop-blur text-[10px] font-black uppercase tracking-wider rounded-lg shadow-sm" :class="getBadgeColor(dish.category)" x-text="dish.category"></span>
-                    </div>
-                    <div class="absolute top-3 right-3">
-                        <span x-show="dish.type === 'Chay'" class="px-2 py-1 bg-green-500 text-white text-[10px] font-bold rounded-lg shadow-sm flex items-center gap-1">
-                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-                            Chay
-                        </span>
-                    </div>
-                    <!-- Quick Actions -->
-                    <div class="absolute bottom-3 inset-x-0 flex justify-center gap-2 translate-y-8 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                        <button @@click="openDetail(dish)" class="w-8 h-8 bg-white text-slate-700 hover:text-green-600 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform" title="Xem chi tiết">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
-                        </button>
-                        <button @@click="openEdit(dish)" class="w-8 h-8 bg-white text-slate-700 hover:text-blue-600 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform" title="Chỉnh sửa">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                        </button>
-                    </div>
-                </div>
-                
-                <!-- Content -->
-                <div class="p-5 flex flex-col flex-1">
-                    <h3 class="font-bold text-slate-800 text-base mb-1 group-hover:text-green-600 transition-colors" x-text="dish.name"></h3>
-                    <div class="flex items-center gap-1 mb-3">
-                        <svg class="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                        <span class="text-xs font-bold text-slate-700" x-text="dish.rating"></span>
-                        <span class="text-[10px] text-slate-400 font-medium ml-1" x-text="'(' + dish.reviews + ' đánh giá)'"></span>
-                    </div>
-                    
-                    <div class="mt-auto grid grid-cols-2 gap-2 pt-4 border-t border-slate-50">
-                        <div class="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                            <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            <span x-text="dish.cost"></span>
+    @if (!items.Any())
+    {
+        <div class="text-center py-16 bg-white rounded-[24px] border border-dashed border-slate-200">
+            <h3 class="text-sm font-bold text-slate-800">Không có món ăn nào</h3>
+            <p class="text-xs text-slate-500 mt-1">Thử đổi bộ lọc hoặc thêm món mới.</p>
+        </div>
+    }
+    else
+    {
+        <!-- GRID -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6" x-show="viewMode === 'grid'">
+            @foreach (var dish in items)
+            {
+                <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 overflow-hidden group flex flex-col">
+                    <div class="h-48 bg-slate-100 relative overflow-hidden">
+                        <img src="@ImgUrl(dish)" alt="@dish.Name" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                        <div class="absolute top-3 left-3">
+                            <span class="px-2.5 py-1 text-[10px] font-black uppercase tracking-wider rounded-lg border @CatBadge(dish.Category)">@CatLabel(dish.Category)</span>
                         </div>
-                        <div class="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-                            <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
-                            <span x-text="dish.kcal + ' Kcal'"></span>
+                        @if (IsVegetarian(dish))
+                        {
+                            <div class="absolute top-3 right-3">
+                                <span class="px-2 py-1 bg-green-500 text-white text-[10px] font-bold rounded-lg shadow-sm">Chay</span>
+                            </div>
+                        }
+                        <div class="absolute bottom-3 inset-x-0 flex justify-center gap-2 translate-y-8 group-hover:translate-y-0 opacity-0 group-hover:opacity-100 transition-all duration-300">
+                            <a href="/Manager/Catalog/MealDetail/@dish.Id" class="w-8 h-8 bg-white text-slate-700 hover:text-green-600 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform" title="Xem chi tiết">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                            </a>
+                            <a href="/Manager/Catalog/MealEdit/@dish.Id" class="w-8 h-8 bg-white text-slate-700 hover:text-blue-600 rounded-full flex items-center justify-center shadow-md hover:scale-110 transition-transform" title="Chỉnh sửa">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                            </a>
                         </div>
                     </div>
+                    <div class="p-5 flex flex-col flex-1">
+                        <h3 class="font-bold text-slate-800 text-base mb-1 group-hover:text-green-600 transition-colors line-clamp-2">@dish.Name</h3>
+                        @if (!string.IsNullOrWhiteSpace(dish.Description))
+                        {
+                            <p class="text-xs text-slate-500 line-clamp-2 mb-3">@dish.Description</p>
+                        }
+                        <div class="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+                                <svg class="w-3.5 h-3.5 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                                <span>@KcalText(dish)</span>
+                            </div>
+                            <span class="text-[10px] font-bold uppercase px-2 py-0.5 rounded-lg @(dish.IsActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500")">
+                                @(dish.IsActive ? "Đang dùng" : "Tắt")
+                            </span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </template>
-    </div>
+            }
+        </div>
 
-    <!-- LIST VIEW (Alternative) -->
-    <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden" x-show="viewMode === 'list'" style="display: none;">
-        <table class="w-full text-left border-collapse">
-            <thead>
-                <tr class="bg-slate-50/50 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-bold">
-                    <th class="p-4 pl-6">Món ăn</th>
-                    <th class="p-4">Danh mục</th>
-                    <th class="p-4">Dinh dưỡng</th>
-                    <th class="p-4">Định mức</th>
-                    <th class="p-4">Đánh giá</th>
-                    <th class="p-4 pr-6 text-right">Thao tác</th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                <template x-for="dish in filteredDishes" :key="dish.id">
-                    <tr class="hover:bg-slate-50/50 transition-colors group">
-                        <td class="p-4 pl-6 flex items-center gap-3">
-                            <img :src="dish.img" class="w-10 h-10 rounded-lg object-cover shadow-sm" />
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-sm group-hover:text-green-600 transition-colors" x-text="dish.name"></h4>
-                                <span x-show="dish.type === 'Chay'" class="text-[10px] text-green-600 font-bold bg-green-50 px-1.5 py-0.5 rounded">Chay</span>
-                            </div>
-                        </td>
-                        <td class="p-4">
-                            <span class="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md" :class="getBadgeColor(dish.category)" x-text="dish.category"></span>
-                        </td>
-                        <td class="p-4 text-sm font-medium text-slate-600" x-text="dish.kcal + ' Kcal'"></td>
-                        <td class="p-4 text-sm font-bold text-slate-700" x-text="dish.cost"></td>
-                        <td class="p-4">
-                            <div class="flex items-center gap-1">
-                                <svg class="w-3.5 h-3.5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
-                                <span class="text-sm font-bold text-slate-700" x-text="dish.rating"></span>
-                            </div>
-                        </td>
-                        <td class="p-4 pr-6">
-                            <div class="flex items-center justify-end gap-2">
-                                <button @@click="openDetail(dish)" class="p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-800 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg></button>
-                                <button @@click="openEdit(dish)" class="p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg></button>
-                                <button class="p-1.5 text-slate-400 hover:bg-red-50 hover:text-red-600 rounded transition-colors"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg></button>
-                            </div>
-                        </td>
+        <!-- LIST -->
+        <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden" x-show="viewMode === 'list'" style="display: none;">
+            <table class="w-full text-left border-collapse">
+                <thead>
+                    <tr class="bg-slate-50/50 border-b border-slate-100 text-xs uppercase tracking-wider text-slate-500 font-bold">
+                        <th class="p-4 pl-6">Món ăn</th>
+                        <th class="p-4">Danh mục</th>
+                        <th class="p-4">Dinh dưỡng</th>
+                        <th class="p-4">Trạng thái</th>
+                        <th class="p-4 pr-6 text-right">Thao tác</th>
                     </tr>
-                </template>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- SLIDEOVER: ADD / EDIT DISH -->
-    <div x-show="isSlideoverOpen" style="display: none;" class="relative z-50" aria-labelledby="slide-over-title" role="dialog" aria-modal="true">
-        <!-- Background backdrop -->
-        <div x-show="isSlideoverOpen" 
-             x-transition:enter="ease-in-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
-             x-transition:leave="ease-in-out duration-300" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @@click="closeModals()"></div>
-
-        <div class="fixed inset-0 overflow-hidden">
-            <div class="absolute inset-0 overflow-hidden">
-                <div class="pointer-events-none fixed inset-y-0 right-0 flex max-w-full pl-10 sm:pl-16">
-                    <!-- Slide-over panel -->
-                    <div x-show="isSlideoverOpen" 
-                         x-transition:enter="transform transition ease-in-out duration-300 sm:duration-500" x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0" 
-                         x-transition:leave="transform transition ease-in-out duration-300 sm:duration-500" x-transition:leave-start="translate-x-0" x-transition:leave-end="translate-x-full"
-                         class="pointer-events-auto w-screen max-w-md" @@click.stop>
-                        <div class="flex h-full flex-col overflow-y-scroll bg-white shadow-2xl rounded-l-[32px]">
-                            <!-- Header -->
-                            <div class="px-6 py-6 border-b border-slate-100 sticky top-0 bg-white/80 backdrop-blur-md z-10">
-                                <div class="flex items-start justify-between">
-                                    <h2 class="text-xl font-black text-slate-800" x-text="slideoverMode === 'add' ? 'Thêm Món Ăn Mới' : 'Chỉnh sửa Món Ăn'"></h2>
-                                    <div class="ml-3 flex h-7 items-center">
-                                        <button type="button" @@click="closeModals()" class="rounded-full bg-slate-100 p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-200 transition-colors">
-                                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Body Form -->
-                            <div class="flex-1 px-6 py-6 space-y-6">
-                                <!-- Image Upload Box -->
-                                <div>
-                                    <label class="block text-sm font-bold text-slate-700 mb-2">Hình ảnh</label>
-                                    <div class="mt-1 flex justify-center rounded-[20px] border-2 border-dashed border-slate-300 px-6 py-8 hover:border-green-400 hover:bg-green-50 transition-colors cursor-pointer group">
-                                        <div class="space-y-2 text-center">
-                                            <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 group-hover:bg-white group-hover:shadow-sm">
-                                                <svg class="h-6 w-6 text-slate-400 group-hover:text-green-500" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                                            </div>
-                                            <div class="flex text-sm text-slate-600 justify-center">
-                                                <span class="relative font-bold text-green-600 focus-within:outline-none hover:text-green-500">Tải ảnh lên</span>
-                                                <p class="pl-1">hoặc kéo thả</p>
-                                            </div>
-                                            <p class="text-xs text-slate-400">PNG, JPG, GIF up to 10MB</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-bold text-slate-700 mb-2">Tên món ăn <span class="text-red-500">*</span></label>
-                                    <input type="text" x-model="currentDish.name" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="VD: Gà kho gừng" />
-                                </div>
-                                
-                                <div class="grid grid-cols-2 gap-4">
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @foreach (var dish in items)
+                    {
+                        <tr class="hover:bg-slate-50/50 transition-colors group">
+                            <td class="p-4 pl-6">
+                                <div class="flex items-center gap-3">
+                                    <img src="@ImgUrl(dish)" alt="@dish.Name" class="w-10 h-10 rounded-lg object-cover shadow-sm" />
                                     <div>
-                                        <label class="block text-sm font-bold text-slate-700 mb-2">Danh mục</label>
-                                        <select x-model="currentDish.category" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500">
-                                            <option>Món chính</option>
-                                            <option>Món phụ</option>
-                                            <option>Canh</option>
-                                            <option>Tráng miệng</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700 mb-2">Loại hình</label>
-                                        <select x-model="currentDish.type" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500">
-                                            <option>Mặn</option>
-                                            <option>Chay</option>
-                                        </select>
+                                        <h4 class="font-bold text-slate-800 text-sm group-hover:text-green-600 transition-colors">@dish.Name</h4>
+                                        @if (IsVegetarian(dish))
+                                        {
+                                            <span class="text-[10px] text-green-600 font-bold bg-green-50 px-1.5 py-0.5 rounded">Chay</span>
+                                        }
                                     </div>
                                 </div>
+                            </td>
+                            <td class="p-4">
+                                <span class="text-xs font-bold uppercase tracking-wider px-2 py-1 rounded-md @CatBadge(dish.Category)">@CatLabel(dish.Category)</span>
+                            </td>
+                            <td class="p-4 text-sm font-medium text-slate-600">@KcalText(dish)</td>
+                            <td class="p-4">
+                                <span class="text-xs font-bold px-2 py-1 rounded-lg @(dish.IsActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500")">
+                                    @(dish.IsActive ? "Đang dùng" : "Tắt")
+                                </span>
+                            </td>
+                            <td class="p-4 pr-6">
+                                <div class="flex items-center justify-end gap-2">
+                                    <a href="/Manager/Catalog/MealDetail/@dish.Id" class="p-1.5 text-slate-400 hover:bg-slate-100 hover:text-slate-800 rounded transition-colors" title="Chi tiết">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                                    </a>
+                                    <a href="/Manager/Catalog/MealEdit/@dish.Id" class="p-1.5 text-slate-400 hover:bg-blue-50 hover:text-blue-600 rounded transition-colors" title="Sửa">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700 mb-2">Giá cost ước tính</label>
-                                        <input type="text" x-model="currentDish.cost" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="VD: 15,000" />
-                                    </div>
-                                    <div>
-                                        <label class="block text-sm font-bold text-slate-700 mb-2">Năng lượng</label>
-                                        <div class="relative">
-                                            <input type="number" x-model="currentDish.kcal" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500 pr-12" placeholder="0" />
-                                            <span class="absolute right-4 top-1/2 -translate-y-1/2 text-sm text-slate-400 font-bold">Kcal</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-bold text-slate-700 mb-2">Thành phần nguyên liệu chính</label>
-                                    <textarea rows="3" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="Thịt heo, trứng cút, nước dừa..."></textarea>
-                                </div>
-                                
-                                <div>
-                                    <label class="block text-sm font-bold text-slate-700 mb-2">Mô tả / Ghi chú bếp</label>
-                                    <textarea rows="3" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 focus:ring-1 focus:ring-green-500" placeholder="Lưu ý khi chế biến..."></textarea>
-                                </div>
-                            </div>
-                            
-                            <!-- Footer -->
-                            <div class="border-t border-slate-100 p-6 bg-slate-50 rounded-bl-[32px] flex justify-end gap-3 sticky bottom-0 z-10">
-                                <button @@click="closeModals()" type="button" class="px-6 py-2.5 rounded-xl border border-slate-200 text-slate-700 font-bold hover:bg-white transition-colors">Hủy bỏ</button>
-                                <button @@click="saveDish()" type="button" class="px-6 py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 shadow-lg shadow-green-600/30 transition-all flex items-center gap-2">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                    <span x-text="slideoverMode === 'add' ? 'Thêm món' : 'Lưu cập nhật'"></span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
+        @if (totalPages > 1)
+        {
+            <div class="flex flex-col sm:flex-row items-center justify-between gap-3 bg-white rounded-2xl border border-slate-100 shadow-sm px-5 py-3">
+                <p class="text-sm text-slate-500 font-medium">
+                    Trang <span class="font-bold text-slate-700">@currentPage</span> / @totalPages
+                    &nbsp;·&nbsp; Hiển thị @items.Count / @totalCount món
+                </p>
+                <div class="flex items-center gap-1.5 flex-wrap justify-center">
+                    @if (currentPage > 1)
+                    {
+                        <a href="@BuildUrl(currentPage - 1)" class="px-3 py-1.5 text-sm font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">← Trước</a>
+                    }
+                    @for (int p = Math.Max(1, currentPage - 2); p <= Math.Min(totalPages, currentPage + 2); p++)
+                    {
+                        if (p == currentPage)
+                        {
+                            <span class="px-3 py-1.5 text-sm font-black text-white bg-green-600 rounded-lg shadow">@p</span>
+                        }
+                        else
+                        {
+                            <a href="@BuildUrl(p)" class="px-3 py-1.5 text-sm font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">@p</a>
+                        }
+                    }
+                    @if (currentPage < totalPages)
+                    {
+                        <a href="@BuildUrl(currentPage + 1)" class="px-3 py-1.5 text-sm font-bold text-slate-600 bg-slate-100 rounded-lg hover:bg-slate-200 transition-colors">Sau →</a>
+                    }
                 </div>
             </div>
-        </div>
-    </div>
-
-    <!-- MODAL: VIEW DETAILS -->
-    <div x-show="isDetailModalOpen" style="display: none;" class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div x-show="isDetailModalOpen" 
-             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
-             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity"></div>
-
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div x-show="isDetailModalOpen" @@click.away="closeModals()"
-                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
-                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-2xl">
-                    
-                    <template x-if="currentDish">
-                        <div>
-                            <!-- Header Image Cover -->
-                            <div class="h-64 relative bg-slate-900">
-                                <img :src="currentDish.img" class="w-full h-full object-cover opacity-80" />
-                                <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
-                                <button @@click="closeModals()" class="absolute top-4 right-4 w-8 h-8 bg-white/20 hover:bg-white/40 backdrop-blur rounded-full flex items-center justify-center text-white transition-colors">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                                </button>
-                                <div class="absolute bottom-6 left-6 right-6">
-                                    <span class="px-2.5 py-1 bg-white/20 backdrop-blur text-white text-[10px] font-bold uppercase tracking-wider rounded-lg mb-2 inline-block border border-white/30" x-text="currentDish.category"></span>
-                                    <h2 class="text-3xl font-black text-white" x-text="currentDish.name"></h2>
-                                </div>
-                            </div>
-                            
-                            <div class="p-6 sm:p-8 space-y-8">
-                                <!-- Stats Cards -->
-                                <div class="grid grid-cols-3 gap-4">
-                                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Đánh giá AI</div>
-                                        <div class="flex items-end gap-2">
-                                            <span class="text-2xl font-black text-slate-800" x-text="currentDish.rating"></span>
-                                            <span class="text-sm font-bold text-yellow-500 mb-1">/ 5.0</span>
-                                        </div>
-                                    </div>
-                                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Chi phí (Cost)</div>
-                                        <div class="flex items-end gap-2">
-                                            <span class="text-xl font-black text-green-600" x-text="currentDish.cost"></span>
-                                        </div>
-                                    </div>
-                                    <div class="bg-slate-50 rounded-2xl p-4 border border-slate-100">
-                                        <div class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Năng lượng</div>
-                                        <div class="flex items-end gap-2">
-                                            <span class="text-xl font-black text-orange-500" x-text="currentDish.kcal"></span>
-                                            <span class="text-sm font-bold text-slate-400 mb-0.5">Kcal</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="grid grid-cols-2 gap-8">
-                                    <div>
-                                        <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                                            <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 002-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
-                                            Thành phần chính
-                                        </h4>
-                                        <ul class="space-y-2 text-sm text-slate-600 font-medium">
-                                            <li class="flex justify-between border-b border-slate-100 pb-2"><span>Sườn non heo</span> <span class="font-bold text-slate-800">150g</span></li>
-                                            <li class="flex justify-between border-b border-slate-100 pb-2"><span>Hành tây</span> <span class="font-bold text-slate-800">20g</span></li>
-                                            <li class="flex justify-between border-b border-slate-100 pb-2"><span>Cà chua</span> <span class="font-bold text-slate-800">30g</span></li>
-                                            <li class="flex justify-between pb-2"><span>Gia vị sốt chua ngọt</span> <span class="font-bold text-slate-800">15g</span></li>
-                                        </ul>
-                                    </div>
-                                    <div>
-                                        <h4 class="font-bold text-slate-800 mb-3 flex items-center gap-2">
-                                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                            Phân tích Dinh dưỡng
-                                        </h4>
-                                        <div class="space-y-3">
-                                            <div>
-                                                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Protein</span><span class="text-blue-600">25g</span></div>
-                                                <div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-blue-500 h-1.5 rounded-full" style="width: 45%"></div></div>
-                                            </div>
-                                            <div>
-                                                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Carb</span><span class="text-orange-500">12g</span></div>
-                                                <div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-orange-500 h-1.5 rounded-full" style="width: 25%"></div></div>
-                                            </div>
-                                            <div>
-                                                <div class="flex justify-between text-xs font-bold mb-1"><span class="text-slate-600">Fat</span><span class="text-red-500">18g</span></div>
-                                                <div class="w-full bg-slate-100 rounded-full h-1.5"><div class="bg-red-500 h-1.5 rounded-full" style="width: 35%"></div></div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div class="bg-orange-50 border border-orange-100 rounded-xl p-4 flex gap-3">
-                                    <svg class="w-5 h-5 text-orange-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                    <div>
-                                        <h5 class="text-sm font-bold text-orange-800 mb-1">Ghi chú bếp</h5>
-                                        <p class="text-xs text-orange-700/80 font-medium leading-relaxed">Món này cần được chần nước sôi trước khi nấu. Pha sốt theo tỷ lệ 2 chua : 1 ngọt để cân bằng vị giác tốt nhất.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px]">
-                                <button @@click="closeModals()" class="px-5 py-2 rounded-xl text-slate-600 font-bold hover:bg-slate-200 transition-colors text-sm shadow-sm">Đóng</button>
-                                <button @@click="openEdit(currentDish)" class="px-5 py-2 rounded-xl bg-slate-800 text-white font-bold hover:bg-slate-900 transition-colors flex items-center gap-2 text-sm shadow-sm">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
-                                    Chỉnh sửa món này
-                                </button>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-        </div>
-    </div>
+        }
+    }
 </div>
-
-@section Scripts {
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('dishManager', () => ({
-                searchQuery: '',
-                categoryFilter: 'all',
-                viewMode: 'grid',
-                
-                isSlideoverOpen: false,
-                slideoverMode: 'add',
-                isDetailModalOpen: false,
-                currentDish: null,
-                
-                dishes: [
-                    { id: 1, name: 'Sườn xào chua ngọt', category: 'Món chính', type: 'Mặn', kcal: 450, cost: '15,000đ', rating: 4.8, reviews: 342, img: 'https://images.unsplash.com/photo-1544025162-811114215b24?w=500&q=80' },
-                    { id: 2, name: 'Cá diêu hồng chiên xù', category: 'Món chính', type: 'Mặn', kcal: 380, cost: '18,000đ', rating: 4.6, reviews: 215, img: 'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=500&q=80' },
-                    { id: 3, name: 'Canh chua cá lóc', category: 'Canh', type: 'Mặn', kcal: 150, cost: '8,000đ', rating: 4.9, reviews: 521, img: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80' },
-                    { id: 4, name: 'Thịt luộc cà pháo', category: 'Món phụ', type: 'Mặn', kcal: 320, cost: '12,000đ', rating: 4.3, reviews: 120, img: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=500&q=80' },
-                    { id: 5, name: 'Rau muống xào tỏi', category: 'Món phụ', type: 'Chay', kcal: 80, cost: '5,000đ', rating: 4.5, reviews: 405, img: 'https://images.unsplash.com/photo-1512058564366-18510be2db19?w=500&q=80' },
-                    { id: 6, name: 'Đậu hũ dồn thịt', category: 'Món chính', type: 'Mặn', kcal: 280, cost: '14,000đ', rating: 4.7, reviews: 289, img: 'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=500&q=80' },
-                    { id: 7, name: 'Chè trôi nước', category: 'Tráng miệng', type: 'Chay', kcal: 210, cost: '6,000đ', rating: 4.9, reviews: 612, img: 'https://images.unsplash.com/photo-1563805042-7684c8a9e9cb?w=500&q=80' },
-                    { id: 8, name: 'Bò lúc lắc', category: 'Món chính', type: 'Mặn', kcal: 420, cost: '22,000đ', rating: 4.8, reviews: 310, img: 'https://images.unsplash.com/photo-1544025162-811114215b24?w=500&q=80' }
-                ],
-                
-                get filteredDishes() {
-                    return this.dishes.filter(dish => {
-                        const matchSearch = dish.name.toLowerCase().includes(this.searchQuery.toLowerCase());
-                        const matchType = this.categoryFilter === 'all' || dish.category === this.categoryFilter;
-                        return matchSearch && matchType;
-                    });
-                },
-                
-                getBadgeColor(category) {
-                    if(category === 'Món chính') return 'text-green-700 bg-green-50';
-                    if(category === 'Món phụ') return 'text-orange-700 bg-orange-50';
-                    if(category === 'Canh') return 'text-blue-700 bg-blue-50';
-                    return 'text-purple-700 bg-purple-50';
-                },
-                
-                openAdd() {
-                    this.slideoverMode = 'add';
-                    this.currentDish = { name: '', category: 'Món chính', type: 'Mặn', kcal: '', cost: '' };
-                    this.isSlideoverOpen = true;
-                    // Ngăn body cuộn khi mở modal
-                    document.body.style.overflow = 'hidden';
-                },
-                
-                openEdit(dish) {
-                    this.slideoverMode = 'edit';
-                    this.currentDish = JSON.parse(JSON.stringify(dish)); // Clone object
-                    this.isSlideoverOpen = true;
-                    this.isDetailModalOpen = false; // Đóng modal chi tiết nếu đang mở
-                    document.body.style.overflow = 'hidden';
-                },
-                
-                openDetail(dish) {
-                    this.currentDish = dish;
-                    this.isDetailModalOpen = true;
-                    document.body.style.overflow = 'hidden';
-                },
-                
-                closeModals() {
-                    this.isSlideoverOpen = false;
-                    this.isDetailModalOpen = false;
-                    document.body.style.overflow = ''; // Phục hồi cuộn
-                },
-                
-                saveDish() {
-                    alert((this.slideoverMode === 'add' ? 'Thêm mới' : 'Cập nhật') + ' thành công!');
-                    this.closeModals();
-                }
-            }));
-        });
-    </script>
-}
