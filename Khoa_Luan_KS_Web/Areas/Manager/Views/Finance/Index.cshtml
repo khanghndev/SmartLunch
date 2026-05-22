@@ -1,176 +1,212 @@
+@model Khoa_Luan_KS_Web.Areas.Manager.Controllers.FinanceIndexViewModel
 @{
     ViewData["Title"] = "Báo cáo Tài chính";
     Layout = "_LayoutManager";
+
+    string FormatMoney(decimal v)
+    {
+        if (v >= 1_000_000_000) return (v / 1_000_000_000m).ToString("0.#") + " Tỷ";
+        if (v >= 1_000_000) return (v / 1_000_000m).ToString("0.#") + " Tr";
+        if (v >= 1_000) return (v / 1_000m).ToString("0.#") + " K";
+        return v.ToString("N0") + " đ";
+    }
+
+    string FormatMoneyFull(decimal v) => v.ToString("N0") + " đ";
+
+    string ChangeText(decimal? pct, bool expense = false)
+    {
+        if (!pct.HasValue) return "— so với kỳ trước";
+        var sign = pct.Value >= 0 ? "+" : "";
+        var suffix = expense
+            ? (pct.Value <= 0 ? " (Tối ưu tốt)" : "")
+            : "";
+        return $"{sign}{pct.Value:0.#}% so với kỳ trước{suffix}";
+    }
+
+    var chartLabels = Model.ChartBuckets.Select(b => b.PeriodKey).ToList();
+    var chartRevenue = Model.ChartBuckets.Select(b => b.CollectedPayments + b.TransactionIncome).ToList();
+    var chartExpense = Model.ChartBuckets.Select(b => b.TransactionExpense).ToList();
 }
 
-<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="financeManager()">
-    
-    <!-- HEADER -->
+<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans">
+
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
             <h1 class="text-3xl font-black text-slate-800 tracking-tight">Báo cáo Tài chính</h1>
-            <p class="text-slate-500 mt-1 font-medium text-sm">Theo dõi doanh thu, chi phí và hiệu quả kinh doanh tổng thể.</p>
+            <p class="text-slate-500 mt-1 font-medium text-sm">
+                @Model.PeriodLabel (@Model.From.ToString("dd/MM/yyyy") – @Model.To.ToString("dd/MM/yyyy")) · Dữ liệu từ API thu chi.
+            </p>
         </div>
-        
-        <div class="flex items-center gap-3">
-            <select class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm outline-none focus:border-green-500 text-sm">
-                <option>Tháng 4 / 2026</option>
-                <option>Tháng 3 / 2026</option>
-                <option>Quý 1 / 2026</option>
+        <form method="get" asp-area="Manager" asp-controller="Finance" asp-action="Index" class="flex items-center gap-3">
+            <select name="period" onchange="this.form.submit()"
+                    class="px-4 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm outline-none focus:border-green-500 text-sm">
+                @if (Model.PeriodKey == "current_month") { <option value="current_month" selected>Tháng hiện tại</option> } else { <option value="current_month">Tháng hiện tại</option> }
+                @if (Model.PeriodKey == "last_month") { <option value="last_month" selected>Tháng trước</option> } else { <option value="last_month">Tháng trước</option> }
+                @if (Model.PeriodKey == "last_6_months") { <option value="last_6_months" selected>6 tháng gần nhất</option> } else { <option value="last_6_months">6 tháng gần nhất</option> }
+                @if (Model.PeriodKey == "q1") { <option value="q1" selected>Quý 1</option> } else { <option value="q1">Quý 1</option> }
             </select>
-            <button class="px-5 py-2 bg-slate-800 text-white font-bold rounded-xl shadow-lg hover:bg-slate-900 transition-all flex items-center gap-2 text-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                Xuất báo cáo PDF
-            </button>
-        </div>
+        </form>
     </div>
 
-    <!-- KPI CARDS -->
+    @if (TempData["Error"] != null)
+    {
+        <div class="text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl px-4 py-3">@TempData["Error"]</div>
+    }
+
     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <!-- Doanh thu -->
-        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-[24px] p-6 shadow-lg shadow-green-500/20 text-white relative overflow-hidden group">
-            <div class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-                <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2V6h10a2 2 0 00-2-2H4zm2 6a2 2 0 012-2h8a2 2 0 012 2v4a2 2 0 01-2 2H8a2 2 0 01-2-2v-4zm6 4a2 2 0 100-4 2 2 0 000 4z" clip-rule="evenodd"></path></svg>
-            </div>
+        <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-[24px] p-6 shadow-lg shadow-green-500/20 text-white relative overflow-hidden">
             <div class="relative z-10">
-                <h3 class="text-green-50 font-bold uppercase tracking-widest text-xs mb-2">Tổng Doanh Thu</h3>
-                <div class="text-3xl sm:text-4xl font-black mb-1">1,250.5M</div>
+                <h3 class="text-green-50 font-bold uppercase tracking-widest text-xs mb-2">Tổng doanh thu (thu tiền)</h3>
+                <div class="text-3xl sm:text-4xl font-black mb-1" title="@FormatMoneyFull(Model.Revenue)">@FormatMoney(Model.Revenue)</div>
                 <div class="flex items-center gap-1 text-sm font-bold text-green-100 bg-green-700/30 w-max px-2.5 py-1 rounded-lg">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                    +12.5% so với tháng trước
+                    @ChangeText(Model.RevenueChangePercent)
                 </div>
+                <p class="text-xs text-green-100/80 mt-2">Payment paid + thu giao dịch</p>
             </div>
         </div>
-        
-        <!-- Chi phí -->
-        <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-[24px] p-6 shadow-lg shadow-red-500/20 text-white relative overflow-hidden group">
-            <div class="absolute right-0 top-0 opacity-10 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-                <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M12 7a1 1 0 110-2h5a1 1 0 011 1v5a1 1 0 11-2 0V8.414l-4.293 4.293a1 1 0 01-1.414 0L8 10.414l-4.293 4.293a1 1 0 01-1.414-1.414l5-5a1 1 0 011.414 0L11 10.586 14.586 7H12z" clip-rule="evenodd"></path></svg>
-            </div>
+
+        <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-[24px] p-6 shadow-lg shadow-red-500/20 text-white relative overflow-hidden">
             <div class="relative z-10">
-                <h3 class="text-red-50 font-bold uppercase tracking-widest text-xs mb-2">Chi phí Nhập Hàng & Vận Hành</h3>
-                <div class="text-3xl sm:text-4xl font-black mb-1">850.2M</div>
+                <h3 class="text-red-50 font-bold uppercase tracking-widest text-xs mb-2">Chi phí vận hành</h3>
+                <div class="text-3xl sm:text-4xl font-black mb-1" title="@FormatMoneyFull(Model.Expense)">@FormatMoney(Model.Expense)</div>
                 <div class="flex items-center gap-1 text-sm font-bold text-red-100 bg-red-700/30 w-max px-2.5 py-1 rounded-lg">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0v-8m0 8l-8-8-4 4-6-6"></path></svg>
-                    -3.2% (Tối ưu tốt)
+                    @ChangeText(Model.ExpenseChangePercent, expense: true)
                 </div>
+                <p class="text-xs text-red-100/80 mt-2">Chi từ bảng giao dịch (transactions)</p>
             </div>
         </div>
-        
-        <!-- Lợi nhuận -->
-        <div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100 relative overflow-hidden group">
-            <div class="absolute right-0 top-0 text-slate-50 opacity-50 transform translate-x-4 -translate-y-4 group-hover:scale-110 transition-transform">
-                <svg class="w-32 h-32" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 2a2 2 0 00-2 2v14l3.5-2 3.5 2 3.5-2 3.5 2V4a2 2 0 00-2-2H5zm4.707 3.707a1 1 0 00-1.414-1.414l-3 3a1 1 0 000 1.414l3 3a1 1 0 001.414-1.414L8.414 9H10a3 3 0 013 3v1a1 1 0 102 0v-1a5 5 0 00-5-5H8.414l1.293-1.293z" clip-rule="evenodd"></path></svg>
+
+        <div class="bg-white rounded-[24px] p-6 shadow-sm border border-slate-100">
+            <h3 class="text-slate-400 font-bold uppercase tracking-widest text-xs mb-2">Lợi nhuận gộp (ước tính)</h3>
+            <div class="text-3xl sm:text-4xl font-black @(Model.Profit >= 0 ? "text-slate-800" : "text-red-600") mb-1" title="@FormatMoneyFull(Model.Profit)">@FormatMoney(Model.Profit)</div>
+            <div class="text-sm font-bold text-slate-500 bg-slate-50 w-max px-2.5 py-1 rounded-lg">
+                Tỷ suất: @Model.ProfitMarginPercent%
             </div>
-            <div class="relative z-10">
-                <h3 class="text-slate-400 font-bold uppercase tracking-widest text-xs mb-2">Lợi Nhuận Gộp</h3>
-                <div class="text-3xl sm:text-4xl font-black text-slate-800 mb-1">400.3M</div>
-                <div class="flex items-center gap-1 text-sm font-bold text-slate-500 bg-slate-50 w-max px-2.5 py-1 rounded-lg">
-                    Tỷ suất lợi nhuận: 32%
-                </div>
-            </div>
+            <p class="text-xs text-slate-400 mt-2">Doanh thu − Chi phí trong kỳ</p>
         </div>
     </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- CHART AREA -->
         <div class="lg:col-span-2 bg-white rounded-[24px] shadow-sm border border-slate-100 p-6 flex flex-col">
-            <div class="flex justify-between items-center mb-6">
-                <h3 class="font-black text-lg text-slate-800">Biểu đồ Doanh thu & Chi phí</h3>
-                <select class="bg-slate-50 border border-slate-200 text-slate-600 text-xs font-bold rounded-lg px-3 py-1.5 outline-none">
-                    <option>6 tháng gần nhất</option>
-                    <option>Năm 2026</option>
-                </select>
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="font-black text-lg text-slate-800">Biểu đồ doanh thu &amp; chi phí</h3>
+                <span class="text-xs font-bold text-slate-500">6 tháng gần nhất</span>
             </div>
-            
-            <div class="flex-1 flex items-center justify-center bg-slate-50/50 rounded-xl border border-slate-100 border-dashed relative">
-                <!-- Fake Chart Visual for professional look -->
-                <div class="absolute bottom-0 left-0 w-full h-full flex items-end justify-between px-8 py-4 gap-2">
-                    <div class="w-full flex justify-between h-[80%] items-end gap-2">
-                        <div class="w-1/6 flex gap-1 items-end justify-center"><div class="w-4 bg-green-400 h-[40%] rounded-t-sm"></div><div class="w-4 bg-red-400 h-[25%] rounded-t-sm"></div></div>
-                        <div class="w-1/6 flex gap-1 items-end justify-center"><div class="w-4 bg-green-400 h-[55%] rounded-t-sm"></div><div class="w-4 bg-red-400 h-[30%] rounded-t-sm"></div></div>
-                        <div class="w-1/6 flex gap-1 items-end justify-center"><div class="w-4 bg-green-400 h-[45%] rounded-t-sm"></div><div class="w-4 bg-red-400 h-[40%] rounded-t-sm"></div></div>
-                        <div class="w-1/6 flex gap-1 items-end justify-center"><div class="w-4 bg-green-400 h-[80%] rounded-t-sm"></div><div class="w-4 bg-red-400 h-[45%] rounded-t-sm"></div></div>
-                        <div class="w-1/6 flex gap-1 items-end justify-center"><div class="w-4 bg-green-400 h-[65%] rounded-t-sm"></div><div class="w-4 bg-red-400 h-[50%] rounded-t-sm"></div></div>
-                        <div class="w-1/6 flex gap-1 items-end justify-center"><div class="w-4 bg-green-400 h-[90%] rounded-t-sm"></div><div class="w-4 bg-red-400 h-[60%] rounded-t-sm"></div></div>
-                    </div>
-                </div>
-                <div class="relative z-10 text-center bg-white/80 backdrop-blur px-4 py-2 rounded-lg shadow-sm border border-slate-200">
-                    <p class="text-sm font-bold text-slate-700">Khu vực Render Biểu đồ Chart.js</p>
-                    <p class="text-xs text-slate-500">Dữ liệu được cập nhật tự động từ hệ thống</p>
-                </div>
+            <div class="flex-1 min-h-[280px] relative">
+                @if (Model.ChartBuckets.Count == 0)
+                {
+                    <div class="absolute inset-0 flex items-center justify-center text-slate-400 text-sm">Chưa có dữ liệu trong kỳ</div>
+                }
+                else
+                {
+                    <canvas id="financeChart"></canvas>
+                }
             </div>
         </div>
 
-        <!-- RECENT TRANSACTIONS -->
         <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden flex flex-col">
             <div class="p-6 border-b border-slate-100 bg-slate-50/50">
-                <h3 class="font-black text-lg text-slate-800">Giao dịch thu chi gần đây</h3>
+                <h3 class="font-black text-lg text-slate-800">Giao dịch gần đây</h3>
+                <p class="text-xs text-slate-500 mt-1">30 ngày qua · thu khách &amp; chi NCC</p>
             </div>
             <div class="flex-1 overflow-y-auto max-h-[400px]">
-                <ul class="divide-y divide-slate-50">
-                    <li class="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center cursor-pointer">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Thanh toán Đơn hàng ORD-1024</h4>
-                                <p class="text-xs text-slate-500 font-medium">Khách: KCN Tân Bình</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-black text-green-600">+21,250,000đ</div>
-                            <div class="text-[10px] font-bold text-slate-400">26/04 14:30</div>
-                        </div>
-                    </li>
-                    
-                    <li class="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center cursor-pointer">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Thanh toán Cung cấp Thịt Gà</h4>
-                                <p class="text-xs text-slate-500 font-medium">NCC: CP Foods</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-black text-red-600">-12,500,000đ</div>
-                            <div class="text-[10px] font-bold text-slate-400">25/04 09:15</div>
-                        </div>
-                    </li>
-                    
-                    <li class="p-4 hover:bg-slate-50 transition-colors flex justify-between items-center cursor-pointer">
-                        <div class="flex items-center gap-3">
-                            <div class="w-10 h-10 rounded-full bg-green-100 text-green-600 flex items-center justify-center shrink-0">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                            </div>
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-sm">Thanh toán Đơn hàng ORD-1020</h4>
-                                <p class="text-xs text-slate-500 font-medium">Khách: Trường MN Họa Mi</p>
-                            </div>
-                        </div>
-                        <div class="text-right">
-                            <div class="font-black text-green-600">+8,400,000đ</div>
-                            <div class="text-[10px] font-bold text-slate-400">25/04 16:45</div>
-                        </div>
-                    </li>
-                </ul>
+                @if (!Model.RecentTransactions.Any())
+                {
+                    <p class="p-6 text-sm text-slate-500 text-center">Chưa có giao dịch trong 30 ngày.</p>
+                }
+                else
+                {
+                    <ul class="divide-y divide-slate-50">
+                        @foreach (var tx in Model.RecentTransactions)
+                        {
+                            <li class="p-4 hover:bg-slate-50/50 transition-colors flex justify-between items-center gap-3">
+                                <div class="flex items-center gap-3 min-w-0">
+                                    <div class="w-10 h-10 rounded-full shrink-0 flex items-center justify-center @(tx.IsIncome ? "bg-green-100 text-green-600" : "bg-red-100 text-red-600")">
+                                        @if (tx.IsIncome)
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                        }
+                                        else
+                                        {
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                                        }
+                                    </div>
+                                    <div class="min-w-0">
+                                        <h4 class="font-bold text-slate-800 text-sm truncate">@tx.Title</h4>
+                                        <p class="text-xs text-slate-500 font-medium truncate">@(tx.Subtitle ?? "—")</p>
+                                    </div>
+                                </div>
+                                <div class="text-right shrink-0">
+                                    <div class="font-black @(tx.IsIncome ? "text-green-600" : "text-red-600")">
+                                        @(tx.IsIncome ? "+" : "-")@FormatMoneyFull(tx.Amount)
+                                    </div>
+                                    <div class="text-[10px] font-bold text-slate-400">@tx.PaymentDate.ToString("dd/MM HH:mm")</div>
+                                </div>
+                            </li>
+                        }
+                    </ul>
+                }
             </div>
             <div class="p-4 border-t border-slate-100 text-center">
-                <button class="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors">Xem toàn bộ Lịch sử Giao dịch</button>
+                <a asp-area="Manager" asp-controller="Finance" asp-action="Debts"
+                   class="text-sm font-bold text-blue-600 hover:text-blue-800 transition-colors">
+                    Xem công nợ khách hàng →
+                </a>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('financeManager', () => ({
-                // Logic for finance
-            }));
-        });
-    </script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+(function () {
+    const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(chartLabels));
+    const revenue = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(chartRevenue));
+    const expense = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(chartExpense));
+    const canvas = document.getElementById('financeChart');
+    if (!canvas || !labels.length) return;
+
+    new Chart(canvas, {
+        type: 'bar',
+        data: {
+            labels,
+            datasets: [
+                {
+                    label: 'Doanh thu',
+                    data: revenue,
+                    backgroundColor: 'rgba(34, 197, 94, 0.85)',
+                    borderRadius: 6
+                },
+                {
+                    label: 'Chi phí',
+                    data: expense,
+                    backgroundColor: 'rgba(239, 68, 68, 0.85)',
+                    borderRadius: 6
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: { position: 'bottom', labels: { font: { weight: 'bold', size: 11 } } }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: v => {
+                            if (v >= 1e9) return (v/1e9).toFixed(1) + 'T';
+                            if (v >= 1e6) return (v/1e6).toFixed(0) + 'Tr';
+                            if (v >= 1e3) return (v/1e3).toFixed(0) + 'K';
+                            return v;
+                        }
+                    }
+                }
+            }
+        }
+    });
+})();
+</script>
 }

@@ -267,6 +267,17 @@ public class BackendMasterDataClient
         return await GetAsync<GetPaymentHistoryClientResponse>($"/api/v1/finance/payment-history{query}", accessToken, ct);
     }
 
+    public async Task<GetCashflowSummaryClientResponse> GetCashflowSummaryAsync(
+        string accessToken,
+        DateOnly from,
+        DateOnly to,
+        string granularity = "Month",
+        CancellationToken ct = default)
+    {
+        var query = $"?From={from:yyyy-MM-dd}&To={to:yyyy-MM-dd}&Granularity={Uri.EscapeDataString(granularity)}";
+        return await GetAsync<GetCashflowSummaryClientResponse>($"/api/v1/finance/cashflow-summary{query}", accessToken, ct);
+    }
+
     public async Task<GetDishesResponse> GetDishesAsync(string accessToken, int page = 1, int pageSize = 20, string? searchTerm = null, string? category = null, bool? isActive = null, CancellationToken ct = default)
     {
         var query = $"?Page={page}&PageSize={pageSize}";
@@ -1427,6 +1438,10 @@ public class PaymentHistoryEntryClientDto
     public int? OrderId { get; set; }
     public int? OrganizationId { get; set; }
     public string? OrganizationName { get; set; }
+    public int? PartnerId { get; set; }
+    public string? PartnerLegalName { get; set; }
+    public int? ContractId { get; set; }
+    public string? ContractNumber { get; set; }
 }
 
 public class GetPaymentHistoryClientResponse
@@ -1438,6 +1453,29 @@ public class GetPaymentHistoryClientResponse
     public int Page { get; set; }
     public int PageSize { get; set; }
     public List<PaymentHistoryEntryClientDto> Entries { get; set; } = new();
+}
+
+public class CashflowBucketClientDto
+{
+    public string PeriodKey { get; set; } = string.Empty;
+    public DateTime PeriodStart { get; set; }
+    public DateTime PeriodEnd { get; set; }
+    public decimal CollectedPayments { get; set; }
+    public decimal TransactionIncome { get; set; }
+    public decimal TransactionExpense { get; set; }
+    public decimal NetFlow { get; set; }
+}
+
+public class GetCashflowSummaryClientResponse
+{
+    public DateOnly From { get; set; }
+    public DateOnly To { get; set; }
+    public string Granularity { get; set; } = string.Empty;
+    public decimal TotalCollectedPayments { get; set; }
+    public decimal TotalTransactionIncome { get; set; }
+    public decimal TotalTransactionExpense { get; set; }
+    public decimal TotalNet { get; set; }
+    public List<CashflowBucketClientDto> Buckets { get; set; } = new();
 }
 
 // ─── Company contracts (B2B self-service) ───────────────────────────────────

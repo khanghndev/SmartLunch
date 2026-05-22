@@ -1,0 +1,144 @@
+@model Khoa_Luan_KS_Web.Services.IngredientInventoryDetailClientDto
+@{
+    ViewData["Title"] = $"Tồn kho — {Model.IngredientName}";
+    Layout = "_LayoutManager";
+
+    string FormatMoney(decimal? v) => v.HasValue ? v.Value.ToString("N0") + " đ" : "—";
+    var nearestExpiry = Model.RecentBatches
+        .Where(b => b.ExpirationDate.HasValue)
+        .Select(b => b.ExpirationDate!.Value)
+        .OrderBy(d => d)
+        .FirstOrDefault();
+}
+
+<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans">
+
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-sm text-slate-500 mb-2">
+                <a asp-area="Manager" asp-controller="Inventory" asp-action="Index" class="hover:text-green-600 font-bold transition">Tồn kho</a>
+                <span>/</span>
+                <span class="text-slate-700 font-medium">@Model.IngredientName</span>
+            </div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">@Model.IngredientName</h1>
+            <p class="text-slate-500 mt-1 font-medium text-sm">Chi tiết tồn và lô hàng gần nhất · Đơn vị: @Model.Unit</p>
+        </div>
+        <a asp-area="Manager" asp-controller="Inventory" asp-action="Index"
+           class="px-5 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition text-sm">
+            ← Quay lại danh sách
+        </a>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl px-4 py-3">@TempData["Error"]</div>
+    }
+
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-2xl p-5 border @(Model.IsLowStock ? "border-red-200" : "border-green-100") shadow-sm">
+            <p class="text-[10px] font-bold @(Model.IsLowStock ? "text-red-600" : "text-green-600") uppercase tracking-wide mb-1">Tồn kho hiện tại</p>
+            <p class="text-3xl font-black @(Model.IsLowStock ? "text-red-700" : "text-slate-800")">@Model.QuantityAvailable</p>
+            <p class="text-xs text-slate-500 mt-1">@Model.Unit @(Model.IsLowStock ? " · Tồn thấp" : "")</p>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Ngưỡng tái đặt</p>
+            <p class="text-3xl font-black text-slate-700">@(Model.ReorderLevel?.ToString("N2") ?? "—")</p>
+            <p class="text-xs text-slate-500 mt-1">@Model.Unit</p>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-slate-100 shadow-sm">
+            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-wide mb-1">Giá / đơn vị</p>
+            <p class="text-2xl font-black text-slate-700">@FormatMoney(Model.CostPerUnit)</p>
+        </div>
+        <div class="bg-white rounded-2xl p-5 border border-purple-100 shadow-sm">
+            <p class="text-[10px] font-bold text-purple-600 uppercase tracking-wide mb-1">HSD gần nhất</p>
+            <p class="text-2xl font-black text-slate-800">@(nearestExpiry != default ? nearestExpiry.ToString("dd/MM/yyyy") : "—")</p>
+            <p class="text-xs text-slate-500 mt-1">Cập nhật: @Model.LastUpdated.ToString("dd/MM HH:mm")</p>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm p-6">
+        <h3 class="font-black text-slate-800 text-sm mb-4">Thông tin nguyên liệu</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+            <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Mã</p>
+                <p class="font-mono font-bold text-slate-800">#@Model.IngredientId</p>
+            </div>
+            <div>
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Trạng thái</p>
+                @if (Model.IsActive)
+                {
+                    <span class="inline-flex px-2.5 py-1 rounded-lg bg-green-50 text-green-700 text-[11px] font-bold border border-green-100">Hoạt động</span>
+                }
+                else
+                {
+                    <span class="inline-flex px-2.5 py-1 rounded-lg bg-slate-100 text-slate-500 text-[11px] font-bold border border-slate-200">Ngừng</span>
+                }
+            </div>
+            <div class="col-span-2">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">NCC mặc định</p>
+                <p class="font-bold text-slate-800">@(Model.DefaultSupplierLegalName ?? "Chưa thiết lập")</p>
+            </div>
+            <div class="col-span-2 md:col-span-4">
+                <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">Mô tả</p>
+                <p class="text-slate-600">@(Model.Description ?? "—")</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="bg-white rounded-[24px] border border-slate-100 shadow-sm overflow-hidden">
+        <div class="px-6 py-4 border-b border-slate-100 bg-slate-50/50">
+            <h3 class="font-black text-lg text-slate-800">Lịch sử lô hàng</h3>
+            <p class="text-xs text-slate-500 mt-0.5">@Model.RecentBatches.Count lô gần nhất</p>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-white border-b border-slate-200 text-xs uppercase tracking-wider text-slate-400 font-black">
+                    <tr>
+                        <th class="p-4 pl-6">Số lô</th>
+                        <th class="p-4">NCC</th>
+                        <th class="p-4">Xuất xứ</th>
+                        <th class="p-4">NSX</th>
+                        <th class="p-4">HSD</th>
+                        <th class="p-4 pr-6">Ghi nhận</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    @if (!Model.RecentBatches.Any())
+                    {
+                        <tr><td colspan="6" class="p-10 text-center text-slate-400 text-sm">Chưa có lô hàng được ghi nhận.</td></tr>
+                    }
+                    @foreach (var b in Model.RecentBatches)
+                    {
+                        bool isExpired = b.ExpirationDate.HasValue && b.ExpirationDate.Value < DateTime.Now;
+                        bool isSoon = b.ExpirationDate.HasValue && b.ExpirationDate.Value <= DateTime.Now.AddDays(30) && !isExpired;
+                        <tr class="hover:bg-slate-50/50 transition">
+                            <td class="p-4 pl-6 font-mono font-bold text-slate-800">@(b.BatchNumber ?? $"#{b.Id}")</td>
+                            <td class="p-4 text-slate-600">@(b.SupplierLegalName ?? "—")</td>
+                            <td class="p-4 text-slate-500 max-w-[200px] truncate">@(b.OriginDetails ?? "—")</td>
+                            <td class="p-4 text-slate-500">@(b.ProductionDate?.ToString("dd/MM/yyyy") ?? "—")</td>
+                            <td class="p-4">
+                                @if (b.ExpirationDate.HasValue)
+                                {
+                                    <span class="font-bold text-slate-700">@b.ExpirationDate.Value.ToString("dd/MM/yyyy")</span>
+                                    @if (isExpired)
+                                    {
+                                        <span class="ml-2 text-[10px] font-bold text-red-600 bg-red-50 px-1.5 py-0.5 rounded border border-red-100">Hết hạn</span>
+                                    }
+                                    else if (isSoon)
+                                    {
+                                        <span class="ml-2 text-[10px] font-bold text-purple-600 bg-purple-50 px-1.5 py-0.5 rounded border border-purple-100">Cận HSD</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-slate-400">—</span>
+                                }
+                            </td>
+                            <td class="p-4 pr-6 text-slate-500 text-xs">@b.CreatedAt.ToString("dd/MM/yyyy HH:mm")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
