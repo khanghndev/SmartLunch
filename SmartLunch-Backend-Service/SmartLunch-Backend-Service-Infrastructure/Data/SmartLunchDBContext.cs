@@ -973,6 +973,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasOne(e => e.User).WithMany(u => u.Reviews).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Dish).WithMany(d => d.Reviews).HasForeignKey(e => e.DishId).OnDelete(DeleteBehavior.SetNull);
                 entity.HasOne(e => e.Order).WithMany(o => o.Reviews).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(e => e.RepliedByUser).WithMany().HasForeignKey(e => e.RepliedByUserId).OnDelete(DeleteBehavior.SetNull);
             });
 
             // Sentiment

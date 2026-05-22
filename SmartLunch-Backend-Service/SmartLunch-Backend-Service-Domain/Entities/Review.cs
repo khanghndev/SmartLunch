@@ -12,9 +12,13 @@ public class Review
     public int? OrderId { get; set; }
     public int Rating { get; set; } // 1-5
     public string? Comment { get; set; }
+    public string? ManagerReply { get; set; }
+    public DateTime? RepliedAt { get; set; }
+    public int? RepliedByUserId { get; set; }
     public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual User User { get; set; } = null!;
+    public virtual User? RepliedByUser { get; set; }
     public virtual Dish? Dish { get; set; }
     public virtual Order? Order { get; set; }
     public virtual Sentiment? Sentiment { get; set; }

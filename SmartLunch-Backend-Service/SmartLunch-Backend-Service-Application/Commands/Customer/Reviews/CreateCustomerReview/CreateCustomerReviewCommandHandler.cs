@@ -2,6 +2,7 @@ using MediatR;
 using SmartLunch.Backend.Service.Application.DTOs.Response.Customer.Reviews;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Reviews;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.OrganizationReviews;
 using SmartLunch.Backend.Service.Domain.Entities;
 
 namespace SmartLunch.Backend.Service.Application.Commands.Customer.Reviews.CreateCustomerReview;
@@ -9,17 +10,17 @@ namespace SmartLunch.Backend.Service.Application.Commands.Customer.Reviews.Creat
 public class CreateCustomerReviewCommandHandler : IRequestHandler<CreateCustomerReviewCommand, CreateCustomerReviewResponse>
 {
     private readonly IReviewRepository _reviewRepository;
-    private readonly IDishRepository _dishRepository;
     private readonly IOrderRepository _orderRepository;
+    private readonly IUserOrganizationRepository _userOrganizationRepository;
 
     public CreateCustomerReviewCommandHandler(
         IReviewRepository reviewRepository,
-        IDishRepository dishRepository,
-        IOrderRepository orderRepository)
+        IOrderRepository orderRepository,
+        IUserOrganizationRepository userOrganizationRepository)
     {
         _reviewRepository = reviewRepository;
-        _dishRepository = dishRepository;
         _orderRepository = orderRepository;
+        _userOrganizationRepository = userOrganizationRepository;
     }
 
     public async Task<CreateCustomerReviewResponse> Handle(CreateCustomerReviewCommand request, CancellationToken cancellationToken)
@@ -27,48 +28,40 @@ public class CreateCustomerReviewCommandHandler : IRequestHandler<CreateCustomer
         var userId = request.UserId;
         var req = request.Request;
 
-        if (req.DishId == null && req.OrderId == null)
-            throw new ArgumentException("DishId or OrderId is required.");
-        if (req.DishId != null && req.OrderId != null)
-            throw new ArgumentException("Only one of DishId or OrderId can be provided.");
+        if (req.OrderId == null)
+            throw new ArgumentException("Chỉ được đánh giá theo đơn hàng suất ăn doanh nghiệp (OrderId bắt buộc).");
+        if (req.DishId != null)
+            throw new ArgumentException("Đánh giá theo món riêng lẻ không áp dụng cho khách doanh nghiệp.");
         if (req.Rating is < 1 or > 5)
             throw new ArgumentException("Rating must be between 1 and 5.");
 
-        var dishId = req.DishId;
-        var orderId = req.OrderId;
+        var orgIds = await OrganizationReviewRules.GetActiveOrganizationIdsAsync(
+            _userOrganizationRepository, userId, cancellationToken);
+        if (orgIds.Count == 0)
+            throw new UnauthorizedAccessException("Chỉ khách hàng doanh nghiệp đã liên kết đơn vị mới được gửi đánh giá.");
 
-        var exists = await _reviewRepository.ExistsForUserAsync(userId, dishId, orderId, cancellationToken);
+        var orderId = req.OrderId.Value;
+        var exists = await _reviewRepository.ExistsForUserAsync(userId, null, orderId, cancellationToken);
         if (exists)
-            throw new InvalidOperationException("You have already reviewed this item.");
+            throw new InvalidOperationException("Bạn đã đánh giá đơn hàng này.");
 
-        if (dishId != null)
-        {
-            var dish = await _dishRepository.GetByIdAsync(dishId.Value);
-            if (dish == null)
-                throw new KeyNotFoundException($"Dish not found with ID: {dishId.Value}");
-        }
+        var order = await _orderRepository.GetByIdWithDetailsAsync(orderId);
+        if (order == null)
+            throw new KeyNotFoundException($"Order not found with ID: {orderId}");
 
-        if (orderId != null)
-        {
-            var order = await _orderRepository.GetByIdAsync(orderId.Value);
-            if (order == null)
-                throw new KeyNotFoundException($"Order not found with ID: {orderId.Value}");
+        if (!OrganizationReviewRules.UserCanAccessOrder(order, userId, orgIds))
+            throw new UnauthorizedAccessException("Bạn không có quyền đánh giá đơn hàng này.");
 
-            if (order.UserId == null || order.UserId.Value != userId)
-                throw new UnauthorizedAccessException("You do not have access to review this order.");
-
-            if (!string.Equals(order.Status, "delivered", StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("Only delivered orders can be reviewed.");
-        }
+        if (!OrganizationReviewRules.IsReviewableOrderStatus(order))
+            throw new InvalidOperationException("Chỉ đánh giá được khi đơn đã giao hoặc đã xác nhận và thanh toán.");
 
         var entity = new Review
         {
             UserId = userId,
-            DishId = dishId,
             OrderId = orderId,
             Rating = req.Rating,
             Comment = string.IsNullOrWhiteSpace(req.Comment) ? null : req.Comment.Trim(),
-            CreatedAt = VietnamTime.Now
+            CreatedAt = VietnamTime.Now,
         };
 
         var created = await _reviewRepository.CreateAsync(entity, cancellationToken);
@@ -83,9 +76,8 @@ public class CreateCustomerReviewCommandHandler : IRequestHandler<CreateCustomer
                 OrderId = created.OrderId,
                 Rating = created.Rating,
                 Comment = created.Comment,
-                CreatedAt = created.CreatedAt
-            }
+                CreatedAt = created.CreatedAt,
+            },
         };
     }
 }
-
