@@ -39,6 +39,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<UserOrganization> UserOrganizations { get; set; }
         public DbSet<Partner> Partners { get; set; }
         public DbSet<PartnerDocument> PartnerDocuments { get; set; }
+        public DbSet<CompanyPublicDocument> CompanyPublicDocuments { get; set; }
         public DbSet<Contract> Contracts { get; set; }
         public DbSet<PartnerPayment> PartnerPayments { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
@@ -524,6 +525,21 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                     .HasForeignKey(e => e.PartnerId)
                     .OnDelete(DeleteBehavior.Cascade);
 
+                entity.HasOne(e => e.MediaFile)
+                    .WithMany()
+                    .HasForeignKey(e => e.MediaFileId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<CompanyPublicDocument>(entity =>
+            {
+                entity.ToTable("company_public_documents");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.IsPublished, e.SortOrder });
+                entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.DocumentType).IsRequired().HasMaxLength(50).HasDefaultValue("other");
+                entity.Property(e => e.Description).HasMaxLength(1000);
+                entity.Property(e => e.IsPublished).HasDefaultValue(true);
                 entity.HasOne(e => e.MediaFile)
                     .WithMany()
                     .HasForeignKey(e => e.MediaFileId)
