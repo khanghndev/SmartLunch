@@ -1,5 +1,3 @@
--- Yêu cầu liên hệ từ trang Customer/Contact (công khai, không cần đăng nhập)
-
 CREATE TABLE IF NOT EXISTS contact_inquiries (
     Id INT NOT NULL AUTO_INCREMENT,
     Code VARCHAR(20) NULL,
@@ -25,6 +23,8 @@ CREATE TABLE IF NOT EXISTS contact_inquiries (
 INSERT IGNORE INTO code_prefixes (TableName, Prefix, Description, LastSequence)
 VALUES ('contact_inquiries', 'CIQ', 'Liên hệ website', 0);
 
-DROP TRIGGER IF EXISTS trg_contact_inquiries_code;
+DELIMITER //
+DROP TRIGGER IF EXISTS trg_contact_inquiries_code //
 CREATE TRIGGER trg_contact_inquiries_code BEFORE INSERT ON contact_inquiries
 FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('contact_inquiries'); END IF; END //
+DELIMITER ;

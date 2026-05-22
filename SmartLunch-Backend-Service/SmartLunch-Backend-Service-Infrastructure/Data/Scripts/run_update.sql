@@ -27,6 +27,7 @@ SOURCE migrations/52_contracts_add_source_order_id.sql;
 SOURCE migrations/53_company_public_documents.sql;
 SOURCE migrations/54_reviews_manager_reply.sql;
 SOURCE migrations/55_manager_intake_permissions.sql;
+SOURCE migrations/56_contact_inquiries.sql;
 
 -- Tối ưu thống kê (tùy chọn, an toàn)
 SOURCE 05_maintenance/01_analyze_optimize.sql;
