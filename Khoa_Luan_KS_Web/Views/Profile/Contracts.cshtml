@@ -221,7 +221,8 @@
                 </div>
             </div>
             <div x-show="annexStep === 2" class="rounded-2xl border border-slate-200 bg-white p-6 shadow-lg">
-                <p class="mb-4 text-sm font-bold text-slate-800">Ký bằng chuột hoặc cảm ứng (PNG) — xác nhận phụ lục đơn</p>
+                <p class="mb-2 text-sm font-bold text-slate-800">Ký một lần — áp dụng cho cả Hợp đồng (Phần I) và Phụ lục (Phần II)</p>
+                <p class="mb-4 text-xs text-slate-500">Bên HuitMeal đã đóng dấu sẵn trên văn bản. Vui lòng ký tên đại diện Bên B bên dưới.</p>
                 <canvas id="order-annex-sig-canvas" width="520" height="200" class="w-full max-w-full cursor-crosshair touch-none rounded-xl border border-slate-200 bg-slate-50"></canvas>
                 <div class="mt-3 flex gap-2">
                     <button type="button" @@click="clearAnnexSig()" class="rounded-lg border border-slate-200 px-3 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50">Xóa chữ ký</button>
@@ -268,11 +269,6 @@
                 },
                 loadAnnexPreview(force) {
                     if (!this.orderAnnex?.id) return;
-                    if (this.orderAnnex.annexPdfUrl) {
-                        this.annexPreviewLoading = true;
-                        this.annexPreviewSrc = this.orderAnnex.annexPdfUrl;
-                        return;
-                    }
                     if (force) this.annexPreviewSrc = '';
                     this.annexPreviewLoading = true;
                     this.annexPreviewSrc = '/Profile/OrderAnnexPreview?orderId=' + encodeURIComponent(this.orderAnnex.id) + '&_=' + Date.now();

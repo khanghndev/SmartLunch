@@ -82,6 +82,17 @@
                 <span>@err</span>
             </div>
         }
+        <div x-show="draftCacheNotice" x-cloak
+             class="mb-6 flex flex-col gap-3 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm text-sky-950 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-start gap-3">
+                <i data-lucide="history" class="mt-0.5 h-5 w-5 shrink-0 text-sky-600"></i>
+                <span x-text="draftCacheNotice"></span>
+            </div>
+            <button type="button" @@click="clearDraftCache(true)"
+                    class="shrink-0 rounded-xl border border-sky-300 bg-white px-4 py-2 text-xs font-bold text-sky-800 hover:bg-sky-100">
+                Xóa bản nháp
+            </button>
+        </div>
         @if (!string.IsNullOrEmpty(Model.ApiError))
         {
             <div class="rounded-3xl border border-amber-200 bg-white p-10 text-center shadow-xl ring-1 ring-slate-900/5">
@@ -296,29 +307,32 @@
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-3 rounded-2xl border px-4 py-3"
-                                         :class="daySlotTotal(day, 'side') > daySlotTotal(day, 'main') ? 'border-red-200 bg-red-50' : 'border-violet-100 bg-violet-50/80'">
+                                         :class="daySlotBalanceUiClass(day, 'side')">
                                         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 text-white">
                                             <i data-lucide="salad" class="h-5 w-5"></i>
                                         </div>
                                         <div>
                                             <p class="text-[10px] font-bold uppercase text-violet-700/80">Món phụ</p>
-                                            <p class="text-lg font-black" :class="daySlotTotal(day, 'side') > daySlotTotal(day, 'main') ? 'text-red-700' : 'text-violet-900'">
-                                                <span x-text="daySlotTotal(day, 'side')"></span> / <span x-text="daySlotTotal(day, 'main')"></span>
-                                            </p>
+                                            <p class="text-lg font-black" x-text="daySlotTotal(day, 'side') + ' / ' + daySlotTotal(day, 'main') + ' suất'"></p>
                                         </div>
                                     </div>
                                     <div class="flex items-center gap-3 rounded-2xl border px-4 py-3"
-                                         :class="daySlotTotal(day, 'soup') > daySlotTotal(day, 'main') ? 'border-red-200 bg-red-50' : 'border-slate-200 bg-slate-50'">
+                                         :class="daySlotBalanceUiClass(day, 'soup')">
                                         <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-700 text-white">
                                             <i data-lucide="soup" class="h-5 w-5"></i>
                                         </div>
                                         <div>
                                             <p class="text-[10px] font-bold uppercase text-slate-500">Canh</p>
-                                            <p class="text-lg font-black" :class="daySlotTotal(day, 'soup') > daySlotTotal(day, 'main') ? 'text-red-700' : 'text-slate-900'">
-                                                <span x-text="daySlotTotal(day, 'soup')"></span> / <span x-text="daySlotTotal(day, 'main')"></span>
-                                            </p>
+                                            <p class="text-lg font-black" x-text="daySlotTotal(day, 'soup') + ' / ' + daySlotTotal(day, 'main') + ' suất'"></p>
                                         </div>
                                     </div>
+                                </div>
+                                <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-100 bg-amber-50/80 px-4 py-3 text-xs text-amber-950">
+                                    <span>Mỗi suất ăn = món chính + món phụ + canh <strong>cùng số lượng</strong> trong ngày.</span>
+                                    <button type="button" @@click="balanceSideSoupToMain(day)"
+                                            class="rounded-lg bg-amber-600 px-3 py-1.5 font-bold text-white hover:bg-amber-700">
+                                        Cân bằng món phụ &amp; canh
+                                    </button>
                                 </div>
 
                                 <template x-for="slot in slots" :key="slot.key">
@@ -341,6 +355,7 @@
                                                 <button type="button" @@click="openPicker(day.serviceDate, slot.key)"
                                                         :disabled="slot.key !== 'main' && daySlotTotal(day, 'main') > 0 && daySlotTotal(day, slot.key) >= daySlotTotal(day, 'main')"
                                                         :class="slot.key !== 'main' && daySlotTotal(day, 'main') > 0 && daySlotTotal(day, slot.key) >= daySlotTotal(day, 'main') ? 'cursor-not-allowed opacity-50' : 'hover:bg-white/25'"
+                                                        :title="slot.key !== 'main' ? 'Tổng suất phải bằng món chính' : ''"
                                                         class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-black text-white backdrop-blur transition">
                                                     <i data-lucide="plus-circle" class="h-4 w-4"></i> Thêm món
                                                 </button>
@@ -587,6 +602,8 @@
         const dateMax = @Json.Serialize(dateMax);
         const dateDefault = @Json.Serialize(dateDefault);
         const antiToken = @Html.Raw(antiTokenJson);
+        const DRAFT_CACHE_TTL_MS = 5 * 60 * 1000;
+        const draftCacheKey = 'hm_org_meal_draft_v1_' + orgId;
 
         Alpine.data('orgMealOrderApp', () => ({
             step: 1,
@@ -620,10 +637,12 @@
             manualPromoCode: '',
             promoPreviewMessage: '',
             promoPreviewApplied: false,
+            draftCacheNotice: '',
+            _cacheSaveTimer: null,
             slots: [
                 { key: 'main', label: 'Món chính', icon: 'beef', desc: 'Tính suất & thành tiền' },
-                { key: 'side', label: 'Món phụ', icon: 'salad', desc: 'Không tính phí — giới hạn theo suất chính' },
-                { key: 'soup', label: 'Canh', icon: 'soup', desc: 'Không tính phí — giới hạn theo suất chính' },
+                { key: 'side', label: 'Món phụ', icon: 'salad', desc: 'Tổng suất phải bằng món chính (1 suất ăn)' },
+                { key: 'soup', label: 'Canh', icon: 'soup', desc: 'Tổng suất phải bằng món chính (1 suất ăn)' },
             ],
 
             formatDate(iso) {
@@ -633,6 +652,88 @@
             },
             formatMoney(n) {
                 return new Intl.NumberFormat('vi-VN').format(Math.round(n || 0));
+            },
+            cacheStorageKey() {
+                return draftCacheKey;
+            },
+            hasMeaningfulDraft() {
+                return this.mealDays.length > 0 || this.step > 1
+                    || (this.pricePerPortion && this.pricePerPortion !== 45000);
+            },
+            scheduleDraftCacheSave() {
+                if (!this.hasMeaningfulDraft()) return;
+                clearTimeout(this._cacheSaveTimer);
+                this._cacheSaveTimer = setTimeout(() => this.saveDraftCache(), 350);
+            },
+            saveDraftCache() {
+                if (!this.hasMeaningfulDraft()) return;
+                try {
+                    const payload = {
+                        savedAt: Date.now(),
+                        organizationId: orgId,
+                        step: this.step,
+                        pricePerPortion: this.pricePerPortion,
+                        newDate: this.newDate,
+                        mealDays: this.mealDays,
+                        activeDay: this.activeDay,
+                        promotionCode: this.promotionCode,
+                        selectedPromotionId: this.selectedPromotionId,
+                        selectedPromotionName: this.selectedPromotionName,
+                        promoDiscountAmount: this.promoDiscountAmount,
+                        promoSubtotalAmount: this.promoSubtotalAmount,
+                        manualPromoCode: this.manualPromoCode,
+                    };
+                    localStorage.setItem(this.cacheStorageKey(), JSON.stringify(payload));
+                } catch (e) {
+                    /* localStorage đầy hoặc private mode */
+                }
+            },
+            restoreDraftCache() {
+                try {
+                    const raw = localStorage.getItem(this.cacheStorageKey());
+                    if (!raw) return false;
+                    const data = JSON.parse(raw);
+                    if (!data || String(data.organizationId) !== String(orgId)) return false;
+                    const age = Date.now() - (data.savedAt || 0);
+                    if (age > DRAFT_CACHE_TTL_MS) {
+                        localStorage.removeItem(this.cacheStorageKey());
+                        return false;
+                    }
+                    if (!data.mealDays?.length && (data.step || 1) === 1) return false;
+
+                    this.step = Math.min(3, Math.max(1, parseInt(data.step, 10) || 1));
+                    this.pricePerPortion = data.pricePerPortion > 0 ? data.pricePerPortion : this.pricePerPortion;
+                    this.newDate = data.newDate || this.newDate;
+                    this.mealDays = Array.isArray(data.mealDays) ? data.mealDays : [];
+                    this.activeDay = data.activeDay || this.mealDays[0]?.serviceDate || null;
+                    this.promotionCode = data.promotionCode || '';
+                    this.selectedPromotionId = data.selectedPromotionId ?? null;
+                    this.selectedPromotionName = data.selectedPromotionName || '';
+                    this.promoDiscountAmount = data.promoDiscountAmount || 0;
+                    this.promoSubtotalAmount = data.promoSubtotalAmount || 0;
+                    this.manualPromoCode = data.manualPromoCode || '';
+
+                    const saved = new Date(data.savedAt);
+                    const mins = Math.max(1, Math.round((DRAFT_CACHE_TTL_MS - age) / 60000));
+                    this.draftCacheNotice =
+                        'Đã khôi phục bản nháp đặt suất (lưu lúc '
+                        + saved.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' })
+                        + '). Bản nháp còn hiệu lực khoảng ' + mins + ' phút.';
+                    return true;
+                } catch {
+                    return false;
+                }
+            },
+            clearDraftCache(showNotice) {
+                try { localStorage.removeItem(this.cacheStorageKey()); } catch { /* ignore */ }
+                if (showNotice) {
+                    this.draftCacheNotice = '';
+                    this.step = 1;
+                    this.mealDays = [];
+                    this.activeDay = null;
+                    this.formError = '';
+                    this.clearPromotion(false);
+                }
             },
             addDay() {
                 this.formError = '';
@@ -650,11 +751,13 @@
                 });
                 this.mealDays.sort((a, b) => a.serviceDate.localeCompare(b.serviceDate));
                 this.activeDay = d;
+                this.scheduleDraftCacheSave();
                 this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
             },
             removeDay(iso) {
                 this.mealDays = this.mealDays.filter(x => x.serviceDate !== iso);
                 this.activeDay = this.mealDays[0]?.serviceDate || null;
+                this.scheduleDraftCacheSave();
             },
             goStep2() {
                 this.formError = '';
@@ -672,6 +775,7 @@
                 }
                 this.activeDay = this.mealDays[0].serviceDate;
                 this.step = 2;
+                this.scheduleDraftCacheSave();
                 this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
             },
             validateServiceDate(iso) {
@@ -685,6 +789,49 @@
                 if (!d) return 0;
                 return (d.mealPlan[slot] || []).reduce((s, l) => s + Math.max(1, parseInt(l.quantity, 10) || 1), 0);
             },
+            daySlotBalanceUiClass(dayOrIso, slot) {
+                const main = this.daySlotTotal(dayOrIso, 'main');
+                if (main <= 0) return slot === 'side' ? 'border-violet-100 bg-violet-50/80' : 'border-slate-200 bg-slate-50';
+                const t = this.daySlotTotal(dayOrIso, slot);
+                if (t === main) return 'border-emerald-200 bg-emerald-50';
+                if (t > main) return 'border-red-200 bg-red-50';
+                return 'border-amber-200 bg-amber-50';
+            },
+            balanceSideSoupToMain(dayOrIso) {
+                const day = this.resolveDay(dayOrIso);
+                if (!day) return;
+                const main = this.daySlotTotal(day, 'main');
+                if (main <= 0) {
+                    this.formError = 'Thêm món chính trước khi cân bằng món phụ/canh.';
+                    return;
+                }
+                for (const slot of ['side', 'soup']) {
+                    const lines = day.mealPlan[slot] || [];
+                    if (lines.length === 0) continue;
+                    const n = lines.length;
+                    let remaining = main;
+                    lines.forEach((line, idx) => {
+                        const share = idx === n - 1
+                            ? remaining
+                            : Math.max(1, Math.floor(main / n));
+                        line.quantity = share;
+                        remaining -= share;
+                    });
+                    let total = this.daySlotTotal(day, slot);
+                    while (total > main) {
+                        const heavy = lines.reduce((a, b) => ((parseInt(a.quantity, 10) || 1) >= (parseInt(b.quantity, 10) || 1)) ? a : b);
+                        if ((parseInt(heavy.quantity, 10) || 1) <= 1) break;
+                        heavy.quantity = (parseInt(heavy.quantity, 10) || 1) - 1;
+                        total = this.daySlotTotal(day, slot);
+                    }
+                    while (total < main) {
+                        lines[0].quantity = (parseInt(lines[0].quantity, 10) || 1) + 1;
+                        total++;
+                    }
+                }
+                this.formError = '';
+                this.scheduleDraftCacheSave();
+            },
             validateDaySlotTotals(dayOrIso, requireMain) {
                 const d = this.resolveDay(dayOrIso);
                 if (!d) return '';
@@ -695,11 +842,11 @@
                 if (main > 0) {
                     const side = this.daySlotTotal(d, 'side');
                     const soup = this.daySlotTotal(d, 'soup');
-                    if (side > main) {
-                        return 'Ngày ' + this.formatDate(d.serviceDate) + ': tổng món phụ (' + side + ') không được vượt món chính (' + main + ' suất).';
+                    if (side !== main) {
+                        return 'Ngày ' + this.formatDate(d.serviceDate) + ': tổng món phụ (' + side + ') phải bằng món chính (' + main + ' suất). Dùng nút "Cân bằng món phụ & canh".';
                     }
-                    if (soup > main) {
-                        return 'Ngày ' + this.formatDate(d.serviceDate) + ': tổng canh (' + soup + ') không được vượt món chính (' + main + ' suất).';
+                    if (soup !== main) {
+                        return 'Ngày ' + this.formatDate(d.serviceDate) + ': tổng canh (' + soup + ') phải bằng món chính (' + main + ' suất). Dùng nút "Cân bằng món phụ & canh".';
                     }
                 }
                 return '';
@@ -716,7 +863,7 @@
                 const main = this.daySlotTotal(dayOrIso, 'main');
                 if (main <= 0) return false;
                 const current = this.daySlotTotal(dayOrIso, slot);
-                return (current + addQty) <= main;
+                return (current + addQty) < main;
             },
             getDay(iso) { return this.mealDays.find(x => x.serviceDate === iso); },
             resolveDay(dayOrIso) {
@@ -784,7 +931,7 @@
                 if (slot !== 'main' && !this.canAddSideSoupQty(day, slot, 1)) {
                     this.formError = 'Ngày ' + this.formatDate(day.serviceDate)
                         + ': tổng ' + (slot === 'side' ? 'món phụ' : 'canh')
-                        + ' không được vượt tổng suất món chính (' + this.daySlotTotal(day, 'main') + ').';
+                        + ' đã đạt ' + this.daySlotTotal(day, 'main') + ' suất. Chỉnh số lượng hoặc bỏ bớt món.';
                     return;
                 }
                 const lines = day.mealPlan[slot];
@@ -800,6 +947,7 @@
                 }
                 this.pickerOpen = false;
                 this.formError = '';
+                this.scheduleDraftCacheSave();
                 this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
             },
             changeQty(dayOrIso, slot, dishId, delta) {
@@ -813,17 +961,20 @@
                     if (next + others > main) {
                         this.formError = 'Ngày ' + this.formatDate(day.serviceDate)
                             + ': tổng ' + (slot === 'side' ? 'món phụ' : 'canh')
-                            + ' tối đa ' + main + ' suất (bằng món chính).';
+                            + ' không được vượt ' + main + ' suất (phải bằng món chính).';
                         return;
                     }
                 }
                 line.quantity = next;
+                if (slot === 'main') this.balanceSideSoupToMain(day);
                 this.formError = '';
+                this.scheduleDraftCacheSave();
             },
             removeLine(dayOrIso, slot, dishId) {
                 const day = this.resolveDay(dayOrIso);
                 if (!day) return;
                 day.mealPlan[slot] = day.mealPlan[slot].filter(x => x.dishId !== dishId);
+                this.scheduleDraftCacheSave();
             },
             totalMainQty() {
                 let t = 0;
@@ -854,6 +1005,7 @@
                 if (this.formError) return;
                 this.step = 3;
                 this.formError = '';
+                this.scheduleDraftCacheSave();
                 await this.loadEligiblePromotions();
                 this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
             },
@@ -1006,6 +1158,7 @@
                     });
                     const data = await res.json();
                     if (!res.ok) throw new Error(data.message || 'Không tạo được nháp hợp đồng.');
+                    this.clearDraftCache(false);
                     window.location.href = data.redirectUrl;
                 } catch (e) {
                     this.formError = e.message || 'Lỗi khi tạo nháp.';
@@ -1014,7 +1167,22 @@
                 }
             },
             init() {
+                const restored = this.restoreDraftCache();
+                if (restored && this.step >= 3) {
+                    this.$nextTick(() => this.loadEligiblePromotions());
+                }
+                this.$watch('step', () => this.scheduleDraftCacheSave());
+                this.$watch('pricePerPortion', () => this.scheduleDraftCacheSave());
+                this.$watch('mealDays', () => this.scheduleDraftCacheSave(), { deep: true });
+                this.$watch('activeDay', () => this.scheduleDraftCacheSave());
+                this.$watch('newDate', () => this.scheduleDraftCacheSave());
+                window.addEventListener('beforeunload', () => {
+                    if (this.hasMeaningfulDraft()) this.saveDraftCache();
+                });
                 if (window.lucide) lucide.createIcons();
+                if (restored) {
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                }
             }
         }));
     });

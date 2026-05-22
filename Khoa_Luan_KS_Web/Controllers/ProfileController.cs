@@ -198,7 +198,7 @@ namespace Khoa_Luan_KS_Web.Controllers
 
         private static string? SerializeOrderAnnexPortal(OrderDetailClientDto o)
         {
-            if (o.Id == 0 || !string.IsNullOrEmpty(o.AnnexPdfUrl))
+            if (o.Id == 0 || o.AnnexSignedAt.HasValue)
                 return null;
 
             var portal = new
@@ -208,6 +208,8 @@ namespace Khoa_Luan_KS_Web.Controllers
                 orderDate = o.OrderDate.ToString("o"),
                 scheduledDate = o.ScheduledDate.ToString("o"),
                 totalAmount = o.TotalAmount,
+                annexSignedAt = o.AnnexSignedAt,
+                contractId = o.ContractSummary?.Id,
                 organizationName = o.OrganizationName,
                 partnerLegalName = "Công ty Cổ phần HuitMeal",
                 items = o.Items.Select(i => new
