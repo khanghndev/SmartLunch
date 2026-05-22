@@ -240,6 +240,33 @@ public class BackendMasterDataClient
     public async Task<GetManagerContractResponse> CreateContractAsync(CreateContractClientRequest payload, string accessToken, CancellationToken ct = default)
         => await PostAsync<GetManagerContractResponse>("/api/v1/master-data/Contract", payload, accessToken, ct);
 
+    // ─── Finance (công nợ / thu chi) ─────────────────────────────────────────────
+    public async Task<GetOrganizationReceivablesClientResponse> GetOrganizationReceivablesAsync(
+        string accessToken,
+        bool onlyWithOutstanding = true,
+        int? organizationId = null,
+        CancellationToken ct = default)
+    {
+        var query = $"?OnlyWithOutstanding={(onlyWithOutstanding ? "true" : "false")}";
+        if (organizationId.HasValue) query += $"&OrganizationId={organizationId.Value}";
+        return await GetAsync<GetOrganizationReceivablesClientResponse>($"/api/v1/finance/organization-receivables{query}", accessToken, ct);
+    }
+
+    public async Task<GetPaymentHistoryClientResponse> GetPaymentHistoryAsync(
+        string accessToken,
+        DateOnly from,
+        DateOnly to,
+        string scope = "Customer",
+        int? organizationId = null,
+        int page = 1,
+        int pageSize = 20,
+        CancellationToken ct = default)
+    {
+        var query = $"?From={from:yyyy-MM-dd}&To={to:yyyy-MM-dd}&Scope={Uri.EscapeDataString(scope)}&Page={page}&PageSize={pageSize}";
+        if (organizationId.HasValue) query += $"&OrganizationId={organizationId.Value}";
+        return await GetAsync<GetPaymentHistoryClientResponse>($"/api/v1/finance/payment-history{query}", accessToken, ct);
+    }
+
     public async Task<GetDishesResponse> GetDishesAsync(string accessToken, int page = 1, int pageSize = 20, string? searchTerm = null, string? category = null, bool? isActive = null, CancellationToken ct = default)
     {
         var query = $"?Page={page}&PageSize={pageSize}";
@@ -1370,6 +1397,47 @@ public class CreateContractClientRequest
     public decimal? TotalValue { get; set; }
     public decimal? DepositAmount { get; set; }
     public string Status { get; set; } = "active";
+}
+
+// ─── Finance (manager) ───────────────────────────────────────────────────────
+public class OrganizationReceivableLineClientDto
+{
+    public int OrganizationId { get; set; }
+    public string OrganizationName { get; set; } = string.Empty;
+    public int OrderCount { get; set; }
+    public decimal TotalBilled { get; set; }
+    public decimal TotalPaid { get; set; }
+    public decimal Outstanding { get; set; }
+}
+
+public class GetOrganizationReceivablesClientResponse
+{
+    public List<OrganizationReceivableLineClientDto> Lines { get; set; } = new();
+    public decimal GrandTotalOutstanding { get; set; }
+}
+
+public class PaymentHistoryEntryClientDto
+{
+    public string Source { get; set; } = string.Empty;
+    public int EntryId { get; set; }
+    public DateTime PaymentDate { get; set; }
+    public decimal Amount { get; set; }
+    public string Method { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
+    public int? OrderId { get; set; }
+    public int? OrganizationId { get; set; }
+    public string? OrganizationName { get; set; }
+}
+
+public class GetPaymentHistoryClientResponse
+{
+    public DateOnly From { get; set; }
+    public DateOnly To { get; set; }
+    public string Scope { get; set; } = string.Empty;
+    public int TotalCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public List<PaymentHistoryEntryClientDto> Entries { get; set; } = new();
 }
 
 // ─── Company contracts (B2B self-service) ───────────────────────────────────
