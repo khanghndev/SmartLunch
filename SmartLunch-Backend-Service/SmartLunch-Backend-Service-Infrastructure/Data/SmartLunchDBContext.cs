@@ -72,6 +72,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Sentiment> Sentiments { get; set; }
         public DbSet<Complaint> Complaints { get; set; }
+        public DbSet<ContactInquiry> ContactInquiries { get; set; }
         public DbSet<ChatbotLog> ChatbotLogs { get; set; }
         public DbSet<MenuSuggestion> MenuSuggestions { get; set; }
         public DbSet<MenuSuggestionPlan> MenuSuggestionPlans { get; set; }
@@ -1003,6 +1004,22 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasOne(e => e.User).WithMany(u => u.ComplaintsRaised).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Order).WithMany(o => o.Complaints).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.SetNull);
                 entity.HasOne(e => e.AssignedToUser).WithMany(u => u.ComplaintsAssigned).HasForeignKey(e => e.AssignedTo).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<ContactInquiry>(entity =>
+            {
+                entity.ToTable("contact_inquiries");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Status);
+                entity.HasIndex(e => e.CreatedAt);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.FullName).IsRequired().HasMaxLength(200);
+                entity.Property(e => e.Phone).IsRequired().HasMaxLength(30);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+                entity.Property(e => e.InterestedService).IsRequired().HasMaxLength(100);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.HasOne(e => e.User).WithMany().HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(e => e.RepliedByUser).WithMany().HasForeignKey(e => e.RepliedByUserId).OnDelete(DeleteBehavior.SetNull);
             });
 
             // ChatbotLog
