@@ -10,7 +10,9 @@ using SmartLunch.Backend.Service.Application.Queries.Finance.GetPaymentHistory;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetPaymentReconciliation;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetContractPaymentReconciliation;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetContractPayments;
+using SmartLunch.Backend.Service.Application.Commands.Finance.CreateSupplierPayment;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetOrganizationReceivables;
+using SmartLunch.Backend.Service.Application.Queries.Finance.GetSupplierContractsForPayment;
 using System.Net;
 
 namespace SmartLunch.Backend.Service.API.Controllers;
@@ -192,6 +194,63 @@ public class FinanceController : ControllerBase
     /// <summary>
     /// Công nợ nhà cung cấp (Partner): tổng giá trị hợp đồng (chưa hủy) − đã chi (PartnerPayment completed).
     /// </summary>
+    /// <summary>Hợp đồng NCC (chưa hủy) kèm số đã chi — dùng khi ghi nhận thanh toán.</summary>
+    [HttpGet("supplier-contracts")]
+    [Authorize(Policy = "permission:contracts.read")]
+    [Authorize(Policy = "permission:partner_payments.read")]
+    public async Task<ActionResult<BaseApiResponse<GetSupplierContractsForPaymentResponse>>> GetSupplierContracts(
+        [FromQuery] int partnerId,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _mediator.Send(new GetSupplierContractsForPaymentQuery(partnerId), cancellationToken);
+            return Ok(BaseApiResponse<GetSupplierContractsForPaymentResponse>.SuccessResult(response, "Supplier contracts retrieved"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetSupplierContractsForPaymentResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error loading supplier contracts for partner {PartnerId}", partnerId);
+            return StatusCode((int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetSupplierContractsForPaymentResponse>.ErrorResult("Failed", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Ghi nhận thanh toán cho nhà cung cấp (PartnerPayment).</summary>
+    [HttpPost("supplier-payments")]
+    [Authorize(Policy = "permission:partner_payments.create")]
+    public async Task<ActionResult<BaseApiResponse<CreateSupplierPaymentResponse>>> CreateSupplierPayment(
+        [FromBody] CreateSupplierPaymentRequest request,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            var response = await _mediator.Send(new CreateSupplierPaymentCommand(request), cancellationToken);
+            return Ok(BaseApiResponse<CreateSupplierPaymentResponse>.SuccessResult(response, response.Message));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<CreateSupplierPaymentResponse>.NotFoundResult(ex.Message));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<CreateSupplierPaymentResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(BaseApiResponse<CreateSupplierPaymentResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating supplier payment");
+            return StatusCode((int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<CreateSupplierPaymentResponse>.ErrorResult("Failed", new[] { ex.Message }));
+        }
+    }
+
     [HttpGet("supplier-payables")]
     [Authorize(Policy = "permission:partner_payments.read")]
     [Authorize(Policy = "permission:partners.read")]
