@@ -22,7 +22,12 @@ WHERE p.Resource IN (
     'partners', 'contracts', 'partner_payments',
     'ingredients', 'inventory', 'orders', 'order_items', 'deliveries', 
     'payments', 'transactions', 'reviews', 'sentiments', 'complaints',
-    'dishes', 'weekly_menus', 'menu_schedule', 'menu_suggestions'
+    'dishes', 'weekly_menus', 'menu_schedule', 'menu_suggestions',
+    'ingredient_intake_proposals', 'ingredient_actual_intakes'
+)
+AND (
+    p.Resource NOT IN ('ingredient_intake_proposals', 'ingredient_actual_intakes')
+    OR p.Action IN ('read', 'list', 'create', 'update')
 );
 
 -- WarehouseStaff (Nhân viên kho)
