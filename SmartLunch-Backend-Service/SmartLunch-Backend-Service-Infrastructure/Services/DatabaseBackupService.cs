@@ -39,11 +39,13 @@ public class DatabaseBackupService : IDatabaseBackupService
         var createdAt = VietnamTime.Now;
         var dumpExtension = string.IsNullOrWhiteSpace(opts.FileExtension) ? "sql" : opts.FileExtension.Trim().TrimStart('.');
         var storageExtension = string.IsNullOrWhiteSpace(opts.StorageFileExtension)
-            ? "bak"
+            ? dumpExtension
             : opts.StorageFileExtension.Trim().TrimStart('.');
 
         var dumpFileName = $"{opts.FilePrefix}-{createdAt:yyyyMMddHHmmss}.{dumpExtension}";
-        var storageFileName = $"{opts.FilePrefix}-{createdAt:yyyyMMddHHmmss}.{storageExtension}";
+        var storageFileName = string.Equals(dumpExtension, storageExtension, StringComparison.OrdinalIgnoreCase)
+            ? dumpFileName
+            : $"{opts.FilePrefix}-{createdAt:yyyyMMddHHmmss}.{storageExtension}";
         var filePath = Path.Combine(opts.OutputDirectory, dumpFileName);
 
         var (host, port, database, user, password) = ParseConnectionString(opts.ConnectionString);
@@ -83,9 +85,13 @@ public class DatabaseBackupService : IDatabaseBackupService
         // Upload to Appwrite immediately (do not keep local backups).
         var bucketId = _configuration["Appwrite:BucketId"] ?? string.Empty;
         var objectName = $"backups/{createdAt:yyyy}/{createdAt:MM}/{storageFileName}";
+        var contentType = storageExtension.Equals("sql", StringComparison.OrdinalIgnoreCase)
+            ? "application/sql"
+            : "application/octet-stream";
+
         await using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
         {
-            await _storage.UploadObjectAsync(objectName, fs, "application/octet-stream", cancellationToken);
+            await _storage.UploadObjectAsync(objectName, fs, contentType, cancellationToken);
         }
 
         try
@@ -422,8 +428,8 @@ public class DatabaseBackupService : IDatabaseBackupService
         public string OutputDirectory { get; set; } = string.Empty;
         public string FilePrefix { get; set; } = "smartlunch";
         public string FileExtension { get; set; } = "sql";
-        /// <summary>Đuôi file upload Appwrite (bucket thường không cho .sql — dùng .bak).</summary>
-        public string StorageFileExtension { get; set; } = "bak";
+        /// <summary>Đuôi file khi upload Appwrite. Để trống thì dùng <see cref="FileExtension"/> (mặc định sql).</summary>
+        public string StorageFileExtension { get; set; } = "";
         public int RetentionDays { get; set; } = 7;
         public string? ToolsDirectory { get; set; }
         public bool UseDocker { get; set; } = false;
