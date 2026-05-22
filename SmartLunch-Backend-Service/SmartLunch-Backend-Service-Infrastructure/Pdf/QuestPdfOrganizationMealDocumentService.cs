@@ -52,7 +52,8 @@ public sealed class QuestPdfOrganizationMealDocumentService : IOrganizationMealD
     {
         return Document.Create(container =>
         {
-            container.Page(page => MealContractPdfSections.ComposeContractPage(page, contract, supplier, buyer));
+            container.Page(page => MealContractPdfSections.ComposeContractPage(
+                page, contract, supplier, buyer, order, signatureDataUrl));
             container.Page(page => MealContractPdfSections.ComposeAnnexPage(page, order, buyerDisplayName, signatureDataUrl));
         }).GeneratePdf();
     }
