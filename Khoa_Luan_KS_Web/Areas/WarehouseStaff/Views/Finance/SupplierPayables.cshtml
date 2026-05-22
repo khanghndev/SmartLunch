@@ -4,9 +4,14 @@
     Layout = "_LayoutWarehouse";
     var lines = Model.Lines ?? new();
     bool onlyOutstanding = ViewBag.OnlyOutstanding ?? true;
+    int? selectedPartnerId = ViewBag.PartnerId as int?;
+    var partners = ViewBag.Partners as List<Khoa_Luan_KS_Web.Services.PartnerDto> ?? new();
+    var history = ViewBag.PaymentHistory as List<Khoa_Luan_KS_Web.Services.PaymentHistoryEntryClientDto> ?? new();
+    var errorMsg = TempData["Error"] as string;
 }
 
-<div class="px-1 space-y-6">
+@Html.AntiForgeryToken()
+<div class="px-1 space-y-6" x-data="supplierPayablesPage()">
 
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -16,11 +21,19 @@
                 <span class="text-sm font-medium text-gray-500">Tài chính / Công nợ NCC</span>
             </div>
             <h1 class="text-2xl font-bold text-gray-900 tracking-tight">Công Nợ Phải Trả Nhà Cung Cấp</h1>
-            <p class="text-sm text-gray-500 mt-1">Tổng quan tình hình công nợ với các nhà cung cấp nguyên liệu</p>
+            <p class="text-sm text-gray-500 mt-1">Theo dõi công nợ, ghi nhận chi trả và xem lịch sử thanh toán NCC</p>
         </div>
+        <button type="button" @@click="openPayModal()"
+                class="px-5 py-2.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold shadow-md transition flex items-center gap-2">
+            <i class="fas fa-plus-circle"></i> Ghi nhận thanh toán
+        </button>
     </div>
 
-    <!-- Summary -->
+    @if (!string.IsNullOrEmpty(errorMsg))
+    {
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-bold text-red-800">@errorMsg</div>
+    }
+
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl shadow-sm p-6 text-white">
             <div class="flex items-center justify-between mb-3">
@@ -28,100 +41,112 @@
                 <i class="fas fa-file-invoice-dollar text-2xl opacity-50"></i>
             </div>
             <h3 class="text-3xl font-bold">@Model.GrandTotalOutstanding.ToString("N0") đ</h3>
-            <p class="text-xs opacity-80 mt-2">Tổng từ @lines.Count NCC</p>
+            <p class="text-xs opacity-80 mt-2">@lines.Count nhà cung cấp trong báo cáo</p>
         </div>
-
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div class="flex items-center justify-between mb-3">
-                <p class="text-xs font-bold uppercase tracking-wider text-gray-500">Tổng giá trị hợp đồng</p>
-                <i class="fas fa-handshake text-2xl text-gray-300"></i>
-            </div>
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Tổng giá trị hợp đồng</p>
             <h3 class="text-2xl font-bold text-gray-700">@lines.Sum(l => l.TotalContractValue).ToString("N0") đ</h3>
-            <p class="text-xs text-gray-500 mt-2">Cộng tất cả hợp đồng đang hiệu lực</p>
         </div>
-
         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-            <div class="flex items-center justify-between mb-3">
-                <p class="text-xs font-bold uppercase tracking-wider text-gray-500">Tổng đã thanh toán</p>
-                <i class="fas fa-money-bill-wave text-2xl text-green-300"></i>
-            </div>
+            <p class="text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">Tổng đã thanh toán</p>
             <h3 class="text-2xl font-bold text-green-700">@lines.Sum(l => l.TotalPaid).ToString("N0") đ</h3>
-            <p class="text-xs text-gray-500 mt-2">Đã chi trả cho các NCC</p>
         </div>
     </div>
 
-    <!-- Filter -->
-    <form method="get" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex items-center gap-3">
-        <label class="flex items-center gap-2 cursor-pointer">
-            <input type="checkbox" name="onlyOutstanding" value="true" checked="@onlyOutstanding" class="w-4 h-4 rounded border-gray-300 text-amber-500 focus:ring-amber-500" />
-            <span class="text-sm font-medium text-gray-700">Chỉ hiển thị NCC còn phải trả</span>
+    <form method="get" class="bg-white rounded-2xl shadow-sm border border-gray-100 p-4 flex flex-col sm:flex-row flex-wrap items-end gap-4">
+        <div class="flex-1 min-w-[200px]">
+            <label class="block text-xs font-bold text-gray-500 uppercase mb-1">Nhà cung cấp</label>
+            <select name="partnerId" class="w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-medium bg-gray-50">
+                <option value="">— Tất cả NCC —</option>
+                @foreach (var p in partners.OrderBy(x => x.LegalName))
+                {
+                    @if (selectedPartnerId == p.Id)
+                    {
+                        <option value="@p.Id" selected>@p.LegalName</option>
+                    }
+                    else
+                    {
+                        <option value="@p.Id">@p.LegalName</option>
+                    }
+                }
+            </select>
+        </div>
+        <label class="flex items-center gap-2 cursor-pointer pb-2">
+            <input type="hidden" name="onlyOutstanding" value="false" />
+            <input type="checkbox" name="onlyOutstanding" value="true" class="w-4 h-4 rounded text-amber-500" @(onlyOutstanding ? "checked" : null) />
+            <span class="text-sm font-medium text-gray-700">Chỉ NCC còn phải trả</span>
         </label>
-        <button type="submit" class="ml-auto px-5 py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold transition shadow-sm">
-            <i class="fas fa-filter"></i> Áp dụng
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-slate-800 text-white text-sm font-bold">
+            <i class="fas fa-filter"></i> Lọc
         </button>
     </form>
 
-    <!-- Table -->
     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
-        <div class="px-6 py-4 border-b border-gray-100">
-            <h3 class="font-bold text-gray-900 text-sm">Chi Tiết Công Nợ Theo Nhà Cung Cấp</h3>
+        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center">
+            <h3 class="font-bold text-gray-900 text-sm">Chi tiết công nợ theo NCC</h3>
         </div>
         <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm whitespace-nowrap">
-                <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-bold tracking-wider">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 text-gray-500 text-[11px] uppercase font-bold">
                     <tr>
-                        <th class="px-5 py-3.5 border-b border-gray-100 w-16">ID</th>
-                        <th class="px-5 py-3.5 border-b border-gray-100">Nhà Cung Cấp</th>
-                        <th class="px-5 py-3.5 border-b border-gray-100 text-right">Giá Trị Hợp Đồng</th>
-                        <th class="px-5 py-3.5 border-b border-gray-100 text-right">Đã Thanh Toán</th>
-                        <th class="px-5 py-3.5 border-b border-gray-100 text-right">Còn Phải Trả</th>
-                        <th class="px-5 py-3.5 border-b border-gray-100 w-32">% Đã Trả</th>
+                        <th class="px-5 py-3.5">NCC</th>
+                        <th class="px-5 py-3.5 text-right">Hợp đồng</th>
+                        <th class="px-5 py-3.5 text-right">Đã trả</th>
+                        <th class="px-5 py-3.5 text-right">Còn phải trả</th>
+                        <th class="px-5 py-3.5 w-28">Tiến độ</th>
+                        <th class="px-5 py-3.5 w-36"></th>
                     </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-50 text-gray-700">
+                <tbody class="divide-y divide-gray-50">
                     @if (!lines.Any())
                     {
                         <tr><td colspan="6" class="text-center py-16 text-gray-400">
                             <i class="fas fa-check-double text-4xl mb-3 block text-green-200"></i>
-                            <p class="text-sm font-medium">Không có công nợ nào</p>
+                            Không có công nợ phù hợp bộ lọc
                         </td></tr>
                     }
                     @foreach (var l in lines)
                     {
                         decimal pct = l.TotalContractValue == 0 ? 100 : Math.Min(100, (l.TotalPaid / l.TotalContractValue) * 100);
                         string barCls = pct >= 100 ? "bg-green-500" : pct >= 50 ? "bg-amber-500" : "bg-red-500";
-                        <tr class="hover:bg-amber-50/20 transition">
-                            <td class="px-5 py-3.5 font-mono text-gray-500">#@l.PartnerId</td>
+                        <tr class="hover:bg-amber-50/30">
                             <td class="px-5 py-3.5">
                                 <div class="font-semibold text-gray-900">@l.PartnerLegalName</div>
+                                <div class="text-xs text-gray-400 font-mono">#@l.PartnerId</div>
                             </td>
-                            <td class="px-5 py-3.5 text-right font-medium text-gray-700">@l.TotalContractValue.ToString("N0") đ</td>
-                            <td class="px-5 py-3.5 text-right font-medium text-green-700">@l.TotalPaid.ToString("N0") đ</td>
-                            <td class="px-5 py-3.5 text-right">
-                                <span class="font-bold @(l.Outstanding > 0 ? "text-red-700" : "text-gray-400")">
-                                    @l.Outstanding.ToString("N0") đ
-                                </span>
-                            </td>
-                            <td class="px-5 py-3.5 w-32">
+                            <td class="px-5 py-3.5 text-right">@l.TotalContractValue.ToString("N0") đ</td>
+                            <td class="px-5 py-3.5 text-right text-green-700 font-medium">@l.TotalPaid.ToString("N0") đ</td>
+                            <td class="px-5 py-3.5 text-right font-bold @(l.Outstanding > 0 ? "text-red-700" : "text-gray-400")">@l.Outstanding.ToString("N0") đ</td>
+                            <td class="px-5 py-3.5">
                                 <div class="flex items-center gap-2">
                                     <div class="flex-1 bg-gray-100 rounded-full h-1.5">
-                                        <div class="@barCls h-1.5 rounded-full transition-all" style="width: @pct%"></div>
+                                        <div class="@barCls h-1.5 rounded-full" style="width: @pct.ToString("0", System.Globalization.CultureInfo.InvariantCulture)%"></div>
                                     </div>
-                                    <span class="text-[10px] font-bold text-gray-500 w-8 text-right">@pct.ToString("0")%</span>
+                                    <span class="text-[10px] font-bold text-gray-500">@pct.ToString("0")%</span>
                                 </div>
+                            </td>
+                            <td class="px-5 py-3.5 text-right">
+                                @if (l.Outstanding > 0)
+                                {
+                                    <button type="button"
+                                            @@click="openPayModal(@l.PartnerId, '@Html.Raw(l.PartnerLegalName.Replace("'", "\\'"))', @l.Outstanding.ToString(System.Globalization.CultureInfo.InvariantCulture))"
+                                            class="text-xs font-bold text-amber-600 hover:text-amber-800">
+                                        Thanh toán
+                                    </button>
+                                }
                             </td>
                         </tr>
                     }
                 </tbody>
                 @if (lines.Any())
                 {
-                    <tfoot class="bg-amber-50/50 border-t-2 border-amber-200">
+                    <tfoot class="bg-amber-50/50 border-t-2 border-amber-100">
                         <tr>
-                            <td colspan="2" class="px-5 py-3 font-bold text-amber-900 text-sm">TỔNG CỘNG</td>
-                            <td class="px-5 py-3 text-right font-bold text-gray-800">@lines.Sum(l => l.TotalContractValue).ToString("N0") đ</td>
+                            <td class="px-5 py-3 font-bold text-amber-900">Tổng</td>
+                            <td class="px-5 py-3 text-right font-bold">@lines.Sum(l => l.TotalContractValue).ToString("N0") đ</td>
                             <td class="px-5 py-3 text-right font-bold text-green-700">@lines.Sum(l => l.TotalPaid).ToString("N0") đ</td>
                             <td class="px-5 py-3 text-right font-bold text-red-700">@Model.GrandTotalOutstanding.ToString("N0") đ</td>
-                            <td></td>
+                            <td colspan="2"></td>
                         </tr>
                     </tfoot>
                 }
@@ -129,11 +154,181 @@
         </div>
     </div>
 
-    <div class="flex items-start gap-3 p-4 bg-blue-50 border border-blue-100 rounded-xl">
-        <i class="fas fa-info-circle text-blue-500 mt-0.5 shrink-0"></i>
-        <div class="text-xs text-blue-700 font-medium leading-relaxed">
-            <strong>Nguồn dữ liệu:</strong> Công nợ phải trả được tính từ <em>tổng giá trị hợp đồng đang hiệu lực</em> trừ đi <em>các khoản đã thanh toán (PartnerPayment)</em>.
-            Báo cáo cập nhật theo thời gian thực từ hệ thống tài chính.
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-100">
+            <h3 class="font-bold text-gray-900 text-sm">Lịch sử chi trả NCC (3 tháng gần nhất)</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-gray-50 text-[11px] uppercase font-bold text-gray-500">
+                    <tr>
+                        <th class="px-5 py-3">Ngày</th>
+                        <th class="px-5 py-3">Mã / NCC</th>
+                        <th class="px-5 py-3">Hợp đồng</th>
+                        <th class="px-5 py-3 text-right">Số tiền</th>
+                        <th class="px-5 py-3">PTTT</th>
+                        <th class="px-5 py-3">Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-50">
+                    @if (!history.Any())
+                    {
+                        <tr><td colspan="6" class="text-center py-10 text-gray-400 text-sm">Chưa có giao dịch chi NCC trong khoảng thời gian này</td></tr>
+                    }
+                    @foreach (var h in history)
+                    {
+                        var statusCls = h.Status == "completed" ? "bg-green-50 text-green-700" : h.Status == "pending" ? "bg-amber-50 text-amber-700" : "bg-red-50 text-red-700";
+                        <tr>
+                            <td class="px-5 py-3">@h.PaymentDate.ToString("dd/MM/yyyy")</td>
+                            <td class="px-5 py-3">
+                                <div class="font-medium">@h.PartnerLegalName</div>
+                                <div class="text-xs text-gray-400">#@h.EntryId</div>
+                            </td>
+                            <td class="px-5 py-3 text-gray-600">@(h.ContractNumber ?? ("HĐ #" + h.ContractId))</td>
+                            <td class="px-5 py-3 text-right font-bold text-gray-900">@h.Amount.ToString("N0") đ</td>
+                            <td class="px-5 py-3 text-xs uppercase">@h.Method</td>
+                            <td class="px-5 py-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold @statusCls">@h.Status</span></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal: record payment -->
+    <div x-show="payOpen" style="display:none" class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/50" @@click="closePayModal()"></div>
+        <div class="relative bg-white rounded-2xl shadow-xl w-full max-w-md p-6 space-y-4" @@click.stop>
+            <h3 class="text-lg font-bold text-gray-900">Ghi nhận thanh toán NCC</h3>
+            <p class="text-sm text-gray-500" x-show="payPartnerName" x-text="payPartnerName"></p>
+
+            <div>
+                <label class="text-xs font-bold text-gray-500 uppercase">Nhà cung cấp *</label>
+                <select x-model.number="payPartnerId" @@change="loadContracts()" class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm">
+                    <option value="0">— Chọn NCC —</option>
+                    @foreach (var p in partners.OrderBy(x => x.LegalName))
+                    {
+                        <option value="@p.Id">@p.LegalName</option>
+                    }
+                </select>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 uppercase">Hợp đồng *</label>
+                <select x-model.number="payContractId" @@change="syncAmountFromContract()" class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm" :disabled="contractsLoading || !contracts.length">
+                    <option value="0">— Chọn hợp đồng —</option>
+                    <template x-for="c in contracts" :key="c.id">
+                        <option :value="c.id" x-text="(c.contractNumber || ('HĐ #' + c.id)) + ' — còn ' + formatMoney(c.remaining)"></option>
+                    </template>
+                </select>
+                <p x-show="contractsLoading" class="text-xs text-gray-400 mt-1">Đang tải hợp đồng...</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase">Số tiền *</label>
+                    <input type="number" min="1" step="1000" x-model.number="payAmount" class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm font-bold" />
+                </div>
+                <div>
+                    <label class="text-xs font-bold text-gray-500 uppercase">Ngày chi *</label>
+                    <input type="date" x-model="payDate" class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm" />
+                </div>
+            </div>
+            <div>
+                <label class="text-xs font-bold text-gray-500 uppercase">Phương thức</label>
+                <select x-model="payMethod" class="mt-1 w-full rounded-xl border border-gray-200 px-3 py-2.5 text-sm">
+                    <option value="bank_transfer">Chuyển khoản</option>
+                    <option value="cash">Tiền mặt</option>
+                    <option value="card">Thẻ / POS</option>
+                </select>
+            </div>
+            <p x-show="payError" class="text-sm text-red-600 font-medium" x-text="payError"></p>
+            <div class="flex justify-end gap-2 pt-2">
+                <button type="button" @@click="closePayModal()" class="px-4 py-2 rounded-xl border border-gray-200 text-sm font-bold text-gray-600">Hủy</button>
+                <button type="button" @@click="submitPayment()" :disabled="paySubmitting"
+                        class="px-5 py-2 rounded-xl bg-amber-500 text-white text-sm font-bold disabled:opacity-50">
+                    Lưu thanh toán
+                </button>
+            </div>
         </div>
     </div>
 </div>
+
+@section Scripts {
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('supplierPayablesPage', () => ({
+        payOpen: false,
+        payPartnerId: 0,
+        payPartnerName: '',
+        payContractId: 0,
+        payAmount: 0,
+        payDate: new Date().toISOString().slice(0, 10),
+        payMethod: 'bank_transfer',
+        contracts: [],
+        contractsLoading: false,
+        payError: '',
+        paySubmitting: false,
+        csrf() { return document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''; },
+        formatMoney(n) { return (n || 0).toLocaleString('vi-VN') + ' đ'; },
+        openPayModal(partnerId, name, outstanding) {
+            this.payPartnerId = partnerId || 0;
+            this.payPartnerName = name || '';
+            this.payContractId = 0;
+            this.payAmount = outstanding ? Math.round(outstanding) : 0;
+            this.payError = '';
+            this.contracts = [];
+            this.payOpen = true;
+            if (this.payPartnerId) this.loadContracts();
+        },
+        closePayModal() { this.payOpen = false; },
+        async loadContracts() {
+            if (!this.payPartnerId) { this.contracts = []; return; }
+            this.contractsLoading = true;
+            try {
+                const res = await fetch('@Url.Action("SupplierContracts", "Finance", new { area = "WarehouseStaff" })?partnerId=' + this.payPartnerId);
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.message || 'Không tải được hợp đồng');
+                this.contracts = data.contracts || [];
+                if (this.payContractId) this.syncAmountFromContract();
+            } catch (e) {
+                this.payError = e.message;
+            } finally {
+                this.contractsLoading = false;
+            }
+        },
+        syncAmountFromContract() {
+            const c = this.contracts.find(x => x.id === this.payContractId);
+            if (c && c.remaining > 0 && !this.payAmount) this.payAmount = Math.round(c.remaining);
+        },
+        async submitPayment() {
+            if (!this.payPartnerId || !this.payContractId || !this.payAmount) {
+                this.payError = 'Vui lòng chọn NCC, hợp đồng và nhập số tiền';
+                return;
+            }
+            this.paySubmitting = true;
+            this.payError = '';
+            try {
+                const res = await fetch('@Url.Action("RecordSupplierPayment", "Finance", new { area = "WarehouseStaff" })', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': this.csrf() },
+                    body: JSON.stringify({
+                        partnerId: this.payPartnerId,
+                        contractId: this.payContractId,
+                        amount: this.payAmount,
+                        paymentDate: this.payDate,
+                        method: this.payMethod,
+                        status: 'completed'
+                    })
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.message || 'Ghi nhận thất bại');
+                window.location.reload();
+            } catch (e) {
+                this.payError = e.message;
+            } finally {
+                this.paySubmitting = false;
+            }
+        }
+    }));
+});
+</script>
+}

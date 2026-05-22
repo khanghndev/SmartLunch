@@ -70,7 +70,45 @@ namespace Khoa_Luan_KS_Web.Controllers
             }
             return View(model);
         }
-        public IActionResult Contact() => View();
+        public IActionResult Contact()
+        {
+            if (TempData["ContactSuccess"] is string msg)
+                ViewBag.ContactSuccess = msg;
+            if (TempData["ContactError"] is string err)
+                ViewBag.ContactError = err;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitContact(
+            string fullName,
+            string phone,
+            string email,
+            string interestedService,
+            string? message,
+            CancellationToken ct)
+        {
+            try
+            {
+                var result = await _masterDataClient.CreateContactInquiryAsync(new CreateContactInquiryClientRequest
+                {
+                    FullName = fullName?.Trim() ?? "",
+                    Phone = phone?.Trim() ?? "",
+                    Email = email?.Trim() ?? "",
+                    InterestedService = interestedService?.Trim() ?? "",
+                    Message = message?.Trim(),
+                }, ct);
+                TempData["ContactSuccess"] = result.Message
+                    ?? "Cảm ơn bạn! HuitMeal đã nhận yêu cầu và sẽ liên hệ trong thời gian sớm nhất.";
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Contact form submit failed");
+                TempData["ContactError"] = ex.Message;
+            }
+            return RedirectToAction(nameof(Contact));
+        }
         public IActionResult HuitMeal() => View();
         public IActionResult Achievements() => View();
         public IActionResult ChooseHuitMeal() => View();

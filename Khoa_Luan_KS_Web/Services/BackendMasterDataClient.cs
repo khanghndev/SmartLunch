@@ -258,12 +258,14 @@ public class BackendMasterDataClient
         DateOnly to,
         string scope = "Customer",
         int? organizationId = null,
+        int? partnerId = null,
         int page = 1,
         int pageSize = 20,
         CancellationToken ct = default)
     {
         var query = $"?From={from:yyyy-MM-dd}&To={to:yyyy-MM-dd}&Scope={Uri.EscapeDataString(scope)}&Page={page}&PageSize={pageSize}";
         if (organizationId.HasValue) query += $"&OrganizationId={organizationId.Value}";
+        if (partnerId.HasValue) query += $"&PartnerId={partnerId.Value}";
         return await GetAsync<GetPaymentHistoryClientResponse>($"/api/v1/finance/payment-history{query}", accessToken, ct);
     }
 
@@ -654,6 +656,43 @@ public class BackendMasterDataClient
             accessToken,
             ct);
 
+    // --- Contact inquiries (website liên hệ) ---
+    public async Task<CreateContactInquiryClientResponse> CreateContactInquiryAsync(
+        CreateContactInquiryClientRequest request,
+        CancellationToken ct = default)
+    {
+        var client = CreateAnonymousClient();
+        var json = JsonSerializer.Serialize(request, JsonPostOptions);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PostAsync("/api/v1/contact-inquiries", content, ct);
+        return await HandleResponse<CreateContactInquiryClientResponse>(res, ct);
+    }
+
+    public async Task<GetManagerContactInquiriesClientResponse> GetManagerContactInquiriesAsync(
+        string accessToken,
+        int page = 1,
+        int pageSize = 20,
+        string? searchTerm = null,
+        string? status = null,
+        CancellationToken ct = default)
+    {
+        var q = $"?page={page}&pageSize={pageSize}";
+        if (!string.IsNullOrWhiteSpace(searchTerm)) q += $"&searchTerm={Uri.EscapeDataString(searchTerm)}";
+        if (!string.IsNullOrWhiteSpace(status)) q += $"&status={Uri.EscapeDataString(status)}";
+        return await GetAsync<GetManagerContactInquiriesClientResponse>($"/api/v1/contact-inquiries/manager{q}", accessToken, ct);
+    }
+
+    public async Task<ManagerContactInquiryListItemClientDto> ReplyToContactInquiryAsync(
+        int inquiryId,
+        string reply,
+        string accessToken,
+        CancellationToken ct = default)
+        => await PostAsync<ManagerContactInquiryListItemClientDto>(
+            $"/api/v1/contact-inquiries/{inquiryId}/reply",
+            new { reply },
+            accessToken,
+            ct);
+
     private async Task<T> GetAsync<T>(string path, string accessToken, CancellationToken ct)
     {
         var client = CreateClient(accessToken);
@@ -817,6 +856,47 @@ public class ManagerReviewListItemClientDto
     public string? InvoiceCode { get; set; }
     public string? ManagerReply { get; set; }
     public DateTime? RepliedAt { get; set; }
+    public bool IsReplied { get; set; }
+}
+
+public class CreateContactInquiryClientRequest
+{
+    public string FullName { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string InterestedService { get; set; } = string.Empty;
+    public string? Message { get; set; }
+}
+
+public class CreateContactInquiryClientResponse
+{
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public string Message { get; set; } = string.Empty;
+}
+
+public class GetManagerContactInquiriesClientResponse
+{
+    public List<ManagerContactInquiryListItemClientDto> Data { get; set; } = new();
+    public int TotalCount { get; set; }
+    public int PendingCount { get; set; }
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+}
+
+public class ManagerContactInquiryListItemClientDto
+{
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public string FullName { get; set; } = string.Empty;
+    public string Phone { get; set; } = string.Empty;
+    public string Email { get; set; } = string.Empty;
+    public string InterestedService { get; set; } = string.Empty;
+    public string? Message { get; set; }
+    public string Status { get; set; } = "pending";
+    public string? ManagerReply { get; set; }
+    public DateTime? RepliedAt { get; set; }
+    public DateTime CreatedAt { get; set; }
     public bool IsReplied { get; set; }
 }
 

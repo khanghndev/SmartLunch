@@ -193,7 +193,7 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
                 var to = DateOnly.FromDateTime(DateTime.Today);
                 var from = to.AddMonths(-6);
                 var history = await _masterDataClient.GetPaymentHistoryAsync(
-                    accessToken, from, to, "Customer", organizationId, 1, 50, ct);
+                    accessToken, from, to, "Customer", organizationId: organizationId, page: 1, pageSize: 50, ct: ct);
                 return Json(history);
             }
             catch (Exception ex)

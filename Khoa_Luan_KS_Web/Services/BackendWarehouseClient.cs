@@ -137,6 +137,36 @@ public class BackendWarehouseClient
         return GetAsync<SupplierPayablesClientResponse>($"/api/v1/finance/supplier-payables{q}", accessToken, ct);
     }
 
+    public Task<GetSupplierContractsForPaymentClientResponse> GetSupplierContractsForPaymentAsync(
+        int partnerId,
+        string accessToken,
+        CancellationToken ct = default)
+        => GetAsync<GetSupplierContractsForPaymentClientResponse>(
+            $"/api/v1/finance/supplier-contracts?partnerId={partnerId}",
+            accessToken,
+            ct);
+
+    public Task<CreateSupplierPaymentClientResponse> CreateSupplierPaymentAsync(
+        CreateSupplierPaymentClientRequest request,
+        string accessToken,
+        CancellationToken ct = default)
+        => PostAsync<CreateSupplierPaymentClientResponse>("/api/v1/finance/supplier-payments", request, accessToken, ct);
+
+    public Task<GetPaymentHistoryClientResponse> GetSupplierPaymentHistoryAsync(
+        string accessToken,
+        DateOnly from,
+        DateOnly to,
+        int? partnerId = null,
+        int page = 1,
+        int pageSize = 30,
+        CancellationToken ct = default)
+    {
+        var q = $"?From={from:yyyy-MM-dd}&To={to:yyyy-MM-dd}&Scope=Supplier&Page={page}&PageSize={pageSize}";
+        if (partnerId.HasValue) q += $"&PartnerId={partnerId.Value}";
+        return GetAsync<GetPaymentHistoryClientResponse>($"/api/v1/finance/payment-history{q}", accessToken, ct);
+    }
+
+
     // ───────────────────────────── Plumbing ─────────────────────────────────────────────
     private async Task<T> GetAsync<T>(string path, string accessToken, CancellationToken ct)
     {
@@ -565,3 +595,39 @@ public sealed class SupplierPayablesClientResponse
     public List<SupplierPayableLineClientDto> Lines { get; set; } = new();
     public decimal GrandTotalOutstanding { get; set; }
 }
+
+public sealed class SupplierContractForPaymentClientDto
+{
+    public int Id { get; set; }
+    public string? ContractNumber { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public decimal? TotalValue { get; set; }
+    public decimal TotalPaidCompleted { get; set; }
+    public decimal Remaining { get; set; }
+}
+
+public sealed class GetSupplierContractsForPaymentClientResponse
+{
+    public int PartnerId { get; set; }
+    public List<SupplierContractForPaymentClientDto> Contracts { get; set; } = new();
+}
+
+public sealed class CreateSupplierPaymentClientRequest
+{
+    public int ContractId { get; set; }
+    public int PartnerId { get; set; }
+    public decimal Amount { get; set; }
+    public DateTime PaymentDate { get; set; }
+    public string Method { get; set; } = "bank_transfer";
+    public string Status { get; set; } = "completed";
+}
+
+public sealed class CreateSupplierPaymentClientResponse
+{
+    public int Id { get; set; }
+    public string? Code { get; set; }
+    public decimal Amount { get; set; }
+    public string Status { get; set; } = string.Empty;
+    public string Message { get; set; } = string.Empty;
+}
+

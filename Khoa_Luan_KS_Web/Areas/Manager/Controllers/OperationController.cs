@@ -17,6 +17,7 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
 
         public IActionResult FoodSafety() => View();
         public IActionResult Feedback() => View();
+        public IActionResult Contact() => View();
 
         [HttpGet]
         public async Task<IActionResult> FeedbackList(
@@ -48,6 +49,45 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             try
             {
                 var dto = await _masterDataClient.ReplyToReviewAsync(id, request.Reply, token, ct);
+                return Json(dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ContactList(
+            int page = 1,
+            int pageSize = 20,
+            string? searchTerm = null,
+            string? status = null,
+            CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return Unauthorized(new { message = "Not authenticated" });
+            try
+            {
+                var data = await _masterDataClient.GetManagerContactInquiriesAsync(
+                    token, page, pageSize, searchTerm, status, ct);
+                return Json(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ReplyContact(int id, [FromBody] ReplyFeedbackRequest request, CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return Unauthorized(new { message = "Not authenticated" });
+            try
+            {
+                var dto = await _masterDataClient.ReplyToContactInquiryAsync(id, request.Reply, token, ct);
                 return Json(dto);
             }
             catch (Exception ex)

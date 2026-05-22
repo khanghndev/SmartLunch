@@ -1,0 +1,275 @@
+@* Widget chatbot + FAB — HuitMeal *@
+<div x-data="huitMealChatbot()" x-cloak>
+    <!-- Chat panel -->
+    <div x-show="chatOpen"
+         x-transition:enter="transition ease-out duration-250"
+         x-transition:enter-start="opacity-0 translate-y-3 scale-[0.98]"
+         x-transition:enter-end="opacity-100 translate-y-0 scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-end="opacity-0 translate-y-3 scale-[0.98]"
+         class="hm-chat-panel fixed bottom-[7.5rem] right-6 z-[110] w-[min(calc(100vw-1.5rem),380px)] h-[min(72vh,500px)] flex flex-col rounded-3xl overflow-hidden shadow-2xl border border-white/20"
+         style="display: none;"
+         @@keydown.escape.window="if (chatOpen) chatOpen = false">
+
+        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-xl pointer-events-none"></div>
+        <div class="absolute inset-0 opacity-30 bg-cover bg-center pointer-events-none"
+             style="background-image: url('/assets/images/home_hero.png');"></div>
+        <div class="absolute inset-0 bg-gradient-to-b from-slate-900/40 to-slate-950/90 pointer-events-none"></div>
+
+        <!-- Header -->
+        <header class="relative z-10 flex items-center gap-3 px-4 py-3 border-b border-white/10 shrink-0">
+            <div class="w-10 h-10 rounded-xl bg-green-500/25 border border-green-400/40 flex items-center justify-center shrink-0">
+                <i data-lucide="shield-check" class="w-[18px] h-[18px] text-green-400"></i>
+            </div>
+            <div class="flex-1 min-w-0">
+                <p class="text-white text-sm font-bold leading-tight truncate">HuitMeal AI Assistant</p>
+                <p class="text-[10px] text-green-300 font-semibold flex items-center gap-1.5 mt-0.5">
+                    <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0"></span>
+                    Sẵn sàng hỗ trợ
+                </p>
+            </div>
+            <button type="button" @@click="chatOpen = false"
+                    class="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center shrink-0 transition"
+                    aria-label="Đóng">
+                <i data-lucide="x" class="w-4 h-4"></i>
+            </button>
+        </header>
+
+        <!-- Trust strip — compact -->
+        <div class="relative z-10 mx-4 mt-2 mb-0 px-3 py-2 rounded-xl border border-white/10 bg-white/5 flex items-center gap-2.5 shrink-0">
+            <span class="text-lg font-black text-white leading-none">100%</span>
+            <div class="flex-1 min-w-0">
+                <p class="text-[9px] font-bold text-white/60 uppercase tracking-wider">An toàn thực phẩm</p>
+                <div class="h-0.5 w-full max-w-[120px] bg-white/10 rounded-full mt-1">
+                    <div class="h-full w-[92%] bg-red-500 rounded-full"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Messages -->
+        <div x-ref="chatScroll" class="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-3 space-y-4">
+            <template x-for="(msg, idx) in messages" :key="'m-' + idx">
+                <div class="flex gap-2" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
+                    <div x-show="msg.role === 'bot'"
+                         class="w-8 h-8 rounded-full bg-green-500/20 border border-green-400/30 flex items-center justify-center shrink-0 mt-0.5">
+                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-green-300"></i>
+                    </div>
+                    <div class="min-w-0"
+                         :class="msg.role === 'user' ? 'max-w-[85%] flex flex-col items-end' : 'max-w-[calc(100%-2.5rem)]'">
+                        <div class="px-3.5 py-2.5 rounded-2xl text-[13px] leading-snug break-words"
+                             :class="msg.role === 'user'
+                                ? 'bg-orange-600 text-white rounded-br-sm'
+                                : 'bg-white/15 text-white border border-white/15 rounded-bl-sm'">
+                            <span x-text="msg.text"></span>
+                        </div>
+                        <p class="text-[9px] text-white/35 mt-1"
+                           :class="msg.role === 'user' ? 'text-right' : 'text-left'"
+                           x-text="msg.time"></p>
+                    </div>
+                </div>
+            </template>
+
+            <div x-show="isTyping" class="flex items-start gap-2" style="display: none;">
+                <div class="w-8 h-8 rounded-full bg-green-500/20 border border-green-400/30 flex items-center justify-center shrink-0">
+                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-green-300"></i>
+                </div>
+                <div class="px-4 py-3 rounded-2xl rounded-bl-sm bg-white/10 border border-white/15 flex gap-1 items-center">
+                    <span class="w-1.5 h-1.5 rounded-full bg-white/50 animate-bounce"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-white/50 animate-bounce [animation-delay:120ms]"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-white/50 animate-bounce [animation-delay:240ms]"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick replies — grid 2 cột đều -->
+        <div class="relative z-10 px-4 pb-2 shrink-0" x-show="!isTyping">
+            <div class="grid grid-cols-2 gap-2">
+                <template x-for="chip in quickReplies" :key="chip">
+                    <button type="button" @@click="sendQuick(chip)"
+                            class="w-full min-h-[36px] px-2 py-2 rounded-xl text-[11px] font-bold leading-tight text-center text-white bg-white/10 hover:bg-white/18 border border-white/12 transition">
+                        <span x-text="chip"></span>
+                    </button>
+                </template>
+            </div>
+        </div>
+
+        <!-- Input + nút gửi cùng một hàng -->
+        <footer class="relative z-10 shrink-0 px-4 pb-3 pt-2 border-t border-white/10 bg-slate-950/40">
+            <form @@submit.prevent="sendMessage()" class="hm-chat-form">
+                <input type="text"
+                       x-model="input"
+                       x-ref="chatInput"
+                       autocomplete="off"
+                       placeholder="Nhập câu hỏi..."
+                       class="hm-chat-input"
+                       @@keydown.enter.prevent="sendMessage()" />
+                <button type="submit"
+                        :disabled="!input.trim() || isTyping"
+                        class="hm-chat-send"
+                        aria-label="Gửi tin nhắn">
+                    <i data-lucide="send" class="w-[18px] h-[18px] pointer-events-none"></i>
+                </button>
+            </form>
+            <p class="text-[9px] text-white/30 text-center mt-2 leading-relaxed">Trợ lý AI · Liên hệ hotline để xác nhận thông tin</p>
+        </footer>
+    </div>
+
+    <!-- FAB -->
+    <div class="fixed bottom-10 right-6 z-[100] flex flex-col items-end gap-3">
+        <a href="https://zalo.me/0334297551" target="_blank" rel="noopener"
+           class="group relative w-14 h-14 flex items-center justify-center bg-[#0068ff] text-white text-sm font-black rounded-full shadow-lg hover:-translate-y-0.5 transition">
+            Zalo
+            <span class="absolute right-full mr-2 px-2.5 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-lg transition">Chat Zalo</span>
+        </a>
+        <a href="tel:0334297551"
+           class="group relative w-14 h-14 flex items-center justify-center bg-orange-600 text-white rounded-full shadow-lg hover:-translate-y-0.5 transition">
+            <i data-lucide="phone" class="w-6 h-6"></i>
+            <span class="absolute right-full mr-2 px-2.5 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-lg transition">0334 297 551</span>
+        </a>
+        <button type="button" @@click="toggleChatbot()"
+                class="group relative w-14 h-14 flex items-center justify-center rounded-full border-2 shadow-lg transition"
+                :class="chatOpen ? 'bg-green-600 border-green-400 text-white' : 'bg-slate-900 border-white/20 text-white hover:-translate-y-0.5'">
+            <span x-show="!chatOpen"
+                  class="absolute right-full mr-2 px-2.5 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg border border-white/10 shadow-lg opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all pointer-events-none whitespace-nowrap">
+                Hỗ trợ AI
+            </span>
+            <i data-lucide="message-circle" class="w-6 h-6" x-show="!chatOpen"></i>
+            <i data-lucide="chevron-down" class="w-5 h-5" x-show="chatOpen" style="display: none;"></i>
+            <span x-show="unreadHint && !chatOpen" class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></span>
+        </button>
+    </div>
+</div>
+
+<style>
+    [x-cloak] { display: none !important; }
+    .hm-chat-panel { isolation: isolate; }
+    .hm-chat-form {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) 44px;
+        gap: 8px;
+        align-items: center;
+        width: 100%;
+    }
+    .hm-chat-input {
+        width: 100%;
+        min-width: 0;
+        height: 44px;
+        padding: 0 14px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.1);
+        color: #fff;
+        font-size: 14px;
+        line-height: 44px;
+        font-family: inherit;
+        outline: none;
+        box-sizing: border-box;
+    }
+    .hm-chat-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+    .hm-chat-input:focus {
+        border-color: rgba(34, 197, 94, 0.7);
+        box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+    }
+    .hm-chat-send {
+        width: 44px;
+        height: 44px;
+        min-width: 44px;
+        padding: 0;
+        margin: 0;
+        border: none;
+        border-radius: 12px;
+        background: #16a34a;
+        color: #fff;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        flex-shrink: 0;
+        box-sizing: border-box;
+        transition: background 0.2s;
+    }
+    .hm-chat-send:hover:not(:disabled) { background: #22c55e; }
+    .hm-chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+</style>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('huitMealChatbot', () => ({
+        chatOpen: false,
+        isTyping: false,
+        input: '',
+        unreadHint: true,
+        messages: [],
+        quickReplies: [
+            'Thực đơn tuần',
+            'Đặt suất ăn DN',
+            'Giá & thanh toán',
+            'An toàn thực phẩm'
+        ],
+
+        toggleChatbot() {
+            this.chatOpen = !this.chatOpen;
+            if (this.chatOpen) {
+                this.unreadHint = false;
+                if (this.messages.length === 0) this.pushBot(this.welcomeText());
+                this.$nextTick(() => {
+                    this.scrollToBottom();
+                    this.$refs.chatInput?.focus();
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                });
+            }
+        },
+
+        welcomeText() {
+            return 'Xin chào! Tôi là trợ lý AI HuitMeal. Tôi có thể hỗ trợ về thực đơn, đặt suất ăn, an toàn thực phẩm và liên hệ tư vấn.';
+        },
+
+        nowLabel() {
+            return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
+        },
+
+        pushUser(text) { this.messages.push({ role: 'user', text, time: this.nowLabel() }); },
+        pushBot(text) { this.messages.push({ role: 'bot', text, time: this.nowLabel() }); },
+
+        scrollToBottom() {
+            const el = this.$refs.chatScroll;
+            if (el) requestAnimationFrame(() => { el.scrollTop = el.scrollHeight; });
+        },
+
+        sendQuick(text) { this.input = text; this.sendMessage(); },
+
+        sendMessage() {
+            const text = this.input.trim();
+            if (!text || this.isTyping) return;
+            this.pushUser(text);
+            this.input = '';
+            this.isTyping = true;
+            this.$nextTick(() => this.scrollToBottom());
+            setTimeout(() => {
+                this.pushBot(this.generateReply(text));
+                this.isTyping = false;
+                this.$nextTick(() => {
+                    this.scrollToBottom();
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                });
+            }, 550);
+        },
+
+        generateReply(q) {
+            const s = q.toLowerCase();
+            if (/thực đơn|menu|món|tuần/.test(s))
+                return 'Xem thực đơn tại Dịch vụ → Thực đơn cố định hoặc Thực đơn tự chọn (đơn vị).';
+            if (/đặt|đơn|suất|doanh nghiệp|tổ chức/.test(s))
+                return 'Khách DN đăng nhập và dùng Thực đơn tự chọn, hoặc liên hệ qua trang Liên hệ.';
+            if (/giá|thanh toán|hóa đơn/.test(s))
+                return 'Giá phụ thuộc thực đơn và số suất. Gọi 0334 297 551 để báo giá chi tiết.';
+            if (/an toàn|vệ sinh|iso|haccp/.test(s))
+                return 'HuitMeal tuân thủ HACCP, ISO 22000 và truy xuất nguồn nguyên liệu.';
+            if (/liên hệ|zalo|gọi|hotline/.test(s))
+                return 'Hotline 0334 297 551 · Zalo · contact@HuitMeal.com';
+            if (/chào|hello|hi/.test(s)) return this.welcomeText();
+            return 'Bạn mô tả thêm nhu cầu hoặc bấm Zalo/Gọi bên dưới để gặp tư vấn viên.';
+        }
+    }));
+});
+</script>
