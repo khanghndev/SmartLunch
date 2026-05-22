@@ -60,6 +60,7 @@ public class ContractRepository : IContractRepository
     {
         var query = _context.Contracts
             .Include(c => c.Partner)
+            .Include(c => c.Organization)
             .AsQueryable();
 
         if (partnerId.HasValue)
@@ -72,6 +73,8 @@ public class ContractRepository : IContractRepository
                 (e.Description != null && e.Description.Contains(term)) ||
                 (e.ContractNumber != null && e.ContractNumber.Contains(term)) ||
                 (e.SupplySchedule != null && e.SupplySchedule.Contains(term)) ||
+                (e.Partner != null && e.Partner.LegalName.Contains(term)) ||
+                (e.Organization != null && e.Organization.Name.Contains(term)) ||
                 e.Status.Contains(term));
         }
 
