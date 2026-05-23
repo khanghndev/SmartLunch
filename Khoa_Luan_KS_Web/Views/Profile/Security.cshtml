@@ -1,0 +1,90 @@
+@model Khoa_Luan_KS_Web.Models.ChangePasswordViewModel
+@{
+    ViewData["Title"] = "Bảo mật tài khoản";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+}
+
+<div class="min-h-screen bg-gradient-to-b from-slate-50 to-white py-10 px-4 sm:px-6">
+    <div class="max-w-xl mx-auto">
+        <nav class="flex items-center gap-2 text-xs font-semibold text-slate-400 mb-6">
+            <a href="/Profile/Index" class="hover:text-orange-600">Hồ sơ</a>
+            <span>/</span>
+            <span class="text-slate-600">Đổi mật khẩu</span>
+        </nav>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-lg shadow-slate-200/50 overflow-hidden">
+            <div class="px-6 py-5 border-b border-slate-100 bg-gradient-to-r from-slate-900 to-slate-800 text-white">
+                <div class="flex items-center gap-3">
+                    <div class="w-11 h-11 rounded-xl bg-white/10 flex items-center justify-center">
+                        <i class="fas fa-shield-halved text-lg"></i>
+                    </div>
+                    <div>
+                        <h1 class="text-lg font-black">Đổi mật khẩu</h1>
+                        <p class="text-xs text-slate-300 mt-0.5">@Model.Email</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="p-6 sm:p-8 space-y-5">
+                @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+                {
+                    <div class="rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium px-4 py-3">
+                        @Model.SuccessMessage
+                    </div>
+                }
+                @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+                {
+                    <div class="rounded-xl bg-red-50 border border-red-200 text-red-800 text-sm font-medium px-4 py-3">
+                        @Model.ErrorMessage
+                    </div>
+                }
+
+                <div class="rounded-xl bg-amber-50 border border-amber-100 text-amber-900 text-xs leading-relaxed px-4 py-3">
+                    <strong>Lưu ý:</strong> Sau khi đổi mật khẩu, phiên đăng nhập hiện tại sẽ bị thu hồi. Bạn cần đăng nhập lại bằng mật khẩu mới.
+                </div>
+
+                <form method="post" asp-action="ChangePassword" class="space-y-4">
+                    @Html.AntiForgeryToken()
+                    <div asp-validation-summary="ModelOnly" class="text-red-600 text-sm font-medium"></div>
+
+                    <div>
+                        <label asp-for="CurrentPassword" class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">Mật khẩu hiện tại</label>
+                        <input asp-for="CurrentPassword" autocomplete="current-password"
+                               class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
+                        <span asp-validation-for="CurrentPassword" class="text-red-500 text-xs mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="NewPassword" class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">Mật khẩu mới</label>
+                        <input asp-for="NewPassword" autocomplete="new-password"
+                               class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
+                        <p class="text-[11px] text-slate-400 mt-1">Tối thiểu 8 ký tự, khác mật khẩu hiện tại.</p>
+                        <span asp-validation-for="NewPassword" class="text-red-500 text-xs mt-1 block"></span>
+                    </div>
+
+                    <div>
+                        <label asp-for="ConfirmPassword" class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">Xác nhận mật khẩu mới</label>
+                        <input asp-for="ConfirmPassword" autocomplete="new-password"
+                               class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm focus:ring-2 focus:ring-orange-500 focus:border-orange-500" />
+                        <span asp-validation-for="ConfirmPassword" class="text-red-500 text-xs mt-1 block"></span>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                        <button type="submit"
+                                class="flex-1 bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl shadow-md transition">
+                            Cập nhật mật khẩu
+                        </button>
+                        <a href="/Profile/Index"
+                           class="flex-1 text-center border border-slate-200 text-slate-700 font-bold py-3 rounded-xl hover:bg-slate-50 transition">
+                            Quay lại hồ sơ
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

@@ -1,10 +1,15 @@
+@using Khoa_Luan_KS_Web.Models
 @model Khoa_Luan_KS_Web.Services.DishDto
 @{
     ViewData["Title"] = "Chỉnh sửa Món ăn";
     Layout = "_LayoutManager";
+    var primarySlot = Model.PrimarySlotKey
+        ?? Model.DishSlotCategoryCodes.FirstOrDefault()
+        ?? Model.Category
+        ?? "";
 }
 
-<div x-data="dishEditor()" class="px-4 py-6 md:p-8 space-y-6">
+<div x-data="dishEditor()" class="w-full max-w-[1600px] space-y-6 px-2 py-6 sm:px-4 md:py-8">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 sticky top-0 bg-slate-50/90 backdrop-blur-md pt-2 pb-4 z-40 border-b border-slate-200/60 -mt-4 mb-4">
         <div class="flex items-center gap-3">
             <a href="/Manager/Catalog/MealDetail/@Model.Id" class="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900 transition shadow-sm">
@@ -33,10 +38,10 @@
         </div>
     </div>
 
-    <form id="meal-edit-form" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <form id="meal-edit-form" class="grid grid-cols-1 xl:grid-cols-12 gap-6 xl:gap-8">
         @Html.AntiForgeryToken()
 
-        <div class="lg:col-span-2 space-y-8">
+        <div class="xl:col-span-8 space-y-6">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 md:p-8">
                 <h3 class="text-sm font-black text-slate-900 uppercase tracking-widest mb-6 flex items-center gap-2 border-b border-slate-100 pb-3">
                     1. Thông tin món ăn
@@ -49,24 +54,40 @@
                                class="w-full bg-slate-50 border border-slate-200 text-slate-900 text-[15px] rounded-xl focus:ring-green-500 focus:border-green-500 font-bold block p-3.5 shadow-sm" />
                     </div>
 
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">Tên tiếng Anh</label>
+                        <input type="text" x-model="formData.nameEnglish" placeholder="English name"
+                               class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-green-500 focus:border-green-500 block p-3.5 font-medium shadow-sm" />
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">Phân loại</label>
-                            <select name="Category" x-model="formData.category" class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-green-500 focus:border-green-500 block p-3.5 font-bold shadow-sm">
-                                <option value="">-- Chọn loại --</option>
-                                <option value="man">🍚 Món chính</option>
-                                <option value="xao">🥘 Xào / Chiên</option>
-                                <option value="canh">🍲 Canh / Súp</option>
-                                <option value="trang_mieng">🍮 Tráng miệng</option>
+                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">Nhóm món (slot)</label>
+                            <select x-model="formData.primarySlot" class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-green-500 focus:border-green-500 block p-3.5 font-bold shadow-sm">
+                                <option value="">-- Chọn nhóm --</option>
+                                @foreach (var (value, label) in MealFormOptions.SlotCategories)
+                                {
+                                    <option value="@value">@label</option>
+                                }
                             </select>
                         </div>
-
                         <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">Nhãn (Dietary)</label>
-                            <input name="DietaryLabel" x-model="formData.dietaryLabel"
-                                   placeholder="VD: Healthy / Best Seller..."
-                                   class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-green-500 focus:border-green-500 block p-3.5 font-bold shadow-sm" />
+                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">Cách chế biến</label>
+                            <select x-model="formData.cookingMethod" class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-green-500 focus:border-green-500 block p-3.5 font-bold shadow-sm">
+                                <option value="">-- Chọn --</option>
+                                @foreach (var (value, label) in MealFormOptions.CookingMethods)
+                                {
+                                    <option value="@value">@label</option>
+                                }
+                            </select>
                         </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">Nhãn dinh dưỡng</label>
+                        <input name="DietaryLabel" x-model="formData.dietaryLabel"
+                               placeholder="VD: Healthy / Best Seller..."
+                               class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-green-500 focus:border-green-500 block p-3.5 font-bold shadow-sm" />
                     </div>
 
                     <div>
@@ -98,7 +119,7 @@
             </div>
         </div>
 
-        <div class="lg:col-span-1 space-y-8">
+        <div class="xl:col-span-4 space-y-6">
             <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
                 <div class="flex justify-between items-center mb-4">
                     <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Hình ảnh món ăn (<span x-text="images.length"></span>/5)</h3>
@@ -194,10 +215,12 @@
             statusIsError: false,
             images: @Html.Raw(Json.Serialize(Model.Images)), // Initial from server
             formData: {
-                name: '@Html.Raw(Model.Name)',
-                category: '@Model.Category',
-                description: '@Html.Raw(Model.Description)',
-                dietaryLabel: '@Html.Raw(Model.DietaryLabel)',
+                name: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Name)),
+                nameEnglish: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.NameEnglish ?? "")),
+                primarySlot: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(primarySlot)),
+                cookingMethod: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.CookingMethod ?? "")),
+                description: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Description ?? "")),
+                dietaryLabel: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.DietaryLabel ?? "")),
                 price: @Model.Price,
                 isActive: @(Model.IsActive ? "true" : "false"),
                 calories: @(Model.Calories ?? 0),
@@ -294,9 +317,19 @@
                         }
                     }
 
-                    // 2. Prepare payload for UpdateMeal
                     const payload = {
-                        ...this.formData,
+                        name: this.formData.name,
+                        nameEnglish: this.formData.nameEnglish || null,
+                        description: this.formData.description || null,
+                        dishSlotCategoryCodes: this.formData.primarySlot ? [this.formData.primarySlot] : null,
+                        cookingMethod: this.formData.cookingMethod || null,
+                        price: Number(this.formData.price) || 0,
+                        dietaryLabel: this.formData.dietaryLabel || null,
+                        isActive: !!this.formData.isActive,
+                        calories: this.formData.calories || null,
+                        protein: this.formData.protein || null,
+                        carbs: this.formData.carbs || null,
+                        fat: this.formData.fat || null,
                         images: this.images.map((img, idx) => ({
                             mediaFileId: img.mediaFileId,
                             role: img.role,

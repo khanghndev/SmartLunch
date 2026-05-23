@@ -152,6 +152,69 @@ namespace Khoa_Luan_KS_Web.Controllers
 
         public IActionResult ForgotPassword() => View();
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ForgotPassword(string email, string? role, CancellationToken cancellationToken)
+        {
+            role = string.IsNullOrWhiteSpace(role) ? "Customer" : role;
+
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                TempData["Error"] = "Vui lòng nhập email đã đăng ký.";
+                return RedirectToAction(nameof(ForgotPassword), new { role });
+            }
+
+            try
+            {
+                var resetPageUrl = $"{Request.Scheme}://{Request.Host}/Auth/ResetPassword";
+                var message = await _backendAuthClient.RequestForgotPasswordAsync(email.Trim(), resetPageUrl, cancellationToken);
+                TempData["Success"] = message;
+                return RedirectToAction(nameof(Login), new { role });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(ForgotPassword), new { role });
+            }
+        }
+
+        [HttpGet]
+        public IActionResult ResetPassword(string? token)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                TempData["Error"] = "Link đặt lại mật khẩu không hợp lệ.";
+                return RedirectToAction(nameof(Login), new { role = "Customer" });
+            }
+
+            ViewBag.Token = token;
+            return View();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetPassword(string token, string newPassword, string confirmPassword, CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrWhiteSpace(token))
+            {
+                TempData["Error"] = "Link đặt lại mật khẩu không hợp lệ.";
+                return RedirectToAction(nameof(Login), new { role = "Customer" });
+            }
+
+            try
+            {
+                await _backendAuthClient.ConfirmForgotPasswordAsync(token, newPassword, confirmPassword, cancellationToken);
+                TempData["Success"] = "Đặt lại mật khẩu thành công. Vui lòng đăng nhập bằng mật khẩu mới.";
+                return RedirectToAction(nameof(Login), new { role = "Customer" });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                ViewBag.Token = token;
+                return View();
+            }
+        }
+
         private static string NormalizeAdminUsername(string input)
         {
             input = input.Trim();

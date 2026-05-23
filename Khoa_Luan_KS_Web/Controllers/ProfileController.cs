@@ -4,6 +4,8 @@ using System.Text.Json;
 using Khoa_Luan_KS_Web.Helpers;
 using Khoa_Luan_KS_Web.Models;
 using Khoa_Luan_KS_Web.Services;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -15,21 +17,94 @@ namespace Khoa_Luan_KS_Web.Controllers
         private readonly Services.BackendAuthClient _backendAuthClient;
         private readonly Services.BackendMasterDataClient _masterDataClient;
         private readonly Services.BackendCompanyProfileClient _companyProfileClient;
+        private readonly Services.IApiTokenService _apiTokenService;
 
         public ProfileController(
             Services.BackendAuthClient backendAuthClient,
             Services.BackendMasterDataClient masterDataClient,
-            Services.BackendCompanyProfileClient companyProfileClient)
+            Services.BackendCompanyProfileClient companyProfileClient,
+            Services.IApiTokenService apiTokenService)
         {
             _backendAuthClient = backendAuthClient;
             _masterDataClient = masterDataClient;
             _companyProfileClient = companyProfileClient;
+            _apiTokenService = apiTokenService;
         }
 
         private static bool IsOrganizationAccount(ClaimsPrincipal user) =>
             user.IsInRole("Organization") ||
             user.IsInRole("Company") ||
             user.IsInRole("Khách hàng doanh nghiệp");
+
+        public async Task<IActionResult> Security(CancellationToken ct)
+        {
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Security)) });
+
+            var vm = new ChangePasswordViewModel
+            {
+                SuccessMessage = TempData["PasswordSuccess"] as string,
+                ErrorMessage = TempData["PasswordError"] as string,
+            };
+
+            try
+            {
+                var profile = await _backendAuthClient.GetProfileAsync(accessToken, ct);
+                vm.Email = profile.Email;
+                vm.FullName = profile.FullName;
+            }
+            catch (Exception ex)
+            {
+                vm.ErrorMessage = ex.Message;
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model, CancellationToken ct)
+        {
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Security)) });
+
+            if (!ModelState.IsValid)
+            {
+                try
+                {
+                    var profile = await _backendAuthClient.GetProfileAsync(accessToken, ct);
+                    model.Email = profile.Email;
+                    model.FullName = profile.FullName;
+                }
+                catch { /* ignore */ }
+                return View("Security", model);
+            }
+
+            try
+            {
+                await _backendAuthClient.ChangePasswordAsync(
+                    new ChangePasswordClientRequest
+                    {
+                        CurrentPassword = model.CurrentPassword,
+                        NewPassword = model.NewPassword,
+                        ConfirmPassword = model.ConfirmPassword,
+                    },
+                    accessToken,
+                    ct);
+
+                _apiTokenService.ClearTokens();
+                await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+                TempData["Success"] = "Đã đổi mật khẩu thành công. Vui lòng đăng nhập lại.";
+                return RedirectToAction("Login", "Auth");
+            }
+            catch (Exception ex)
+            {
+                TempData["PasswordError"] = ex.Message;
+                return RedirectToAction(nameof(Security));
+            }
+        }
 
         public async Task<IActionResult> Index(CancellationToken ct)
         {

@@ -46,6 +46,24 @@ public class BackendAuthClient
         return await GetAsync<UserProfileResponse>("/api/v1/Auth/profile", accessToken, ct);
     }
 
+    public async Task ChangePasswordAsync(ChangePasswordClientRequest request, string accessToken, CancellationToken ct)
+    {
+        await PutAsync<object>("/api/v1/Auth/change-password", request, accessToken, ct);
+    }
+
+    public async Task<string> RequestForgotPasswordAsync(string email, string resetPageUrl, CancellationToken ct)
+    {
+        var payload = new { email, resetPageUrl };
+        var response = await PostAsync<ForgotPasswordClientResponse>("/api/v1/Auth/forgot-password", payload, bearerToken: null, ct);
+        return response.Message;
+    }
+
+    public async Task ConfirmForgotPasswordAsync(string token, string newPassword, string confirmPassword, CancellationToken ct)
+    {
+        var payload = new { token, newPassword, confirmPassword };
+        _ = await PostAsync<object>("/api/v1/Auth/confirm-forgot-password", payload, bearerToken: null, ct);
+    }
+
     /// <summary>Làm mới access token bằng refresh token (không cần Bearer hợp lệ).</summary>
     public async Task<RefreshTokenClientResponse> RefreshTokenAsync(string refreshToken, CancellationToken ct)
     {
@@ -118,6 +136,30 @@ public class BackendAuthClient
         return envelope.Data;
     }
 
+    private async Task PutAsync<T>(string path, object payload, string accessToken, CancellationToken ct)
+    {
+        var baseUrl = _configuration["BackendApi:BaseUrl"]?.TrimEnd('/')
+            ?? throw new InvalidOperationException("BackendApi:BaseUrl is not configured");
+        var client = _httpClientFactory.CreateClient();
+        client.BaseAddress = new Uri(baseUrl);
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
+
+        var json = JsonSerializer.Serialize(payload);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PutAsync(path, content, ct);
+        var body = await res.Content.ReadAsStringAsync(ct);
+
+        if (!res.IsSuccessStatusCode)
+        {
+            var msg = TryExtractBackendMessage(body) ?? $"Backend request failed ({(int)res.StatusCode})";
+            throw new InvalidOperationException(msg);
+        }
+
+        var envelope = JsonSerializer.Deserialize<BaseApiResponse<T>>(body, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        if (envelope == null || !envelope.Success)
+            throw new InvalidOperationException(envelope?.Message ?? "Request failed");
+    }
+
     private static string? TryExtractBackendMessage(string body)
     {
         try
@@ -187,6 +229,18 @@ public sealed class UserProfileResponse
     public string? Address { get; set; }
     public List<string> Roles { get; set; } = new();
     public UnitInfoResponse? Unit { get; set; }
+}
+
+public sealed class ChangePasswordClientRequest
+{
+    public string CurrentPassword { get; set; } = string.Empty;
+    public string NewPassword { get; set; } = string.Empty;
+    public string ConfirmPassword { get; set; } = string.Empty;
+}
+
+public sealed class ForgotPasswordClientResponse
+{
+    public string Message { get; set; } = string.Empty;
 }
 
 public sealed class UnitInfoResponse

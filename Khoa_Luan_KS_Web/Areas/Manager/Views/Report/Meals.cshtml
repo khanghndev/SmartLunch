@@ -1,0 +1,190 @@
+@model Khoa_Luan_KS_Web.Areas.Manager.Controllers.MealReportViewModel
+@{
+    ViewData["Title"] = "Thống kê suất ăn";
+    Layout = "_LayoutManager";
+    var chartLabels = Model.SummaryRows
+        .GroupBy(x => x.Date)
+        .OrderBy(g => g.Key)
+        .Select(g => g.Key.ToString("dd/MM"))
+        .ToList();
+    var chartData = Model.SummaryRows
+        .GroupBy(x => x.Date)
+        .OrderBy(g => g.Key)
+        .Select(g => g.Sum(x => x.TotalMeals))
+        .ToList();
+}
+
+<div class="w-full max-w-[1600px] space-y-6" x-data="{ tab: 'summary' }">
+    <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <a href="/Manager/Report" class="w-10 h-10 bg-white border border-slate-200 rounded-xl flex items-center justify-center text-slate-500 hover:text-slate-900">
+                <i class="fas fa-arrow-left"></i>
+            </a>
+            <div>
+                <h1 class="text-2xl font-black text-slate-900">Thống kê suất ăn</h1>
+                <p class="text-sm text-slate-500">@Model.From.ToString("dd/MM/yyyy") — @Model.To.ToString("dd/MM/yyyy")</p>
+            </div>
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <a href="/Manager/Report/ExportMealsSummary?from=@Model.From:yyyy-MM-dd&to=@Model.To:yyyy-MM-dd@(Model.OrganizationId.HasValue ? $"&organizationId={Model.OrganizationId}" : "")"
+               class="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold shadow-sm">
+                <i class="fas fa-file-excel"></i> Excel tổng hợp
+            </a>
+            <a href="/Manager/Report/ExportMealsDetailed?from=@Model.From:yyyy-MM-dd&to=@Model.To:yyyy-MM-dd@(Model.OrganizationId.HasValue ? $"&organizationId={Model.OrganizationId}" : "")"
+               class="inline-flex items-center gap-2 bg-white border border-slate-200 hover:border-emerald-400 text-slate-700 px-4 py-2.5 rounded-xl text-sm font-bold">
+                <i class="fas fa-table text-emerald-600"></i> Excel chi tiết
+            </a>
+        </div>
+    </div>
+
+    <form method="get" class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex flex-wrap items-end gap-4">
+        <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Từ ngày</label>
+            <input type="date" name="from" value="@Model.From.ToString("yyyy-MM-dd")" class="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium" />
+        </div>
+        <div>
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Đến ngày</label>
+            <input type="date" name="to" value="@Model.To.ToString("yyyy-MM-dd")" class="rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium" />
+        </div>
+        <div class="min-w-[200px]">
+            <label class="block text-[10px] font-bold text-slate-400 uppercase mb-1">Khách hàng</label>
+            <select name="organizationId" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-medium">
+                <option value="">Tất cả</option>
+                @foreach (var o in Model.Organizations)
+                {
+                    <option value="@o.Id" selected="@(Model.OrganizationId == o.Id)">@o.Name</option>
+                }
+            </select>
+        </div>
+        <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold px-5 py-2.5 rounded-xl text-sm">Áp dụng</button>
+    </form>
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl border border-slate-100 p-4">
+            <p class="text-[10px] font-black text-slate-400 uppercase">Tổng suất</p>
+            <p class="text-2xl font-black text-emerald-700">@Model.TotalMeals.ToString("N0")</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-100 p-4">
+            <p class="text-[10px] font-black text-slate-400 uppercase">Doanh thu</p>
+            <p class="text-2xl font-black text-slate-900">@Model.TotalRevenue.ToString("N0")₫</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-100 p-4">
+            <p class="text-[10px] font-black text-slate-400 uppercase">Dòng tổng hợp</p>
+            <p class="text-2xl font-black text-slate-700">@Model.SummaryRows.Count</p>
+        </div>
+        <div class="bg-white rounded-xl border border-slate-100 p-4">
+            <p class="text-[10px] font-black text-slate-400 uppercase">Dòng chi tiết</p>
+            <p class="text-2xl font-black text-slate-700">@Model.DetailedRows.Count</p>
+        </div>
+    </div>
+
+    @if (chartLabels.Count > 0)
+    {
+        <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+            <h3 class="text-sm font-black text-slate-800 uppercase tracking-widest mb-4">Biểu đồ suất theo ngày</h3>
+            <canvas id="mealsChart" height="80"></canvas>
+        </div>
+    }
+
+    <div class="flex gap-2 border-b border-slate-200">
+        <button type="button" @@click="tab='summary'" :class="tab==='summary' ? 'border-green-600 text-green-700' : 'border-transparent text-slate-500'"
+                class="px-4 py-2 text-sm font-bold border-b-2 -mb-px">Tổng hợp</button>
+        <button type="button" @@click="tab='detail'" :class="tab==='detail' ? 'border-green-600 text-green-700' : 'border-transparent text-slate-500'"
+                class="px-4 py-2 text-sm font-bold border-b-2 -mb-px">Chi tiết món</button>
+    </div>
+
+    <div x-show="tab==='summary'" class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase">
+                <tr>
+                    <th class="text-left px-5 py-3">Ngày</th>
+                    <th class="text-left px-5 py-3">Buổi</th>
+                    <th class="text-left px-5 py-3">Khách hàng</th>
+                    <th class="text-right px-5 py-3">Suất</th>
+                    <th class="text-right px-5 py-3">Doanh thu</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.SummaryRows.Any())
+                {
+                    <tr><td colspan="5" class="text-center py-12 text-slate-400">Không có dữ liệu trong kỳ đã chọn.</td></tr>
+                }
+                @foreach (var row in Model.SummaryRows.OrderBy(x => x.Date).ThenBy(x => x.MealSlot))
+                {
+                    <tr class="border-t border-slate-50 hover:bg-slate-50/80">
+                        <td class="px-5 py-3 font-medium">@row.Date.ToString("dd/MM/yyyy")</td>
+                        <td class="px-5 py-3">@row.MealSlot</td>
+                        <td class="px-5 py-3">@row.OrganizationName</td>
+                        <td class="px-5 py-3 text-right font-bold">@row.TotalMeals.ToString("N0")</td>
+                        <td class="px-5 py-3 text-right font-bold text-emerald-700">@row.TotalAmount.ToString("N0")₫</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div x-show="tab==='detail'" x-cloak class="bg-white rounded-2xl border border-slate-100 overflow-hidden shadow-sm">
+        <table class="w-full text-sm">
+            <thead class="bg-slate-50 text-[10px] font-black text-slate-400 uppercase">
+                <tr>
+                    <th class="text-left px-4 py-3">Ngày</th>
+                    <th class="text-left px-4 py-3">Buổi</th>
+                    <th class="text-left px-4 py-3">KH</th>
+                    <th class="text-left px-4 py-3">Món</th>
+                    <th class="text-right px-4 py-3">SL</th>
+                    <th class="text-right px-4 py-3">Tiền</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.DetailedRows.Any())
+                {
+                    <tr><td colspan="6" class="text-center py-12 text-slate-400">Không có dữ liệu chi tiết.</td></tr>
+                }
+                @foreach (var row in Model.DetailedRows.OrderBy(x => x.Date).ThenBy(x => x.DishName).Take(500))
+                {
+                    <tr class="border-t border-slate-50 hover:bg-slate-50/80">
+                        <td class="px-4 py-2.5">@row.Date.ToString("dd/MM/yyyy")</td>
+                        <td class="px-4 py-2.5">@row.MealSlot</td>
+                        <td class="px-4 py-2.5 truncate max-w-[120px]" title="@row.OrganizationName">@row.OrganizationName</td>
+                        <td class="px-4 py-2.5 font-medium">@row.DishName</td>
+                        <td class="px-4 py-2.5 text-right">@row.Quantity</td>
+                        <td class="px-4 py-2.5 text-right text-emerald-700 font-bold">@row.TotalAmount.ToString("N0")₫</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+        @if (Model.DetailedRows.Count > 500)
+        {
+            <p class="text-xs text-slate-400 text-center py-3">Hiển thị 500 dòng đầu — dùng Excel chi tiết để xem đầy đủ.</p>
+        }
+    </div>
+</div>
+
+@section Scripts {
+@if (chartLabels.Count > 0)
+{
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script>
+    const ctx = document.getElementById('mealsChart');
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(chartLabels)),
+                datasets: [{
+                    label: 'Suất ăn',
+                    data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(chartData)),
+                    backgroundColor: 'rgba(22, 163, 74, 0.75)',
+                    borderRadius: 8
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+    }
+</script>
+}
+}

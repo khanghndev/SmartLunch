@@ -1,37 +1,25 @@
+﻿@using Khoa_Luan_KS_Web.Models
 @model Khoa_Luan_KS_Web.Services.GetDishesResponse
 @{
     ViewData["Title"] = "Quản lý Món ăn";
     Layout = "_LayoutManager";
 
-    string CatLabel(string? cat) => cat?.ToLower() switch {
-        "man"         => "Món chính",
-        "xao"         => "Xào / Chiên",
-        "canh"        => "Canh / Súp",
-        "trang_mieng" => "Tráng miệng",
-        _             => "Khác"
+    string CatLabel(string? cat) => MealFormOptions.SlotLabel(cat);
+    string CatDot(string? cat) => (cat ?? "").ToLowerInvariant() switch {
+        "main" or "man" => "bg-orange-400",
+        "side" or "xao" => "bg-yellow-400",
+        "soup" or "canh" or "noodle_soup" => "bg-blue-400",
+        "dessert" or "trang_mieng" => "bg-pink-400",
+        "vegetable" => "bg-emerald-400",
+        _ => "bg-slate-300"
     };
-
-    string CatDot(string? cat) => cat?.ToLower() switch {
-        "man"         => "bg-orange-400",
-        "xao"         => "bg-yellow-400",
-        "canh"        => "bg-blue-400",
-        "trang_mieng" => "bg-pink-400",
-        _             => "bg-slate-300"
-    };
-
-    string CatPill(string? cat) => cat?.ToLower() switch {
-        "man"         => "bg-orange-50 text-orange-700 border border-orange-200",
-        "xao"         => "bg-yellow-50 text-yellow-700 border border-yellow-200",
-        "canh"        => "bg-blue-50 text-blue-700 border border-blue-200",
-        "trang_mieng" => "bg-pink-50 text-pink-700 border border-pink-200",
-        _             => "bg-slate-50 text-slate-500 border border-slate-200"
-    };
+    string CatPill(string? cat) => MenuDishDisplayHelper.CategoryBadgeClass(cat) + " text-[10px] font-black px-2.5 py-1 rounded-full border";
 
     var curCat   = Context.Request.Query["category"].ToString();
     var curSearch = Context.Request.Query["searchTerm"].ToString();
 }
 
-<div x-data="{ isOpen: false }" class="space-y-5">
+<div class="space-y-5">
 
     <!-- ═══ HEADER ═══ -->
     <div class="flex items-center justify-between">
@@ -39,10 +27,10 @@
             <h1 class="text-xl font-black text-slate-900">Quản lý Món ăn</h1>
             <p class="text-sm text-slate-500 mt-0.5">Quản lý danh mục, dinh dưỡng và định mức nguyên liệu</p>
         </div>
-        <button @@click="isOpen = true"
-                class="flex items-center gap-2 bg-green-600 hover:bg-green-700 active:scale-95 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-green-200 transition-all">
-            <i class="fas fa-plus"></i> Thêm Món ăn
-        </button>
+        <a href="/Manager/Catalog/MealCreate"
+           class="flex items-center gap-2 bg-green-600 hover:bg-green-700 active:scale-95 text-white px-5 py-2.5 rounded-xl font-bold text-sm shadow-lg shadow-green-200 transition-all">
+            <i class="fas fa-plus"></i> Thêm món ăn
+        </a>
     </div>
 
     <!-- ═══ STATS ═══ -->
@@ -51,9 +39,9 @@
             var stats = new[] {
                 new { Label = "Tổng món", Value = Model.TotalCount.ToString(), Color = "text-slate-900", Bg = "bg-white" },
                 new { Label = "Đang bán",   Value = Model.Items.Count(x => x.IsActive).ToString(),          Color = "text-emerald-700", Bg = "bg-emerald-50" },
-                new { Label = "Món chính",  Value = Model.Items.Count(x => x.Category == "man").ToString(),  Color = "text-orange-700",  Bg = "bg-orange-50" },
-                new { Label = "Canh / Súp", Value = Model.Items.Count(x => x.Category == "canh").ToString(), Color = "text-blue-700",    Bg = "bg-blue-50" },
-                new { Label = "Tráng miệng",Value = Model.Items.Count(x => x.Category == "trang_mieng").ToString(), Color = "text-pink-700", Bg = "bg-pink-50" },
+                new { Label = "Món chính",  Value = Model.Items.Count(x => x.Category is "main" or "man").ToString(),  Color = "text-orange-700",  Bg = "bg-orange-50" },
+                new { Label = "Canh / Súp", Value = Model.Items.Count(x => x.Category is "soup" or "canh" or "noodle_soup").ToString(), Color = "text-blue-700",    Bg = "bg-blue-50" },
+                new { Label = "Tráng miệng",Value = Model.Items.Count(x => x.Category is "dessert" or "trang_mieng").ToString(), Color = "text-pink-700", Bg = "bg-pink-50" },
             };
         }
         @foreach (var s in stats)
@@ -69,11 +57,11 @@
     <div class="flex flex-wrap items-center gap-2">
         @{
             var filterTabs = new[] {
-                new { Key = "",            Icon = "", Label = "Tất cả" },
-                new { Key = "man",         Icon = "", Label = "Món chính" },
-                new { Key = "xao",         Icon = "", Label = "Xào / Chiên" },
-                new { Key = "canh",        Icon = "", Label = "Canh / Súp" },
-                new { Key = "trang_mieng", Icon = "", Label = "Tráng miệng" },
+                new { Key = "", Label = "Tất cả" },
+                new { Key = "main", Label = "Món chính" },
+                new { Key = "soup", Label = "Canh / súp" },
+                new { Key = "side", Label = "Món phụ" },
+                new { Key = "dessert", Label = "Tráng miệng" },
             };
         }
         @foreach (var t in filterTabs)
@@ -81,7 +69,7 @@
             var active = curCat == t.Key;
             <a href="/Manager/Catalog/Meals?category=@t.Key@(!string.IsNullOrEmpty(curSearch) ? "&searchTerm=" + curSearch : "")"
                class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all @(active ? "bg-green-600 text-white shadow-md" : "bg-white text-slate-600 border border-slate-200 hover:border-green-300 hover:text-green-600")">
-                @t.Icon @t.Label
+                @t.Label
             </a>
         }
 
@@ -113,6 +101,9 @@
                     <p class="font-black text-slate-700 text-base">Không tìm thấy món ăn nào</p>
                     <p class="text-sm mt-1">Hãy thêm món ăn mới hoặc điều chỉnh bộ lọc.</p>
                 </div>
+                <a href="/Manager/Catalog/MealCreate" class="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-green-700 transition">
+                    <i class="fas fa-plus"></i> Thêm món ăn
+                </a>
             </div>
         }
         else
@@ -238,304 +229,4 @@
             </div>
         }
     </div>
-
-    <!-- ═══ CREATE MODAL ═══ -->
-    <div x-show="isOpen" x-cloak
-         x-data="mealCreator()"
-         class="fixed inset-0 z-[150] flex items-center justify-center p-4">
-        <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @@click="isOpen = false"></div>
-
-        <div class="relative bg-white w-full max-w-2xl rounded-2xl shadow-2xl max-h-[92vh] flex flex-col"
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 scale-95"
-             x-transition:enter-end="opacity-100 scale-100">
-
-            <!-- Header -->
-            <div class="flex items-center justify-between px-6 py-4 border-b border-slate-100 shrink-0">
-                <div>
-                    <h3 class="font-black text-slate-900 text-base">Thêm Món ăn mới</h3>
-                    <p class="text-xs text-slate-400 mt-0.5">Điền đầy đủ thông tin và dinh dưỡng cho món ăn</p>
-                </div>
-                <button @@click="isOpen = false" class="w-8 h-8 rounded-lg bg-slate-50 text-slate-400 hover:text-red-500 hover:bg-red-50 flex items-center justify-center transition-all">
-                    <i class="fas fa-times text-xs"></i>
-                </button>
-            </div>
-
-            <!-- Body (scrollable) -->
-            <form id="create-meal-form" @@submit.prevent="saveAll()" class="overflow-y-auto flex-1 px-6 py-5 space-y-5">
-                @Html.AntiForgeryToken()
-
-                <!-- Tên + Mã -->
-                <div class="grid grid-cols-3 gap-4">
-                    <div class="col-span-2">
-                        <label class="form-label">Tên món ăn <span class="text-red-500">*</span></label>
-                        <input type="text" x-model="formData.name" required placeholder="Ví dụ: Cơm gà nướng sả ớt"
-                               class="form-input" />
-                    </div>
-                    <div>
-                        <label class="form-label">Mã món <span class="text-slate-400 font-normal">(tự động)</span></label>
-                        <div class="relative">
-                            <input type="text" x-model="formData.code" readonly
-                                   placeholder="Chọn phân loại..."
-                                   class="form-input pr-9 bg-slate-100 text-slate-500 cursor-not-allowed font-mono text-sm" />
-                            <button type="button" @@click="regenerateCode()"
-                                    title="Tạo mã mới"
-                                    class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-green-600 transition-colors">
-                                <i class="fas fa-rotate-right text-xs"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Phân loại + Nhãn -->
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="form-label">Phân loại <span class="text-red-500">*</span></label>
-                        <select x-model="formData.category" @@change="onCategoryChange" required
-                                class="form-input">
-                            <option value="">-- Chọn loại --</option>
-                            <option value="man">🍚 Món chính</option>
-                            <option value="xao">🥘 Xào / Chiên</option>
-                            <option value="canh">🍲 Canh / Súp</option>
-                            <option value="trang_mieng">🍮 Tráng miệng</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="form-label">Nhãn dinh dưỡng</label>
-                        <select x-model="formData.dietaryLabel" class="form-input">
-                            <option value="">Không có</option>
-                            <option value="Thuần chay">🌿 Thuần chay</option>
-                            <option value="Ăn kiêng">🥗 Ăn kiêng</option>
-                            <option value="High Energy">⚡ High Energy</option>
-                            <option value="Best Seller">🔥 Best Seller</option>
-                            <option value="Healthy">💚 Healthy</option>
-                            <option value="Vegan">🌱 Vegan</option>
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Mô tả -->
-                <div>
-                    <label class="form-label">Mô tả ngắn</label>
-                    <textarea x-model="formData.description" rows="2" placeholder="Gồm Cơm trắng, Thịt gà nướng, Dưa leo..."
-                              class="form-input resize-none"></textarea>
-                </div>
-
-                <!-- Giá + Hình ảnh -->
-                <div class="grid grid-cols-2 gap-6">
-                    <div>
-                        <label class="form-label">Đơn giá (VNĐ)</label>
-                        <div class="relative">
-                            <input type="number" x-model="formData.price" min="0" step="500" placeholder="35000"
-                                   class="form-input pr-8" />
-                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">₫</span>
-                        </div>
-                    </div>
-                    
-                    <div class="space-y-3">
-                        <div class="flex justify-between items-center">
-                            <label class="form-label mb-0">Hình ảnh (<span x-text="images.length"></span>/5)</label>
-                            <label x-show="images.length < 5" class="text-[10px] font-bold text-blue-600 hover:underline cursor-pointer">
-                                Tải ảnh
-                                <input type="file" accept="image/*" multiple class="hidden" @@change="handleFileSelect" />
-                            </label>
-                        </div>
-                        
-                        <div class="grid grid-cols-3 gap-2 border border-dashed border-slate-200 rounded-xl p-2 min-h-[80px] bg-slate-50/50">
-                            <template x-for="(img, index) in images" :key="index">
-                                <div class="relative aspect-square rounded-lg overflow-hidden border border-slate-200 group">
-                                    <img :src="img.previewUrl" class="w-full h-full object-cover" />
-                                    <div class="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex flex-col items-center justify-center gap-1 transition-opacity">
-                                        <button type="button" @@click="setAsMain(index)" class="text-[8px] bg-white px-1 rounded font-black hover:bg-green-500 hover:text-white">Main</button>
-                                        <button type="button" @@click="removeImage(index)" class="text-white hover:text-red-400"><i class="fas fa-trash-alt text-[10px]"></i></button>
-                                    </div>
-                                    <div class="absolute top-0.5 left-0.5" x-show="img.role === 'cover'">
-                                        <span class="bg-green-500 text-white text-[7px] font-black px-1 rounded">Main</span>
-                                    </div>
-                                </div>
-                            </template>
-                            <div x-show="images.length === 0" class="col-span-3 flex items-center justify-center text-[10px] text-slate-400 font-bold uppercase">
-                                Chưa chọn ảnh
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Dinh dưỡng -->
-                <div>
-                    <p class="form-label mb-3">Thành phần Dinh dưỡng <span class="font-normal text-slate-400">(trên 1 suất ăn)</span></p>
-                    <div class="grid grid-cols-4 gap-3">
-                        <div class="bg-orange-50 border border-orange-200 rounded-xl p-3">
-                            <label class="block text-[10px] font-black text-orange-500 uppercase tracking-wider mb-1">🔥 Kcal</label>
-                            <input type="number" x-model="formData.calories" min="0" step="10" placeholder="650"
-                                   class="w-full bg-transparent text-lg font-black text-orange-800 outline-none border-none p-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
-                        </div>
-                        <div class="bg-blue-50 border border-blue-200 rounded-xl p-3">
-                            <label class="block text-[10px] font-black text-blue-500 uppercase tracking-wider mb-1">💪 Protein (g)</label>
-                            <input type="number" x-model="formData.protein" min="0" step="0.5" placeholder="30"
-                                   class="w-full bg-transparent text-lg font-black text-blue-800 outline-none border-none p-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
-                        </div>
-                        <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
-                            <label class="block text-[10px] font-black text-amber-500 uppercase tracking-wider mb-1">🌾 Carbs (g)</label>
-                            <input type="number" x-model="formData.carbs" min="0" step="0.5" placeholder="80"
-                                   class="w-full bg-transparent text-lg font-black text-amber-800 outline-none border-none p-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
-                        </div>
-                        <div class="bg-purple-50 border border-purple-200 rounded-xl p-3">
-                            <label class="block text-[10px] font-black text-purple-500 uppercase tracking-wider mb-1">💧 Chất béo (g)</label>
-                            <input type="number" x-model="formData.fat" min="0" step="0.5" placeholder="15"
-                                   class="w-full bg-transparent text-lg font-black text-purple-800 outline-none border-none p-0 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none" />
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Submit row -->
-                <div class="flex gap-3 pt-2 border-t border-slate-100">
-                    <button type="button" @@click="isOpen = false"
-                            class="flex-1 py-2.5 bg-slate-50 hover:bg-slate-100 text-slate-600 rounded-xl font-bold text-sm transition-all">
-                        Hủy bỏ
-                    </button>
-                    <button type="submit" :disabled="isSaving"
-                            class="flex-1 py-2.5 bg-green-600 hover:bg-green-700 disabled:opacity-50 text-white rounded-xl font-bold text-sm transition-all shadow-lg shadow-green-200 active:scale-95 flex items-center justify-center gap-2">
-                        <template x-if="!isSaving">
-                            <i class="fas fa-plus"></i>
-                        </template>
-                        <template x-if="isSaving">
-                            <i class="fas fa-spinner fa-spin"></i>
-                        </template>
-                        <span x-text="isSaving ? 'Đang lưu...' : 'Thêm vào danh mục'"></span>
-                    </button>
-                </div>
-                <p x-show="statusMsg" :class="statusIsError ? 'text-red-500' : 'text-slate-500'" 
-                   class="text-center text-[10px] font-bold uppercase tracking-wider" x-text="statusMsg"></p>
-            </form>
-        </div>
-    </div>
 </div>
-
-<style>
-    .form-label  { display:block; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.07em; margin-bottom:6px; }
-    .form-input  { display:block; width:100%; padding:9px 14px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; font-size:14px; font-weight:500; outline:none; transition: border-color .15s, box-shadow .15s; }
-    .form-input:focus { border-color:#16a34a; box-shadow:0 0 0 3px rgb(22 163 74 / 0.1); }
-</style>
-
-@section Scripts {
-<script>
-    const CAT_PREFIX = { man: 'MAN', xao: 'XAO', canh: 'CNH', trang_mieng: 'TMG' };
-
-    function mealCreator() {
-        return {
-            isSaving: false,
-            statusMsg: '',
-            statusIsError: false,
-            images: [],
-            formData: {
-                name: '',
-                code: '',
-                category: '',
-                description: '',
-                dietaryLabel: '',
-                price: 0,
-                calories: 0,
-                protein: 0,
-                carbs: 0,
-                fat: 0
-            },
-
-            onCategoryChange() {
-                if (!this.formData.category) {
-                    this.formData.code = '';
-                } else {
-                    const prefix = CAT_PREFIX[this.formData.category] || this.formData.category.toUpperCase().slice(0, 3);
-                    const suffix = Date.now().toString().slice(-5);
-                    this.formData.code = prefix + '-' + suffix;
-                }
-            },
-
-            regenerateCode() {
-                if (this.formData.category) this.onCategoryChange();
-            },
-
-            handleFileSelect(e) {
-                const files = Array.from(e.target.files);
-                const remaining = 5 - this.images.length;
-                if (remaining <= 0) return;
-
-                files.slice(0, remaining).forEach(file => {
-                    this.images.push({
-                        file: file,
-                        previewUrl: URL.createObjectURL(file),
-                        role: this.images.length === 0 ? 'cover' : 'gallery'
-                    });
-                });
-            },
-
-            removeImage(idx) {
-                URL.revokeObjectURL(this.images[idx].previewUrl);
-                this.images.splice(idx, 1);
-                if (this.images.length > 0 && !this.images.some(i => i.role === 'cover')) {
-                    this.images[0].role = 'cover';
-                }
-            },
-
-            setAsMain(idx) {
-                this.images.forEach((img, i) => img.role = (i === idx ? 'cover' : 'gallery'));
-            },
-
-            setStatus(msg, isErr) {
-                this.statusMsg = msg;
-                this.statusIsError = isErr;
-                if (msg) setTimeout(() => { if(this.statusMsg === msg) this.statusMsg = ''; }, 3000);
-            },
-
-            async saveAll() {
-                this.isSaving = true;
-                this.setStatus('Đang xử lý...', false);
-
-                try {
-                    const csrf = document.querySelector('input[name="__RequestVerificationToken"]').value;
-
-                    // 1. Upload images
-                    const imageRequests = [];
-                    for (let img of this.images) {
-                        const fd = new FormData();
-                        fd.append('file', img.file);
-                        fd.append('__RequestVerificationToken', csrf);
-
-                        const res = await fetch('/Manager/Catalog/UploadDishImage', { method: 'POST', body: fd });
-                        if (!res.ok) throw new Error('Upload failed: ' + img.file.name);
-                        const data = await res.json();
-                        imageRequests.push({
-                            mediaFileId: data.mediaFileId,
-                            role: img.role,
-                            sortOrder: imageRequests.length
-                        });
-                    }
-
-                    // 2. Create Dish
-                    const payload = {
-                        ...this.formData,
-                        images: imageRequests
-                    };
-
-                    const createRes = await fetch('/Manager/Catalog/CreateMeal', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': csrf },
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (createRes.ok) {
-                        const data = await createRes.json();
-                        window.location.href = data.redirectUrl;
-                    } else {
-                        const err = await createRes.json();
-                        throw new Error(err.message || 'Lỗi khi tạo món ăn');
-                    }
-                } catch (err) {
-                    this.setStatus(err.message, true);
-                    this.isSaving = false;
-                }
-            }
-        };
-    }
-</script>
-}

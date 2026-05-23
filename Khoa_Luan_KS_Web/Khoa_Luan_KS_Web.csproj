@@ -7,7 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="ClosedXML" Version="0.104.2" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.23" />
+    <PackageReference Include="NuGet.Packaging" Version="6.11.2" />
+    <PackageReference Include="NuGet.Protocol" Version="6.11.2" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt">
       <Version>8.17.0</Version>
     </PackageReference>

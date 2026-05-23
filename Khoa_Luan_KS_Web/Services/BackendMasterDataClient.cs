@@ -245,6 +245,39 @@ public class BackendMasterDataClient
     public async Task<GetManagerContractResponse> CreateContractAsync(CreateContractClientRequest payload, string accessToken, CancellationToken ct = default)
         => await PostAsync<GetManagerContractResponse>("/api/v1/master-data/Contract", payload, accessToken, ct);
 
+    // ─── Báo cáo suất ăn ───────────────────────────────────────────────────────
+    public Task<GetMealStatisticsClientResponse> GetMealStatisticsAsync(
+        string accessToken,
+        DateOnly? startDate = null,
+        DateOnly? endDate = null,
+        int? organizationId = null,
+        CancellationToken ct = default)
+    {
+        var q = "?";
+        var parts = new List<string>();
+        if (startDate.HasValue) parts.Add($"StartDate={startDate.Value:yyyy-MM-dd}");
+        if (endDate.HasValue) parts.Add($"EndDate={endDate.Value:yyyy-MM-dd}");
+        if (organizationId.HasValue) parts.Add($"OrganizationId={organizationId.Value}");
+        q += string.Join("&", parts);
+        if (q == "?") q = "";
+        return GetAsync<GetMealStatisticsClientResponse>($"/api/v1/master-data/Order/statistics/meal-count{q}", accessToken, ct);
+    }
+
+    public Task<GetDetailedMealStatisticsClientResponse> GetDetailedMealStatisticsAsync(
+        string accessToken,
+        DateOnly? startDate = null,
+        DateOnly? endDate = null,
+        int? organizationId = null,
+        CancellationToken ct = default)
+    {
+        var parts = new List<string>();
+        if (startDate.HasValue) parts.Add($"StartDate={startDate.Value:yyyy-MM-dd}");
+        if (endDate.HasValue) parts.Add($"EndDate={endDate.Value:yyyy-MM-dd}");
+        if (organizationId.HasValue) parts.Add($"OrganizationId={organizationId.Value}");
+        var q = parts.Count > 0 ? "?" + string.Join("&", parts) : "";
+        return GetAsync<GetDetailedMealStatisticsClientResponse>($"/api/v1/master-data/Order/statistics/details{q}", accessToken, ct);
+    }
+
     // ─── Finance (công nợ / thu chi) ─────────────────────────────────────────────
     public async Task<GetOrganizationReceivablesClientResponse> GetOrganizationReceivablesAsync(
         string accessToken,
@@ -299,9 +332,10 @@ public class BackendMasterDataClient
         return await GetAsync<DishDetailResponse>($"/api/v1/master-data/Dish/{id}?includeIngredientQuotas=true", accessToken, ct);
     }
 
-    public async Task<DishDetailDto> CreateDishAsync(CreateDishRequest payload, string accessToken, CancellationToken ct = default)
+    public async Task<DishDto> CreateDishAsync(CreateDishRequest payload, string accessToken, CancellationToken ct = default)
     {
-        return await PostAsync<DishDetailDto>("/api/v1/master-data/Dish", payload, accessToken, ct);
+        var response = await PostAsync<DishDetailResponse>("/api/v1/master-data/Dish", payload, accessToken, ct);
+        return response.Dish;
     }
 
     public async Task<DishDetailResponse> UpdateDishAsync(int id, UpdateDishRequest payload, string accessToken, CancellationToken ct = default)
@@ -1221,10 +1255,11 @@ public class DishDetailResponse
 
 public class CreateDishRequest
 {
-    public string? Code { get; set; }
     public string Name { get; set; } = string.Empty;
+    public string? NameEnglish { get; set; }
     public string? Description { get; set; }
-    public string? Category { get; set; }
+    public List<string> DishSlotCategoryCodes { get; set; } = new();
+    public string? CookingMethod { get; set; }
     public decimal Price { get; set; }
     public string? DietaryLabel { get; set; }
     public string? ImageUrl { get; set; }
@@ -1233,13 +1268,16 @@ public class CreateDishRequest
     public decimal? Fat { get; set; }
     public decimal? Carbs { get; set; }
     public bool IsActive { get; set; } = true;
+    public List<UpdateDishImageItemRequest>? Images { get; set; }
 }
 
 public class UpdateDishRequest
 {
     public string Name { get; set; } = string.Empty;
+    public string? NameEnglish { get; set; }
     public string? Description { get; set; }
-    public string? Category { get; set; }
+    public List<string>? DishSlotCategoryCodes { get; set; }
+    public string? CookingMethod { get; set; }
     public decimal Price { get; set; }
     public string? DietaryLabel { get; set; }
     public string? ImageUrl { get; set; }
@@ -1248,7 +1286,6 @@ public class UpdateDishRequest
     public decimal? Fat { get; set; }
     public decimal? Carbs { get; set; }
     public bool IsActive { get; set; } = true;
-
     public List<UpdateDishImageItemRequest>? Images { get; set; }
 }
 
@@ -1582,6 +1619,40 @@ public class CashflowBucketClientDto
     public decimal TransactionIncome { get; set; }
     public decimal TransactionExpense { get; set; }
     public decimal NetFlow { get; set; }
+}
+
+public class GetMealStatisticsClientResponse
+{
+    public List<MealStatisticItemClientDto> Data { get; set; } = new();
+}
+
+public class MealStatisticItemClientDto
+{
+    public DateOnly Date { get; set; }
+    public string MealSlot { get; set; } = string.Empty;
+    public int? OrganizationId { get; set; }
+    public string OrganizationName { get; set; } = string.Empty;
+    public int TotalMeals { get; set; }
+    public decimal TotalAmount { get; set; }
+}
+
+public class GetDetailedMealStatisticsClientResponse
+{
+    public List<DetailedMealItemClientDto> Data { get; set; } = new();
+}
+
+public class DetailedMealItemClientDto
+{
+    public DateOnly Date { get; set; }
+    public string MealSlot { get; set; } = string.Empty;
+    public int? OrganizationId { get; set; }
+    public string OrganizationName { get; set; } = string.Empty;
+    public int? MenuId { get; set; }
+    public string MenuName { get; set; } = string.Empty;
+    public int DishId { get; set; }
+    public string DishName { get; set; } = string.Empty;
+    public int Quantity { get; set; }
+    public decimal TotalAmount { get; set; }
 }
 
 public class GetCashflowSummaryClientResponse

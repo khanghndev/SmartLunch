@@ -256,6 +256,13 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             }
         }
 
+        public IActionResult MealCreate()
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("access_token")))
+                return RedirectToAction("Login", "Auth", new { area = "" });
+            return View();
+        }
+
         public async Task<IActionResult> Meals(int page = 1, int pageSize = 20, string? searchTerm = null, string? category = null, CancellationToken ct = default)
         {
             var token = HttpContext.Session.GetString("access_token");

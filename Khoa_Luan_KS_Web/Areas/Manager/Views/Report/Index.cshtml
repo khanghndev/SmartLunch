@@ -1,0 +1,57 @@
+@{
+    ViewData["Title"] = "Báo cáo & Thống kê";
+    Layout = "_LayoutManager";
+    var today = DateOnly.FromDateTime(DateTime.Today);
+    var monthStart = new DateOnly(today.Year, today.Month, 1);
+}
+
+<div class="w-full max-w-[1600px] space-y-8">
+    <div>
+        <h1 class="text-2xl font-black text-slate-900">Báo cáo & Thống kê</h1>
+        <p class="text-sm text-slate-500 mt-1">Tổng hợp vận hành, suất ăn và tài chính — xuất Excel có định dạng chuẩn.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
+        <a href="/Manager/Report/Meals"
+           class="group bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:border-green-300 hover:shadow-md transition-all">
+            <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4 group-hover:bg-emerald-600 group-hover:text-white transition">
+                <i class="fas fa-utensils text-lg"></i>
+            </div>
+            <h2 class="font-black text-slate-900 text-lg">Thống kê suất ăn</h2>
+            <p class="text-sm text-slate-500 mt-2 leading-relaxed">Theo ngày, buổi, khách hàng và chi tiết từng món. Biểu đồ + xuất Excel tổng hợp / chi tiết.</p>
+            <span class="inline-flex items-center gap-1 text-green-600 text-sm font-bold mt-4">Mở báo cáo <i class="fas fa-arrow-right text-xs"></i></span>
+        </a>
+
+        <a href="/Manager/Finance/Index"
+           class="group bg-white rounded-2xl border border-slate-100 p-6 shadow-sm hover:border-blue-300 hover:shadow-md transition-all">
+            <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4 group-hover:bg-blue-600 group-hover:text-white transition">
+                <i class="fas fa-chart-line text-lg"></i>
+            </div>
+            <h2 class="font-black text-slate-900 text-lg">Báo cáo tài chính</h2>
+            <p class="text-sm text-slate-500 mt-2 leading-relaxed">Dòng tiền, thu chi theo kỳ. Xem biểu đồ trực quan trên màn hình tài chính.</p>
+            <span class="inline-flex items-center gap-1 text-blue-600 text-sm font-bold mt-4">Xem dashboard <i class="fas fa-arrow-right text-xs"></i></span>
+        </a>
+
+        <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+            <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
+                <i class="fas fa-file-excel text-lg"></i>
+            </div>
+            <h2 class="font-black text-slate-900 text-lg">Xuất Excel nhanh</h2>
+            <p class="text-sm text-slate-500 mt-2">Tải file có header SmartLunch, bảng màu và tổng cộng.</p>
+            <div class="mt-4 flex flex-col gap-2">
+                <a href="/Manager/Report/ExportFinance?period=current_month"
+                   class="text-sm font-bold text-slate-700 hover:text-green-600 flex items-center gap-2">
+                    <i class="fas fa-download text-green-600"></i> Tài chính tháng này
+                </a>
+                <a href="/Manager/Report/ExportPayments?from=@monthStart.ToString("yyyy-MM-dd")&to=@today.ToString("yyyy-MM-dd")"
+                   class="text-sm font-bold text-slate-700 hover:text-green-600 flex items-center gap-2">
+                    <i class="fas fa-download text-green-600"></i> Lịch sử thanh toán (30 ngày)
+                </a>
+                <a href="/Manager/Report/ExportMealsSummary?from=@monthStart.ToString("yyyy-MM-dd")&to=@today.ToString("yyyy-MM-dd")"
+                   class="text-sm font-bold text-slate-700 hover:text-green-600 flex items-center gap-2">
+                    <i class="fas fa-download text-green-600"></i> Suất ăn tháng này
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
