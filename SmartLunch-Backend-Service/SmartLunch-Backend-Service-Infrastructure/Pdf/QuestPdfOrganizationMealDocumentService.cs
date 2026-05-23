@@ -1,6 +1,7 @@
 using System.Net;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Domain.Time;
 using QuestPDF.Fluent;
@@ -53,7 +54,8 @@ public sealed class QuestPdfOrganizationMealDocumentService : IOrganizationMealD
         return Document.Create(container =>
         {
             container.Page(page => MealContractPdfSections.ComposeContractPage(
-                page, contract, supplier, buyer, order, signatureDataUrl));
+                page, contract, supplier, buyer, order, signatureDataUrl,
+                OrganizationMealDeliveryPdfContext.FromOrder(order)));
             container.Page(page => MealContractPdfSections.ComposeAnnexPage(page, order, buyerDisplayName, signatureDataUrl));
         }).GeneratePdf();
     }

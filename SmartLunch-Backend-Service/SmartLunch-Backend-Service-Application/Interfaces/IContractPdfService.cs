@@ -1,3 +1,4 @@
+using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
 
 namespace SmartLunch.Backend.Service.Application.Interfaces;
@@ -12,5 +13,17 @@ public interface IContractPdfService
         Contract contract,
         Partner supplier,
         Organization? buyer,
+        Order? order = null,
+        OrganizationMealDeliveryPdfContext? delivery = null,
+        string? buyerSignatureDataUrl = null,
         CancellationToken cancellationToken = default);
+
+    /// <summary>Tạo PDF hợp đồng trong bộ nhớ (không upload).</summary>
+    byte[] GenerateContractPdfBytes(
+        Contract contract,
+        Partner supplier,
+        Organization? buyer,
+        Order? order = null,
+        OrganizationMealDeliveryPdfContext? delivery = null,
+        string? buyerSignatureDataUrl = null);
 }

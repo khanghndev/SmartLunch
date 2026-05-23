@@ -96,7 +96,7 @@ public sealed class OrganizationMealContractDraftPersistence
         draft.ContractId = contract.Id;
 
         if (wasNew || string.IsNullOrWhiteSpace(contract.ContractFileUrl))
-            contract = await GenerateAndStorePdfAsync(contract.Id, org, cancellationToken);
+            contract = await GenerateAndStorePdfAsync(contract.Id, org, draft.Delivery, cancellationToken);
 
         return contract;
     }
@@ -104,6 +104,7 @@ public sealed class OrganizationMealContractDraftPersistence
     private async Task<Contract> GenerateAndStorePdfAsync(
         int contractId,
         Organization org,
+        OrganizationMealOrderDraftDelivery? draftDelivery,
         CancellationToken cancellationToken)
     {
         var forPdf = await _contractRepository.GetByIdAsync(contractId)
@@ -112,11 +113,14 @@ public sealed class OrganizationMealContractDraftPersistence
         if (forPdf.Partner == null)
             return forPdf;
 
+        var deliveryPdf = OrganizationMealDeliveryPdfContext.FromDraft(draftDelivery);
         var url = await _contractPdfService.GenerateUploadAndResolveUrlAsync(
             forPdf,
             forPdf.Partner,
             org,
-            cancellationToken);
+            order: null,
+            delivery: deliveryPdf,
+            cancellationToken: cancellationToken);
 
         forPdf.ContractFileUrl = url;
         forPdf.UpdatedAt = VietnamTime.Now;
@@ -137,9 +141,15 @@ public sealed class OrganizationMealContractDraftPersistence
             org.ContactEmail
         }.Where(s => !string.IsNullOrWhiteSpace(s)));
 
+        var deliveryLine = draft.Delivery != null
+            ? $" Giao tại: {OrganizationMealDeliveryValidator.BuildFullAddress(draft.Delivery)}; " +
+              $"người nhận {draft.Delivery.RecipientName} ({draft.Delivery.RecipientPhone})."
+            : "";
+
         return $"Hợp đồng đặt suất — {org.Name} ({minDate:dd/MM/yyyy}–{maxDate:dd/MM/yyyy}). " +
                $"{draft.TotalMainQuantity} suất chính, đơn giá {draft.PricePerPortion:N0} đ/suất, tổng {draft.TotalAmount:N0} đ." +
-               (string.IsNullOrEmpty(contact) ? "" : $" Liên hệ: {contact}.");
+               deliveryLine +
+               (string.IsNullOrEmpty(contact) ? "" : $" Liên hệ đơn vị: {contact}.");
     }
 
     private static string BuildSupplySchedule(IReadOnlyList<OrganizationMealOrderDraftDay> days)

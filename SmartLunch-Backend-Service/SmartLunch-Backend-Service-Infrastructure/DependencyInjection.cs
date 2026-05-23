@@ -2,6 +2,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
+using SmartLunch.Backend.Service.Application.Integration.Email;
+using SmartLunch.Backend.Service.Infrastructure.Email;
 using SmartLunch.Backend.Service.Infrastructure.ExternalServices;
 using SmartLunch.Backend.Service.Infrastructure.Pdf;
 using SmartLunch.Backend.Service.Infrastructure.Services;
@@ -27,6 +29,8 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
             services.AddScoped<IContractPdfService, QuestPdfContractFileService>();
             services.AddScoped<IOrganizationMealDocumentPdfService, QuestPdfOrganizationMealDocumentService>();
             services.AddScoped<IOrderAnnexPdfService, QuestPdfOrderAnnexPdfService>();
+            services.AddScoped<IEmailSender, MailKitEmailSender>();
+            services.AddScoped<IOrganizationOrderEmailService, OrganizationOrderEmailService>();
 
             var assembly = typeof(DependencyInjection).Assembly;
 
@@ -43,6 +47,8 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
                         type.Name != "FirebaseStorageService" && // Use AppwriteStorageService for IFirebaseStorageService
                         type.Name != "CartCacheService" && // Registered explicitly as ICartCacheService
                         type.Name != "OrganizationMealOrderDraftCacheService" && // Registered explicitly as IOrganizationMealOrderDraftCache
+                        type.Name != "MailKitEmailSender" &&
+                        type.Name != "OrganizationOrderEmailService" &&
                         !type.Name.EndsWith("Options") && // Exclude options classes
                         !type.Name.EndsWith("Extensions") && // Exclude extension classes
                         !type.Name.EndsWith("Context") && // Exclude DbContext (registered separately)

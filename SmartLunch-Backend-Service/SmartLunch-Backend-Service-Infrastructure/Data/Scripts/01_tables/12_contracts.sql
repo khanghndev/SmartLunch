@@ -6,6 +6,7 @@ CREATE TABLE contracts (
     Code VARCHAR(20) NULL COMMENT 'Mã tự sinh (trigger)',
     PartnerId INT NULL COMMENT 'Nhà cung cấp (nếu là hợp đồng mua)',
     OrganizationId INT NULL COMMENT 'Đơn vị khách hàng (nếu là hợp đồng bán)',
+    SourceOrderId INT NULL COMMENT 'Đơn hàng tạo ra HĐ đặt suất',
     
     ContractNumber VARCHAR(100) NULL,
     ContractType VARCHAR(50) NOT NULL DEFAULT 'Framework' COMMENT 'Framework | Order-Based',

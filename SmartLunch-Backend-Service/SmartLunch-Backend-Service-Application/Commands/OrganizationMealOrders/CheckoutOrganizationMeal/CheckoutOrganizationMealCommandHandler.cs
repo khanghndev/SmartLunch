@@ -26,6 +26,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
     private readonly IUnitOfWork _unitOfWork;
     private readonly IPromotionEngine _promotionEngine;
     private readonly IPromotionRepository _promotionRepository;
+    private readonly IOrganizationOrderEmailService _orderEmailService;
     private readonly ILogger<CheckoutOrganizationMealCommandHandler> _logger;
 
     public CheckoutOrganizationMealCommandHandler(
@@ -39,6 +40,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
         IUnitOfWork unitOfWork,
         IPromotionEngine promotionEngine,
         IPromotionRepository promotionRepository,
+        IOrganizationOrderEmailService orderEmailService,
         ILogger<CheckoutOrganizationMealCommandHandler> logger)
     {
         _draftCache = draftCache;
@@ -51,6 +53,7 @@ public sealed class CheckoutOrganizationMealCommandHandler
         _unitOfWork = unitOfWork;
         _promotionEngine = promotionEngine;
         _promotionRepository = promotionRepository;
+        _orderEmailService = orderEmailService;
         _logger = logger;
     }
 
@@ -72,6 +75,9 @@ public sealed class CheckoutOrganizationMealCommandHandler
         var draft = await _draftCache.GetAsync(command.UserId, draftId, cancellationToken);
         if (draft == null || draft.UserId != command.UserId)
             throw new ArgumentException("Draft not found or expired. Call POST contract again.");
+
+        if (draft.Delivery == null)
+            throw new ArgumentException("Draft is missing delivery information. Call POST contract again.");
 
         var membership = await _userOrganizationRepository.GetByUserAndOrganizationAsync(
             command.UserId,
@@ -191,6 +197,17 @@ public sealed class CheckoutOrganizationMealCommandHandler
             InvoiceCode = await AllocateOrganizationInvoiceCodeAsync(scheduledDate, cancellationToken),
         };
 
+        OrganizationMealDeliveryValidator.ApplyToOrder(order, draft.Delivery);
+
+        var deliveryAddressFull = OrganizationMealDeliveryValidator.BuildFullAddress(draft.Delivery);
+        order.Deliveries.Add(new Delivery
+        {
+            DeliveryAddress = deliveryAddressFull,
+            DeliveryStatus = "pending",
+            Notes = BuildDeliveryNotes(draft.Delivery),
+            CreatedAt = VietnamTime.Now,
+        });
+
         foreach (var day in draft.Days.OrderBy(d => d.ServiceDate))
         {
             void AddDayLines(List<OrganizationMealOrderDraftLine> lines, string slot)
@@ -284,6 +301,17 @@ public sealed class CheckoutOrganizationMealCommandHandler
             await SyncExistingContractMealPricingAsync(contract.Id, draft, total, cancellationToken);
         }
 
+        try
+        {
+            await _orderEmailService.SendOrderConfirmationAsync(reloaded, req.DepositPercent, cancellationToken);
+            reloaded.OrderConfirmationEmailSentAt = VietnamTime.Now;
+            await _orderRepository.CommitAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Order {OrderId} created but confirmation email failed.", reloaded.Id);
+        }
+
         return new CheckoutOrganizationMealResponse
         {
             Order = new GetOrderResponse { Order = OrderDtoMapping.ToDto(reloaded) },
@@ -334,6 +362,22 @@ public sealed class CheckoutOrganizationMealCommandHandler
         }
 
         return lines;
+    }
+
+    private static string? BuildDeliveryNotes(OrganizationMealOrderDraftDelivery delivery)
+    {
+        var parts = new List<string>
+        {
+            $"Người nhận: {delivery.RecipientName}",
+            $"SĐT: {delivery.RecipientPhone}",
+            $"Email: {delivery.RecipientEmail}",
+        };
+        if (!string.IsNullOrWhiteSpace(delivery.PreferredDeliveryTime))
+            parts.Add($"Giờ giao: {delivery.PreferredDeliveryTime}");
+        if (!string.IsNullOrWhiteSpace(delivery.DeliveryNotes))
+            parts.Add(delivery.DeliveryNotes);
+        var joined = string.Join(" | ", parts);
+        return joined.Length <= 255 ? joined : joined[..255];
     }
 
     private static Dictionary<int, string> BuildDishSlotMap(OrganizationMealOrderDraftPayload draft)

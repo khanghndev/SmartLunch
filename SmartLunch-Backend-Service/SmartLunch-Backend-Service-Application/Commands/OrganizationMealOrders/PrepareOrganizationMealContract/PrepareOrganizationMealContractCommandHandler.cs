@@ -56,6 +56,8 @@ public sealed class PrepareOrganizationMealContractCommandHandler
         if (membership == null || !membership.IsActive)
             throw new UnauthorizedAccessException("You do not have access to this organization.");
 
+        var delivery = OrganizationMealDeliveryValidator.Normalize(req.Delivery);
+
         var utcNow = VietnamTime.Now;
         //var (allowedFirst, allowedLast) = OrganizationMealOrderDateWindow.GetAllowedServiceDateRange(utcNow);
 
@@ -190,6 +192,7 @@ public sealed class PrepareOrganizationMealContractCommandHandler
             AppliedPromotionName = evaluation.PromotionName,
             MinServiceDate = minDate,
             CreatedAtUtc = utcNow,
+            Delivery = delivery,
         };
 
         var persistedContract = await _contractPersistence.EnsurePersistedAsync(payload, cancellationToken);
@@ -249,8 +252,22 @@ public sealed class PrepareOrganizationMealContractCommandHandler
             AppliedPromotionName = evaluation.PromotionName,
             PromotionCode = req.PromotionCode,
             Lines = lineSummaries,
+            Delivery = ToDeliverySummary(delivery),
         };
     }
+
+    private static OrganizationMealDeliverySummaryDto ToDeliverySummary(OrganizationMealOrderDraftDelivery delivery) =>
+        new()
+        {
+            RecipientName = delivery.RecipientName,
+            RecipientPhone = delivery.RecipientPhone,
+            RecipientEmail = delivery.RecipientEmail,
+            DeliveryAddress = delivery.DeliveryAddress,
+            DeliveryWardDistrict = delivery.DeliveryWardDistrict,
+            DeliveryNotes = delivery.DeliveryNotes,
+            PreferredDeliveryTime = delivery.PreferredDeliveryTime,
+            FullAddress = OrganizationMealDeliveryValidator.BuildFullAddress(delivery),
+        };
 
     private static bool DishHasSlot(Dish d, string slot)
     {

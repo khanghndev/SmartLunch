@@ -26,6 +26,8 @@ public sealed class OrganizationMealOrderDraftPayload
 
     public DateOnly MinServiceDate { get; set; }
     public DateTime CreatedAtUtc { get; set; }
+
+    public OrganizationMealOrderDraftDelivery? Delivery { get; set; }
 }
 
 public sealed class OrganizationMealOrderDraftDay

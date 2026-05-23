@@ -204,7 +204,7 @@ public class CheckoutCartCommandHandler : IRequestHandler<CheckoutCartCommand, G
                     forPdf,
                     forPdf.Partner,
                     checkoutOrg,
-                    cancellationToken);
+                    cancellationToken: cancellationToken);
                 forPdf.ContractFileUrl = url;
                 forPdf.UpdatedAt = VietnamTime.Now;
                 await _contractRepository.UpdateAsync(forPdf);

@@ -68,7 +68,7 @@ public class CreateContractCommandHandler : IRequestHandler<CreateContractComman
                 reloaded,
                 reloaded.Partner,
                 buyer: null,
-                cancellationToken);
+                cancellationToken: cancellationToken);
             reloaded.ContractFileUrl = pdfUrl;
             reloaded.UpdatedAt = VietnamTime.Now;
             await _contractRepository.UpdateAsync(reloaded);

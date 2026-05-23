@@ -18,6 +18,7 @@ using Microsoft.AspNetCore.Mvc.Versioning;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
+using SmartLunch.Backend.Service.Application.Integration.Email;
 using SmartLunch.Backend.Service.Application.Integration.PayOS;
 using SmartLunch.Backend.Service.Infrastructure.ExternalServices;
 
@@ -136,6 +137,7 @@ SmartLunch.Backend.Service.Infrastructure.DependencyInjection.DependencyInjectio
 
 // PayOS (thanh toán hợp đồng / payment link) — bật và điền key trong cấu hình hoặc User Secrets
 builder.Services.Configure<PayOSOptions>(builder.Configuration.GetSection(PayOSOptions.SectionKey));
+builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionKey));
 builder.Services.AddHttpClient<IPayOSClient, PayOSClient>();
 
 // RabbitMQ Messaging
@@ -167,6 +169,7 @@ builder.Services.AddHostedService<SmartLunch.Backend.Service.API.Services.Rabbit
 
 // Scheduled DB backup service
 builder.Services.AddHostedService<SmartLunch.Backend.Service.API.Services.DatabaseBackupHostedService>();
+builder.Services.AddHostedService<SmartLunch.Backend.Service.API.Services.OrganizationPaymentReminderHostedService>();
 
 // SignalR (Real-time)
 builder.Services.AddSignalR();

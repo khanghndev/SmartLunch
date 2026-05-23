@@ -11,15 +11,18 @@ public class SignOrderAnnexCommandHandler : IRequestHandler<SignOrderAnnexComman
     private readonly IOrderRepository _orderRepository;
     private readonly IOrderAnnexPdfService _orderAnnexPdfService;
     private readonly IContractRepository _contractRepository;
+    private readonly IOrganizationOrderEmailService _orderEmailService;
 
     public SignOrderAnnexCommandHandler(
         IOrderRepository orderRepository,
         IOrderAnnexPdfService orderAnnexPdfService,
-        IContractRepository contractRepository)
+        IContractRepository contractRepository,
+        IOrganizationOrderEmailService orderEmailService)
     {
         _orderRepository = orderRepository;
         _orderAnnexPdfService = orderAnnexPdfService;
         _contractRepository = contractRepository;
+        _orderEmailService = orderEmailService;
     }
 
     public async Task<GetOrderResponse> Handle(SignOrderAnnexCommand request, CancellationToken cancellationToken)
@@ -75,8 +78,19 @@ public class SignOrderAnnexCommandHandler : IRequestHandler<SignOrderAnnexComman
 
         await _orderRepository.CommitAsync();
 
-        var reloaded = await _orderRepository.GetByIdWithDetailsAsync(order.Id);
-        return new GetOrderResponse { Order = OrderDtoMapping.ToDto(reloaded ?? order) };
+        var reloaded = await _orderRepository.GetByIdWithDetailsAsync(order.Id) ?? order;
+
+        try
+        {
+            await _orderEmailService.SendPaymentReminderAsync(reloaded, cancellationToken);
+            await _orderRepository.CommitAsync();
+        }
+        catch
+        {
+            /* email failure must not block signing */
+        }
+
+        return new GetOrderResponse { Order = OrderDtoMapping.ToDto(reloaded) };
     }
 
     private static string ResolveBuyerDisplayName(Order order)

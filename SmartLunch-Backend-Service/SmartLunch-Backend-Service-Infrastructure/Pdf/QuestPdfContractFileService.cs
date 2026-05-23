@@ -1,6 +1,7 @@
 using System.Net;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Domain.Time;
 using QuestPDF.Fluent;
@@ -26,6 +27,9 @@ public sealed class QuestPdfContractFileService : IContractPdfService
         Contract contract,
         Partner supplier,
         Organization? buyer,
+        Order? order = null,
+        OrganizationMealDeliveryPdfContext? delivery = null,
+        string? buyerSignatureDataUrl = null,
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(contract);
@@ -33,10 +37,7 @@ public sealed class QuestPdfContractFileService : IContractPdfService
         if (contract.Id <= 0)
             throw new ArgumentException("Contract must be persisted before generating PDF.", nameof(contract));
 
-        var pdf = Document.Create(container =>
-        {
-            container.Page(page => MealContractPdfSections.ComposeContractPage(page, contract, supplier, buyer));
-        }).GeneratePdf();
+        var pdf = GenerateContractPdfBytes(contract, supplier, buyer, order, delivery, buyerSignatureDataUrl);
 
         var objectName = $"contracts/c{contract.Id}/hop-dong-{contract.Id}-{VietnamTime.Now:yyyyMMddHHmmss}.pdf";
 
@@ -49,5 +50,22 @@ public sealed class QuestPdfContractFileService : IContractPdfService
             "application/pdf",
             TimeSpan.FromDays(365));
         return signed.Url;
+    }
+
+    public byte[] GenerateContractPdfBytes(
+        Contract contract,
+        Partner supplier,
+        Organization? buyer,
+        Order? order = null,
+        OrganizationMealDeliveryPdfContext? delivery = null,
+        string? buyerSignatureDataUrl = null)
+    {
+        ArgumentNullException.ThrowIfNull(contract);
+        ArgumentNullException.ThrowIfNull(supplier);
+        return Document.Create(container =>
+        {
+            container.Page(page => MealContractPdfSections.ComposeContractPage(
+                page, contract, supplier, buyer, order, buyerSignatureDataUrl, delivery));
+        }).GeneratePdf();
     }
 }

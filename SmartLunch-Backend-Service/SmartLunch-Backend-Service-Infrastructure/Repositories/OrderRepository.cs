@@ -237,4 +237,24 @@ public class OrderRepository : IOrderRepository
     }
 
     public Task CommitAsync() => _context.SaveChangesAsync();
+
+    public async Task<List<Order>> GetOrdersPendingPaymentReminderAsync(
+        DateTime annexSignedBefore,
+        int maxCount,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Orders
+            .Include(o => o.Contract).ThenInclude(c => c!.Organization)
+            .Include(o => o.Payments)
+            .Where(o =>
+                o.RecipientEmail != null &&
+                o.RecipientEmail != "" &&
+                o.PaymentReminderSentAt == null &&
+                o.AnnexSignedAt != null &&
+                o.AnnexSignedAt <= annexSignedBefore &&
+                o.PaymentStatus == "awaiting_payment")
+            .OrderBy(o => o.AnnexSignedAt)
+            .Take(maxCount)
+            .ToListAsync(cancellationToken);
+    }
 }

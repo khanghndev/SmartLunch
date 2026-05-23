@@ -34,6 +34,16 @@ public class Order
 
     public DateTime? AnnexSignedAt { get; set; }
 
+    public string? RecipientName { get; set; }
+    public string? RecipientPhone { get; set; }
+    public string? RecipientEmail { get; set; }
+    public string? DeliveryAddress { get; set; }
+    public string? DeliveryWardDistrict { get; set; }
+    public string? DeliveryNotes { get; set; }
+    public string? PreferredDeliveryTime { get; set; }
+    public DateTime? OrderConfirmationEmailSentAt { get; set; }
+    public DateTime? PaymentReminderSentAt { get; set; }
+
     public virtual User? User { get; set; }
     public virtual Contract? Contract { get; set; }
     public virtual User? CreatedBySalesUser { get; set; }

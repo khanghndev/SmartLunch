@@ -31,4 +31,10 @@ public interface IOrderRepository
 
     /// <summary>Persist changes to tracked orders (and related entities on the same context).</summary>
     Task CommitAsync();
+
+    /// <summary>Đơn đã ký phụ lục, chưa gửi nhắc thanh toán, chờ thanh toán.</summary>
+    Task<List<Order>> GetOrdersPendingPaymentReminderAsync(
+        DateTime annexSignedBefore,
+        int maxCount,
+        CancellationToken cancellationToken = default);
 }

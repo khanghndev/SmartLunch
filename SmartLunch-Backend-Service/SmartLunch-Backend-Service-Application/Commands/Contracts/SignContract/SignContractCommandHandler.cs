@@ -75,7 +75,7 @@ public class SignContractCommandHandler : IRequestHandler<SignContractCommand, G
                 signed,
                 signed.Partner,
                 signed.Organization,
-                cancellationToken);
+                cancellationToken: cancellationToken);
         }
 
         signed.ContractFileUrl = pdfUrl;

@@ -42,4 +42,18 @@ public sealed class PrepareOrganizationMealContractResponse
     /// <summary>Thông báo trạng thái lưu hợp đồng / đơn hàng.</summary>
     public string PersistenceNotice { get; set; } =
         "Hợp đồng đã được lưu vào hệ thống. Hoàn tất ký số và checkout để tạo đơn hàng & thanh toán đặt cọc.";
+
+    public OrganizationMealDeliverySummaryDto? Delivery { get; set; }
+}
+
+public sealed class OrganizationMealDeliverySummaryDto
+{
+    public string RecipientName { get; set; } = string.Empty;
+    public string RecipientPhone { get; set; } = string.Empty;
+    public string RecipientEmail { get; set; } = string.Empty;
+    public string DeliveryAddress { get; set; } = string.Empty;
+    public string? DeliveryWardDistrict { get; set; }
+    public string? DeliveryNotes { get; set; }
+    public string? PreferredDeliveryTime { get; set; }
+    public string FullAddress { get; set; } = string.Empty;
 }

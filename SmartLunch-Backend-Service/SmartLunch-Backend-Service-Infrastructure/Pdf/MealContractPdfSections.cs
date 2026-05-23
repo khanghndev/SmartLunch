@@ -1,5 +1,6 @@
 using System.Globalization;
 using SmartLunch.Backend.Service.Application.Constants;
+using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Domain.Time;
 using QuestPDF.Fluent;
@@ -20,8 +21,9 @@ internal static class MealContractPdfSections
         Partner supplier,
         Organization? buyer,
         Order? order = null,
-        string? buyerSignatureDataUrl = null) =>
-        MealSupplyContractDocumentComposer.Compose(page, contract, supplier, buyer, order, buyerSignatureDataUrl);
+        string? buyerSignatureDataUrl = null,
+        OrganizationMealDeliveryPdfContext? delivery = null) =>
+        MealSupplyContractDocumentComposer.Compose(page, contract, supplier, buyer, order, buyerSignatureDataUrl, delivery);
 
     internal static void ComposeAnnexPage(
         PageDescriptor page,
@@ -54,7 +56,8 @@ internal static class MealContractPdfSections
                     $"Kính gửi: {buyerDisplayName}. Phụ lục này là bộ phận không tách rời của Hợp đồng bán thức ăn suất nêu trên, " +
                     $"lập ngày {FmtDateTime(VietnamTime.Now)}.")
                 .Italic().FontSize(11);
-            col.Item().PaddingTop(8).Element(c => ComposeAnnexBody(c, order, buyerDisplayName, signatureDataUrl));
+            col.Item().PaddingTop(8).Element(c => ComposeAnnexBody(
+                c, order, buyerDisplayName, signatureDataUrl, OrganizationMealDeliveryPdfContext.FromOrder(order)));
         });
     }
 
@@ -62,8 +65,10 @@ internal static class MealContractPdfSections
         IContainer parent,
         Order order,
         string buyerDisplayName,
-        string? signatureDataUrl)
+        string? signatureDataUrl,
+        OrganizationMealDeliveryPdfContext? delivery = null)
     {
+        delivery ??= OrganizationMealDeliveryPdfContext.FromOrder(order);
         var tableLines = BuildAnnexTableLines(order);
         var dailyPortions = BuildDailyPortions(order);
         var (subtotal, discount, total, promos, pricePerPortion, totalPortions) = BuildAnnexTotals(order, dailyPortions);
@@ -75,6 +80,9 @@ internal static class MealContractPdfSections
             col.Item().Text("I. CÁC BÊN").Bold().FontSize(12);
             col.Item().PaddingTop(2).Text($"Bên A (Bên bán): {SupplierLegalName}");
             col.Item().Text($"Bên B (Bên mua): {buyerDisplayName}").SemiBold();
+
+            if (delivery is { HasData: true })
+                col.Item().Element(c => MealSupplyContractDocumentComposer.ComposeDeliveryBlock(c, delivery));
 
             col.Item().PaddingTop(8).Text("II. BẢNG KÊ MÓN ĂN THEO ĐƠN ĐẶT HÀNG").Bold().FontSize(12);
             col.Item().Table(table =>
@@ -118,7 +126,7 @@ internal static class MealContractPdfSections
             });
 
             col.Item().PaddingTop(12).Text("IV. XÁC NHẬN CỦA CÁC BÊN").Bold().FontSize(12);
-            col.Item().Element(c => ComposeAnnexSignatures(c, buyerDisplayName, signatureDataUrl));
+            col.Item().Element(c => ComposeAnnexSignatures(c, buyerDisplayName, signatureDataUrl, delivery));
         });
     }
 
@@ -133,9 +141,14 @@ internal static class MealContractPdfSections
         }
     }
 
-    private static void ComposeAnnexSignatures(IContainer container, string buyerDisplayName, string? signatureDataUrl)
+    private static void ComposeAnnexSignatures(
+        IContainer container,
+        string buyerDisplayName,
+        string? signatureDataUrl,
+        OrganizationMealDeliveryPdfContext? delivery)
     {
         var sig = TryDecodeSignatureUrl(signatureDataUrl);
+        var repName = !string.IsNullOrWhiteSpace(delivery?.RecipientName) ? delivery.RecipientName : buyerDisplayName;
         container.Row(row =>
         {
             row.RelativeItem().Column(partyA =>
@@ -149,11 +162,19 @@ internal static class MealContractPdfSections
                 partyB.Item().AlignCenter().Text("BÊN B").Bold();
                 partyB.Item().AlignCenter().Text("(Ký, ghi rõ họ tên)").Italic().FontSize(10);
                 if (sig is { Length: > 0 })
+                {
                     partyB.Item().PaddingTop(6).AlignCenter().Height(70).Image(sig).FitArea();
+                    partyB.Item().PaddingTop(6).AlignCenter().Text(repName).SemiBold();
+                    partyB.Item().AlignCenter().Text($"Ngày ký: {FmtDateTime(VietnamTime.Now)}").FontSize(10);
+                }
                 else
-                    partyB.Item().PaddingTop(36).AlignCenter().Text("…………………………");
-                partyB.Item().PaddingTop(6).AlignCenter().Text(buyerDisplayName).SemiBold();
-                partyB.Item().AlignCenter().Text($"Ngày: {FmtDateTime(VietnamTime.Now)}").FontSize(10);
+                {
+                    partyB.Item().PaddingTop(8).AlignCenter().Text(repName).SemiBold().FontSize(11);
+                    if (!string.IsNullOrWhiteSpace(delivery?.RecipientPhone))
+                        partyB.Item().AlignCenter().Text($"SĐT: {delivery.RecipientPhone}").FontSize(10);
+                    partyB.Item().PaddingTop(4).AlignCenter()
+                        .Text("Chữ ký điện tử Bên B: xác nhận trên cổng HuitMeal").Italic().FontSize(9);
+                }
             });
         });
     }

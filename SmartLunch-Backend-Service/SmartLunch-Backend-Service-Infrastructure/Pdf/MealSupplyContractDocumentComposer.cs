@@ -1,4 +1,5 @@
 using System.Globalization;
+using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Domain.Time;
 using QuestPDF.Fluent;
@@ -19,8 +20,10 @@ internal static class MealSupplyContractDocumentComposer
         Partner supplier,
         Organization? buyer,
         Order? order = null,
-        string? buyerSignatureDataUrl = null)
+        string? buyerSignatureDataUrl = null,
+        OrganizationMealDeliveryPdfContext? delivery = null)
     {
+        delivery = ResolveDelivery(order, delivery);
         var now = VietnamTime.Now;
         page.Size(PageSizes.A4);
         page.MarginHorizontal(50);
@@ -46,14 +49,14 @@ internal static class MealSupplyContractDocumentComposer
             ComposeNationalTitle(col, now);
             ComposeContractNumber(col, contract);
             ComposeLegalBasis(col);
-            ComposeOpening(col, now, buyer);
+            ComposeOpening(col, now, buyer, delivery);
             ComposePartySeller(col, supplier);
-            ComposePartyBuyer(col, buyer);
+            ComposePartyBuyer(col, buyer, delivery);
             col.Item().PaddingTop(6).Text("Cùng thỏa thuận với nhau Hợp đồng mua bán thức ăn suất với những nội dung sau:")
                 .Italic();
-            ComposeArticles(col, contract, supplier, buyer, order);
+            ComposeArticles(col, contract, supplier, buyer, order, delivery);
             col.Item().PaddingTop(16).Element(c =>
-                ComposeSignatures(c, contract, buyer, buyerSignatureDataUrl));
+                ComposeSignatures(c, contract, buyer, buyerSignatureDataUrl, delivery));
         });
     }
 
@@ -87,9 +90,40 @@ internal static class MealSupplyContractDocumentComposer
             col.Item().PaddingTop(2).Text(line);
     }
 
-    private static void ComposeOpening(ColumnDescriptor col, DateTime now, Organization? buyer)
+    private static OrganizationMealDeliveryPdfContext? ResolveDelivery(
+        Order? order,
+        OrganizationMealDeliveryPdfContext? delivery) =>
+        OrganizationMealDeliveryPdfContext.FromOrder(order) ?? delivery;
+
+    internal static void ComposeDeliveryBlock(IContainer container, OrganizationMealDeliveryPdfContext delivery)
     {
-        var place = string.IsNullOrWhiteSpace(buyer?.Address) ? DefaultPlace : buyer!.Address!.Trim();
+        container.PaddingTop(6).Border(0.5f).BorderColor(Colors.Grey.Darken2).Background(Colors.Grey.Lighten5).Padding(10)
+            .Column(block =>
+            {
+                block.Item().Text("THÔNG TIN GIAO NHẬN SUẤT ĂN").Bold().FontSize(11);
+                if (!string.IsNullOrWhiteSpace(delivery.RecipientName))
+                    block.Item().PaddingTop(4).Text(t => { t.Span("Người nhận: ").SemiBold(); t.Span(delivery.RecipientName); });
+                if (!string.IsNullOrWhiteSpace(delivery.RecipientPhone))
+                    block.Item().PaddingTop(2).Text(t => { t.Span("Số điện thoại: ").SemiBold(); t.Span(delivery.RecipientPhone); });
+                if (!string.IsNullOrWhiteSpace(delivery.RecipientEmail))
+                    block.Item().PaddingTop(2).Text(t => { t.Span("Email: ").SemiBold(); t.Span(delivery.RecipientEmail); });
+                block.Item().PaddingTop(2).Text(t => { t.Span("Địa chỉ giao hàng: ").SemiBold(); t.Span(delivery.FullAddress); });
+                if (!string.IsNullOrWhiteSpace(delivery.PreferredDeliveryTime))
+                    block.Item().PaddingTop(2).Text(t =>
+                    {
+                        t.Span("Giờ giao mong muốn: ").SemiBold();
+                        t.Span(delivery.PreferredDeliveryTime);
+                    });
+                if (!string.IsNullOrWhiteSpace(delivery.DeliveryNotes))
+                    block.Item().PaddingTop(2).Text(t => { t.Span("Ghi chú: ").SemiBold(); t.Span(delivery.DeliveryNotes); });
+            });
+    }
+
+    private static void ComposeOpening(ColumnDescriptor col, DateTime now, Organization? buyer, OrganizationMealDeliveryPdfContext? delivery)
+    {
+        var place = delivery is { HasData: true }
+            ? delivery.FullAddress
+            : string.IsNullOrWhiteSpace(buyer?.Address) ? DefaultPlace : buyer!.Address!.Trim();
         col.Item().PaddingTop(8).Text(
             $"Hôm nay, ngày {now.Day} tháng {now.Month} năm {now.Year} tại địa chỉ: {place}, chúng tôi gồm:")
             .AlignLeft();
@@ -108,7 +142,7 @@ internal static class MealSupplyContractDocumentComposer
         PartyField(col, "Chức vụ", "Người đại diện theo pháp luật");
     }
 
-    private static void ComposePartyBuyer(ColumnDescriptor col, Organization? buyer)
+    private static void ComposePartyBuyer(ColumnDescriptor col, Organization? buyer, OrganizationMealDeliveryPdfContext? delivery)
     {
         col.Item().PaddingTop(10).Text("Bên mua (sau đây gọi là Bên B):").Bold();
         if (buyer == null)
@@ -119,11 +153,22 @@ internal static class MealSupplyContractDocumentComposer
 
         col.Item().PaddingTop(4).Text("Nếu là pháp nhân thì trình bày như sau:");
         PartyField(col, "Tên đơn vị", buyer.Name);
-        PartyField(col, "Địa chỉ trụ sở / địa điểm nhận suất", buyer.Address);
+        PartyField(col, "Địa chỉ trụ sở", buyer.Address);
         PartyField(col, "Mã số thuế", buyer.TaxCode);
         PartyField(col, "Số điện thoại liên hệ", buyer.Phone);
-        PartyField(col, "Email", buyer.ContactEmail);
+        PartyField(col, "Email đơn vị", buyer.ContactEmail);
         PartyField(col, "Người đại diện / liên hệ", buyer.ContactPerson);
+
+        if (delivery is { HasData: true })
+        {
+            col.Item().PaddingTop(8).Text("Thông tin giao nhận theo đơn đặt hàng:").Bold().FontSize(11);
+            PartyField(col, "Người nhận hàng", delivery.RecipientName);
+            PartyField(col, "SĐT người nhận", delivery.RecipientPhone);
+            PartyField(col, "Email nhận thông báo", delivery.RecipientEmail);
+            PartyField(col, "Địa chỉ giao hàng", delivery.FullAddress);
+            PartyField(col, "Giờ giao mong muốn", delivery.PreferredDeliveryTime);
+            PartyField(col, "Ghi chú giao hàng", delivery.DeliveryNotes);
+        }
     }
 
     private static void PartyField(ColumnDescriptor col, string label, string? value)
@@ -140,7 +185,8 @@ internal static class MealSupplyContractDocumentComposer
         Contract contract,
         Partner supplier,
         Organization? buyer,
-        Order? order)
+        Order? order,
+        OrganizationMealDeliveryPdfContext? delivery)
     {
         var total = contract.TotalValue ?? 0;
         var unitPrice = contract.MealUnitPrice ?? 0;
@@ -157,7 +203,9 @@ internal static class MealSupplyContractDocumentComposer
         var endDate = contract.EndDate.HasValue
             ? FmtDate(contract.EndDate.Value)
             : "thời điểm thanh lý hợp đồng theo thỏa thuận";
-        var deliveryPlace = string.IsNullOrWhiteSpace(buyer?.Address) ? "địa điểm do Bên B chỉ định" : buyer!.Address!.Trim();
+        var deliveryPlace = delivery is { HasData: true }
+            ? delivery.FullAddress
+            : string.IsNullOrWhiteSpace(buyer?.Address) ? "địa điểm do Bên B chỉ định" : buyer!.Address!.Trim();
         var desc = contract.Description ?? "cung cấp suất ăn theo nhu cầu đặt hàng của Bên B";
 
         ArticleTitle(col, "Điều 1. Nội dung hợp đồng");
@@ -209,24 +257,37 @@ internal static class MealSupplyContractDocumentComposer
         Bullet(col, "Nguyên liệu, quy trình chế biến, bảo quản và vận chuyển đảm bảo VSATTP, có thể kiểm tra hồ sơ truy xuất khi cần;");
         Bullet(col, "Chi tiết thực đơn, món ăn, số lượng từng ngày ghi tại Phụ lục đính kèm (Phần II văn bản này).");
 
-        ArticleTitle(col, "Điều 7. Một số thỏa thuận khác");
+        if (delivery is { HasData: true })
+        {
+            ArticleTitle(col, "Điều 7. Địa điểm giao nhận và liên hệ");
+            Body(col, $"Bên A giao suất ăn tại địa chỉ: {delivery.FullAddress}.");
+            Body(col,
+                $"Người nhận: {delivery.RecipientName}; điện thoại: {delivery.RecipientPhone}; email: {delivery.RecipientEmail}.");
+            if (!string.IsNullOrWhiteSpace(delivery.PreferredDeliveryTime))
+                Body(col, $"Khung giờ giao mong muốn: {delivery.PreferredDeliveryTime} (có thể điều chỉnh theo thực tế giao hàng).");
+            if (!string.IsNullOrWhiteSpace(delivery.DeliveryNotes))
+                Body(col, $"Ghi chú giao hàng: {delivery.DeliveryNotes}");
+            Body(col, "Thay đổi địa điểm hoặc người nhận phải được Bên B thông báo cho Bên A trước ít nhất 01 ngày làm việc.");
+        }
+
+        ArticleTitle(col, delivery is { HasData: true } ? "Điều 8. Một số thỏa thuận khác" : "Điều 7. Một số thỏa thuận khác");
         Bullet(col, "Khi suất ăn không đạt chất lượng, Bên B có thể yêu cầu Bên A khắc phục, giao bù hoặc bồi thường;");
         Bullet(col, "Mọi tranh chấp được hai Bên thương lượng; không thỏa thuận được thì Tòa án có thẩm quyền tại Việt Nam giải quyết;");
         Bullet(col, $"Chất lượng suất ăn xác định tại thời điểm giao cho Bên B tại {deliveryPlace}.");
 
-        ArticleTitle(col, "Điều 8. Trường hợp bất khả kháng");
+        ArticleTitle(col, delivery is { HasData: true } ? "Điều 9. Trường hợp bất khả kháng" : "Điều 8. Trường hợp bất khả kháng");
         Body(col, "Bên A được miễn trách nhiệm bồi thường chậm giao do sự kiện bất khả kháng (thiên tai, dịch bệnh, chiến tranh, quyết định cấm của cơ quan nhà nước...) đã thông báo kịp thời.");
         Body(col, "Các trường hợp còn lại, bên vi phạm phải bồi thường thiệt hại theo quy định.");
 
-        ArticleTitle(col, "Điều 9. Phạt vi phạm");
+        ArticleTitle(col, delivery is { HasData: true } ? "Điều 10. Phạt vi phạm" : "Điều 9. Phạt vi phạm");
         Body(col,
             "Trường hợp một trong hai bên vi phạm nghĩa vụ thì bên vi phạm chịu phạt 8% giá trị phần nghĩa vụ bị vi phạm, " +
             "đồng thời bồi thường thiệt hại thực tế trong thời hạn 15 ngày kể từ ngày xác định thiệt hại.");
 
-        ArticleTitle(col, "Điều 10. Chấm dứt hợp đồng");
+        ArticleTitle(col, delivery is { HasData: true } ? "Điều 11. Chấm dứt hợp đồng" : "Điều 10. Chấm dứt hợp đồng");
         Body(col, "Các bên có quyền chấm dứt hợp đồng khi bên kia vi phạm nghĩa vụ hoặc khi hợp đồng đã hoàn thành.");
 
-        ArticleTitle(col, "Điều 11. Hiệu lực hợp đồng");
+        ArticleTitle(col, delivery is { HasData: true } ? "Điều 12. Hiệu lực hợp đồng" : "Điều 11. Hiệu lực hợp đồng");
         Body(col, "Hợp đồng được lập thành 02 bản bằng tiếng Việt (bản điện tử có giá trị tương đương), có giá trị như nhau. Sửa đổi, bổ sung phải bằng văn bản do hai bên thỏa thuận.");
         Body(col,
             $"Hợp đồng có hiệu lực từ ngày {FmtDate(contract.StartDate)}" +
@@ -297,12 +358,16 @@ internal static class MealSupplyContractDocumentComposer
         IContainer container,
         Contract contract,
         Organization? buyer,
-        string? buyerSignatureDataUrl)
+        string? buyerSignatureDataUrl,
+        OrganizationMealDeliveryPdfContext? delivery)
     {
         var sigBytes = TryDecodeSignatureUrl(buyerSignatureDataUrl);
         var signedAt = sigBytes is { Length: > 0 }
             ? VietnamTime.Now
             : contract.DigitallySignedAt;
+        var repName = !string.IsNullOrWhiteSpace(delivery?.RecipientName)
+            ? delivery!.RecipientName
+            : buyer?.ContactPerson ?? buyer?.Name ?? "………………………………";
 
         container.Row(row =>
         {
@@ -318,12 +383,19 @@ internal static class MealSupplyContractDocumentComposer
                 partyB.Item().AlignCenter().Text("BÊN B").Bold().FontSize(12);
                 partyB.Item().AlignCenter().PaddingTop(2).Text("(Ký, ghi rõ họ tên, đóng dấu)").Italic().FontSize(10);
                 if (sigBytes is { Length: > 0 })
+                {
                     partyB.Item().PaddingTop(8).AlignCenter().Height(70).Image(sigBytes).FitArea();
+                    partyB.Item().PaddingTop(8).AlignCenter().Text(buyer?.Name ?? repName).SemiBold().FontSize(11);
+                    if (signedAt.HasValue)
+                        partyB.Item().AlignCenter().Text($"Ngày ký: {FmtDateTime(signedAt.Value)}").FontSize(9);
+                }
                 else
-                    partyB.Item().PaddingTop(40).AlignCenter().Text("………………………………").FontSize(11);
-                partyB.Item().PaddingTop(8).AlignCenter().Text(buyer?.Name ?? "………………………………").SemiBold().FontSize(11);
-                if (signedAt.HasValue)
-                    partyB.Item().AlignCenter().Text($"Ngày ký: {FmtDateTime(signedAt.Value)}").FontSize(9);
+                {
+                    partyB.Item().PaddingTop(8).AlignCenter().Text(buyer?.Name ?? "………………………………").SemiBold().FontSize(11);
+                    partyB.Item().AlignCenter().Text($"Đại diện nhận hàng: {repName}").FontSize(10);
+                    partyB.Item().PaddingTop(4).AlignCenter()
+                        .Text("Chữ ký điện tử Bên B: xác nhận phụ lục trên HuitMeal").Italic().FontSize(9);
+                }
             });
         });
     }
