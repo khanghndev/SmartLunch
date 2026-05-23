@@ -13,8 +13,11 @@ using SmartLunch.Backend.Service.Application.DTOs.Request.MasterData.Promotions;
 using SmartLunch.Backend.Service.Application.DTOs.Request.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Promotions;
 using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealOrders;
+using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Dishes;
 using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetOrganizationDishCategories;
 using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetOrganizationDishesByCategory;
+using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetPublicDishDetail;
+using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetPublicDishesBrowse;
 
 namespace SmartLunch.Backend.Service.API.Controllers;
 
@@ -85,6 +88,66 @@ public class OrganizationMealOrderController : ControllerBase
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetOrganizationDishesByCategoryResponse>.ErrorResult(
                     "An error occurred while retrieving dishes",
+                    new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Danh sách món ăn công khai (gallery khách hàng).</summary>
+    [AllowAnonymous]
+    [HttpGet("dish/browse")]
+    public async Task<ActionResult<BaseApiResponse<GetPublicDishesBrowseResponse>>> BrowsePublicDishes(
+        [FromQuery] int page = 1,
+        [FromQuery] int pageSize = 24,
+        [FromQuery] string? search = null,
+        [FromQuery] int? categoryId = null)
+    {
+        try
+        {
+            var response = await _mediator.Send(new GetPublicDishesBrowseQuery(page, pageSize, search, categoryId));
+            return Ok(BaseApiResponse<GetPublicDishesBrowseResponse>.SuccessResult(
+                response,
+                "Dishes retrieved successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetPublicDishesBrowseResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Org meal order: browse public dishes");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetPublicDishesBrowseResponse>.ErrorResult(
+                    "An error occurred while retrieving dishes",
+                    new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Chi tiết món ăn công khai (gallery khách hàng).</summary>
+    [AllowAnonymous]
+    [HttpGet("dish/{id:int}")]
+    public async Task<ActionResult<BaseApiResponse<GetDishResponse>>> GetPublicDish(int id)
+    {
+        try
+        {
+            var response = await _mediator.Send(new GetPublicDishDetailQuery(id));
+            return Ok(BaseApiResponse<GetDishResponse>.SuccessResult(response, "Dish retrieved successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetDishResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetDishResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Org meal order: public dish detail {DishId}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetDishResponse>.ErrorResult(
+                    "An error occurred while retrieving dish",
                     new[] { ex.Message }));
         }
     }
