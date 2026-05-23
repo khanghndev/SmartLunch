@@ -46,6 +46,13 @@ public class BackendAuthClient
         return await GetAsync<UserProfileResponse>("/api/v1/Auth/profile", accessToken, ct);
     }
 
+    /// <summary>Làm mới access token bằng refresh token (không cần Bearer hợp lệ).</summary>
+    public async Task<RefreshTokenClientResponse> RefreshTokenAsync(string refreshToken, CancellationToken ct)
+    {
+        var payload = new { refreshToken };
+        return await PostAsync<RefreshTokenClientResponse>("/api/v1/Auth/refresh-token", payload, bearerToken: null, ct);
+    }
+
     private async Task<T> PostAsync<T>(string path, object payload, string? bearerToken, CancellationToken ct)
     {
         var baseUrl = _configuration["BackendApi:BaseUrl"]?.TrimEnd('/');
@@ -149,6 +156,13 @@ public sealed class LoginResponse
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
+    public string AccessToken { get; set; } = string.Empty;
+    public string RefreshToken { get; set; } = string.Empty;
+    public DateTime RefreshTokenExpiresAt { get; set; }
+}
+
+public sealed class RefreshTokenClientResponse
+{
     public string AccessToken { get; set; } = string.Empty;
     public string RefreshToken { get; set; } = string.Empty;
     public DateTime RefreshTokenExpiresAt { get; set; }

@@ -11,11 +11,16 @@ public class BackendMasterDataClient
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly IApiTokenService? _apiTokenService;
 
-    public BackendMasterDataClient(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    public BackendMasterDataClient(
+        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration,
+        IApiTokenService apiTokenService)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
+        _apiTokenService = apiTokenService;
     }
 
     public async Task<AdminGetUsersResponse> GetUsersAsync(
@@ -722,12 +727,17 @@ public class BackendMasterDataClient
             accessToken,
             ct);
 
-    private async Task<T> GetAsync<T>(string path, string accessToken, CancellationToken ct)
-    {
-        var client = CreateClient(accessToken);
-        using var res = await client.GetAsync(path, ct);
-        return await HandleResponse<T>(res, ct);
-    }
+    private Task<T> GetAsync<T>(string path, string accessToken, CancellationToken ct) =>
+        BackendApiAuthHelper.SendWithRefreshAsync(
+            _apiTokenService,
+            accessToken,
+            async (token, cancellationToken) =>
+            {
+                var client = CreateClient(token);
+                using var res = await client.GetAsync(path, cancellationToken);
+                return await BackendApiAuthHelper.HandleResponseAsync<T>(res, cancellationToken);
+            },
+            ct);
 
     private static readonly JsonSerializerOptions JsonPostOptions = new()
     {
@@ -735,33 +745,48 @@ public class BackendMasterDataClient
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
     };
 
-    private async Task<T> PostAsync<T>(string path, object payload, string accessToken, CancellationToken ct)
-    {
-        var client = CreateClient(accessToken);
-        var json = JsonSerializer.Serialize(payload, JsonPostOptions);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var res = await client.PostAsync(path, content, ct);
-        return await HandleResponse<T>(res, ct);
-    }
+    private Task<T> PostAsync<T>(string path, object payload, string accessToken, CancellationToken ct) =>
+        BackendApiAuthHelper.SendWithRefreshAsync(
+            _apiTokenService,
+            accessToken,
+            async (token, cancellationToken) =>
+            {
+                var client = CreateClient(token);
+                var json = JsonSerializer.Serialize(payload, JsonPostOptions);
+                using var content = new StringContent(json, Encoding.UTF8, "application/json");
+                using var res = await client.PostAsync(path, content, cancellationToken);
+                return await BackendApiAuthHelper.HandleResponseAsync<T>(res, cancellationToken);
+            },
+            ct);
 
-    private async Task<T> PutAsync<T>(string path, object payload, string accessToken, CancellationToken ct)
-    {
-        var client = CreateClient(accessToken);
-        var json = JsonSerializer.Serialize(payload);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var res = await client.PutAsync(path, content, ct);
-        return await HandleResponse<T>(res, ct);
-    }
+    private Task<T> PutAsync<T>(string path, object payload, string accessToken, CancellationToken ct) =>
+        BackendApiAuthHelper.SendWithRefreshAsync(
+            _apiTokenService,
+            accessToken,
+            async (token, cancellationToken) =>
+            {
+                var client = CreateClient(token);
+                var json = JsonSerializer.Serialize(payload);
+                using var content = new StringContent(json, Encoding.UTF8, "application/json");
+                using var res = await client.PutAsync(path, content, cancellationToken);
+                return await BackendApiAuthHelper.HandleResponseAsync<T>(res, cancellationToken);
+            },
+            ct);
 
-    private async Task<T> PatchAsync<T>(string path, object payload, string accessToken, CancellationToken ct)
-    {
-        var client = CreateClient(accessToken);
-        var json = JsonSerializer.Serialize(payload);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var request = new HttpRequestMessage(HttpMethod.Patch, path) { Content = content };
-        using var res = await client.SendAsync(request, ct);
-        return await HandleResponse<T>(res, ct);
-    }
+    private Task<T> PatchAsync<T>(string path, object payload, string accessToken, CancellationToken ct) =>
+        BackendApiAuthHelper.SendWithRefreshAsync(
+            _apiTokenService,
+            accessToken,
+            async (token, cancellationToken) =>
+            {
+                var client = CreateClient(token);
+                var json = JsonSerializer.Serialize(payload);
+                using var content = new StringContent(json, Encoding.UTF8, "application/json");
+                using var request = new HttpRequestMessage(HttpMethod.Patch, path) { Content = content };
+                using var res = await client.SendAsync(request, cancellationToken);
+                return await BackendApiAuthHelper.HandleResponseAsync<T>(res, cancellationToken);
+            },
+            ct);
 
     private HttpClient CreateClient(string accessToken)
     {
@@ -772,24 +797,8 @@ public class BackendMasterDataClient
         return client;
     }
 
-    private async Task<T> HandleResponse<T>(HttpResponseMessage res, CancellationToken ct)
-    {
-        var body = await res.Content.ReadAsStringAsync(ct);
-        if (!res.IsSuccessStatusCode)
-        {
-            var msg = TryExtractBackendMessage(body) ?? $"Backend request failed ({(int)res.StatusCode})";
-            throw new InvalidOperationException(msg);
-        }
-
-        var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var envelope = JsonSerializer.Deserialize<BaseApiResponse<T>>(body, options);
-        if (envelope == null || envelope.Data == null)
-        {
-            if (typeof(T) == typeof(object)) return (T)(object)new { };
-            throw new InvalidOperationException("Invalid response from backend");
-        }
-        return envelope.Data;
-    }
+    private Task<T> HandleResponse<T>(HttpResponseMessage res, CancellationToken ct) =>
+        BackendApiAuthHelper.HandleResponseAsync<T>(res, ct);
 
     private static string? TryExtractBackendMessage(string body)
     {

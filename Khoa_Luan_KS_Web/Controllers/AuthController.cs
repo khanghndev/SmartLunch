@@ -10,10 +10,12 @@ namespace Khoa_Luan_KS_Web.Controllers
     public class AuthController : Controller
     {
         private readonly BackendAuthClient _backendAuthClient;
+        private readonly IApiTokenService _apiTokenService;
 
-        public AuthController(BackendAuthClient backendAuthClient)
+        public AuthController(BackendAuthClient backendAuthClient, IApiTokenService apiTokenService)
         {
             _backendAuthClient = backendAuthClient;
+            _apiTokenService = apiTokenService;
         }
 
         [HttpGet]
@@ -60,25 +62,11 @@ namespace Khoa_Luan_KS_Web.Controllers
 
                 var principal = BuildPrincipalFromJwt(login.AccessToken);
 
-                // Persist access/refresh tokens — store in long-lived cookies AND session
-                var tokenCookieOpts = new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure   = true,
-                    SameSite = SameSiteMode.Lax,
-                    Expires  = DateTimeOffset.UtcNow.AddDays(7)
-                };
-                Response.Cookies.Append("hm_access_token",  login.AccessToken,  tokenCookieOpts);
-                Response.Cookies.Append("hm_refresh_token", login.RefreshToken, tokenCookieOpts);
-                Response.Cookies.Append("hm_user_email",    login.Email,
-                    new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Lax, Expires = DateTimeOffset.UtcNow.AddDays(7) });
-                Response.Cookies.Append("hm_user_name",     login.FullName,
-                    new CookieOptions { HttpOnly = true, Secure = true, SameSite = SameSiteMode.Lax, Expires = DateTimeOffset.UtcNow.AddDays(7) });
-
-                HttpContext.Session.SetString("access_token",  login.AccessToken);
-                HttpContext.Session.SetString("refresh_token", login.RefreshToken);
-                HttpContext.Session.SetString("user_email",    login.Email);
-                HttpContext.Session.SetString("user_name",     login.FullName);
+                _apiTokenService.PersistTokens(
+                    login.AccessToken,
+                    login.RefreshToken,
+                    login.Email,
+                    login.FullName);
 
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
@@ -128,9 +116,7 @@ namespace Khoa_Luan_KS_Web.Controllers
             }
 
             HttpContext.Session.Clear();
-            // Remove persistent token cookies
-            foreach (var key in new[] { "hm_access_token", "hm_refresh_token", "hm_user_email", "hm_user_name" })
-                Response.Cookies.Delete(key);
+            _apiTokenService.ClearTokens();
             await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
             if (!string.IsNullOrEmpty(roleHint))

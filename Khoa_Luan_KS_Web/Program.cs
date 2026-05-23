@@ -11,6 +11,7 @@ builder.Services.AddControllersWithViews()
     });
 
 builder.Services.AddHttpClient();
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddSession(options =>
 {
@@ -101,6 +102,7 @@ builder.Services.AddAuthorization(options =>
             ctx.User.IsInRole("Khách hàng cá nhân")));
 });
 
+builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.IApiTokenService, Khoa_Luan_KS_Web.Services.ApiTokenService>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendAuthClient>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendMasterDataClient>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.CustomerHomeFeaturedMenuService>();
@@ -130,18 +132,20 @@ app.UseRouting();
 app.UseSession();
 
 // Restore token from persistent cookie into Session when Session is empty
-// (happens after server restart or session expiry while the auth cookie is still valid)
 app.Use(async (ctx, next) =>
 {
-    if (string.IsNullOrEmpty(ctx.Session.GetString("access_token")))
+    if (string.IsNullOrEmpty(ctx.Session.GetString(Khoa_Luan_KS_Web.Services.ApiTokenService.AccessTokenSessionKey)))
     {
-        var tokenFromCookie = ctx.Request.Cookies["hm_access_token"];
+        var tokenFromCookie = ctx.Request.Cookies[Khoa_Luan_KS_Web.Services.ApiTokenService.AccessTokenCookieKey];
         if (!string.IsNullOrEmpty(tokenFromCookie))
         {
-            ctx.Session.SetString("access_token",  tokenFromCookie);
-            ctx.Session.SetString("refresh_token", ctx.Request.Cookies["hm_refresh_token"] ?? "");
-            ctx.Session.SetString("user_email",    ctx.Request.Cookies["hm_user_email"]    ?? "");
-            ctx.Session.SetString("user_name",     ctx.Request.Cookies["hm_user_name"]     ?? "");
+            ctx.Session.SetString(Khoa_Luan_KS_Web.Services.ApiTokenService.AccessTokenSessionKey, tokenFromCookie);
+            ctx.Session.SetString(Khoa_Luan_KS_Web.Services.ApiTokenService.RefreshTokenSessionKey,
+                ctx.Request.Cookies[Khoa_Luan_KS_Web.Services.ApiTokenService.RefreshTokenCookieKey] ?? "");
+            ctx.Session.SetString("user_email",
+                ctx.Request.Cookies[Khoa_Luan_KS_Web.Services.ApiTokenService.UserEmailCookieKey] ?? "");
+            ctx.Session.SetString("user_name",
+                ctx.Request.Cookies[Khoa_Luan_KS_Web.Services.ApiTokenService.UserNameCookieKey] ?? "");
         }
     }
     await next();
@@ -149,6 +153,9 @@ app.Use(async (ctx, next) =>
 
 app.UseAuthentication();
 app.UseAuthorization();
+
+// Tự refresh JWT (Admin / Manager / WarehouseStaff / Customer / Organization)
+app.UseMiddleware<Khoa_Luan_KS_Web.Middleware.JwtRefreshMiddleware>();
 
 // Role-specific friendly prefixes for demo:
 // - https://localhost:5101/admin

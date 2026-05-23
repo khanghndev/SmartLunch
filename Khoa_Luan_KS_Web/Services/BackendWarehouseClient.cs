@@ -13,11 +13,16 @@ public class BackendWarehouseClient
 {
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly IConfiguration _configuration;
+    private readonly IApiTokenService? _apiTokenService;
 
-    public BackendWarehouseClient(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+    public BackendWarehouseClient(
+        IHttpClientFactory httpClientFactory,
+        IConfiguration configuration,
+        IApiTokenService apiTokenService)
     {
         _httpClientFactory = httpClientFactory;
         _configuration = configuration;
+        _apiTokenService = apiTokenService;
     }
 
     // ───────────────────────────── Ingredient (master data) ─────────────────────────────
@@ -168,30 +173,45 @@ public class BackendWarehouseClient
 
 
     // ───────────────────────────── Plumbing ─────────────────────────────────────────────
-    private async Task<T> GetAsync<T>(string path, string accessToken, CancellationToken ct)
-    {
-        var client = CreateClient(accessToken);
-        using var res = await client.GetAsync(path, ct);
-        return await HandleResponse<T>(res, ct);
-    }
+    private Task<T> GetAsync<T>(string path, string accessToken, CancellationToken ct) =>
+        BackendApiAuthHelper.SendWithRefreshAsync(
+            _apiTokenService,
+            accessToken,
+            async (token, cancellationToken) =>
+            {
+                var client = CreateClient(token);
+                using var res = await client.GetAsync(path, cancellationToken);
+                return await BackendApiAuthHelper.HandleResponseAsync<T>(res, cancellationToken);
+            },
+            ct);
 
-    private async Task<T> PostAsync<T>(string path, object payload, string accessToken, CancellationToken ct)
-    {
-        var client = CreateClient(accessToken);
-        var json = JsonSerializer.Serialize(payload, JsonOpts);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var res = await client.PostAsync(path, content, ct);
-        return await HandleResponse<T>(res, ct);
-    }
+    private Task<T> PostAsync<T>(string path, object payload, string accessToken, CancellationToken ct) =>
+        BackendApiAuthHelper.SendWithRefreshAsync(
+            _apiTokenService,
+            accessToken,
+            async (token, cancellationToken) =>
+            {
+                var client = CreateClient(token);
+                var json = JsonSerializer.Serialize(payload, JsonOpts);
+                using var content = new StringContent(json, Encoding.UTF8, "application/json");
+                using var res = await client.PostAsync(path, content, cancellationToken);
+                return await BackendApiAuthHelper.HandleResponseAsync<T>(res, cancellationToken);
+            },
+            ct);
 
-    private async Task<T> PutAsync<T>(string path, object payload, string accessToken, CancellationToken ct)
-    {
-        var client = CreateClient(accessToken);
-        var json = JsonSerializer.Serialize(payload, JsonOpts);
-        using var content = new StringContent(json, Encoding.UTF8, "application/json");
-        using var res = await client.PutAsync(path, content, ct);
-        return await HandleResponse<T>(res, ct);
-    }
+    private Task<T> PutAsync<T>(string path, object payload, string accessToken, CancellationToken ct) =>
+        BackendApiAuthHelper.SendWithRefreshAsync(
+            _apiTokenService,
+            accessToken,
+            async (token, cancellationToken) =>
+            {
+                var client = CreateClient(token);
+                var json = JsonSerializer.Serialize(payload, JsonOpts);
+                using var content = new StringContent(json, Encoding.UTF8, "application/json");
+                using var res = await client.PutAsync(path, content, cancellationToken);
+                return await BackendApiAuthHelper.HandleResponseAsync<T>(res, cancellationToken);
+            },
+            ct);
 
     private static readonly JsonSerializerOptions JsonOpts = new()
     {
@@ -208,24 +228,8 @@ public class BackendWarehouseClient
         return client;
     }
 
-    private static async Task<T> HandleResponse<T>(HttpResponseMessage res, CancellationToken ct)
-    {
-        var body = await res.Content.ReadAsStringAsync(ct);
-        if (!res.IsSuccessStatusCode)
-        {
-            var msg = TryExtractBackendMessage(body) ?? $"Backend request failed ({(int)res.StatusCode})";
-            throw new InvalidOperationException(msg);
-        }
-
-        var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-        var envelope = JsonSerializer.Deserialize<BaseApiResponse<T>>(body, opts);
-        if (envelope == null || envelope.Data == null)
-        {
-            if (typeof(T) == typeof(object)) return (T)(object)new { };
-            throw new InvalidOperationException("Invalid response from backend");
-        }
-        return envelope.Data;
-    }
+    private static Task<T> HandleResponse<T>(HttpResponseMessage res, CancellationToken ct) =>
+        BackendApiAuthHelper.HandleResponseAsync<T>(res, ct);
 
     private static string? TryExtractBackendMessage(string body)
     {
