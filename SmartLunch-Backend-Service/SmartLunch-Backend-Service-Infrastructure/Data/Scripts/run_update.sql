@@ -38,6 +38,7 @@ SOURCE migrations/55_manager_intake_permissions.sql;
 SOURCE migrations/56_contact_inquiries.sql;
 SOURCE migrations/57_warehousestaff_partner_payment_create.sql;
 SOURCE migrations/58_orders_recipient_delivery_email.sql;
+SOURCE migrations/59_organization_legal_documents.sql;
 
 -- ---------- Tối ưu thống kê (tùy chọn, an toàn) ----------
 SOURCE 05_maintenance/01_analyze_optimize.sql;
