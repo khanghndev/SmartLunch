@@ -173,6 +173,9 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
         if (created.Success && !string.IsNullOrWhiteSpace(created.CheckoutUrl))
             return created;
 
+        if (IsPayOsRateLimited(created.Message, created.StatusCode))
+            return created;
+
         reused = await TryReuseExistingPayOsSessionAsync(
             pendingPayment.Id,
             pendingPayment,
@@ -202,7 +205,19 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
     {
         var existing = await _payOSClient.GetPaymentRequestAsync(payOsOrderCode, cancellationToken);
         if (!existing.Success)
+        {
+            if (IsPayOsRateLimited(existing.Message, existing.StatusCode))
+            {
+                return new PayOSCreatePaymentResult
+                {
+                    Success = false,
+                    StatusCode = existing.StatusCode,
+                    Message = existing.Message,
+                };
+            }
+
             return null;
+        }
 
         if (IsPayOsPaidStatus(existing.Status))
         {
@@ -277,6 +292,9 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
         if (created.Success && !string.IsNullOrWhiteSpace(created.CheckoutUrl))
             return created;
 
+        if (IsPayOsRateLimited(created.Message, created.StatusCode))
+            return created;
+
         var reused = await TryReuseExistingPayOsSessionAsync(
             freshPayment.Id,
             freshPayment,
@@ -322,6 +340,12 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
         order.UpdatedAt = VietnamTime.Now;
         await _orderRepository.CommitAsync();
     }
+
+    private static bool IsPayOsRateLimited(string? message, int statusCode = 0) =>
+        statusCode == 429 ||
+        (message?.Contains("too many requests", StringComparison.OrdinalIgnoreCase) ?? false) ||
+        (message?.Contains("quá tải", StringComparison.OrdinalIgnoreCase) ?? false) ||
+        (message?.Contains("quá nhiều yêu cầu", StringComparison.OrdinalIgnoreCase) ?? false);
 
     private static bool IsDuplicatePayOsOrderError(PayOSCreatePaymentResult result)
     {

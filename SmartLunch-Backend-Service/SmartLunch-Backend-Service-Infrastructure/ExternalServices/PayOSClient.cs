@@ -1,3 +1,4 @@
+using System.Net;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,6 +12,8 @@ namespace SmartLunch.Backend.Service.Infrastructure.ExternalServices;
 
 public sealed class PayOSClient : IPayOSClient
 {
+    private const int MaxRateLimitRetries = 3;
+
     private static readonly JsonSerializerOptions JsonWrite = new()
     {
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
@@ -99,18 +102,18 @@ public sealed class PayOSClient : IPayOSClient
             }).ToList()
         };
 
-        using var req = new HttpRequestMessage(HttpMethod.Post, "v2/payment-requests");
-        req.Headers.TryAddWithoutValidation("x-client-id", _options.ClientId);
-        req.Headers.TryAddWithoutValidation("x-api-key", _options.ApiKey);
-        if (!string.IsNullOrWhiteSpace(_options.PartnerCode))
-            req.Headers.TryAddWithoutValidation("x-partner-code", _options.PartnerCode);
-
-        req.Content = JsonContent.Create(body, options: JsonWrite);
-
-        HttpResponseMessage res;
+        HttpCallResult call;
         try
         {
-            res = await _http.SendAsync(req, cancellationToken);
+            call = await SendWithRateLimitRetryAsync(
+                () =>
+                {
+                    var req = new HttpRequestMessage(HttpMethod.Post, "v2/payment-requests");
+                    ApplyAuthHeaders(req);
+                    req.Content = JsonContent.Create(body, options: JsonWrite);
+                    return req;
+                },
+                cancellationToken);
         }
         catch (Exception ex)
         {
@@ -118,38 +121,17 @@ public sealed class PayOSClient : IPayOSClient
             return Fail(0, null, null, $"PayOS request failed: {ex.Message}");
         }
 
-        var status = (int)res.StatusCode;
-        string raw;
-        try
-        {
-            raw = await res.Content.ReadAsStringAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            _logger.LogError(ex, "PayOS: failed to read response body");
-            return Fail(status, null, null, "Failed to read PayOS response body.");
-        }
+        var status = call.StatusCode;
+        var raw = call.RawBody;
+        if (!TryParseEnvelope(raw, status, out var envelope, out var parseError))
+            return Fail(status, null, null, parseError, raw);
 
-        PayOSApiEnvelope? envelope;
-        try
-        {
-            envelope = JsonSerializer.Deserialize<PayOSApiEnvelope>(raw, JsonRead);
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogWarning(ex, "PayOS: invalid JSON. Raw: {Raw}", Truncate(raw));
-            return Fail(status, null, null, "Invalid JSON from PayOS.", raw);
-        }
-
-        if (envelope is null)
-            return Fail(status, null, null, "Empty or unreadable PayOS response.", raw);
-
-        var okCode = string.Equals(envelope.Code, "00", StringComparison.Ordinal);
+        var okCode = string.Equals(envelope!.Code, "00", StringComparison.Ordinal);
         var data = envelope.Data;
 
-        if (!res.IsSuccessStatusCode || !okCode || data is null)
+        if (!call.IsSuccessStatusCode || !okCode || data is null)
         {
-            var msg = envelope.Desc ?? res.ReasonPhrase ?? "PayOS error";
+            var msg = envelope.Desc ?? call.ReasonPhrase ?? "PayOS error";
             return new PayOSCreatePaymentResult
             {
                 Success = false,
@@ -203,65 +185,51 @@ public sealed class PayOSClient : IPayOSClient
         CancellationToken cancellationToken)
     {
         if (!_options.Enabled)
-            return InfoFail("PayOS is disabled (PayOS:Enabled = false).");
+            return InfoFail(0, "PayOS is disabled (PayOS:Enabled = false).");
 
         if (string.IsNullOrWhiteSpace(_options.ClientId) ||
             string.IsNullOrWhiteSpace(_options.ApiKey))
-            return InfoFail("PayOS ClientId and ApiKey must be configured.");
+            return InfoFail(0, "PayOS ClientId and ApiKey must be configured.");
 
-        using var req = new HttpRequestMessage(method, relativePath);
-        req.Headers.TryAddWithoutValidation("x-client-id", _options.ClientId);
-        req.Headers.TryAddWithoutValidation("x-api-key", _options.ApiKey);
-        if (!string.IsNullOrWhiteSpace(_options.PartnerCode))
-            req.Headers.TryAddWithoutValidation("x-partner-code", _options.PartnerCode);
-
-        if (jsonBody != null)
-            req.Content = JsonContent.Create(jsonBody, options: JsonWrite);
-
-        HttpResponseMessage res;
+        HttpCallResult call;
         try
         {
-            res = await _http.SendAsync(req, cancellationToken);
+            call = await SendWithRateLimitRetryAsync(
+                () =>
+                {
+                    var req = new HttpRequestMessage(method, relativePath);
+                    ApplyAuthHeaders(req);
+                    if (jsonBody != null)
+                        req.Content = JsonContent.Create(jsonBody, options: JsonWrite);
+                    return req;
+                },
+                cancellationToken);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "PayOS {Method} {Path} failed", method, relativePath);
-            return InfoFail($"PayOS request failed: {ex.Message}");
+            return InfoFail(0, $"PayOS request failed: {ex.Message}");
         }
 
-        var status = (int)res.StatusCode;
-        string raw;
-        try
-        {
-            raw = await res.Content.ReadAsStringAsync(cancellationToken);
-        }
-        catch (Exception ex)
-        {
-            return InfoFail($"Failed to read PayOS response: {ex.Message}");
-        }
+        return MapPaymentRequestInfo(call);
+    }
 
-        PayOSApiEnvelope? envelope;
-        try
-        {
-            envelope = JsonSerializer.Deserialize<PayOSApiEnvelope>(raw, JsonRead);
-        }
-        catch (JsonException ex)
-        {
-            _logger.LogWarning(ex, "PayOS: invalid JSON. Raw: {Raw}", Truncate(raw));
-            return InfoFail("Invalid JSON from PayOS.");
-        }
+    private PayOSPaymentRequestInfoResult MapPaymentRequestInfo(HttpCallResult call)
+    {
+        var status = call.StatusCode;
+        var raw = call.RawBody;
+        if (!TryParseEnvelope(raw, status, out var envelope, out var parseError))
+            return InfoFail(status, parseError);
 
-        if (envelope is null)
-            return InfoFail("Empty PayOS response.");
-
-        var okCode = string.Equals(envelope.Code, "00", StringComparison.Ordinal);
+        var okCode = string.Equals(envelope!.Code, "00", StringComparison.Ordinal);
         var data = envelope.Data;
-        if (!res.IsSuccessStatusCode || !okCode || data is null)
+        if (!call.IsSuccessStatusCode || !okCode || data is null)
         {
-            var msg = envelope.Desc ?? res.ReasonPhrase ?? "PayOS error";
+            var msg = envelope.Desc ?? call.ReasonPhrase ?? "PayOS error";
             return new PayOSPaymentRequestInfoResult
             {
                 Success = false,
+                StatusCode = status,
                 Code = envelope.Code,
                 Desc = envelope.Desc,
                 Message = msg,
@@ -271,6 +239,7 @@ public sealed class PayOSClient : IPayOSClient
         return new PayOSPaymentRequestInfoResult
         {
             Success = true,
+            StatusCode = status,
             Code = envelope.Code,
             Desc = envelope.Desc,
             Status = data.Status,
@@ -300,8 +269,122 @@ public sealed class PayOSClient : IPayOSClient
         return $"{baseWeb}/{linkId.Trim()}";
     }
 
-    private static PayOSPaymentRequestInfoResult InfoFail(string message) =>
-        new() { Success = false, Message = message };
+    private void ApplyAuthHeaders(HttpRequestMessage req)
+    {
+        req.Headers.TryAddWithoutValidation("x-client-id", _options.ClientId);
+        req.Headers.TryAddWithoutValidation("x-api-key", _options.ApiKey);
+        if (!string.IsNullOrWhiteSpace(_options.PartnerCode))
+            req.Headers.TryAddWithoutValidation("x-partner-code", _options.PartnerCode);
+    }
+
+    private async Task<HttpCallResult> SendWithRateLimitRetryAsync(
+        Func<HttpRequestMessage> buildRequest,
+        CancellationToken cancellationToken)
+    {
+        for (var attempt = 1; attempt <= MaxRateLimitRetries; attempt++)
+        {
+            using var req = buildRequest();
+            using var res = await _http.SendAsync(req, cancellationToken);
+            var status = (int)res.StatusCode;
+            var raw = await res.Content.ReadAsStringAsync(cancellationToken);
+
+            if (!ShouldRetryRateLimit(status, raw) || attempt >= MaxRateLimitRetries)
+            {
+                return new HttpCallResult(
+                    status,
+                    raw,
+                    res.IsSuccessStatusCode,
+                    res.ReasonPhrase);
+            }
+
+            var delayMs = (int)Math.Pow(2, attempt - 1) * 1000;
+            _logger.LogWarning(
+                "PayOS rate limited (HTTP {Status}), retry {Attempt}/{Max} in {DelayMs}ms. Raw: {Raw}",
+                status,
+                attempt,
+                MaxRateLimitRetries,
+                delayMs,
+                Truncate(raw));
+            await Task.Delay(delayMs, cancellationToken);
+        }
+
+        throw new InvalidOperationException("PayOS retry loop exited unexpectedly.");
+    }
+
+    private static bool ShouldRetryRateLimit(int httpStatus, string raw) =>
+        httpStatus == (int)HttpStatusCode.TooManyRequests || IsRateLimitMessage(raw);
+
+    private static bool IsRateLimitMessage(string? text) =>
+        !string.IsNullOrWhiteSpace(text) &&
+        text.Contains("too many requests", StringComparison.OrdinalIgnoreCase);
+
+    private bool TryParseEnvelope(
+        string raw,
+        int httpStatus,
+        out PayOSApiEnvelope? envelope,
+        out string errorMessage)
+    {
+        envelope = null;
+        errorMessage = "";
+
+        var trimmed = raw.Trim();
+        if (trimmed.Length == 0)
+        {
+            errorMessage = "Empty PayOS response.";
+            return false;
+        }
+
+        if (!LooksLikeJson(trimmed))
+        {
+            errorMessage = BuildPlainTextErrorMessage(trimmed, httpStatus);
+            _logger.LogWarning("PayOS non-JSON response (HTTP {Status}): {Raw}", httpStatus, Truncate(trimmed));
+            return false;
+        }
+
+        try
+        {
+            envelope = JsonSerializer.Deserialize<PayOSApiEnvelope>(trimmed, JsonRead);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "PayOS: invalid JSON. Raw: {Raw}", Truncate(trimmed));
+            errorMessage = "Invalid JSON from PayOS.";
+            return false;
+        }
+
+        if (envelope is null)
+        {
+            errorMessage = "Empty or unreadable PayOS response.";
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool LooksLikeJson(string raw)
+    {
+        var span = raw.AsSpan().TrimStart();
+        return span.Length > 0 && (span[0] == '{' || span[0] == '[');
+    }
+
+    private static string BuildPlainTextErrorMessage(string raw, int httpStatus)
+    {
+        if (IsRateLimitMessage(raw) || httpStatus == (int)HttpStatusCode.TooManyRequests)
+        {
+            return "PayOS tạm thời quá tải (quá nhiều yêu cầu). Vui lòng thử lại sau vài giây.";
+        }
+
+        return raw;
+    }
+
+    private static PayOSPaymentRequestInfoResult InfoFail(int statusCode, string message) =>
+        new() { Success = false, StatusCode = statusCode, Message = message };
+
+    private readonly record struct HttpCallResult(
+        int StatusCode,
+        string RawBody,
+        bool IsSuccessStatusCode,
+        string? ReasonPhrase);
 
     /// <summary>
     /// Cùng định dạng với @payos/node <c>createSignatureOfPaymentRequest</c>: chuỗi cố định, không URL-encode.

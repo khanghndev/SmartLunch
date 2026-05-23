@@ -95,6 +95,10 @@ public sealed class PayOSCreatePaymentResult
 public sealed class PayOSPaymentRequestInfoResult
 {
     public bool Success { get; init; }
+
+    /// <summary>HTTP status từ PayOS (429 khi bị rate limit, …).</summary>
+    public int StatusCode { get; init; }
+
     public string? Status { get; init; }
     public string? CheckoutUrl { get; init; }
     public string? QrCode { get; init; }
