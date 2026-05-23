@@ -14,11 +14,16 @@ namespace Khoa_Luan_KS_Web.Controllers
     {
         private readonly Services.BackendAuthClient _backendAuthClient;
         private readonly Services.BackendMasterDataClient _masterDataClient;
+        private readonly Services.BackendCompanyProfileClient _companyProfileClient;
 
-        public ProfileController(Services.BackendAuthClient backendAuthClient, Services.BackendMasterDataClient masterDataClient)
+        public ProfileController(
+            Services.BackendAuthClient backendAuthClient,
+            Services.BackendMasterDataClient masterDataClient,
+            Services.BackendCompanyProfileClient companyProfileClient)
         {
             _backendAuthClient = backendAuthClient;
             _masterDataClient = masterDataClient;
+            _companyProfileClient = companyProfileClient;
         }
 
         private static bool IsOrganizationAccount(ClaimsPrincipal user) =>
@@ -30,18 +35,133 @@ namespace Khoa_Luan_KS_Web.Controllers
         {
             var accessToken = HttpContext.Session.GetString("access_token");
             if (string.IsNullOrEmpty(accessToken))
-                return RedirectToAction("Login", "Auth");
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Index)) });
+
+            var vm = new CompanyProfilePageViewModel
+            {
+                IsOrganizationAccount = IsOrganizationAccount(User),
+                SuccessMessage = TempData["ProfileSuccess"] as string,
+                ErrorMessage = TempData["ProfileError"] as string,
+            };
 
             try
             {
-                var profile = await _backendAuthClient.GetProfileAsync(accessToken, ct);
-                return View(profile);
+                vm.User = await _backendAuthClient.GetProfileAsync(accessToken, ct);
+                if (vm.IsOrganizationAccount)
+                    vm.Organization = await _companyProfileClient.GetProfileAsync(accessToken, ct);
             }
             catch (Exception ex)
             {
-                TempData["Error"] = "Không thể tải thông tin hồ sơ: " + ex.Message;
-                return RedirectToAction("Index", "Customer");
+                vm.LoadError = ex.Message;
             }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateOrganization(
+            UpdateOrganizationProfileClientRequest request,
+            CancellationToken ct)
+        {
+            if (!IsOrganizationAccount(User))
+                return Forbid();
+
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Index)) });
+
+            try
+            {
+                await _companyProfileClient.UpdateProfileAsync(request, accessToken, ct);
+                TempData["ProfileSuccess"] = "Đã lưu hồ sơ doanh nghiệp thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ProfileError"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadLogo(IFormFile logoFile, CancellationToken ct)
+        {
+            if (!IsOrganizationAccount(User))
+                return Forbid();
+
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Index)) });
+
+            try
+            {
+                await _companyProfileClient.UploadLogoAsync(logoFile, accessToken, ct);
+                TempData["ProfileSuccess"] = "Đã cập nhật ảnh đại diện.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ProfileError"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UploadLegalDocument(
+            IFormFile file,
+            string title,
+            string documentType,
+            string? description,
+            DateTime? issuedDate,
+            DateTime? expiryDate,
+            CancellationToken ct)
+        {
+            if (!IsOrganizationAccount(User))
+                return Forbid();
+
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Index)) });
+
+            try
+            {
+                await _companyProfileClient.UploadDocumentAsync(
+                    file, accessToken, title, documentType, description, issuedDate, expiryDate, ct);
+                TempData["ProfileSuccess"] = "Đã tải tài liệu pháp lý lên hệ thống.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ProfileError"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteLegalDocument(int documentId, CancellationToken ct)
+        {
+            if (!IsOrganizationAccount(User))
+                return Forbid();
+
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Index)) });
+
+            try
+            {
+                await _companyProfileClient.DeleteDocumentAsync(documentId, accessToken, ct);
+                TempData["ProfileSuccess"] = "Đã xóa tài liệu.";
+            }
+            catch (Exception ex)
+            {
+                TempData["ProfileError"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Index));
         }
 
         public async Task<IActionResult> Orders(int page = 1, CancellationToken ct = default)

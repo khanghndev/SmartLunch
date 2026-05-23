@@ -12,10 +12,12 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
         private const int NearExpiryDays = 30;
 
         private readonly BackendWarehouseClient _warehouseClient;
+        private readonly BackendDeliveryClient _deliveryClient;
 
-        public InventoryController(BackendWarehouseClient warehouseClient)
+        public InventoryController(BackendWarehouseClient warehouseClient, BackendDeliveryClient deliveryClient)
         {
             _warehouseClient = warehouseClient;
+            _deliveryClient = deliveryClient;
         }
 
         public async Task<IActionResult> Index(
@@ -127,7 +129,88 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             }
         }
 
-        public IActionResult Delivery() => View();
+        public async Task<IActionResult> Delivery(
+            DateOnly? scheduledOn = null,
+            string? status = null,
+            string? search = null,
+            bool unassignedOnly = false,
+            CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token))
+                return RedirectToAction("Login", "Auth", new { area = "" });
+
+            var vm = new ManagerDeliveryViewModel
+            {
+                ScheduledOn = scheduledOn ?? DateOnly.FromDateTime(DateTime.Today),
+                StatusFilter = status ?? "",
+                SearchTerm = search ?? "",
+                UnassignedOnly = unassignedOnly,
+                SuccessMessage = TempData["Success"] as string,
+                ErrorMessage = TempData["Error"] as string,
+            };
+
+            try
+            {
+                var res = await _deliveryClient.GetDeliveriesAsync(
+                    token,
+                    page: 1,
+                    pageSize: 100,
+                    status: string.IsNullOrWhiteSpace(status) ? null : status,
+                    scheduledOn: vm.ScheduledOn,
+                    searchTerm: string.IsNullOrWhiteSpace(search) ? null : search,
+                    unassignedOnly: unassignedOnly ? true : null,
+                    ct: ct);
+                vm.Deliveries = res.Data;
+                vm.Stats = res.Stats;
+                vm.Shippers = (await _deliveryClient.GetShippersAsync(token, ct)).Shippers;
+            }
+            catch (Exception ex)
+            {
+                vm.ErrorMessage = ex.Message;
+            }
+
+            return View(vm);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AssignDelivery(
+            int deliveryId,
+            int shipperUserId,
+            string? notes,
+            DateOnly? scheduledOn,
+            string? status,
+            string? search,
+            bool unassignedOnly = false,
+            CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token))
+                return RedirectToAction("Login", "Auth", new { area = "" });
+
+            try
+            {
+                await _deliveryClient.AssignAsync(
+                    deliveryId,
+                    new AssignManagerDeliveryClientRequest { ShipperUserId = shipperUserId, Notes = notes },
+                    token,
+                    ct);
+                TempData["Success"] = "Đã điều phối shipper cho chuyến giao.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Delivery), new
+            {
+                scheduledOn = scheduledOn?.ToString("yyyy-MM-dd"),
+                status,
+                search,
+                unassignedOnly,
+            });
+        }
 
         private async Task<Dictionary<int, DateTime?>> BuildNearestExpiryMapAsync(
             IReadOnlyList<int> ingredientIds,
@@ -176,6 +259,19 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
                 _ => rows
             };
         }
+    }
+
+    public sealed class ManagerDeliveryViewModel
+    {
+        public List<ManagerDeliveryListItemClientDto> Deliveries { get; set; } = new();
+        public List<ManagerShipperOptionClientDto> Shippers { get; set; } = new();
+        public ManagerDeliveryStatsClientDto Stats { get; set; } = new();
+        public DateOnly ScheduledOn { get; set; }
+        public string StatusFilter { get; set; } = "";
+        public string SearchTerm { get; set; } = "";
+        public bool UnassignedOnly { get; set; }
+        public string? SuccessMessage { get; set; }
+        public string? ErrorMessage { get; set; }
     }
 
     public sealed class ManagerInventoryIndexViewModel

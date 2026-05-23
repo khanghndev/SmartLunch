@@ -1,225 +1,299 @@
+@model Khoa_Luan_KS_Web.Areas.Manager.Controllers.ManagerDeliveryViewModel
+@using Khoa_Luan_KS_Web.Services
 @{
-    ViewData["Title"] = "Giao hàng & Vận chuyển";
+    ViewData["Title"] = "Điều phối giao hàng";
     Layout = "_LayoutManager";
+    var deliveries = Model.Deliveries;
+    var shippers = Model.Shippers;
+    var stats = Model.Stats;
+
+    string StatusBadge(string status) => (status ?? "").ToLowerInvariant() switch
+    {
+        "pending" => "bg-amber-50 text-amber-800 border-amber-200",
+        "received" => "bg-blue-50 text-blue-800 border-blue-200",
+        "in_transit" => "bg-indigo-50 text-indigo-800 border-indigo-200",
+        "completed" => "bg-green-50 text-green-800 border-green-200",
+        "failed" => "bg-red-50 text-red-800 border-red-200",
+        "rejected" => "bg-slate-100 text-slate-600 border-slate-200",
+        _ => "bg-slate-50 text-slate-600 border-slate-200",
+    };
+
+    string StatusBar(string status) => (status ?? "").ToLowerInvariant() switch
+    {
+        "pending" => "bg-amber-400",
+        "received" => "bg-blue-500",
+        "in_transit" => "bg-indigo-500",
+        "completed" => "bg-green-500",
+        "failed" => "bg-red-500",
+        "rejected" => "bg-slate-400",
+        _ => "bg-slate-300",
+    };
+
+    string BuildFilterUrl(string? statusOverride = null, bool? unassignedOverride = null)
+    {
+        var st = statusOverride ?? Model.StatusFilter;
+        var ua = unassignedOverride ?? Model.UnassignedOnly;
+        var q = $"/Manager/Inventory/Delivery?scheduledOn={Model.ScheduledOn:yyyy-MM-dd}";
+        if (!string.IsNullOrWhiteSpace(st)) q += $"&status={Uri.EscapeDataString(st)}";
+        if (!string.IsNullOrWhiteSpace(Model.SearchTerm)) q += $"&search={Uri.EscapeDataString(Model.SearchTerm)}";
+        if (ua) q += "&unassignedOnly=true";
+        return q;
+    }
 }
 
-<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="deliveryManager()">
-    
-    <!-- HEADER -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="p-4 md:p-6 lg:p-8 space-y-6 bg-slate-50 min-h-screen font-sans max-w-[1600px] mx-auto"
+     x-data="deliveryBoard(@(deliveries.Count > 0 ? System.Text.Json.JsonSerializer.Serialize(deliveries) : "[]"), @(shippers.Count > 0 ? System.Text.Json.JsonSerializer.Serialize(shippers) : "[]"))">
+
+    <!-- Header -->
+    <div class="flex flex-col xl:flex-row xl:items-end justify-between gap-4">
         <div>
-            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Điều phối Giao hàng (Logistics)</h1>
-            <p class="text-slate-500 mt-1 font-medium text-sm">Quản lý đội xe, theo dõi lộ trình và ETA của các chuyến giao suất ăn.</p>
+            <h1 class="text-2xl md:text-3xl font-black text-slate-800 tracking-tight">Điều phối giao hàng</h1>
+            <p class="text-slate-500 mt-1 text-sm font-medium">Phân công shipper, theo dõi trạng thái chuyến giao theo ngày giao suất.</p>
         </div>
-        
-        <div class="flex items-center gap-3">
-            <button class="px-5 py-2 bg-white border border-slate-200 text-slate-700 font-bold rounded-xl shadow-sm hover:bg-slate-50 transition-all flex items-center gap-2 text-sm">
-                <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path></svg>
-                Liên hệ Tài xế
+        <form method="get" class="flex flex-wrap items-end gap-2 bg-white border border-slate-200 rounded-2xl p-3 shadow-sm">
+            <div>
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Ngày giao</label>
+                <input type="date" name="scheduledOn" value="@Model.ScheduledOn.ToString("yyyy-MM-dd")"
+                       class="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold" />
+            </div>
+            <div class="min-w-[140px]">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Trạng thái</label>
+                <select name="status" class="rounded-xl border border-slate-200 px-3 py-2 text-sm font-semibold w-full">
+                    <option value="">Tất cả</option>
+                    <option value="pending" selected="@(Model.StatusFilter == "pending")">Chờ điều phối</option>
+                    <option value="received" selected="@(Model.StatusFilter == "received")">Đã giao shipper</option>
+                    <option value="in_transit" selected="@(Model.StatusFilter == "in_transit")">Đang giao</option>
+                    <option value="completed" selected="@(Model.StatusFilter == "completed")">Đã giao</option>
+                    <option value="failed" selected="@(Model.StatusFilter == "failed")">Thất bại</option>
+                </select>
+            </div>
+            <div class="min-w-[180px] flex-1">
+                <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Tìm kiếm</label>
+                <input type="text" name="search" value="@Model.SearchTerm" placeholder="Đơn vị, địa chỉ, mã đơn..."
+                       class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm" />
+            </div>
+            <label class="flex items-center gap-2 px-2 py-2 text-xs font-bold text-slate-600 cursor-pointer">
+                <input type="checkbox" name="unassignedOnly" value="true" @(Model.UnassignedOnly ? "checked" : "")
+                       class="rounded border-slate-300 text-green-600" />
+                Chưa phân shipper
+            </label>
+            <button type="submit" class="px-4 py-2 rounded-xl bg-slate-900 text-white text-sm font-bold hover:bg-green-600 transition">
+                Lọc
             </button>
-            <button @@click="openDispatchModal()" class="px-5 py-2 bg-green-600 text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:bg-green-700 transition-all flex items-center gap-2 text-sm">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                Tạo chuyến giao hàng
-            </button>
-        </div>
+        </form>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        
-        <!-- MAP AREA -->
-        <div class="lg:col-span-2 bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[500px]">
-            <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                <h3 class="font-black text-lg text-slate-800 flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
-                    Bản đồ Giám sát Hành trình (GPS)
+    @if (!string.IsNullOrEmpty(Model.SuccessMessage))
+    {
+        <div class="rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-semibold text-emerald-800">@Model.SuccessMessage</div>
+    }
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-semibold text-red-800">@Model.ErrorMessage</div>
+    }
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+        <a href="@BuildFilterUrl("pending")" class="rounded-2xl border border-slate-200 bg-white p-4 hover:border-amber-300 transition shadow-sm">
+            <p class="text-[10px] font-black uppercase text-amber-600">Chờ điều phối</p>
+            <p class="text-2xl font-black text-slate-900 mt-1">@stats.Pending</p>
+        </a>
+        <a href="@BuildFilterUrl(null, true)" class="rounded-2xl border border-slate-200 bg-white p-4 hover:border-orange-300 transition shadow-sm">
+            <p class="text-[10px] font-black uppercase text-orange-600">Chưa có shipper</p>
+            <p class="text-2xl font-black text-slate-900 mt-1">@stats.Unassigned</p>
+        </a>
+        <a href="@BuildFilterUrl("in_transit")" class="rounded-2xl border border-slate-200 bg-white p-4 hover:border-indigo-300 transition shadow-sm">
+            <p class="text-[10px] font-black uppercase text-indigo-600">Đang xử lý</p>
+            <p class="text-2xl font-black text-slate-900 mt-1">@stats.InProgress</p>
+        </a>
+        <a href="@BuildFilterUrl("completed")" class="rounded-2xl border border-slate-200 bg-white p-4 hover:border-green-300 transition shadow-sm">
+            <p class="text-[10px] font-black uppercase text-green-600">Đã giao xong</p>
+            <p class="text-2xl font-black text-slate-900 mt-1">@stats.Completed</p>
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+        <!-- Danh sách chuyến -->
+        <div class="xl:col-span-8 space-y-3">
+            @if (!deliveries.Any())
+            {
+                <div class="rounded-2xl border border-dashed border-slate-200 bg-white p-12 text-center">
+                    <i class="fas fa-truck text-4xl text-slate-300 mb-3"></i>
+                    <p class="font-bold text-slate-700">Không có chuyến giao trong ngày / bộ lọc này</p>
+                    <p class="text-sm text-slate-500 mt-1">Thử đổi ngày giao hoặc xóa bộ lọc trạng thái.</p>
+                </div>
+            }
+            else
+            {
+                @foreach (var d in deliveries)
+                {
+                    <article class="relative rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-sm hover:shadow-md transition group">
+                        <div class="absolute left-0 top-0 bottom-0 w-1.5 @StatusBar(d.DeliveryStatus)"></div>
+                        <div class="p-4 md:p-5 pl-5 flex flex-col lg:flex-row lg:items-start gap-4">
+                            <div class="flex-1 min-w-0">
+                                <div class="flex flex-wrap items-center gap-2 mb-2">
+                                    <span class="text-[10px] font-black uppercase px-2 py-0.5 rounded border @StatusBadge(d.DeliveryStatus)">
+                                        @d.DeliveryStatusLabel
+                                    </span>
+                                    @if (!string.IsNullOrEmpty(d.InvoiceCode))
+                                    {
+                                        <span class="text-[10px] font-mono font-bold text-slate-500">@d.InvoiceCode</span>
+                                    }
+                                    <span class="text-[10px] font-bold text-slate-400">#@d.DeliveryId</span>
+                                </div>
+                                <h3 class="font-black text-slate-900 text-base">@d.OrganizationName</h3>
+                                <p class="text-sm text-slate-600 mt-1 flex items-start gap-2">
+                                    <i class="fas fa-map-marker-alt text-green-600 mt-0.5 shrink-0"></i>
+                                    <span>@d.DeliveryAddress</span>
+                                </p>
+                                <div class="flex flex-wrap gap-3 mt-3 text-xs font-semibold text-slate-500">
+                                    <span><i class="far fa-calendar mr-1"></i>@d.ScheduledDate.ToString("dd/MM/yyyy")</span>
+                                    @if (!string.IsNullOrEmpty(d.PreferredDeliveryTime))
+                                    {
+                                        <span><i class="far fa-clock mr-1"></i>@d.PreferredDeliveryTime</span>
+                                    }
+                                    <span><i class="fas fa-utensils mr-1"></i>@d.MealCount suất</span>
+                                </div>
+                                @if (!string.IsNullOrEmpty(d.AssignedStaffName))
+                                {
+                                    <p class="mt-2 text-xs font-bold text-blue-700 bg-blue-50 inline-flex items-center gap-1.5 px-2 py-1 rounded-lg">
+                                        <i class="fas fa-user"></i> @d.AssignedStaffName
+                                        @if (!string.IsNullOrEmpty(d.AssignedStaffPhone))
+                                        {
+                                            <span class="font-normal text-blue-600">· @d.AssignedStaffPhone</span>
+                                        }
+                                    </p>
+                                }
+                                @if (!string.IsNullOrEmpty(d.Notes))
+                                {
+                                    <p class="mt-2 text-xs text-slate-500 italic border-l-2 border-slate-200 pl-2">@d.Notes</p>
+                                }
+                            </div>
+                            <div class="flex flex-row lg:flex-col gap-2 shrink-0">
+                                @if (d.DeliveryStatus is not "completed" and not "failed" and not "rejected")
+                                {
+                                    <button type="button"
+                                            @@click="openAssign(@d.DeliveryId)"
+                                            class="px-4 py-2 rounded-xl bg-green-600 text-white text-xs font-bold hover:bg-green-700 shadow-sm whitespace-nowrap">
+                                        <i class="fas fa-user-plus mr-1"></i>
+                                        @(d.AssignedStaffId.HasValue ? "Đổi shipper" : "Phân shipper")
+                                    </button>
+                                }
+                                @if (!string.IsNullOrEmpty(d.ProofImageUrl))
+                                {
+                                    <a href="@d.ProofImageUrl" target="_blank" rel="noopener"
+                                       class="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50 text-center">
+                                        <i class="fas fa-image mr-1"></i> Ảnh giao
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </article>
+                }
+            }
+        </div>
+
+        <!-- Panel shipper -->
+        <div class="xl:col-span-4 space-y-4">
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sticky top-24">
+                <h3 class="font-black text-slate-800 flex items-center gap-2 mb-4">
+                    <i class="fas fa-motorcycle text-green-600"></i> Shipper khả dụng
                 </h3>
-                <div class="flex items-center gap-2 text-xs font-bold text-slate-500">
-                    <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
-                    Live Tracking
-                </div>
-            </div>
-            
-            <!-- Map Placeholder -->
-            <div class="flex-1 bg-slate-100 relative overflow-hidden group">
-                <div class="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/cartographer.png')] opacity-10"></div>
-                
-                <!-- Fake routes -->
-                <div class="absolute top-1/4 left-1/4 w-32 h-32 border-t-2 border-l-2 border-blue-500 border-dashed rounded-tl-full opacity-50"></div>
-                <div class="absolute top-1/2 left-1/2 w-48 h-20 border-b-2 border-green-500 border-dashed opacity-50"></div>
-                
-                <!-- Fake Vehicles -->
-                <div class="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-lg border-2 border-blue-500 hover:scale-110 transition-transform cursor-pointer group/pin">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path></svg>
-                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover/pin:opacity-100 transition-opacity whitespace-nowrap">Xe 51D-123.45</div>
-                </div>
-                
-                <div class="absolute top-[60%] left-[70%] -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-2 shadow-lg border-2 border-green-500 hover:scale-110 transition-transform cursor-pointer group/pin">
-                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                    <div class="absolute -top-10 left-1/2 -translate-x-1/2 bg-slate-800 text-white text-[10px] font-bold py-1 px-2 rounded opacity-0 group-hover/pin:opacity-100 transition-opacity whitespace-nowrap">KCN Tân Bình (Đã đến)</div>
-                </div>
-
-                <div class="absolute bottom-6 right-6 bg-white/90 backdrop-blur rounded-xl p-4 shadow-lg border border-slate-200">
-                    <h4 class="font-bold text-slate-800 text-sm mb-2">Chú giải</h4>
-                    <ul class="text-xs font-medium text-slate-600 space-y-1.5">
-                        <li class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-blue-500"></span> Đang di chuyển</li>
-                        <li class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-green-500"></span> Đã đến nơi</li>
-                        <li class="flex items-center gap-2"><span class="w-3 h-3 rounded-full bg-red-500"></span> Sự cố / Kẹt xe</li>
+                @if (!shippers.Any())
+                {
+                    <p class="text-sm text-slate-500">Chưa có tài khoản Shipper. Tạo user role Shipper trong quản trị người dùng.</p>
+                }
+                else
+                {
+                    <ul class="space-y-2 max-h-[320px] overflow-y-auto">
+                        @foreach (var s in shippers)
+                        {
+                            <li class="flex items-center justify-between gap-2 rounded-xl border border-slate-100 bg-slate-50/80 px-3 py-2.5">
+                                <div class="min-w-0">
+                                    <p class="text-sm font-bold text-slate-800 truncate">@s.DisplayName</p>
+                                    @if (!string.IsNullOrEmpty(s.PhoneNumber))
+                                    {
+                                        <p class="text-xs text-slate-500">@s.PhoneNumber</p>
+                                    }
+                                </div>
+                                <span class="text-[10px] font-bold text-green-700 bg-green-50 px-2 py-0.5 rounded-full shrink-0">Sẵn sàng</span>
+                            </li>
+                        }
                     </ul>
-                </div>
+                }
+                <p class="text-[11px] text-slate-400 mt-4 leading-relaxed">
+                    Sau khi phân shipper, trạng thái chuyển <strong>Đã giao shipper</strong>. Shipper cập nhật tiếp trên app vận chuyển.
+                </p>
             </div>
-        </div>
 
-        <!-- FLEET / TRUCKS LIST -->
-        <div class="bg-white rounded-[24px] shadow-sm border border-slate-100 overflow-hidden flex flex-col h-[500px]">
-            <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
-                <h3 class="font-black text-lg text-slate-800">Danh sách Chuyến xe</h3>
-            </div>
-            
-            <div class="flex-1 overflow-y-auto p-4 space-y-3">
-                <template x-for="trip in trips" :key="trip.id">
-                    <div class="border border-slate-200 rounded-[16px] p-4 hover:border-blue-400 transition-colors cursor-pointer group relative overflow-hidden" @@click="viewTripDetail(trip)">
-                        <div class="absolute left-0 top-0 bottom-0 w-1" :class="getStatusColor(trip.status)"></div>
-                        
-                        <div class="flex justify-between items-start mb-3 pl-2">
-                            <div>
-                                <h4 class="font-bold text-slate-800 text-sm" x-text="trip.plate"></h4>
-                                <p class="text-[11px] font-medium text-slate-500" x-text="'Tài xế: ' + trip.driver"></p>
-                            </div>
-                            <span class="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider rounded border" :class="getStatusBadge(trip.status)" x-text="trip.status"></span>
-                        </div>
-                        
-                        <div class="pl-2 space-y-2">
-                            <div class="flex items-start gap-2">
-                                <div class="mt-0.5 text-slate-300">
-                                    <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-                                </div>
-                                <p class="text-xs font-medium text-slate-700 leading-tight" x-text="'Đích: ' + trip.destination"></p>
-                            </div>
-                            <div class="flex items-center gap-2" x-show="trip.status === 'Đang đi'">
-                                <div class="w-full bg-slate-100 rounded-full h-1.5">
-                                    <div class="bg-blue-500 h-1.5 rounded-full" :style="'width: ' + trip.progress + '%'"></div>
-                                </div>
-                                <span class="text-[10px] font-bold text-blue-600 whitespace-nowrap" x-text="'ETA: ' + trip.eta"></span>
-                            </div>
-                        </div>
-                    </div>
-                </template>
+            <div class="rounded-2xl border border-slate-200 bg-gradient-to-br from-slate-800 to-slate-900 p-5 text-white shadow-lg">
+                <h4 class="font-bold text-sm mb-2"><i class="fas fa-route mr-2"></i>Quy trình</h4>
+                <ol class="text-xs space-y-2 text-slate-300 list-decimal list-inside">
+                    <li>Đơn checkout tạo chuyến giao (pending)</li>
+                    <li>Manager phân shipper → received</li>
+                    <li>Shipper bắt đầu giao → in_transit</li>
+                    <li>Hoàn tất + ảnh chứng từ → completed</li>
+                </ol>
             </div>
         </div>
     </div>
 
-    <!-- MODAL: TẠO CHUYẾN XE (CRUD) -->
-    <div x-show="isDispatchModalOpen" style="display: none;" class="relative z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div x-show="isDispatchModalOpen" 
-             x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" 
-             x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-             class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity" @@click="closeModal()"></div>
-
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-            <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div x-show="isDispatchModalOpen" 
-                     x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" 
-                     x-transition:leave="ease-in duration-200" x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100" x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                     class="relative transform overflow-hidden rounded-[32px] bg-white text-left shadow-2xl transition-all sm:my-8 sm:w-full sm:max-w-lg" @@click.stop>
-                    
-                    <div class="px-6 py-5 border-b border-slate-100 flex justify-between items-center bg-slate-50/50">
-                        <h3 class="text-xl font-black text-slate-800">Tạo Chuyến Giao hàng</h3>
-                        <button @@click="closeModal()" class="text-slate-400 hover:text-slate-600 bg-slate-200/50 hover:bg-slate-200 p-1.5 rounded-full transition-colors">
-                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                        </button>
-                    </div>
-                    
-                    <div class="p-6 space-y-5">
-                        <div class="grid grid-cols-2 gap-4">
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Chọn Xe (Biển số)</label>
-                                <select class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 bg-white">
-                                    <option>51D-123.45 (Tải 1.5 tấn)</option>
-                                    <option>51D-998.11 (Tải 2 tấn)</option>
-                                </select>
-                            </div>
-                            <div>
-                                <label class="block text-sm font-bold text-slate-700 mb-2">Chọn Tài xế</label>
-                                <select class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 bg-white">
-                                    <option>Nguyễn Văn Tài</option>
-                                    <option>Trần Lái Xe</option>
-                                </select>
-                            </div>
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Lộ trình (Điểm đến)</label>
-                            <input type="text" class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 shadow-sm" placeholder="Nhập địa chỉ giao hàng..." />
-                        </div>
-                        
-                        <div>
-                            <label class="block text-sm font-bold text-slate-700 mb-2">Gắn kết Đơn hàng</label>
-                            <select class="w-full rounded-xl border border-slate-200 px-4 py-3 text-sm font-medium focus:border-green-500 bg-slate-50 border-dashed">
-                                <option>-- Chọn đơn hàng có sẵn --</option>
-                                <option>ORD-1025 (KCN Tân Bình)</option>
-                                <option>ORD-1026 (Quận 1)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="px-6 py-5 bg-slate-50 border-t border-slate-100 flex justify-end gap-3 rounded-b-[32px]">
-                        <button @@click="closeModal()" class="px-5 py-2.5 rounded-xl text-slate-600 font-bold hover:bg-white border border-slate-200 transition-colors text-sm">Hủy</button>
-                        <button @@click="submitDispatch()" class="px-6 py-2.5 rounded-xl bg-green-600 text-white font-bold hover:bg-green-700 transition-colors text-sm shadow-lg shadow-green-600/30 flex items-center gap-2">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                            Bắt đầu chuyến đi
-                        </button>
-                    </div>
-                </div>
+    <!-- Modal phân shipper -->
+    <div x-show="assignOpen" x-cloak class="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div class="absolute inset-0 bg-slate-900/60 backdrop-blur-sm" @@click="assignOpen = false"></div>
+        <div class="relative w-full max-w-md rounded-2xl bg-white shadow-2xl border border-slate-200 overflow-hidden" @@click.stop>
+            <div class="px-6 py-4 border-b border-slate-100 flex justify-between items-center">
+                <h3 class="font-black text-lg text-slate-900">Phân shipper</h3>
+                <button type="button" @@click="assignOpen = false" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times"></i></button>
             </div>
+            <form method="post" asp-action="AssignDelivery" class="p-6 space-y-4">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="deliveryId" :value="selectedDeliveryId" />
+                <input type="hidden" name="scheduledOn" value="@Model.ScheduledOn.ToString("yyyy-MM-dd")" />
+                <input type="hidden" name="status" value="@Model.StatusFilter" />
+                <input type="hidden" name="search" value="@Model.SearchTerm" />
+                @if (Model.UnassignedOnly)
+                {
+                    <input type="hidden" name="unassignedOnly" value="true" />
+                }
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Chọn shipper</label>
+                    <select name="shipperUserId" required class="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-sm font-semibold">
+                        <option value="">-- Chọn shipper --</option>
+                        @foreach (var s in shippers)
+                        {
+                            <option value="@s.UserId">@s.DisplayName @(!string.IsNullOrEmpty(s.PhoneNumber) ? $"({s.PhoneNumber})" : "")</option>
+                        }
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold uppercase text-slate-500 mb-1.5">Ghi chú (tuỳ chọn)</label>
+                    <textarea name="notes" rows="2" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm resize-none" placeholder="VD: Giao trước 11h, gọi trước khi đến..."></textarea>
+                </div>
+                <div class="flex gap-2 pt-2">
+                    <button type="button" @@click="assignOpen = false" class="flex-1 py-2.5 rounded-xl border border-slate-200 font-bold text-sm text-slate-600">Hủy</button>
+                    <button type="submit" class="flex-1 py-2.5 rounded-xl bg-green-600 text-white font-bold text-sm hover:bg-green-700">Xác nhận</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    <script>
-        document.addEventListener('alpine:init', () => {
-            Alpine.data('deliveryManager', () => ({
-                isDispatchModalOpen: false,
-                
-                trips: [
-                    { id: 1, plate: 'Xe tải 51D-123.45', driver: 'Nguyễn Văn Tài', destination: 'KCN Tân Bình - Công ty TNHH B', status: 'Đang đi', progress: 65, eta: '15p' },
-                    { id: 2, plate: 'Bán tải 51C-987.65', driver: 'Trần Bình', destination: 'Trường MN Họa Mi, Q.10', status: 'Đã giao', progress: 100, eta: '' },
-                    { id: 3, plate: 'Xe tải 51D-456.78', driver: 'Lê Hoàng', destination: 'Khu CNC Quận 9', status: 'Chuẩn bị', progress: 0, eta: 'Đang xếp hàng' },
-                    { id: 4, plate: 'Xe tải 51D-333.22', driver: 'Phạm Minh', destination: 'Quận 1 - Văn phòng Cty TMA', status: 'Đang đi', progress: 20, eta: '45p' }
-                ],
-                
-                getStatusColor(status) {
-                    if (status === 'Đang đi') return 'bg-blue-500';
-                    if (status === 'Đã giao') return 'bg-green-500';
-                    return 'bg-yellow-400';
-                },
-                
-                getStatusBadge(status) {
-                    if (status === 'Đang đi') return 'bg-blue-50 text-blue-700 border-blue-200';
-                    if (status === 'Đã giao') return 'bg-green-50 text-green-700 border-green-200';
-                    return 'bg-yellow-50 text-yellow-700 border-yellow-200';
-                },
-                
-                openDispatchModal() {
-                    this.isDispatchModalOpen = true;
-                    document.body.style.overflow = 'hidden';
-                },
-                
-                closeModal() {
-                    this.isDispatchModalOpen = false;
-                    document.body.style.overflow = '';
-                },
-                
-                submitDispatch() {
-                    alert('Đã điều phối xe thành công. Chuyến xe đang được theo dõi GPS!');
-                    this.closeModal();
-                },
-                
-                viewTripDetail(trip) {
-                    // Logic to zoom map or show details
-                    console.log('Viewing trip:', trip.plate);
-                }
-            }));
-        });
-    </script>
+<script>
+    document.addEventListener('alpine:init', () => {
+        Alpine.data('deliveryBoard', (deliveries, shippers) => ({
+            deliveries,
+            shippers,
+            assignOpen: false,
+            selectedDeliveryId: null,
+            openAssign(id) {
+                this.selectedDeliveryId = id;
+                this.assignOpen = true;
+                document.body.style.overflow = 'hidden';
+            },
+        }));
+    });
+</script>
+<style>[x-cloak]{display:none!important}</style>
 }

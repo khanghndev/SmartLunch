@@ -104,10 +104,12 @@ builder.Services.AddAuthorization(options =>
 
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.IApiTokenService, Khoa_Luan_KS_Web.Services.ApiTokenService>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendAuthClient>();
+builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendCompanyProfileClient>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendMasterDataClient>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.CustomerHomeFeaturedMenuService>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendMenuSuggestionClient>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendWarehouseClient>();
+builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendDeliveryClient>();
 
 builder.Services.AddAntiforgery(options =>
 {
