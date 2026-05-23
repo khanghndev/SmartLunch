@@ -1,0 +1,248 @@
+@model Khoa_Luan_KS_Web.Models.DishDetailPageViewModel
+@using Khoa_Luan_KS_Web.Models
+@using Khoa_Luan_KS_Web.Services
+@{
+    Layout = "_LayoutCustomer";
+    var d = Model.Detail?.Dish;
+    ViewData["Title"] = (d?.Name ?? "Chi tiết món") + " - HuitMeal";
+
+    if (d == null && string.IsNullOrEmpty(Model.LoadError))
+    {
+        ViewData["Title"] = "Không tìm thấy món - HuitMeal";
+    }
+
+    var name = d?.Name ?? "Món ăn";
+    var categoryRaw = d?.PrimarySlotKey ?? d?.Category;
+    var categoryLabel = MenuDishDisplayHelper.CategoryLabel(categoryRaw);
+    var categoryBadge = MenuDishDisplayHelper.CategoryBadgeClass(categoryRaw);
+    var description = d?.Description?.Trim();
+    var img = d?.ImageUrl;
+    var gallery = d?.Images?.Where(i => !string.IsNullOrWhiteSpace(i.Url)).OrderByDescending(i => i.Role == "cover").ThenBy(i => i.SortOrder).ToList()
+        ?? new List<DishImageDto>();
+    var quotas = Model.Detail?.IngredientQuotas ?? new List<DishIngredientQuotaDto>();
+    var cookingLabel = MenuDishDisplayHelper.CookingMethodLabel(d?.CookingMethod);
+    var hasNutrition = d?.Calories is > 0 || d?.Protein is > 0 || d?.Fat is > 0 || d?.Carbs is > 0;
+    var placeholder = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80";
+}
+
+<div class="bg-gradient-to-b from-orange-50/40 via-white to-slate-50 min-h-screen">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 pt-24 pb-16">
+
+        <nav class="flex flex-wrap items-center gap-2 text-xs font-bold text-slate-400 mb-8">
+            <a href="/" class="hover:text-orange-600 transition-colors">Trang chủ</a>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            <a asp-controller="Menu" asp-action="Gallery" class="hover:text-orange-600 transition-colors">Thư viện món ăn</a>
+            <i data-lucide="chevron-right" class="w-3.5 h-3.5"></i>
+            <span class="text-slate-700 line-clamp-1">@name</span>
+        </nav>
+
+        @if (!string.IsNullOrEmpty(Model.LoadError) || d == null)
+        {
+            <div class="rounded-3xl border border-amber-200 bg-amber-50 px-6 py-12 text-center">
+                <i data-lucide="alert-circle" class="mx-auto h-12 w-12 text-amber-500 mb-4"></i>
+                <h1 class="text-xl font-black text-slate-900">Không tải được món ăn</h1>
+                <p class="mt-2 text-sm text-slate-600">@(Model.LoadError ?? "Món không tồn tại hoặc đã ngừng phục vụ.")</p>
+                <a asp-controller="Menu" asp-action="Gallery" class="mt-6 inline-flex items-center gap-2 rounded-xl bg-orange-500 px-5 py-3 text-sm font-black text-white hover:bg-orange-600">
+                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                    Quay lại thư viện
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="grid lg:grid-cols-5 gap-8 lg:gap-10 items-start">
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="rounded-[28px] overflow-hidden border border-slate-200/80 bg-white shadow-lg shadow-slate-200/50">
+                        @if (!string.IsNullOrEmpty(img))
+                        {
+                            <div class="relative aspect-[4/3] bg-slate-100">
+                                <img id="dish-hero-img" src="@img" alt="@name" class="w-full h-full object-cover" />
+                                <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none"></div>
+                                <div class="absolute bottom-4 left-4 right-4 flex flex-wrap gap-2">
+                                    <span class="text-[10px] font-black px-3 py-1 rounded-full border @categoryBadge backdrop-blur-md bg-white/90">@categoryLabel</span>
+                                    @if (!string.IsNullOrWhiteSpace(d!.DietaryLabel))
+                                    {
+                                        <span class="text-[10px] font-bold px-3 py-1 rounded-full bg-emerald-500/90 text-white">@d.DietaryLabel</span>
+                                    }
+                                </div>
+                            </div>
+                            @if (gallery.Count > 1)
+                            {
+                                <div class="p-3 flex gap-2 overflow-x-auto border-t border-slate-100">
+                                    @foreach (var g in gallery)
+                                    {
+                                        <button type="button" onclick="document.getElementById('dish-hero-img').src='@g.Url'"
+                                                class="w-14 h-14 rounded-xl border border-slate-200 overflow-hidden shrink-0 hover:ring-2 hover:ring-orange-400 transition-all">
+                                            <img src="@g.Url" alt="" class="w-full h-full object-cover" />
+                                        </button>
+                                    }
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="aspect-[4/3] overflow-hidden">
+                                <img src="@placeholder" alt="@name" class="w-full h-full object-cover opacity-90" />
+                            </div>
+                        }
+                    </div>
+
+                    @if (d.Price > 0)
+                    {
+                        <div class="rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50 to-white px-5 py-4">
+                            <p class="text-[10px] font-black uppercase tracking-widest text-orange-600 mb-1">Tham khảo giá</p>
+                            <p class="text-2xl font-black text-slate-900">@d.Price.ToString("N0") <span class="text-sm font-bold text-slate-500">VND / suất</span></p>
+                        </div>
+                    }
+                </div>
+
+                <div class="lg:col-span-3 space-y-8">
+                    <header>
+                        @if (!string.IsNullOrWhiteSpace(d.NameEnglish))
+                        {
+                            <p class="text-sm font-semibold text-slate-400 mb-1">@d.NameEnglish</p>
+                        }
+                        <h1 class="text-3xl sm:text-4xl font-black text-slate-900 tracking-tight leading-tight">@name</h1>
+                        @if (!string.IsNullOrEmpty(d.Code))
+                        {
+                            <p class="text-xs font-mono text-slate-400 mt-2">Mã món: @d.Code</p>
+                        }
+                        <div class="flex flex-wrap gap-2 mt-4">
+                            @if (!string.IsNullOrEmpty(cookingLabel))
+                            {
+                                <span class="text-xs font-bold px-3 py-1 rounded-full bg-slate-100 text-slate-700 border border-slate-200">
+                                    <i data-lucide="flame" class="w-3.5 h-3.5 inline -mt-0.5 mr-1"></i>@cookingLabel
+                                </span>
+                            }
+                            @if (d.DishSlotCategoryCodes?.Count > 0)
+                            {
+                                @foreach (var slot in d.DishSlotCategoryCodes.Take(3))
+                                {
+                                    <span class="text-xs font-bold px-3 py-1 rounded-full bg-orange-50 text-orange-700 border border-orange-100">
+                                        @MenuDishDisplayHelper.CategoryLabel(slot)
+                                    </span>
+                                }
+                            }
+                            @if (d.IsActive)
+                            {
+                                <span class="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">Đang phục vụ</span>
+                            }
+                        </div>
+                    </header>
+
+                    <section class="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+                        <h2 class="text-lg font-black text-slate-900 mb-3 flex items-center gap-2">
+                            <i data-lucide="file-text" class="w-5 h-5 text-orange-500"></i>
+                            Mô tả món ăn
+                        </h2>
+                        @if (!string.IsNullOrEmpty(description))
+                        {
+                            <p class="text-slate-600 leading-relaxed text-sm sm:text-base whitespace-pre-line">@description</p>
+                        }
+                        else
+                        {
+                            <p class="text-slate-400 text-sm italic">Chưa có mô tả chi tiết cho món này.</p>
+                        }
+                    </section>
+
+                    @if (hasNutrition)
+                    {
+                        <section class="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+                            <h2 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
+                                <i data-lucide="activity" class="w-5 h-5 text-orange-500"></i>
+                                Thông tin dinh dưỡng (ước tính / suất)
+                            </h2>
+                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                @if (d.Calories is > 0)
+                                {
+                                    <div class="rounded-xl bg-orange-50 border border-orange-100 p-4 text-center">
+                                        <p class="text-[10px] font-black uppercase text-orange-600 tracking-wider">Calo</p>
+                                        <p class="text-xl font-black text-slate-900 mt-1">@d.Calories.Value.ToString("N0")</p>
+                                    </div>
+                                }
+                                @if (d.Protein is > 0)
+                                {
+                                    <div class="rounded-xl bg-blue-50 border border-blue-100 p-4 text-center">
+                                        <p class="text-[10px] font-black uppercase text-blue-600 tracking-wider">Protein</p>
+                                        <p class="text-xl font-black text-slate-900 mt-1">@d.Protein.Value.ToString("N0")<span class="text-xs font-bold text-slate-500">g</span></p>
+                                    </div>
+                                }
+                                @if (d.Carbs is > 0)
+                                {
+                                    <div class="rounded-xl bg-amber-50 border border-amber-100 p-4 text-center">
+                                        <p class="text-[10px] font-black uppercase text-amber-700 tracking-wider">Carbs</p>
+                                        <p class="text-xl font-black text-slate-900 mt-1">@d.Carbs.Value.ToString("N0")<span class="text-xs font-bold text-slate-500">g</span></p>
+                                    </div>
+                                }
+                                @if (d.Fat is > 0)
+                                {
+                                    <div class="rounded-xl bg-rose-50 border border-rose-100 p-4 text-center">
+                                        <p class="text-[10px] font-black uppercase text-rose-600 tracking-wider">Chất béo</p>
+                                        <p class="text-xl font-black text-slate-900 mt-1">@d.Fat.Value.ToString("N0")<span class="text-xs font-bold text-slate-500">g</span></p>
+                                    </div>
+                                }
+                            </div>
+                        </section>
+                    }
+
+                    <section class="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm">
+                        <h2 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-2">
+                            <i data-lucide="list-tree" class="w-5 h-5 text-orange-500"></i>
+                            Thành phần nguyên liệu
+                        </h2>
+                        @if (quotas.Count > 0)
+                        {
+                            <div class="overflow-hidden rounded-xl border border-slate-100">
+                                <table class="w-full text-sm">
+                                    <thead class="bg-slate-50 text-[11px] uppercase tracking-widest text-slate-500 font-black">
+                                        <tr>
+                                            <th class="text-left px-4 py-3">Nguyên liệu</th>
+                                            <th class="text-right px-4 py-3">Định lượng</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-slate-100">
+                                        @foreach (var q in quotas.OrderBy(x => x.IngredientName))
+                                        {
+                                            <tr class="hover:bg-slate-50/80">
+                                                <td class="px-4 py-3 font-semibold text-slate-800">@q.IngredientName</td>
+                                                <td class="px-4 py-3 text-right font-black text-slate-700 tabular-nums">
+                                                    @q.Quantity.ToString("0.##") @(q.Unit ?? "")
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-3">Định lượng theo công thức chuẩn bếp HuitMeal cho một suất ăn.</p>
+                        }
+                        else
+                        {
+                            <p class="text-slate-400 text-sm italic py-4">Chưa khai báo danh sách nguyên liệu cho món này.</p>
+                        }
+                    </section>
+
+                    <div class="flex flex-wrap items-center justify-between gap-4 pt-2 border-t border-slate-100">
+                        <p class="text-xs text-slate-500 flex items-center gap-2 max-w-md">
+                            <i data-lucide="info" class="w-4 h-4 text-slate-400 shrink-0"></i>
+                            Muốn đặt suất ăn? Xem thực đơn tuần hoặc tự lên thực đơn theo nhu cầu.
+                        </p>
+                        <div class="flex flex-wrap gap-2 shrink-0">
+                            <a asp-controller="Menu" asp-action="Gallery" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-slate-200 bg-white text-sm font-black text-slate-700 hover:border-orange-200 hover:text-orange-600 transition-colors">
+                                <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                                Thư viện món
+                            </a>
+                            <a asp-controller="Menu" asp-action="Index" class="inline-flex items-center gap-2 px-5 py-3 rounded-xl bg-orange-500 text-white text-sm font-black hover:bg-orange-600 shadow-md shadow-orange-500/25 transition-colors">
+                                <i data-lucide="calendar-days" class="w-4 h-4"></i>
+                                Thực đơn tuần
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>document.addEventListener('DOMContentLoaded', () => lucide.createIcons());</script>
+}

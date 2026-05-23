@@ -155,5 +155,68 @@ namespace Khoa_Luan_KS_Web.Controllers
             ViewData["Level"] = string.IsNullOrEmpty(level) ? "mamnon" : level.ToLower();
             return View();
         }
+
+        /// <summary>Thư viện toàn bộ món ăn (công khai).</summary>
+        public async Task<IActionResult> Gallery(
+            int page = 1,
+            int? categoryId = null,
+            string? q = null,
+            CancellationToken ct = default)
+        {
+            var vm = new DishGalleryViewModel
+            {
+                Page = Math.Max(1, page),
+                SelectedCategoryId = categoryId,
+                Search = string.IsNullOrWhiteSpace(q) ? null : q.Trim(),
+            };
+
+            try
+            {
+                vm.Categories = await _masterDataClient.GetOrganizationDishCategoriesPublicAsync(ct);
+                vm.Browse = await _masterDataClient.GetPublicDishesBrowseAsync(
+                    vm.Page,
+                    pageSize: 24,
+                    categoryId: categoryId,
+                    search: vm.Search,
+                    ct: ct);
+            }
+            catch (Exception ex)
+            {
+                vm.LoadError = ex.Message;
+            }
+
+            return View(vm);
+        }
+
+        /// <summary>Chi tiết món ăn từ thư viện (công khai).</summary>
+        public async Task<IActionResult> DishDetail(int id, CancellationToken ct = default)
+        {
+            if (id <= 0)
+                return NotFound();
+
+            var vm = new DishDetailPageViewModel();
+            try
+            {
+                vm.Detail = await _masterDataClient.GetPublicDishDetailAsync(id, ct);
+                if (vm.Detail?.Dish == null || vm.Detail.Dish.Id <= 0)
+                    return NotFound();
+            }
+            catch (InvalidOperationException ex) when (ex.Message.Contains("404", StringComparison.Ordinal) || ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
+            {
+                return NotFound();
+            }
+            catch (Exception ex)
+            {
+                vm.LoadError = ex.Message;
+            }
+
+            if (vm.Detail?.Dish == null || vm.Detail.Dish.Id <= 0)
+            {
+                if (string.IsNullOrEmpty(vm.LoadError))
+                    return NotFound();
+            }
+
+            return View(vm);
+        }
     }
 }

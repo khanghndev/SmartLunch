@@ -501,6 +501,35 @@ public class BackendMasterDataClient
         return await GetAsync<GetOrganizationDishCategoriesClientResponse>("/api/v1/organization/meal-order/dish-category", accessToken, ct);
     }
 
+    public async Task<GetOrganizationDishCategoriesClientResponse> GetOrganizationDishCategoriesPublicAsync(CancellationToken ct = default)
+    {
+        var client = CreateAnonymousClient();
+        using var res = await client.GetAsync("/api/v1/organization/meal-order/dish-category", ct);
+        return await HandleResponse<GetOrganizationDishCategoriesClientResponse>(res, ct);
+    }
+
+    public async Task<GetPublicDishesBrowseClientResponse> GetPublicDishesBrowseAsync(
+        int page = 1,
+        int pageSize = 24,
+        int? categoryId = null,
+        string? search = null,
+        CancellationToken ct = default)
+    {
+        var q = $"?page={page}&pageSize={pageSize}";
+        if (categoryId is > 0) q += $"&categoryId={categoryId}";
+        if (!string.IsNullOrWhiteSpace(search)) q += $"&search={Uri.EscapeDataString(search.Trim())}";
+        var client = CreateAnonymousClient();
+        using var res = await client.GetAsync($"/api/v1/organization/meal-order/dish/browse{q}", ct);
+        return await HandleResponse<GetPublicDishesBrowseClientResponse>(res, ct);
+    }
+
+    public async Task<DishDetailResponse> GetPublicDishDetailAsync(int dishId, CancellationToken ct = default)
+    {
+        var client = CreateAnonymousClient();
+        using var res = await client.GetAsync($"/api/v1/organization/meal-order/dish/{dishId}", ct);
+        return await HandleResponse<DishDetailResponse>(res, ct);
+    }
+
     public async Task<GetOrganizationDishesByCategoryClientResponse> GetOrganizationDishesByCategoryAsync(
         int categoryId, string accessToken, int page = 1, int pageSize = 20, CancellationToken ct = default)
     {
@@ -1632,6 +1661,26 @@ public class OrganizationDishListItemClientDto
     public List<string> SlotKeys { get; set; } = new();
 }
 
+public class GetPublicDishesBrowseClientResponse
+{
+    public int Page { get; set; }
+    public int PageSize { get; set; }
+    public int TotalCount { get; set; }
+    public List<PublicDishBrowseItemClientDto> Items { get; set; } = new();
+}
+
+public class PublicDishBrowseItemClientDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public decimal Price { get; set; }
+    public string? ImageUrl { get; set; }
+    public string? PrimarySlotKey { get; set; }
+    public string? CategoryLabel { get; set; }
+    public string? DietaryLabel { get; set; }
+}
+
 public class PrepareOrganizationMealContractClientRequest
 {
     public int OrganizationId { get; set; }
@@ -1848,4 +1897,5 @@ public class InitiateOrganizationMealPaymentClientResponse
     public string? QrCode { get; set; }
     public string? PayOsStatus { get; set; }
     public string? PayOsMessage { get; set; }
+    public bool AlreadyPaidSynced { get; set; }
 }

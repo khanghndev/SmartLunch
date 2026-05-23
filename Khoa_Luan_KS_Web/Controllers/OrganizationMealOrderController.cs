@@ -325,7 +325,7 @@ public class OrganizationMealOrderController : Controller
         catch (Exception ex)
         {
             TempData["OrgMealError"] = ex.Message;
-            return RedirectToAction("Orders", "Profile");
+            return RedirectToAction("OrderDetail", "Profile", new { id = orderId });
         }
     }
 
