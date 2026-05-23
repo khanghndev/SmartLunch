@@ -9,4 +9,6 @@ public interface IPaymentRepository
 
     /// <summary>Payment + Order + toàn bộ Payment của Order (webhook PayOS).</summary>
     Task<Payment?> GetByIdWithOrderAndPaymentsAsync(int paymentId, CancellationToken cancellationToken = default);
+
+    Task<Payment> CreateForOrderAsync(Payment payment, CancellationToken cancellationToken = default);
 }

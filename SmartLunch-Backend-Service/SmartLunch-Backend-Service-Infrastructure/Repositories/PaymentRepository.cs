@@ -48,4 +48,11 @@ public class PaymentRepository : IPaymentRepository
 
         return (payments, totalCount);
     }
+
+    public async Task<Payment> CreateForOrderAsync(Payment payment, CancellationToken cancellationToken = default)
+    {
+        await _context.Payments.AddAsync(payment, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return payment;
+    }
 }
