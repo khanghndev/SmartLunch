@@ -170,8 +170,9 @@ namespace SmartLunch.Backend.Service.API.Controllers
             }
         }
 
+        /// <summary>Làm mới access token bằng refresh token (không yêu cầu access token còn hạn).</summary>
         [HttpPost("refresh-token")]
-        [Authorize]
+        [AllowAnonymous]
         public async Task<ActionResult<BaseApiResponse<RefreshTokenResponse>>> RefreshToken(RefreshTokenRequest request)
         {
             try

@@ -107,8 +107,9 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
             var roles = new List<string> { "Customer" }; // Default role
             var accessToken = _jwtService.GenerateAccessToken(userCreate, roles);
             var refreshToken = _jwtService.GenerateRefreshToken();
-            var expiresAt = VietnamTime.Now.AddMinutes(60);
             var refreshTokenExpiresAt = VietnamTime.Now.AddDays(7);
+            var jti = _jwtService.GetPrincipalFromToken(accessToken)?.Claims
+                .FirstOrDefault(c => c.Type == "jti")?.Value;
 
             // Store token in database
             var userToken = new UserToken
@@ -118,7 +119,8 @@ public class RegisterCommandHandler : IRequestHandler<RegisterCommand, RegisterR
                 RefreshToken = refreshToken,
                 IssuedAt = VietnamTime.Now,
                 ExpiresAt = refreshTokenExpiresAt,
-                IsActive = true
+                IsActive = true,
+                Jti = jti,
             };
 
             await _userTokenRepository.CreateAsync(userToken);

@@ -1,43 +1,45 @@
 using MediatR;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using SmartLunch.Backend.Service.Application.Commands.Auth;
 using SmartLunch.Backend.Service.Application.DTOs.Response.Auth;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
-using Microsoft.Extensions.Logging;
 
-namespace SmartLunch.Backend.Service.Application.Handlers.Auth;
+namespace SmartLunch.Backend.Service.Application.Commands.Auth.RefreshToken;
 
 public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, RefreshTokenResponse>
 {
     private readonly IJwtService _jwtService;
     private readonly IUserRepository _userRepository;
     private readonly IUserTokenRepository _userTokenRepository;
+    private readonly IConfiguration _configuration;
     private readonly ILogger<RefreshTokenCommandHandler> _logger;
+    private readonly int _refreshExpireDays;
 
     public RefreshTokenCommandHandler(
         IJwtService jwtService,
         IUserRepository userRepository,
         IUserTokenRepository userTokenRepository,
+        IConfiguration configuration,
         ILogger<RefreshTokenCommandHandler> logger)
     {
         _jwtService = jwtService;
         _userRepository = userRepository;
         _userTokenRepository = userTokenRepository;
+        _configuration = configuration;
         _logger = logger;
+        _refreshExpireDays = int.Parse(configuration["Jwt:RefreshTokenExpireDays"] ?? "7");
     }
 
     public async Task<RefreshTokenResponse> Handle(RefreshTokenCommand request, CancellationToken cancellationToken)
     {
         var req = request.Request;
 
-        // Validate refresh token
         if (string.IsNullOrWhiteSpace(req.RefreshToken))
-        {
             throw new ArgumentException("Refresh token is required");
-        }
 
-        // Get stored token from database
         var storedToken = await _userTokenRepository.GetByRefreshTokenAsync(req.RefreshToken);
         if (storedToken == null || !storedToken.IsActive)
         {
@@ -45,19 +47,15 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             throw new UnauthorizedAccessException("Invalid or expired refresh token");
         }
 
-        // Check if token is expired
         if (storedToken.ExpiresAt < VietnamTime.Now)
         {
             _logger.LogWarning("Expired refresh token attempted: {TokenId}", storedToken.Id);
-            // Revoke expired token
             storedToken.IsActive = false;
             storedToken.RevokedAt = VietnamTime.Now;
             await _userTokenRepository.UpdateAsync(storedToken);
-
             throw new UnauthorizedAccessException("Refresh token has expired");
         }
 
-        // Get user
         var user = await _userRepository.GetByIdAsync(storedToken.UserId);
         if (user == null || !user.IsActive)
         {
@@ -65,34 +63,35 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
             throw new KeyNotFoundException("User not found or inactive");
         }
 
-        // Revoke old refresh token
+        var oldRefreshToken = storedToken.RefreshToken;
+
         storedToken.IsActive = false;
         storedToken.RevokedAt = VietnamTime.Now;
+        storedToken.ReplacedByToken = oldRefreshToken;
         await _userTokenRepository.UpdateAsync(storedToken);
 
-        // Get user roles
         var roles = user.UserRoles
             .Where(ur => ur.IsActive)
             .Select(ur => ur.Role.Name)
             .ToList();
 
-        // Generate new tokens
         var newAccessToken = _jwtService.GenerateAccessToken(user, roles);
         var newRefreshToken = _jwtService.GenerateRefreshToken();
-        var expiresAt = VietnamTime.Now.AddMinutes(60);
-        var refreshTokenExpiresAt = VietnamTime.Now.AddDays(7);
+        var refreshTokenExpiresAt = VietnamTime.Now.AddDays(_refreshExpireDays);
 
-        // Store new refresh token
+        var jti = _jwtService.GetPrincipalFromToken(newAccessToken)?.Claims
+            .FirstOrDefault(c => c.Type == "jti")?.Value;
+
         var newUserToken = new UserToken
         {
-
             UserId = user.Id,
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,
             IssuedAt = VietnamTime.Now,
             ExpiresAt = refreshTokenExpiresAt,
             IsActive = true,
-            ReplacedByToken = newRefreshToken
+            Jti = jti,
+            ReplacedByToken = oldRefreshToken,
         };
 
         await _userTokenRepository.CreateAsync(newUserToken);
@@ -103,7 +102,7 @@ public class RefreshTokenCommandHandler : IRequestHandler<RefreshTokenCommand, R
         {
             AccessToken = newAccessToken,
             RefreshToken = newRefreshToken,
-            RefreshTokenExpiresAt = refreshTokenExpiresAt
+            RefreshTokenExpiresAt = refreshTokenExpiresAt,
         };
     }
 }
