@@ -175,6 +175,114 @@ public sealed class PayOSClient : IPayOSClient
         };
     }
 
+    public Task<PayOSPaymentRequestInfoResult> GetPaymentRequestAsync(
+        int orderCode,
+        CancellationToken cancellationToken = default)
+        => SendPaymentRequestInfoAsync(HttpMethod.Get, $"v2/payment-requests/{orderCode}", null, cancellationToken);
+
+    public Task<PayOSPaymentRequestInfoResult> CancelPaymentRequestAsync(
+        int orderCode,
+        string? cancellationReason = null,
+        CancellationToken cancellationToken = default)
+    {
+        object? body = string.IsNullOrWhiteSpace(cancellationReason)
+            ? null
+            : new { cancellationReason = cancellationReason.Trim() };
+        return SendPaymentRequestInfoAsync(
+            HttpMethod.Post,
+            $"v2/payment-requests/{orderCode}/cancel",
+            body,
+            cancellationToken);
+    }
+
+    private async Task<PayOSPaymentRequestInfoResult> SendPaymentRequestInfoAsync(
+        HttpMethod method,
+        string relativePath,
+        object? jsonBody,
+        CancellationToken cancellationToken)
+    {
+        if (!_options.Enabled)
+            return InfoFail("PayOS is disabled (PayOS:Enabled = false).");
+
+        if (string.IsNullOrWhiteSpace(_options.ClientId) ||
+            string.IsNullOrWhiteSpace(_options.ApiKey))
+            return InfoFail("PayOS ClientId and ApiKey must be configured.");
+
+        using var req = new HttpRequestMessage(method, relativePath);
+        req.Headers.TryAddWithoutValidation("x-client-id", _options.ClientId);
+        req.Headers.TryAddWithoutValidation("x-api-key", _options.ApiKey);
+        if (!string.IsNullOrWhiteSpace(_options.PartnerCode))
+            req.Headers.TryAddWithoutValidation("x-partner-code", _options.PartnerCode);
+
+        if (jsonBody != null)
+            req.Content = JsonContent.Create(jsonBody, options: JsonWrite);
+
+        HttpResponseMessage res;
+        try
+        {
+            res = await _http.SendAsync(req, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "PayOS {Method} {Path} failed", method, relativePath);
+            return InfoFail($"PayOS request failed: {ex.Message}");
+        }
+
+        var status = (int)res.StatusCode;
+        string raw;
+        try
+        {
+            raw = await res.Content.ReadAsStringAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            return InfoFail($"Failed to read PayOS response: {ex.Message}");
+        }
+
+        PayOSApiEnvelope? envelope;
+        try
+        {
+            envelope = JsonSerializer.Deserialize<PayOSApiEnvelope>(raw, JsonRead);
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "PayOS: invalid JSON. Raw: {Raw}", Truncate(raw));
+            return InfoFail("Invalid JSON from PayOS.");
+        }
+
+        if (envelope is null)
+            return InfoFail("Empty PayOS response.");
+
+        var okCode = string.Equals(envelope.Code, "00", StringComparison.Ordinal);
+        var data = envelope.Data;
+        if (!res.IsSuccessStatusCode || !okCode || data is null)
+        {
+            var msg = envelope.Desc ?? res.ReasonPhrase ?? "PayOS error";
+            return new PayOSPaymentRequestInfoResult
+            {
+                Success = false,
+                Code = envelope.Code,
+                Desc = envelope.Desc,
+                Message = msg,
+            };
+        }
+
+        return new PayOSPaymentRequestInfoResult
+        {
+            Success = true,
+            Code = envelope.Code,
+            Desc = envelope.Desc,
+            Status = data.Status,
+            CheckoutUrl = data.CheckoutUrl,
+            QrCode = data.QrCode,
+            Amount = data.Amount,
+            Message = envelope.Desc ?? "success",
+        };
+    }
+
+    private static PayOSPaymentRequestInfoResult InfoFail(string message) =>
+        new() { Success = false, Message = message };
+
     /// <summary>
     /// Cùng định dạng với @payos/node <c>createSignatureOfPaymentRequest</c>: chuỗi cố định, không URL-encode.
     /// </summary>

@@ -86,4 +86,20 @@ public sealed class PayOSCreatePaymentResult
     public string? Desc { get; init; }
 
     public string Message { get; init; } = "";
+
+    /// <summary>Đã đồng bộ trạng thái đã thanh toán từ PayOS (không cần checkout).</summary>
+    public bool AlreadyPaidSynced { get; init; }
+}
+
+/// <summary>Thông tin phiên thanh toán PayOS (GET / cancel).</summary>
+public sealed class PayOSPaymentRequestInfoResult
+{
+    public bool Success { get; init; }
+    public string? Status { get; init; }
+    public string? CheckoutUrl { get; init; }
+    public string? QrCode { get; init; }
+    public int? Amount { get; init; }
+    public string? Code { get; init; }
+    public string? Desc { get; init; }
+    public string Message { get; init; } = "";
 }

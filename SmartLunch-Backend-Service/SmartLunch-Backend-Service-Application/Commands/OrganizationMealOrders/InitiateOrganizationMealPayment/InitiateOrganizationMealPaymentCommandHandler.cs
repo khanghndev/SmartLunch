@@ -2,8 +2,10 @@ using MediatR;
 using Microsoft.Extensions.Logging;
 using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealOrders;
+using SmartLunch.Backend.Service.Application.Helpers;
 using SmartLunch.Backend.Service.Application.Integration.PayOS;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Domain.Entities;
 
 namespace SmartLunch.Backend.Service.Application.Commands.OrganizationMealOrders.InitiateOrganizationMealPayment;
 
@@ -87,29 +89,44 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
         if (string.IsNullOrEmpty(buyerName))
             buyerName = payer?.Username;
 
-        var payOs = await _payOSClient.CreatePaymentRequestAsync(
-            new PayOSCreatePaymentInput
+        var payInput = new PayOSCreatePaymentInput
+        {
+            OrderCode = pendingPayment.Id,
+            Amount = depositVnd,
+            Description = $"Đặt cọc đơn suất ăn #{order.Id}",
+            ReturnUrl = req.ReturnUrl,
+            CancelUrl = req.CancelUrl,
+            BuyerName = buyerName,
+            BuyerEmail = payer?.Email,
+            BuyerPhone = payer?.PhoneNumber,
+            Items = new[]
             {
-                OrderCode = pendingPayment.Id,
-                Amount = depositVnd,
-                Description = $"Đặt cọc đơn suất ăn #{order.Id}",
-                ReturnUrl = req.ReturnUrl,
-                CancelUrl = req.CancelUrl,
-                BuyerName = buyerName,
-                BuyerEmail = payer?.Email,
-                BuyerPhone = payer?.PhoneNumber,
-                Items = new[]
+                new PayOSPaymentItemInput
                 {
-                    new PayOSPaymentItemInput
-                    {
-                        Name = $"Đặt cọc hợp đồng / đơn #{order.Id}",
-                        Quantity = 1,
-                        Price = depositVnd,
-                        Unit = "VND",
-                    },
+                    Name = $"Đặt cọc hợp đồng / đơn #{order.Id}",
+                    Quantity = 1,
+                    Price = depositVnd,
+                    Unit = "VND",
                 },
             },
-            cancellationToken);
+        };
+
+        var payOs = await _payOSClient.CreatePaymentRequestAsync(payInput, cancellationToken);
+
+        if (!payOs.Success && IsDuplicatePayOsOrderError(payOs))
+        {
+            _logger.LogInformation(
+                "PayOS orderCode {OrderCode} already exists; resolving existing payment link for order {OrderId}.",
+                pendingPayment.Id,
+                order.Id);
+
+            payOs = await ResolveDuplicatePayOsOrderAsync(
+                payInput,
+                pendingPayment,
+                order,
+                depositVnd,
+                cancellationToken);
+        }
 
         if (!payOs.Success)
             _logger.LogWarning("PayOS payment initiation failed for order {OrderId}: {Message}", order.Id, payOs.Message);
@@ -122,6 +139,113 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
             QrCode = payOs.QrCode,
             PayOsStatus = payOs.Status,
             PayOsMessage = payOs.Success ? null : payOs.Message,
+            AlreadyPaidSynced = payOs is { Success: true, AlreadyPaidSynced: true },
         };
     }
+
+    private async Task<PayOSCreatePaymentResult> ResolveDuplicatePayOsOrderAsync(
+        PayOSCreatePaymentInput payInput,
+        Payment pendingPayment,
+        Order order,
+        int depositVnd,
+        CancellationToken cancellationToken)
+    {
+        var existing = await _payOSClient.GetPaymentRequestAsync(pendingPayment.Id, cancellationToken);
+        if (existing.Success)
+        {
+            if (IsPayOsPaidStatus(existing.Status))
+            {
+                await MarkPayOsDepositPaidLocallyAsync(pendingPayment, order, cancellationToken);
+                return new PayOSCreatePaymentResult
+                {
+                    Success = true,
+                    AlreadyPaidSynced = true,
+                    Message = "Khoản đặt cọc đã được thanh toán. Trạng thái đơn đã được cập nhật.",
+                };
+            }
+
+            if (IsPayOsCheckoutOpenStatus(existing.Status) && !string.IsNullOrWhiteSpace(existing.CheckoutUrl))
+            {
+                return new PayOSCreatePaymentResult
+                {
+                    Success = true,
+                    Status = existing.Status,
+                    CheckoutUrl = existing.CheckoutUrl,
+                    QrCode = existing.QrCode,
+                    Amount = existing.Amount ?? depositVnd,
+                    Message = "Đang chuyển tới phiên thanh toán đã tạo trước đó.",
+                };
+            }
+        }
+
+        await _payOSClient.CancelPaymentRequestAsync(
+            pendingPayment.Id,
+            "Khách yêu cầu thanh toán lại",
+            cancellationToken);
+
+        var retry = await _payOSClient.CreatePaymentRequestAsync(payInput, cancellationToken);
+        if (!retry.Success)
+        {
+            retry = new PayOSCreatePaymentResult
+            {
+                Success = false,
+                Message = retry.Message.Contains("tồn tại", StringComparison.OrdinalIgnoreCase)
+                    ? "Phiên thanh toán trước vẫn còn trên PayOS. Vui lòng thử lại sau vài phút hoặc liên hệ hỗ trợ."
+                    : retry.Message,
+            };
+        }
+
+        return retry;
+    }
+
+    private async Task MarkPayOsDepositPaidLocallyAsync(
+        Payment pendingPayment,
+        Order order,
+        CancellationToken cancellationToken)
+    {
+        if (string.Equals(pendingPayment.Status, "paid", StringComparison.OrdinalIgnoreCase))
+            return;
+
+        pendingPayment.Status = "paid";
+        pendingPayment.PaymentDate = VietnamTime.Now;
+
+        decimal paidSum = 0;
+        foreach (var p in order.Payments)
+        {
+            var status = p.Id == pendingPayment.Id ? pendingPayment.Status : p.Status;
+            if (string.Equals(status, "paid", StringComparison.OrdinalIgnoreCase))
+                paidSum += p.Amount;
+        }
+
+        var derived = PaymentReconciliationDerivation.DerivePaymentStatus(order.TotalAmount, paidSum);
+        if (string.Equals(derived, PaymentReconciliationDerivation.DerivedOverpaid, StringComparison.Ordinal))
+            order.PaymentStatus = OrderPaymentStatus.Paid;
+        else if (string.Equals(derived, OrderPaymentStatus.Partial, StringComparison.Ordinal) && paidSum > 0)
+            order.PaymentStatus = OrderPaymentStatus.DepositPaid;
+        else
+            order.PaymentStatus = derived;
+
+        order.UpdatedAt = VietnamTime.Now;
+        await _orderRepository.CommitAsync();
+        _logger.LogInformation(
+            "Synced PayOS paid status locally for payment {PaymentId}, order {OrderId}.",
+            pendingPayment.Id,
+            order.Id);
+    }
+
+    private static bool IsDuplicatePayOsOrderError(PayOSCreatePaymentResult result)
+    {
+        var text = $"{result.Message} {result.Desc}".ToLowerInvariant();
+        return text.Contains("tồn tại", StringComparison.Ordinal)
+               || text.Contains("already exist", StringComparison.Ordinal)
+               || text.Contains("duplicate", StringComparison.Ordinal);
+    }
+
+    private static bool IsPayOsPaidStatus(string? status) =>
+        string.Equals(status, "PAID", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsPayOsCheckoutOpenStatus(string? status) =>
+        string.IsNullOrWhiteSpace(status)
+        || string.Equals(status, "PENDING", StringComparison.OrdinalIgnoreCase)
+        || string.Equals(status, "PROCESSING", StringComparison.OrdinalIgnoreCase);
 }

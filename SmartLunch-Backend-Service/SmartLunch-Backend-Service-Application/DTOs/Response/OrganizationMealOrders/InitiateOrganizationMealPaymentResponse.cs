@@ -8,4 +8,7 @@ public sealed class InitiateOrganizationMealPaymentResponse
     public string? QrCode { get; set; }
     public string? PayOsStatus { get; set; }
     public string? PayOsMessage { get; set; }
+
+    /// <summary>PayOS đã PAID — hệ thống đã đồng bộ trạng thái đơn.</summary>
+    public bool AlreadyPaidSynced { get; set; }
 }
