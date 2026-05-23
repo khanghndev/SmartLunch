@@ -16,6 +16,8 @@ using System.Net.Http;
 using Microsoft.AspNetCore.RateLimiting;
 using FirebaseLoginRequest = SmartLunch.Backend.Service.Application.DTOs.Request.Auth.FirebaseLoginRequest;
 using FirebaseLoginCommand = SmartLunch.Backend.Service.Application.Commands.Auth.FirebaseLoginCommand;
+using SmartLunch.Backend.Service.Application.Commands.Auth.ChangePassword;
+using SmartLunch.Backend.Service.Application.Commands.Auth.ForgotPassword;
 using SmartLunch.Backend.Service.Application.Commands.Auth.LoginAdmin;
 using SmartLunch.Backend.Service.Application.Commands.Auth.LoginUser;
 using SmartLunch.Backend.Service.Application.Queries.Auth;
@@ -191,6 +193,91 @@ namespace SmartLunch.Backend.Service.API.Controllers
             catch (KeyNotFoundException ex)
             {
                 return NotFound(BaseApiResponse<RefreshTokenResponse>.NotFoundResult(ex.Message));
+            }
+        }
+
+        /// <summary>Đổi mật khẩu khi đã đăng nhập (JWT). Không cần gửi email.</summary>
+        [HttpPut("change-password")]
+        [Authorize]
+        public async Task<ActionResult<BaseApiResponse<ResetPasswordResponse>>> ChangePassword([FromBody] ChangePasswordRequest request)
+        {
+            try
+            {
+                var raw = User.FindFirstValue(ClaimTypes.NameIdentifier);
+                if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
+                    throw new UnauthorizedAccessException("Invalid user context.");
+
+                var response = await _mediator.Send(new ChangePasswordCommand(userId, request));
+                return Ok(BaseApiResponse<ResetPasswordResponse>.SuccessResult(response, "Password changed successfully"));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(BaseApiResponse<ResetPasswordResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return BadRequest(BaseApiResponse<ResetPasswordResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(BaseApiResponse<ResetPasswordResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error changing password");
+                return StatusCode(
+                    (int)HttpStatusCode.InternalServerError,
+                    BaseApiResponse<ResetPasswordResponse>.ErrorResult("An error occurred while changing password", new[] { ex.Message }));
+            }
+        }
+
+        /// <summary>Yêu cầu link đặt lại mật khẩu qua email (không cần đăng nhập).</summary>
+        [HttpPost("forgot-password")]
+        [AllowAnonymous]
+        public async Task<ActionResult<BaseApiResponse<ForgotPasswordResponse>>> ForgotPassword([FromBody] ForgotPasswordRequest request)
+        {
+            try
+            {
+                var response = await _mediator.Send(new RequestForgotPasswordCommand(request));
+                return Ok(BaseApiResponse<ForgotPasswordResponse>.SuccessResult(response, response.Message));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(BaseApiResponse<ForgotPasswordResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error requesting forgot password");
+                return StatusCode(
+                    (int)HttpStatusCode.InternalServerError,
+                    BaseApiResponse<ForgotPasswordResponse>.ErrorResult("An error occurred while processing request", new[] { ex.Message }));
+            }
+        }
+
+        /// <summary>Đặt lại mật khẩu bằng token từ email.</summary>
+        [HttpPost("confirm-forgot-password")]
+        [AllowAnonymous]
+        public async Task<ActionResult<BaseApiResponse<ConfirmForgotPasswordResponse>>> ConfirmForgotPassword([FromBody] ConfirmForgotPasswordRequest request)
+        {
+            try
+            {
+                var response = await _mediator.Send(new ConfirmForgotPasswordCommand(request));
+                return Ok(BaseApiResponse<ConfirmForgotPasswordResponse>.SuccessResult(response, "Password reset successfully"));
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(BaseApiResponse<ConfirmForgotPasswordResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (UnauthorizedAccessException ex)
+            {
+                return Unauthorized(BaseApiResponse<ConfirmForgotPasswordResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error confirming forgot password");
+                return StatusCode(
+                    (int)HttpStatusCode.InternalServerError,
+                    BaseApiResponse<ConfirmForgotPasswordResponse>.ErrorResult("An error occurred while resetting password", new[] { ex.Message }));
             }
         }
 
