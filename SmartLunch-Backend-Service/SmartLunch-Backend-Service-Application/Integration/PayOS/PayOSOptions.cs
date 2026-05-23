@@ -37,6 +37,11 @@ public sealed class PayOSOptions
     public string DefaultCancelUrl { get; set; } = "";
 
     /// <summary>
+    /// Host trang checkout (GET payment-request không trả checkoutUrl, chỉ trả id link).
+    /// </summary>
+    public string CheckoutWebBaseUrl { get; set; } = "https://pay.payos.vn/web";
+
+    /// <summary>
     /// Chỉ dùng môi trường dev: bỏ qua verify chữ ký webhook. Production phải false.
     /// </summary>
     public bool WebhookSkipSignatureVerification { get; set; }

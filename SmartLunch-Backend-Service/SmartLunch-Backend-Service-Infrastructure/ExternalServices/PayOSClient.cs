@@ -160,6 +160,7 @@ public sealed class PayOSClient : IPayOSClient
             };
         }
 
+        var paymentLinkId = data.PaymentLinkId ?? data.Id;
         return new PayOSCreatePaymentResult
         {
             Success = true,
@@ -167,8 +168,8 @@ public sealed class PayOSClient : IPayOSClient
             Code = envelope.Code,
             Desc = envelope.Desc,
             Status = data.Status,
-            CheckoutUrl = data.CheckoutUrl,
-            PaymentLinkId = data.PaymentLinkId,
+            CheckoutUrl = ResolveCheckoutUrl(data),
+            PaymentLinkId = paymentLinkId,
             QrCode = data.QrCode,
             Amount = data.Amount,
             Message = envelope.Desc ?? "success"
@@ -273,11 +274,30 @@ public sealed class PayOSClient : IPayOSClient
             Code = envelope.Code,
             Desc = envelope.Desc,
             Status = data.Status,
-            CheckoutUrl = data.CheckoutUrl,
+            CheckoutUrl = ResolveCheckoutUrl(data),
             QrCode = data.QrCode,
             Amount = data.Amount,
             Message = envelope.Desc ?? "success",
         };
+    }
+
+    /// <summary>
+    /// POST create trả checkoutUrl; GET chỉ trả <c>id</c> (payment link id) — ghép URL theo tài liệu PayOS.
+    /// </summary>
+    private string? ResolveCheckoutUrl(PayOSApiData data)
+    {
+        if (!string.IsNullOrWhiteSpace(data.CheckoutUrl))
+            return data.CheckoutUrl.Trim();
+
+        var linkId = data.PaymentLinkId ?? data.Id;
+        if (string.IsNullOrWhiteSpace(linkId))
+            return null;
+
+        var baseWeb = (_options.CheckoutWebBaseUrl ?? "").Trim().TrimEnd('/');
+        if (string.IsNullOrEmpty(baseWeb))
+            baseWeb = "https://pay.payos.vn/web";
+
+        return $"{baseWeb}/{linkId.Trim()}";
     }
 
     private static PayOSPaymentRequestInfoResult InfoFail(string message) =>
@@ -355,6 +375,9 @@ public sealed class PayOSClient : IPayOSClient
 
     private sealed class PayOSApiData
     {
+        /// <summary>Mã link thanh toán PayOS (GET); dùng ghép checkout URL khi không có checkoutUrl.</summary>
+        public string? Id { get; set; }
+
         public string? Status { get; set; }
         public string? CheckoutUrl { get; set; }
         public string? PaymentLinkId { get; set; }

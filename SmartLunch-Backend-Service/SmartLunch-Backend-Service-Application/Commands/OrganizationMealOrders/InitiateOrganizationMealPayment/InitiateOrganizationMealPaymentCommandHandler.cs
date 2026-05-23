@@ -52,9 +52,12 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
 
         await EnsureOrderAwaitingPaymentAsync(order, cancellationToken);
 
-        var pendingPayment = order.Payments.FirstOrDefault(p =>
-            string.Equals(p.Method, "payos", StringComparison.OrdinalIgnoreCase) &&
-            string.Equals(p.Status, "pending", StringComparison.OrdinalIgnoreCase));
+        var pendingPayment = order.Payments
+            .Where(p =>
+                string.Equals(p.Method, "payos", StringComparison.OrdinalIgnoreCase) &&
+                string.Equals(p.Status, "pending", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(p => p.Id)
+            .FirstOrDefault();
 
         if (pendingPayment == null)
             throw new InvalidOperationException("Không tìm thấy khoản đặt cọc chờ thanh toán cho đơn này.");
@@ -157,53 +160,86 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
         int depositVnd,
         CancellationToken cancellationToken)
     {
+        var reused = await TryReuseExistingPayOsSessionAsync(
+            pendingPayment.Id,
+            pendingPayment,
+            order,
+            depositVnd,
+            cancellationToken);
+        if (reused != null)
+            return reused;
+
         var created = await _payOSClient.CreatePaymentRequestAsync(payInput, cancellationToken);
         if (created.Success && !string.IsNullOrWhiteSpace(created.CheckoutUrl))
             return created;
+
+        reused = await TryReuseExistingPayOsSessionAsync(
+            pendingPayment.Id,
+            pendingPayment,
+            order,
+            depositVnd,
+            cancellationToken);
+        if (reused != null)
+            return reused;
 
         if (!IsDuplicatePayOsOrderError(created))
             return created;
 
         _logger.LogInformation(
-            "PayOS orderCode {OrderCode} exists for order {OrderId}; reusing or creating fresh session.",
+            "PayOS orderCode {OrderCode} already exists for order {OrderId}; creating fresh payment row.",
             pendingPayment.Id,
             order.Id);
 
-        var existing = await _payOSClient.GetPaymentRequestAsync(pendingPayment.Id, cancellationToken);
-        if (existing.Success)
-        {
-            if (IsPayOsPaidStatus(existing.Status))
-            {
-                if (IsPayOsAmountMatched(existing.Amount, depositVnd))
-                {
-                    await MarkPayOsDepositPaidLocallyAsync(pendingPayment, order, cancellationToken);
-                    return new PayOSCreatePaymentResult
-                    {
-                        Success = false,
-                        Message =
-                            "PayOS ghi nhận giao dịch đã thanh toán. Vui lòng tải lại trang đơn hàng để xem trạng thái mới.",
-                    };
-                }
+        return await CreateFreshPayOsSessionAsync(payInput, pendingPayment, order, depositVnd, cancellationToken);
+    }
 
-                _logger.LogWarning(
-                    "PayOS reports PAID for payment {PaymentId} but amount mismatch; creating fresh session.",
-                    pendingPayment.Id);
-            }
-            else if (!string.IsNullOrWhiteSpace(existing.CheckoutUrl))
+    private async Task<PayOSCreatePaymentResult?> TryReuseExistingPayOsSessionAsync(
+        int payOsOrderCode,
+        Payment pendingPayment,
+        Order order,
+        int depositVnd,
+        CancellationToken cancellationToken)
+    {
+        var existing = await _payOSClient.GetPaymentRequestAsync(payOsOrderCode, cancellationToken);
+        if (!existing.Success)
+            return null;
+
+        if (IsPayOsPaidStatus(existing.Status))
+        {
+            if (IsPayOsAmountMatched(existing.Amount, depositVnd))
             {
+                await MarkPayOsDepositPaidLocallyAsync(pendingPayment, order, cancellationToken);
                 return new PayOSCreatePaymentResult
                 {
-                    Success = true,
-                    Status = existing.Status,
-                    CheckoutUrl = existing.CheckoutUrl,
-                    QrCode = existing.QrCode,
-                    Amount = existing.Amount ?? depositVnd,
-                    Message = "Đang chuyển tới trang thanh toán PayOS (phiên đã tạo trước đó).",
+                    Success = false,
+                    Message =
+                        "PayOS ghi nhận giao dịch đã thanh toán. Vui lòng tải lại trang đơn hàng để xem trạng thái mới.",
                 };
             }
+
+            _logger.LogWarning(
+                "PayOS reports PAID for payment {PaymentId} but amount mismatch; will create fresh session.",
+                pendingPayment.Id);
+            return null;
         }
 
-        return await CreateFreshPayOsSessionAsync(payInput, pendingPayment, order, depositVnd, cancellationToken);
+        if (IsPayOsCancelledStatus(existing.Status))
+            return null;
+
+        if (!string.IsNullOrWhiteSpace(existing.CheckoutUrl))
+        {
+            return new PayOSCreatePaymentResult
+            {
+                Success = true,
+                Status = existing.Status,
+                CheckoutUrl = existing.CheckoutUrl,
+                QrCode = existing.QrCode,
+                Amount = existing.Amount ?? depositVnd,
+                Message = "Đang chuyển tới trang thanh toán PayOS (phiên đã tạo trước đó).",
+            };
+        }
+
+        return null;
     }
 
     private async Task<PayOSCreatePaymentResult> CreateFreshPayOsSessionAsync(
@@ -240,6 +276,15 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
         var created = await _payOSClient.CreatePaymentRequestAsync(payInput, cancellationToken);
         if (created.Success && !string.IsNullOrWhiteSpace(created.CheckoutUrl))
             return created;
+
+        var reused = await TryReuseExistingPayOsSessionAsync(
+            freshPayment.Id,
+            freshPayment,
+            order,
+            depositVnd,
+            cancellationToken);
+        if (reused != null)
+            return reused;
 
         return new PayOSCreatePaymentResult
         {
@@ -288,6 +333,9 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
 
     private static bool IsPayOsPaidStatus(string? status) =>
         string.Equals(status, "PAID", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsPayOsCancelledStatus(string? status) =>
+        string.Equals(status, "CANCELLED", StringComparison.OrdinalIgnoreCase);
 
     private static bool IsPayOsAmountMatched(int? payOsAmount, int expectedVnd) =>
         payOsAmount.HasValue && payOsAmount.Value == expectedVnd;
