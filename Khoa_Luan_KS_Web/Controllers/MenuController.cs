@@ -97,6 +97,7 @@ namespace Khoa_Luan_KS_Web.Controllers
         /// <summary>
         /// Chi tiết món: nếu có menuId + scheduleId thì lấy từ thực đơn tuần + API món; không thì hiển thị mẫu tĩnh (legacy).
         /// </summary>
+        /// <summary>Legacy URL — chuyển hướng sang <see cref="DishDetail"/> (một trang chi tiết chung).</summary>
         public async Task<IActionResult> MealDetail(int? menuId = null, int? scheduleId = null, CancellationToken ct = default)
         {
             if (menuId is > 0 && scheduleId is > 0)
@@ -104,41 +105,23 @@ namespace Khoa_Luan_KS_Web.Controllers
                 var token = HttpContext.Session.GetString("access_token");
                 if (string.IsNullOrEmpty(token))
                 {
-                    return RedirectToAction("Login", "Auth", new
-                    {
-                        area = "",
-                        returnUrl = Url.Action(nameof(MealDetail), new { menuId, scheduleId })
-                    });
+                    var returnUrl = $"/Menu/DishDetail?menuId={menuId}&scheduleId={scheduleId}";
+                    return RedirectToAction("Login", "Auth", new { area = "", returnUrl });
                 }
 
                 try
                 {
                     var detail = await _masterDataClient.GetWeeklyMenuDetailAsync(menuId!.Value, token, ct);
                     var schedule = detail.Schedules.FirstOrDefault(s => s.Id == scheduleId!.Value);
-                    if (schedule == null)
+                    if (schedule == null || schedule.DishId <= 0)
                         return NotFound();
 
-                    Services.DishDetailResponse? dishDetail = null;
-                    string? dishLoadWarning = null;
-                    try
+                    return RedirectToAction(nameof(DishDetail), new
                     {
-                        dishDetail = await _masterDataClient.GetDishAsync(schedule.DishId, token, ct);
-                        if (dishDetail?.Dish == null || string.IsNullOrWhiteSpace(dishDetail.Dish.Name))
-                            dishLoadWarning = "Không tải đủ dữ liệu món từ hệ thống.";
-                    }
-                    catch (Exception dishEx)
-                    {
-                        dishLoadWarning = $"Không tải chi tiết món: {dishEx.Message}";
-                    }
-
-                    var vm = new MenuMealDetailViewModel
-                    {
-                        WeeklyMenu = detail.WeeklyMenu,
-                        Schedule = schedule,
-                        DishDetail = dishDetail,
-                        DishLoadWarning = dishLoadWarning,
-                    };
-                    return View("MealDetailFromMenu", vm);
+                        id = schedule.DishId,
+                        menuId,
+                        scheduleId
+                    });
                 }
                 catch (Exception ex)
                 {
@@ -188,13 +171,38 @@ namespace Khoa_Luan_KS_Web.Controllers
             return View(vm);
         }
 
-        /// <summary>Chi tiết món ăn từ thư viện (công khai).</summary>
-        public async Task<IActionResult> DishDetail(int id, CancellationToken ct = default)
+        /// <summary>Chi tiết món ăn — trang chung (thư viện, thực đơn tuần, trang chủ).</summary>
+        public async Task<IActionResult> DishDetail(
+            int id,
+            int? menuId = null,
+            int? scheduleId = null,
+            CancellationToken ct = default)
         {
+            if (id <= 0 && menuId is > 0 && scheduleId is > 0)
+            {
+                var tokenForResolve = HttpContext.Session.GetString("access_token");
+                if (!string.IsNullOrEmpty(tokenForResolve))
+                {
+                    try
+                    {
+                        var menuDetail = await _masterDataClient.GetWeeklyMenuDetailAsync(menuId.Value, tokenForResolve, ct);
+                        var schedule = menuDetail.Schedules.FirstOrDefault(s => s.Id == scheduleId.Value);
+                        if (schedule?.DishId is > 0)
+                            return RedirectToAction(nameof(DishDetail), new { id = schedule.DishId, menuId, scheduleId });
+                    }
+                    catch
+                    {
+                        // fall through
+                    }
+                }
+            }
+
             if (id <= 0)
                 return NotFound();
 
             var vm = new DishDetailPageViewModel();
+            var token = HttpContext.Session.GetString("access_token");
+
             try
             {
                 vm.Detail = await _masterDataClient.GetPublicDishDetailAsync(id, ct);
@@ -203,11 +211,79 @@ namespace Khoa_Luan_KS_Web.Controllers
             }
             catch (InvalidOperationException ex) when (ex.Message.Contains("404", StringComparison.Ordinal) || ex.Message.Contains("not found", StringComparison.OrdinalIgnoreCase))
             {
-                return NotFound();
+                if (!string.IsNullOrEmpty(token))
+                {
+                    try
+                    {
+                        vm.Detail = await _masterDataClient.GetDishAsync(id, token, ct);
+                    }
+                    catch
+                    {
+                        return NotFound();
+                    }
+                }
+                else
+                {
+                    return NotFound();
+                }
             }
             catch (Exception ex)
             {
-                vm.LoadError = ex.Message;
+                if (!string.IsNullOrEmpty(token))
+                {
+                    try
+                    {
+                        vm.Detail = await _masterDataClient.GetDishAsync(id, token, ct);
+                    }
+                    catch (Exception authEx)
+                    {
+                        vm.LoadError = authEx.Message;
+                    }
+                }
+                else
+                {
+                    vm.LoadError = ex.Message;
+                }
+            }
+
+            if (menuId is > 0 && scheduleId is > 0 && !string.IsNullOrEmpty(token))
+            {
+                try
+                {
+                    var menuDetail = await _masterDataClient.GetWeeklyMenuDetailAsync(menuId.Value, token, ct);
+                    var schedule = menuDetail.Schedules.FirstOrDefault(s => s.Id == scheduleId.Value);
+                    if (schedule != null && schedule.DishId == id)
+                    {
+                        vm.MenuContext = new DishDetailMenuContext
+                        {
+                            MenuId = menuId.Value,
+                            ScheduleId = scheduleId.Value,
+                            MenuStartDate = menuDetail.WeeklyMenu.StartDate,
+                            MenuEndDate = menuDetail.WeeklyMenu.EndDate,
+                            ScheduleDate = schedule.Date,
+                            MealSlot = schedule.MealSlot,
+                        };
+                    }
+
+                    var quotasEmpty = vm.Detail?.IngredientQuotas == null || vm.Detail.IngredientQuotas.Count == 0;
+                    if (quotasEmpty)
+                    {
+                        try
+                        {
+                            var authDetail = await _masterDataClient.GetDishAsync(id, token, ct);
+                            if (authDetail?.Dish != null)
+                                vm.Detail = authDetail;
+                        }
+                        catch
+                        {
+                            // giữ dữ liệu public
+                        }
+                    }
+                }
+                catch
+                {
+                    // không chặn xem món nếu lỗi ngữ cảnh thực đơn
+                }
             }
 
             if (vm.Detail?.Dish == null || vm.Detail.Dish.Id <= 0)

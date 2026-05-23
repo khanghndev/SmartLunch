@@ -1697,6 +1697,30 @@ public class PrepareOrganizationMealContractClientRequest
     public List<OrganizationMealDayClientRequest> MealDays { get; set; } = new();
     public string? PromotionCode { get; set; }
     public int? PromotionId { get; set; }
+    public OrganizationMealDeliveryClientRequest Delivery { get; set; } = new();
+}
+
+public class OrganizationMealDeliveryClientRequest
+{
+    public string RecipientName { get; set; } = string.Empty;
+    public string RecipientPhone { get; set; } = string.Empty;
+    public string RecipientEmail { get; set; } = string.Empty;
+    public string DeliveryAddress { get; set; } = string.Empty;
+    public string? DeliveryWardDistrict { get; set; }
+    public string? DeliveryNotes { get; set; }
+    public string? PreferredDeliveryTime { get; set; }
+}
+
+public class OrganizationMealDeliverySummaryClientDto
+{
+    public string RecipientName { get; set; } = string.Empty;
+    public string RecipientPhone { get; set; } = string.Empty;
+    public string RecipientEmail { get; set; } = string.Empty;
+    public string DeliveryAddress { get; set; } = string.Empty;
+    public string? DeliveryWardDistrict { get; set; }
+    public string? DeliveryNotes { get; set; }
+    public string? PreferredDeliveryTime { get; set; }
+    public string FullAddress { get; set; } = string.Empty;
 }
 
 public class OrganizationMealDayClientRequest
@@ -1739,6 +1763,7 @@ public class PrepareOrganizationMealContractClientResponse
     public string? PromotionCode { get; set; }
     public List<OrganizationMealDraftLineSummaryClientDto> Lines { get; set; } = new();
     public string? PersistenceNotice { get; set; }
+    public OrganizationMealDeliverySummaryClientDto? Delivery { get; set; }
 }
 
 public class GetPromotionsClientResponse

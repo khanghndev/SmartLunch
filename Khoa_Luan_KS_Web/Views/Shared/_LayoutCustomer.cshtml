@@ -242,15 +242,32 @@
                 <span class="h-full flex items-center @(IsActivePrefix("/Service") || IsActivePrefix("/Menu") || IsActivePrefix("/OrganizationMealOrder") ? "border-b-2 border-orange-600" : "")">DỊCH VỤ</span>
                 <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-hover:-rotate-180"></i>
               </span>
-              <div class="absolute top-[75px] left-0 w-[280px] bg-white shadow-xl rounded-xl py-3 border border-gray-100 opacity-0 invisible translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50">
-                <a href="/Service/Safety" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/Safety") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn sạch</a>
+              <div class="absolute top-[75px] left-0 w-60 bg-white shadow-xl rounded-xl py-3 border border-gray-100 opacity-0 invisible translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50">
+                <a href="/Menu/Gallery" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Menu/Gallery") || IsActivePrefix("/Menu/DishDetail") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Thư viện món ăn</a>
                 <a href="/Service/MenuSuggestions" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/MenuSuggestions") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Gợi ý thực đơn</a>
-                <a href="/Menu/Gallery" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Menu/Gallery") || IsActivePrefix("/Menu/DishDetail") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all border-t mt-1 pt-3">Thư viện món ăn</a>
-                <a href="/Menu/Index" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Menu/Index") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Thực đơn cố định</a>
-                <a href="/OrganizationMealOrder" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActivePrefix("/OrganizationMealOrder") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all font-bold">Thực đơn tự chọn</a>
-                <a href="/Service/School" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/School") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn trường học</a>
-                <a href="/Service/Office" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/Office") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn văn phòng</a>
-                <a href="/Service/Factory" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/Factory") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn nhà máy</a>
+
+                <div class="relative group/menu">
+                  <div class="flex items-center justify-between px-5 py-2.5 text-[13px] font-semibold text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all cursor-default @(IsActive("/Menu/Index") || IsActivePrefix("/OrganizationMealOrder") ? "text-orange-600 bg-orange-50/50" : "")">
+                    <span>Thực đơn</span>
+                    <i data-lucide="chevron-right" class="h-4 w-4 text-gray-400 group-hover/menu:text-orange-500"></i>
+                  </div>
+                  <div class="absolute left-full top-0 ml-0.5 w-60 bg-white shadow-xl rounded-xl py-3 border border-gray-100 opacity-0 invisible translate-x-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-x-0 transition-all duration-200 z-[60]">
+                    <a href="/Menu/Index" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Menu/Index") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Thực đơn cố định</a>
+                    <a href="/OrganizationMealOrder" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActivePrefix("/OrganizationMealOrder") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Thực đơn tự chọn</a>
+                  </div>
+                </div>
+
+                <div class="relative group/sector">
+                  <div class="flex items-center justify-between px-5 py-2.5 text-[13px] font-semibold text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all cursor-default @(IsActive("/Service/School") || IsActive("/Service/Office") || IsActive("/Service/Factory") ? "text-orange-600 bg-orange-50/50" : "")">
+                    <span>Theo lĩnh vực</span>
+                    <i data-lucide="chevron-right" class="h-4 w-4 text-gray-400 group-hover/sector:text-orange-500"></i>
+                  </div>
+                  <div class="absolute left-full top-0 ml-0.5 w-60 bg-white shadow-xl rounded-xl py-3 border border-gray-100 opacity-0 invisible translate-x-1 group-hover/sector:visible group-hover/sector:opacity-100 group-hover/sector:translate-x-0 transition-all duration-200 z-[60]">
+                    <a href="/Service/School" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/School") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn trường học</a>
+                    <a href="/Service/Office" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/Office") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn văn phòng</a>
+                    <a href="/Service/Factory" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/Factory") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Suất ăn nhà máy</a>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -414,22 +431,32 @@
                 <a href="/Customer/Reviews" class="block p-3 font-bold text-gray-800 hover:bg-gray-50 rounded-xl">ĐÁNH GIÁ</a>
                 <a href="/Customer/ChooseHuitMeal" class="block p-3 font-bold text-gray-800 hover:bg-gray-50 rounded-xl">CHỌN HUITMEAL</a>
 
-                <div x-data="{ open: false }" class="space-y-1">
+                <div x-data="{ open: false, sub: '' }" class="space-y-1">
                     <button @@click="open = !open" class="w-full flex items-center justify-between p-3 font-bold text-gray-800 hover:bg-gray-50 rounded-xl transition-all">
                         DỊCH VỤ <i data-lucide="chevron-down" class="w-4 h-4 transition-transform" :class="open ? 'rotate-180' : ''"></i>
                     </button>
                     <div x-show="open" class="pl-4 space-y-1">
-                        <a href="/Service/Safety" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Suất ăn sạch</a>
-                        <a href="/Service/Safety" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Vệ sinh công nghiệp</a>
                         <a href="/Menu/Gallery" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Thư viện món ăn</a>
-                        <a href="/Menu/Index" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Thực đơn tuần</a>
-                        @if (isOrgMealOrderUser)
-                        {
-                        <a href="/OrganizationMealOrder" class="block p-3 text-sm font-bold text-orange-600 hover:text-orange-500">Đặt suất doanh nghiệp</a>
-                        }
-                        <a href="/Service/School" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Suất ăn trường học</a>
-                        <a href="/Service/Office" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Suất ăn văn phòng</a>
-                        <a href="/Service/Factory" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Suất ăn nhà máy</a>
+                        <a href="/Service/MenuSuggestions" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Gợi ý thực đơn</a>
+                        <button type="button" @@click="sub = sub === 'menu' ? '' : 'menu'"
+                                class="flex w-full items-center justify-between p-3 text-sm font-medium text-gray-600 hover:text-orange-500 text-left">
+                            <span>Thực đơn</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform" :class="sub === 'menu' ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="sub === 'menu'" class="pl-4 space-y-1">
+                            <a href="/Menu/Index" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Thực đơn cố định</a>
+                            <a href="/OrganizationMealOrder" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Thực đơn tự chọn</a>
+                        </div>
+                        <button type="button" @@click="sub = sub === 'sector' ? '' : 'sector'"
+                                class="flex w-full items-center justify-between p-3 text-sm font-medium text-gray-600 hover:text-orange-500 text-left">
+                            <span>Theo lĩnh vực</span>
+                            <i data-lucide="chevron-down" class="w-4 h-4 transition-transform" :class="sub === 'sector' ? 'rotate-180' : ''"></i>
+                        </button>
+                        <div x-show="sub === 'sector'" class="pl-4 space-y-1">
+                            <a href="/Service/School" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Suất ăn trường học</a>
+                            <a href="/Service/Office" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Suất ăn văn phòng</a>
+                            <a href="/Service/Factory" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Suất ăn nhà máy</a>
+                        </div>
                     </div>
                 </div>
 

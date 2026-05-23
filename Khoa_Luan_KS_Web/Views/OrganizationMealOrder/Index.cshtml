@@ -521,6 +521,77 @@
                                 <div class="flex justify-between border-t border-slate-100 pt-3" x-show="selectedPromotionName"><span class="text-slate-500">Mã áp dụng</span><span class="max-w-[160px] truncate text-right font-bold text-violet-700" x-text="selectedPromotionName"></span></div>
                                 <div class="flex flex-col gap-2 pt-3">
                                     <button type="button" @@click="step = 2" class="rounded-xl border border-slate-200 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">Quay lại thực đơn</button>
+                                    <button type="button" @@click="goStep4()" class="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 py-3.5 text-sm font-black text-white shadow-lg transition hover:from-violet-700 hover:to-purple-700">
+                                        <i data-lucide="arrow-right" class="h-4 w-4"></i>
+                                        Tiếp tục — giao hàng
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <!-- Step 4: Delivery -->
+            <div x-show="step === 4" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                <div class="grid gap-8 lg:grid-cols-[1fr_340px]">
+                    <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl ring-1 ring-slate-900/5">
+                        <div class="border-b border-slate-100 bg-gradient-to-r from-emerald-50 via-white to-orange-50/40 px-6 py-5 sm:px-8">
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">Bước 4</p>
+                            <h2 class="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Địa điểm giao &amp; người nhận</h2>
+                            <p class="mt-1 text-sm text-slate-500">Email xác nhận đơn và PDF hợp đồng sẽ được gửi tới địa chỉ email bạn nhập bên dưới.</p>
+                        </div>
+                        <div class="grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
+                            <div class="sm:col-span-2">
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Họ tên người nhận *</label>
+                                <input type="text" x-model.trim="delivery.recipientName" autocomplete="name" required
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Nguyễn Văn A" />
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Số điện thoại *</label>
+                                <input type="tel" x-model.trim="delivery.recipientPhone" autocomplete="tel" required
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="0901234567" />
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Email nhận thông báo *</label>
+                                <input type="email" x-model.trim="delivery.recipientEmail" autocomplete="email" required
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="email@donvi.edu.vn" />
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Địa chỉ giao hàng *</label>
+                                <input type="text" x-model.trim="delivery.deliveryAddress" autocomplete="street-address" required
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Số nhà, đường, tòa nhà..." />
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Phường / quận / thành phố</label>
+                                <input type="text" x-model.trim="delivery.deliveryWardDistrict"
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Phường ..., Quận ..., TP.HCM" />
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Giờ giao mong muốn</label>
+                                <input type="time" x-model="delivery.preferredDeliveryTime"
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-bold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Ghi chú giao hàng</label>
+                                <input type="text" x-model.trim="delivery.deliveryNotes"
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" placeholder="Cổng sau, liên hệ bảo vệ..." />
+                            </div>
+                            <div x-show="formError" class="sm:col-span-2 flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                <i data-lucide="circle-alert" class="h-4 w-4 shrink-0"></i><span x-text="formError"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <aside class="lg:sticky lg:top-28 lg:self-start">
+                        <div class="overflow-hidden rounded-3xl border border-emerald-200/80 bg-white shadow-xl ring-1 ring-emerald-500/10">
+                            <div class="bg-gradient-to-br from-emerald-600 to-teal-600 px-6 py-5 text-white">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-emerald-100">Sẵn sàng xác nhận</p>
+                                <p class="mt-1 text-2xl font-black"><span x-text="formatMoney(promoTotalAfter())"></span><span class="text-base font-bold opacity-80"> đ</span></p>
+                            </div>
+                            <div class="space-y-3 p-6 text-sm">
+                                <p class="text-xs text-slate-500">Sau khi gửi, hệ thống tạo nháp hợp đồng và gửi email kèm PDF tới <strong class="text-slate-800" x-text="delivery.recipientEmail || '—'"></strong>.</p>
+                                <div class="flex flex-col gap-2 pt-2">
+                                    <button type="button" @@click="step = 3" class="rounded-xl border border-slate-200 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">Quay lại khuyến mãi</button>
                                     <button type="button" @@click="submitDraft()" :disabled="submitting" class="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 py-3.5 text-sm font-black text-white shadow-lg transition hover:from-orange-600 hover:to-amber-600 disabled:opacity-50">
                                         <i data-lucide="file-check" class="h-4 w-4" x-show="!submitting"></i>
                                         <span x-show="!submitting">Xem nháp hợp đồng</span><span x-show="submitting">Đang xử lý…</span>
@@ -625,7 +696,17 @@
                 { key: 'setup', label: 'Thiết lập', hint: 'Giá & ngày giao' },
                 { key: 'menu', label: 'Thực đơn', hint: 'Chọn món từng ngày' },
                 { key: 'promo', label: 'Khuyến mãi', hint: 'Chọn mã giảm giá' },
+                { key: 'delivery', label: 'Giao hàng', hint: 'Người nhận & địa chỉ' },
             ],
+            delivery: {
+                recipientName: '',
+                recipientPhone: '',
+                recipientEmail: '',
+                deliveryAddress: '',
+                deliveryWardDistrict: '',
+                deliveryNotes: '',
+                preferredDeliveryTime: '11:30',
+            },
             eligiblePromotions: [],
             selectedPromotionId: null,
             selectedPromotionName: '',
@@ -682,6 +763,7 @@
                         promoDiscountAmount: this.promoDiscountAmount,
                         promoSubtotalAmount: this.promoSubtotalAmount,
                         manualPromoCode: this.manualPromoCode,
+                        delivery: this.delivery,
                     };
                     localStorage.setItem(this.cacheStorageKey(), JSON.stringify(payload));
                 } catch (e) {
@@ -701,7 +783,7 @@
                     }
                     if (!data.mealDays?.length && (data.step || 1) === 1) return false;
 
-                    this.step = Math.min(3, Math.max(1, parseInt(data.step, 10) || 1));
+                    this.step = Math.min(4, Math.max(1, parseInt(data.step, 10) || 1));
                     this.pricePerPortion = data.pricePerPortion > 0 ? data.pricePerPortion : this.pricePerPortion;
                     this.newDate = data.newDate || this.newDate;
                     this.mealDays = Array.isArray(data.mealDays) ? data.mealDays : [];
@@ -712,6 +794,9 @@
                     this.promoDiscountAmount = data.promoDiscountAmount || 0;
                     this.promoSubtotalAmount = data.promoSubtotalAmount || 0;
                     this.manualPromoCode = data.manualPromoCode || '';
+                    if (data.delivery) {
+                        this.delivery = { ...this.delivery, ...data.delivery };
+                    }
 
                     const saved = new Date(data.savedAt);
                     const mins = Math.max(1, Math.round((DRAFT_CACHE_TTL_MS - age) / 60000));
@@ -1119,6 +1204,29 @@
                     this.promoApplying = false;
                 }
             },
+            goStep4() {
+                this.formError = this.validateMealPlan();
+                if (this.formError) return;
+                this.step = 4;
+                this.scheduleDraftCacheSave();
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+            validateDelivery() {
+                const d = this.delivery;
+                if (!d.recipientName || d.recipientName.length < 2)
+                    return 'Nhập họ tên người nhận (ít nhất 2 ký tự).';
+                const phone = (d.recipientPhone || '').replace(/\s|-/g, '');
+                if (!/^(\+?84|0)[0-9]{8,10}$/.test(phone))
+                    return 'Số điện thoại không hợp lệ.';
+                const email = (d.recipientEmail || '').trim();
+                if (!/^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(email))
+                    return 'Email không hợp lệ.';
+                if (!d.deliveryAddress || d.deliveryAddress.length < 10)
+                    return 'Địa chỉ giao hàng phải có ít nhất 10 ký tự.';
+                if (d.preferredDeliveryTime && !/^([01]?\d|2[0-3]):[0-5]\d$/.test(d.preferredDeliveryTime))
+                    return 'Giờ giao không hợp lệ.';
+                return '';
+            },
             buildPayload() {
                 const qty = (l) => Math.max(1, parseInt(l.quantity, 10) || 1);
                 return {
@@ -1126,6 +1234,15 @@
                     price: this.pricePerPortion,
                     promotionCode: this.promotionCode || null,
                     promotionId: this.selectedPromotionId || null,
+                    delivery: {
+                        recipientName: (this.delivery.recipientName || '').trim(),
+                        recipientPhone: (this.delivery.recipientPhone || '').trim(),
+                        recipientEmail: (this.delivery.recipientEmail || '').trim(),
+                        deliveryAddress: (this.delivery.deliveryAddress || '').trim(),
+                        deliveryWardDistrict: (this.delivery.deliveryWardDistrict || '').trim() || null,
+                        deliveryNotes: (this.delivery.deliveryNotes || '').trim() || null,
+                        preferredDeliveryTime: this.delivery.preferredDeliveryTime || null,
+                    },
                     mealDays: this.mealDays.map(d => ({
                         serviceDate: d.serviceDate,
                         mealPlan: {
@@ -1144,7 +1261,7 @@
                 return this.validateAllDaySlotTotals(true);
             },
             async submitDraft() {
-                this.formError = this.validateMealPlan();
+                this.formError = this.validateMealPlan() || this.validateDelivery();
                 if (this.formError) return;
                 this.submitting = true;
                 try {

@@ -16,4 +16,16 @@ public sealed class DishDetailPageViewModel
 {
     public DishDetailResponse? Detail { get; set; }
     public string? LoadError { get; set; }
+    /// <summary>Khi mở từ thực đơn tuần (menuId + scheduleId).</summary>
+    public DishDetailMenuContext? MenuContext { get; set; }
+}
+
+public sealed class DishDetailMenuContext
+{
+    public int MenuId { get; set; }
+    public int ScheduleId { get; set; }
+    public DateTime MenuStartDate { get; set; }
+    public DateTime MenuEndDate { get; set; }
+    public DateTime ScheduleDate { get; set; }
+    public string? MealSlot { get; set; }
 }

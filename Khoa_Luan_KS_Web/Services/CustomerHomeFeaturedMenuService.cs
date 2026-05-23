@@ -97,8 +97,8 @@ public sealed class CustomerHomeFeaturedMenuService
         var dish = schedule.Dish;
         var tags = BuildTags(dish.Category, dish.Name);
 
-        var detailUrl = schedule.Id > 0
-            ? $"/Menu/MealDetail?menuId={menuId}&scheduleId={schedule.Id}"
+        var detailUrl = schedule.Id > 0 && schedule.DishId > 0
+            ? $"/Menu/DishDetail/{schedule.DishId}?menuId={menuId}&scheduleId={schedule.Id}"
             : $"/Menu/Index?menuId={menuId}&profile={Uri.EscapeDataString(segment.ProfileKey)}";
 
         return new CustomerFeaturedDishVm
@@ -142,7 +142,9 @@ public sealed class CustomerHomeFeaturedMenuService
                 BadgeClass = segment.BadgeClass,
                 Tags = BuildTags(dish.Category ?? dish.DietaryLabel, dish.Name),
                 ProfileKey = segment.ProfileKey,
-                DetailUrl = $"/Menu/Index?profile={Uri.EscapeDataString(segment.ProfileKey)}",
+                DetailUrl = dish.Id > 0
+                    ? $"/Menu/DishDetail/{dish.Id}"
+                    : $"/Menu/Index?profile={Uri.EscapeDataString(segment.ProfileKey)}",
             });
 
             if (list.Count >= 12)

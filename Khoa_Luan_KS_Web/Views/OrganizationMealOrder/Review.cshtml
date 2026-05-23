@@ -85,6 +85,29 @@
             </div>
         }
 
+        @if (draft.Delivery != null)
+        {
+            <div class="mb-6 overflow-hidden rounded-3xl border border-emerald-200/80 bg-white shadow-lg ring-1 ring-emerald-500/10">
+                <div class="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-white px-6 py-4">
+                    <p class="text-[10px] font-black uppercase tracking-wider text-emerald-700">Giao hàng &amp; người nhận</p>
+                </div>
+                <dl class="grid gap-4 p-6 text-sm sm:grid-cols-2">
+                    <div><dt class="text-xs font-bold uppercase text-slate-400">Người nhận</dt><dd class="mt-1 font-bold text-slate-900">@draft.Delivery.RecipientName</dd></div>
+                    <div><dt class="text-xs font-bold uppercase text-slate-400">Số điện thoại</dt><dd class="mt-1 font-bold text-slate-900">@draft.Delivery.RecipientPhone</dd></div>
+                    <div class="sm:col-span-2"><dt class="text-xs font-bold uppercase text-slate-400">Email thông báo</dt><dd class="mt-1 font-bold text-emerald-800">@draft.Delivery.RecipientEmail</dd></div>
+                    <div class="sm:col-span-2"><dt class="text-xs font-bold uppercase text-slate-400">Địa chỉ giao</dt><dd class="mt-1 font-semibold text-slate-800">@(draft.Delivery.FullAddress)</dd></div>
+                    @if (!string.IsNullOrEmpty(draft.Delivery.PreferredDeliveryTime))
+                    {
+                        <div><dt class="text-xs font-bold uppercase text-slate-400">Giờ giao</dt><dd class="mt-1 font-bold text-slate-900">@draft.Delivery.PreferredDeliveryTime</dd></div>
+                    }
+                    @if (!string.IsNullOrEmpty(draft.Delivery.DeliveryNotes))
+                    {
+                        <div><dt class="text-xs font-bold uppercase text-slate-400">Ghi chú</dt><dd class="mt-1 text-slate-700">@draft.Delivery.DeliveryNotes</dd></div>
+                    }
+                </dl>
+            </div>
+        }
+
         <div class="mb-8 grid gap-4 sm:grid-cols-3">
             <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-5 shadow-lg ring-1 ring-slate-900/5">
                 <div class="flex items-center gap-3">

@@ -117,7 +117,7 @@
     </section>
 
     <!-- Grid -->
-    <section id="gallery-grid" class="relative bg-gradient-to-b from-slate-50 to-white py-10 sm:py-14">
+    <section id="gallery-grid" class="relative bg-gray-50 py-10 sm:py-14">
         <div class="pointer-events-none absolute left-1/2 top-0 h-48 w-[min(100%,40rem)] -translate-x-1/2 rounded-full bg-orange-100/50 blur-3xl"></div>
         <div class="relative z-10 mx-auto max-w-7xl px-4 sm:px-6">
 
@@ -164,38 +164,29 @@
                             desc = desc[..100].TrimEnd() + "…";
 
                         <a asp-controller="Menu" asp-action="DishDetail" asp-route-id="@dish.Id"
-                           class="dish-card group flex flex-col overflow-hidden rounded-[24px] border border-slate-100 bg-white">
-                            <div class="relative aspect-[4/3] overflow-hidden bg-slate-100">
+                           class="dish-card group block overflow-hidden rounded-[24px] border border-gray-100 bg-white hover:border-orange-200 hover:shadow-xl transition-all duration-300">
+                            <div class="relative h-52 overflow-hidden">
                                 <img src="@img" alt="@dish.Name" loading="lazy"
                                      class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
-                                <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent opacity-80"></div>
-                                <div class="absolute left-3 top-3 flex flex-wrap gap-1.5">
-                                    <span class="text-[10px] font-black px-2.5 py-1 rounded-full border @badge bg-white/95 backdrop-blur-sm">@catLabel</span>
-                                    @if (!string.IsNullOrWhiteSpace(dish.DietaryLabel))
-                                    {
-                                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/90 text-white">@dish.DietaryLabel</span>
-                                    }
-                                </div>
-                                <div class="absolute bottom-3 right-3 flex h-9 w-9 items-center justify-center rounded-full bg-orange-500 text-white shadow-lg opacity-0 transition group-hover:opacity-100 group-hover:translate-y-0 translate-y-1">
-                                    <i data-lucide="arrow-up-right" class="h-4 w-4"></i>
+                                <div class="absolute top-3 left-3">
+                                    <span class="rounded-full bg-orange-500 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-white shadow-sm">@catLabel</span>
                                 </div>
                             </div>
-                            <div class="flex flex-1 flex-col p-5">
-                                <h3 class="text-base font-black text-slate-900 leading-snug line-clamp-2 group-hover:text-orange-600 transition-colors">@dish.Name</h3>
+                            <div class="p-5">
+                                <h3 class="mb-1.5 line-clamp-2 text-base font-bold text-gray-900 group-hover:text-orange-600 transition-colors">@dish.Name</h3>
                                 @if (!string.IsNullOrWhiteSpace(desc))
                                 {
-                                    <p class="mt-2 text-xs leading-relaxed text-slate-500 line-clamp-2">@desc</p>
+                                    <p class="mb-3 line-clamp-2 text-xs leading-relaxed text-gray-500">@desc</p>
                                 }
-                                <div class="mt-auto pt-4 flex items-center justify-between border-t border-slate-50">
-                                    @if (dish.Price > 0)
+                                <div class="flex flex-wrap gap-1.5">
+                                    <span class="rounded-full border px-2 py-0.5 text-[10px] font-semibold @badge">@catLabel</span>
+                                    @if (!string.IsNullOrWhiteSpace(dish.DietaryLabel))
                                     {
-                                        <span class="text-sm font-black text-orange-600">@dish.Price.ToString("N0")<span class="text-[10px] font-bold text-slate-400 ml-0.5">đ</span></span>
+                                        <span class="rounded-full border border-green-100 bg-green-50 px-2 py-0.5 text-[10px] font-semibold text-green-700">@dish.DietaryLabel</span>
                                     }
-                                    else
-                                    {
-                                        <span class="text-xs font-bold text-slate-400">Giá theo hợp đồng</span>
-                                    }
-                                    <span class="text-[10px] font-black uppercase tracking-wider text-slate-400 group-hover:text-orange-500">Chi tiết</span>
+                                    <span class="ml-auto inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-gray-400 group-hover:text-orange-500">
+                                        Chi tiết <i data-lucide="arrow-right" class="h-3 w-3"></i>
+                                    </span>
                                 </div>
                             </div>
                         </a>

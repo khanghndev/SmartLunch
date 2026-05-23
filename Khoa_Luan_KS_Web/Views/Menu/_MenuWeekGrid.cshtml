@@ -106,12 +106,12 @@
                             {
                                 var img = !string.IsNullOrEmpty(s.Dish.ImageUrl) ? s.Dish.ImageUrl : defaultDishImg;
                                 <li class="menu-dish-card group flex flex-col overflow-hidden rounded-2xl border border-slate-100 bg-white shadow-sm hover:border-orange-200 hover:shadow-lg">
-                                    <a href="@Url.Action("MealDetail", "Menu", new { menuId = menu.Id, scheduleId = s.Id })"
+                                    <a href="@Url.Action("DishDetail", "Menu", new { id = s.DishId, menuId = menu.Id, scheduleId = s.Id })"
                                        class="relative block aspect-[4/3] overflow-hidden bg-slate-100">
                                         <img src="@img" alt="@s.Dish.Name" class="h-full w-full object-cover transition duration-300 group-hover:scale-105" loading="lazy" />
                                     </a>
                                     <div class="flex flex-1 flex-col p-3.5">
-                                        <a href="@Url.Action("MealDetail", "Menu", new { menuId = menu.Id, scheduleId = s.Id })"
+                                        <a href="@Url.Action("DishDetail", "Menu", new { id = s.DishId, menuId = menu.Id, scheduleId = s.Id })"
                                            class="line-clamp-2 text-sm font-bold leading-snug text-slate-900 hover:text-orange-600">
                                             @s.Dish.Name
                                         </a>
@@ -122,7 +122,7 @@
                                         <div class="mt-auto flex items-end justify-between gap-2 pt-3">
                                             <span class="text-base font-black text-emerald-700">@s.Dish.Price.ToString("N0") @MenuViewText.CurrencyDong</span>
                                             <div class="no-print flex shrink-0 gap-1.5">
-                                                <a href="@Url.Action("MealDetail", "Menu", new { menuId = menu.Id, scheduleId = s.Id })"
+                                                <a href="@Url.Action("DishDetail", "Menu", new { id = s.DishId, menuId = menu.Id, scheduleId = s.Id })"
                                                    class="rounded-lg border border-slate-200 px-2.5 py-1.5 text-[10px] font-bold text-slate-600 hover:border-orange-200 hover:text-orange-600"
                                                    title="@MenuViewText.BtnViewDetail">
                                                     <i data-lucide="eye" class="h-3.5 w-3.5"></i>
