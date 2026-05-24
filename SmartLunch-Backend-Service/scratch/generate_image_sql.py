@@ -1,5 +1,9 @@
 #!/usr/bin/env python3
-"""Generate 19_seed_dish_images.sql based on dish_image_upload_results.json."""
+"""
+DEPRECATED — use generate_dish_image_seed_from_dump.py instead.
+
+Legacy generator from dish_image_upload_results.json (multi gallery, dễ nhân ảnh khi chạy lại).
+"""
 
 import json
 import sys

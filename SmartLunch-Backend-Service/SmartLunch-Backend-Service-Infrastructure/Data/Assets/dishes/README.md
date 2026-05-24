@@ -1,25 +1,39 @@
 # Dish seed assets (cloud-only)
 
-Ảnh món ăn seed **không lưu trong repo**. File JPEG nằm trên **Appwrite Storage** với object key:
+Ảnh món ăn seed **không lưu trong repo**. File nằm trên **Appwrite Storage** (`dishes/seed/...` hoặc `users/{id}/dish-image/...`).
 
-`dishes/seed/{slug}.jpg` (và `{slug}-1.jpg` … `{slug}-3.jpg` cho gallery).
+## Nguồn chuẩn (reference)
 
-## Khi chạy seed DB
+File dump HeidiSQL: `Data/Scripts/reference/dish_reference.sql`  
+(Copy từ export DB thực tế — mỗi món một `dishes.ImageUrl` đúng như production.)
 
-Script `04_seed_data/19_seed_dish_images.sql` sẽ:
+## Khi chạy seed DB (`run_sql.bat update`)
 
-1. Ghi `media_files` (Bucket = Appwrite bucket id, `ObjectName` = `dishes/seed/...`)
-2. Gắn `dish_images` (cover + gallery)
-3. Cập nhật `dishes.ImageUrl` = object key ảnh cover
+`04_seed_data/19_seed_dish_images.sql` (idempotent):
 
-Không cần thư mục `images/` local.
+1. `UPDATE dishes.ImageUrl` theo tên món từ reference
+2. `DELETE` toàn bộ `dish_images` của món có ảnh (không nhân bản khi chạy lại)
+3. `INSERT IGNORE media_files` theo `(Bucket, ObjectName)`
+4. `INSERT` **một** `dish_images` cover / món
 
-## Upload ảnh mới (tùy chọn)
+## Sinh lại seed từ dump
 
 ```bash
 cd SmartLunch-Backend-Service
-python scratch/seed_dish_images.py   # tải tạm → upload Appwrite → ghi dish_image_upload_results.json
-python scratch/generate_image_sql.py # sinh lại 19_seed_dish_images.sql
+# Cập nhật reference/dish_reference.sql từ export mới (nếu cần)
+python scratch/generate_dish_image_seed_from_dump.py
 ```
 
-`manifest.json` giữ metadata (tên, slug, từ khóa tìm ảnh). Thư mục `images/` chỉ là cache tạm khi chạy script upload.
+Tùy chọn:
+
+```bash
+python scratch/generate_dish_image_seed_from_dump.py --input "C:/path/to/dish.sql"
+```
+
+## Upload ảnh seed mới lên Appwrite (tùy chọn)
+
+```bash
+python scratch/seed_dish_images.py
+```
+
+Sau đó export DB hoặc cập nhật `dish_reference.sql` rồi chạy generator ở trên.
