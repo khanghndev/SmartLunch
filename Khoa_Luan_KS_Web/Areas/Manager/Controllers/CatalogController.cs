@@ -400,7 +400,7 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             {
                 await _masterDataClient.UpdateDishAsync(id, request, token!, ct);
                 TempData["Success"] = $"Đã cập nhật món \"{request.Name}\" thành công.";
-                return Json(new { success = true, redirectUrl = Url.Action(nameof(MealDetail), new { id }) });
+                return Json(new { success = true, redirectUrl = Url.Action(nameof(MealEdit), new { id }) });
             }
             catch (Exception ex)
             {

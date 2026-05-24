@@ -337,7 +337,9 @@
 
                     if (updateRes.ok) {
                         this.setStatus('Lưu thành công!', false);
-                        setTimeout(() => window.location.href = '/Manager/Catalog/MealDetail/@Model.Id', 1000);
+                        this.isSaving = false;
+                        // Tải lại trang edit để đồng bộ ảnh/dữ liệu từ server, không chuyển sang chi tiết
+                        setTimeout(() => window.location.reload(), 800);
                     } else {
                         const errData = await updateRes.json().catch(() => ({}));
                         throw new Error(errData.message || 'Lỗi khi cập nhật thông tin món ăn');

@@ -1,3 +1,5 @@
+using Khoa_Luan_KS_Web.Services;
+
 namespace Khoa_Luan_KS_Web.Models;
 
 public static class MenuDishDisplayHelper
@@ -40,6 +42,23 @@ public static class MenuDishDisplayHelper
         return "bg-slate-100 text-slate-700 border-slate-200";
     }
 
+    /// <summary>Ghi chú pháp lý / kỳ vọng khách hàng trên trang chi tiết món.</summary>
+    public static class ServingNotice
+    {
+        public const string ImageCaption =
+            "Hình ảnh chỉ mang tính minh họa. Món thực tế có thể khác nhẹ về màu sắc và cách trình bày tùy ngày chế biến và nguyên liệu tươi theo mùa — vẫn đảm bảo đúng công thức và chất lượng.";
+
+        public const string IngredientTitle = "Về định mức nguyên liệu & giá trị suất ăn";
+
+        public const string IngredientBody =
+            "Bảng định lượng bên dưới là mức tham chiếu chuẩn cho 01 suất, giúp bạn hình dung cơ cấu món ăn. " +
+            "Khối lượng nguyên liệu thực tế được điều chỉnh linh hoạt theo mức giá trị từng suất mà doanh nghiệp đã chọn " +
+            "(gói suất / ngân sách bữa ăn), nhằm cân bằng dinh dưỡng, khẩu phần và chi phí — luôn tuân thủ quy trình an toàn thực phẩm của bếp trung tâm.";
+
+        public const string NutritionNote =
+            "Thông tin dinh dưỡng (nếu có) mang tính ước tính theo định mức tham chiếu, có thể thay đổi nhẹ khi điều chỉnh khẩu phần theo gói suất.";
+    }
+
     /// <summary>Chống cache trình duyệt khi ảnh món vừa đổi (dùng UpdatedAt hoặc CreatedAt).</summary>
     public static string ImageSrc(string? url, DateTime? updatedAt, DateTime createdAt)
     {
@@ -60,6 +79,70 @@ public static class MenuDishDisplayHelper
         "boiled" => "Luộc",
         "grilled" => "Nướng",
         "stir_fry" or "stir-fry" or "stir_fried" => "Xào",
+        "raw" => "Sống / trộn",
         _ => string.IsNullOrWhiteSpace(method) ? "" : method!
     };
+
+  private static readonly HashSet<string> SpiceIngredientNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "Nước mắm", "Đường cát trắng", "Dầu thực vật", "Muối", "Tiêu xay", "Tỏi", "Hành tím", "Gừng",
+        "Hạt nêm", "Mắm ruốc", "Nước tương", "Dầu hào", "Giấm ăn", "Bột ngọt", "Sả băm", "Ớt hiểm",
+        "Hành lá", "Hành phi", "Tương ớt", "Đường phèn", "Nước dừa tươi"
+    };
+
+    public static bool IsSpiceIngredient(string? ingredientName) =>
+        !string.IsNullOrWhiteSpace(ingredientName) && SpiceIngredientNames.Contains(ingredientName.Trim());
+
+    /// <summary>Hiển thị định lượng dễ đọc (tránh 0 kg với gia vị nhỏ).</summary>
+    public static string FormatQuotaQuantity(decimal quantity, string? unit)
+    {
+        var u = (unit ?? "").Trim().ToLowerInvariant();
+        if (quantity <= 0)
+            return "vừa đủ";
+
+        if (u is "kg" or "kilogram")
+        {
+            if (quantity < 0.01m)
+                return $"{quantity * 1000m:0.#} g";
+            return $"{quantity:0.##} kg";
+        }
+
+        if (u is "lít" or "lit" or "liter" or "litre")
+        {
+            if (quantity < 0.01m)
+                return $"{quantity * 1000m:0.#} ml";
+            return $"{quantity:0.##} lít";
+        }
+
+        if (u is "quả")
+            return $"{quantity:0.##} quả";
+
+        if (u is "miếng")
+            return $"{quantity:0.##} miếng";
+
+        return string.IsNullOrEmpty(u)
+            ? quantity.ToString("0.##")
+            : $"{quantity:0.##} {unit}";
+    }
+
+    public static (List<DishIngredientQuotaDto> Main, List<DishIngredientQuotaDto> Spices) SplitIngredientQuotas(
+        IEnumerable<DishIngredientQuotaDto>? quotas)
+    {
+        var main = new List<DishIngredientQuotaDto>();
+        var spices = new List<DishIngredientQuotaDto>();
+        foreach (var q in quotas ?? Enumerable.Empty<DishIngredientQuotaDto>())
+        {
+            if (IsSpiceIngredient(q.IngredientName))
+                spices.Add(q);
+            else
+                main.Add(q);
+        }
+
+        static int Compare(DishIngredientQuotaDto a, DishIngredientQuotaDto b) =>
+            string.Compare(a.IngredientName, b.IngredientName, StringComparison.OrdinalIgnoreCase);
+
+        main.Sort(Compare);
+        spices.Sort(Compare);
+        return (main, spices);
+    }
 }

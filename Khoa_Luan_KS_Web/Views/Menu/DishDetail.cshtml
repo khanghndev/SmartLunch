@@ -18,6 +18,10 @@
     var gallery = d?.Images?.Where(i => !string.IsNullOrWhiteSpace(i.Url)).OrderByDescending(i => i.Role == "cover").ThenBy(i => i.SortOrder).ToList()
         ?? new List<DishImageDto>();
     var quotas = Model.Detail?.IngredientQuotas ?? new List<DishIngredientQuotaDto>();
+    var (mainQuotas, spiceQuotas) = MenuDishDisplayHelper.SplitIngredientQuotas(quotas);
+    var ingredientSummary = mainQuotas.Count > 0 && spiceQuotas.Count > 0
+        ? $"{mainQuotas.Count} chính · {spiceQuotas.Count} gia vị"
+        : $"{quotas.Count} loại";
     var cookingLabel = MenuDishDisplayHelper.CookingMethodLabel(d?.CookingMethod);
     var hasNutrition = d?.Calories is > 0 || d?.Protein is > 0 || d?.Fat is > 0 || d?.Carbs is > 0;
     var placeholder = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80";
@@ -29,24 +33,43 @@
 <style>
     .dish-detail-page {
         background:
-            radial-gradient(900px 400px at 100% 0%, rgba(251, 146, 60, 0.12), transparent 55%),
-            radial-gradient(700px 350px at 0% 30%, rgba(30, 58, 95, 0.06), transparent 50%),
+            radial-gradient(900px 400px at 100% 0%, rgba(251, 146, 60, 0.1), transparent 55%),
+            radial-gradient(700px 350px at 0% 30%, rgba(30, 58, 95, 0.05), transparent 50%),
             linear-gradient(180deg, #fafbfc 0%, #f1f5f9 100%);
     }
     .dish-main-panel {
         background: #fff;
+        border: 1px solid rgba(226, 232, 240, 0.95);
+        box-shadow: 0 8px 40px -12px rgba(15, 23, 42, 0.1);
+    }
+    .dish-media-col {
+        background: linear-gradient(165deg, #f8fafc 0%, #f1f5f9 55%, #eef2f7 100%);
+    }
+    .dish-hero-frame {
+        box-shadow: 0 12px 32px -8px rgba(15, 23, 42, 0.18);
+    }
+    .dish-thumb.active {
+        border-color: #f97316;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.22);
+    }
+    .dish-stat-pill {
+        background: rgba(255, 255, 255, 0.92);
         border: 1px solid rgba(226, 232, 240, 0.9);
-        box-shadow: 0 4px 24px -4px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255,255,255,0.8) inset;
+        backdrop-filter: blur(6px);
     }
-    .dish-img-frame {
-        background: linear-gradient(145deg, #f8fafc 0%, #f1f5f9 100%);
-    }
-    .dish-thumb.active { border-color: #f97316; box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.25); }
-    .info-tile {
-        background: linear-gradient(135deg, #f8fafc 0%, #fff 100%);
+    .ingredient-chip {
+        background: #fff;
         border: 1px solid #e2e8f0;
+        transition: border-color .15s ease, box-shadow .15s ease;
     }
-    .ingredient-row:nth-child(even) { background: #f8fafc; }
+    .ingredient-chip:hover {
+        border-color: rgba(249, 115, 22, 0.35);
+        box-shadow: 0 4px 12px -4px rgba(249, 115, 22, 0.2);
+    }
+    .ingredient-chip--spice {
+        background: linear-gradient(135deg, #fffbeb 0%, #fff 100%);
+        border-color: rgba(251, 191, 36, 0.35);
+    }
     .suggest-card {
         transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
     }
@@ -57,9 +80,12 @@
     }
     .dish-detail-page ::-webkit-scrollbar { height: 6px; }
     .dish-detail-page ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    @@media (min-width: 1024px) {
+        .dish-media-sticky { position: sticky; top: 5.5rem; }
+    }
 </style>
 
-<div class="dish-detail-page min-h-screen" x-data="{ loaded: false, activeThumb: 0 }" x-init="setTimeout(() => loaded = true, 30)">
+<div class="dish-detail-page min-h-screen" x-data="{ loaded: false, activeThumb: 0, showQuotaNote: false }" x-init="setTimeout(() => loaded = true, 30)">
 
     @if (!string.IsNullOrEmpty(Model.LoadError) || d == null)
     {
@@ -77,7 +103,6 @@
     }
     else
     {
-        <!-- Thanh tiêu đề -->
         <header class="border-b border-slate-200/80 bg-white/90 backdrop-blur-sm">
             <div class="mx-auto max-w-7xl px-4 sm:px-6 py-3 pt-4 md:pt-5">
                 <nav class="flex flex-wrap items-center gap-1.5 text-[11px] font-semibold text-slate-400 mb-2" aria-label="Breadcrumb">
@@ -93,7 +118,7 @@
                         <a asp-controller="Menu" asp-action="Gallery" class="hover:text-orange-600 transition">Thư viện món</a>
                         <i data-lucide="chevron-right" class="w-3 h-3"></i>
                     }
-                    <span class="text-slate-700 truncate max-w-[180px] sm:max-w-xs">@name</span>
+                    <span class="text-slate-700 truncate max-w-[200px] sm:max-w-md">@name</span>
                 </nav>
                 <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div class="min-w-0 flex-1">
@@ -101,7 +126,7 @@
                         {
                             <p class="text-[11px] font-semibold uppercase tracking-wider text-slate-400 truncate">@d.NameEnglish</p>
                         }
-                        <h1 class="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">@name</h1>
+                        <h1 class="text-xl sm:text-2xl lg:text-[1.65rem] font-black text-slate-900 tracking-tight">@name</h1>
                     </div>
                     <div class="flex flex-wrap items-center gap-2 shrink-0">
                         <a asp-controller="Menu" asp-action="Gallery"
@@ -117,7 +142,7 @@
             </div>
         </header>
 
-        <div class="mx-auto max-w-7xl px-4 sm:px-6 py-6 lg:py-8 space-y-6"
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 py-6 lg:py-8 space-y-8"
              :class="loaded ? 'opacity-100' : 'opacity-0'" style="transition: opacity .4s ease;">
 
             @if (ctx != null)
@@ -140,200 +165,238 @@
                 </div>
             }
 
-            <!-- Panel chính -->
             <article class="dish-main-panel rounded-2xl lg:rounded-3xl overflow-hidden">
-                <div class="grid lg:grid-cols-[minmax(0,420px)_1fr] xl:grid-cols-[minmax(0,460px)_1fr]">
+                <div class="grid lg:grid-cols-12 lg:items-start">
 
-                    <!-- Ảnh -->
-                    <div class="dish-img-frame p-4 sm:p-5 lg:p-6 lg:border-r border-slate-100">
-                        <div class="relative rounded-2xl overflow-hidden bg-slate-200 aspect-[5/4] sm:aspect-[4/3] lg:aspect-square lg:max-h-[420px] mx-auto shadow-inner">
-                            <img id="dish-hero-img" src="@heroImg" alt="@name"
-                                 class="absolute inset-0 w-full h-full object-cover" />
-                            <div class="absolute inset-x-0 bottom-0 h-24 bg-gradient-to-t from-black/50 to-transparent pointer-events-none"></div>
-                            <div class="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1.5">
-                                <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border @categoryBadge bg-white/95 backdrop-blur-sm shadow-sm">@categoryLabel</span>
-                                @if (d.IsActive)
-                                {
-                                    <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/95 text-white shadow-sm inline-flex items-center gap-1">
-                                        <span class="w-1 h-1 rounded-full bg-white animate-pulse"></span> Đang phục vụ
-                                    </span>
-                                }
-                            </div>
-                        </div>
-                        @if (gallery.Count > 1)
-                        {
-                            <div class="mt-3 flex gap-2 overflow-x-auto pb-0.5">
-                                @{
-                                    var thumbIdx = 0;
-                                }
-                                @foreach (var g in gallery)
-                                {
-                                    var idx = thumbIdx++;
-                                    <button type="button"
-                                            @@click="activeThumb = @idx; document.getElementById('dish-hero-img').src = '@g.Url'"
-                                            :class="activeThumb === @idx ? 'dish-thumb active' : 'dish-thumb'"
-                                            class="w-14 h-14 rounded-lg border-2 border-slate-200 overflow-hidden shrink-0 transition-all hover:border-orange-300">
-                                        <img src="@g.Url" alt="" class="w-full h-full object-cover" />
-                                    </button>
-                                }
-                            </div>
-                        }
-                    </div>
-
-                    <!-- Nội dung -->
-                    <div class="p-4 sm:p-5 lg:p-6 xl:p-7 flex flex-col gap-5">
-
-                        <!-- Meta + tags -->
-                        <div>
-                            <div class="flex flex-wrap gap-1.5 mb-3">
-                                @if (!string.IsNullOrEmpty(cookingLabel))
-                                {
-                                    <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-md bg-slate-100 text-slate-700">
-                                        <i data-lucide="flame" class="w-3 h-3 text-orange-500"></i>@cookingLabel
-                                    </span>
-                                }
-                                @if (d.DishSlotCategoryCodes?.Count > 0)
-                                {
-                                    @foreach (var slot in d.DishSlotCategoryCodes.Take(3))
+                    <!-- Cột trái: media + tóm tắt (lấp khoảng trống) -->
+                    <div class="dish-media-col lg:col-span-5 xl:col-span-5 p-4 sm:p-5 lg:p-6 lg:border-r border-slate-200/80">
+                        <div class="dish-media-sticky space-y-4">
+                            <div class="relative dish-hero-frame rounded-2xl overflow-hidden bg-slate-200 aspect-[4/3] w-full">
+                                <img id="dish-hero-img" src="@heroImg" alt="@name"
+                                     class="absolute inset-0 w-full h-full object-cover" />
+                                <div class="absolute inset-x-0 bottom-0 h-28 bg-gradient-to-t from-black/55 to-transparent pointer-events-none"></div>
+                                <div class="absolute bottom-3 left-3 right-3 flex flex-wrap gap-1.5">
+                                    <span class="text-[10px] font-bold px-2.5 py-1 rounded-full border @categoryBadge bg-white/95 backdrop-blur-sm shadow-sm">@categoryLabel</span>
+                                    @if (d.IsActive)
                                     {
-                                        <span class="text-[11px] font-bold px-2.5 py-1 rounded-md bg-orange-50 text-orange-800 border border-orange-100">
-                                            @MenuDishDisplayHelper.CategoryLabel(slot)
+                                        <span class="text-[10px] font-bold px-2.5 py-1 rounded-full bg-emerald-500/95 text-white shadow-sm inline-flex items-center gap-1">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></span> Đang phục vụ
                                         </span>
                                     }
-                                }
-                                @if (!string.IsNullOrWhiteSpace(d.DietaryLabel))
-                                {
-                                    <span class="text-[11px] font-bold px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 border border-emerald-100">@d.DietaryLabel</span>
-                                }
+                                </div>
                             </div>
-                            @if (!string.IsNullOrEmpty(d.Code))
+
+                            @if (gallery.Count > 1)
                             {
-                                <p class="text-[11px] font-mono text-slate-400 mb-3">Mã: <span class="text-slate-600">@d.Code</span></p>
+                                <div class="flex gap-2 overflow-x-auto pb-0.5">
+                                    @{ var thumbIdx = 0; }
+                                    @foreach (var g in gallery)
+                                    {
+                                        var idx = thumbIdx++;
+                                        <button type="button"
+                                                @@click="activeThumb = @idx; document.getElementById('dish-hero-img').src = '@g.Url'"
+                                                :class="activeThumb === @idx ? 'dish-thumb active' : 'dish-thumb'"
+                                                class="w-16 h-16 rounded-xl border-2 border-slate-200/90 overflow-hidden shrink-0 transition-all hover:border-orange-300 bg-white">
+                                            <img src="@g.Url" alt="" class="w-full h-full object-cover" />
+                                        </button>
+                                    }
+                                </div>
                             }
 
-                            <!-- Quick info tiles -->
-                            <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                                <div class="info-tile rounded-xl px-3 py-2.5">
+                            <div class="grid grid-cols-2 gap-2">
+                                <div class="dish-stat-pill rounded-xl px-3 py-2.5">
                                     <p class="text-[9px] font-black uppercase tracking-wider text-slate-400">Nhóm món</p>
                                     <p class="text-sm font-bold text-slate-800 mt-0.5 truncate">@categoryLabel</p>
                                 </div>
-                                <div class="info-tile rounded-xl px-3 py-2.5">
+                                <div class="dish-stat-pill rounded-xl px-3 py-2.5">
                                     <p class="text-[9px] font-black uppercase tracking-wider text-slate-400">Chế biến</p>
                                     <p class="text-sm font-bold text-slate-800 mt-0.5 truncate">@(string.IsNullOrEmpty(cookingLabel) ? "—" : cookingLabel)</p>
                                 </div>
-                                <div class="info-tile rounded-xl px-3 py-2.5">
-                                    <p class="text-[9px] font-black uppercase tracking-wider text-slate-400">Nguyên liệu</p>
-                                    <p class="text-sm font-bold text-slate-800 mt-0.5">@quotas.Count loại</p>
+                                <div class="dish-stat-pill rounded-xl px-3 py-2.5">
+                                    <p class="text-[9px] font-black uppercase tracking-wider text-slate-400">Thành phần</p>
+                                    <p class="text-sm font-bold text-slate-800 mt-0.5">@ingredientSummary</p>
                                 </div>
-                                <div class="info-tile rounded-xl px-3 py-2.5">
+                                <div class="dish-stat-pill rounded-xl px-3 py-2.5">
                                     <p class="text-[9px] font-black uppercase tracking-wider text-slate-400">Trạng thái</p>
                                     <p class="text-sm font-bold mt-0.5 @(d.IsActive ? "text-emerald-600" : "text-slate-400")">@(d.IsActive ? "Phục vụ" : "Tạm ngưng")</p>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Mô tả + dinh dưỡng (2 cột khi có nutrition) -->
-                        <div class="@(hasNutrition ? "grid sm:grid-cols-2 gap-4" : "")">
-                            <div class="rounded-xl border border-slate-100 bg-slate-50/50 p-4 @(hasNutrition ? "" : "flex-1")">
-                                <h2 class="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                                    <i data-lucide="align-left" class="w-3.5 h-3.5 text-orange-500"></i> Mô tả
-                                </h2>
-                                @if (!string.IsNullOrEmpty(description))
-                                {
-                                    <p class="text-sm text-slate-700 leading-relaxed whitespace-pre-line">@description</p>
-                                }
-                                else
-                                {
-                                    <p class="text-sm text-slate-400 italic">Chưa có mô tả chi tiết.</p>
-                                }
-                            </div>
-                            @if (hasNutrition)
+                            @if (!string.IsNullOrEmpty(d.Code))
                             {
-                                <div class="rounded-xl border border-slate-100 bg-slate-50/50 p-4">
-                                    <h2 class="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                                        <i data-lucide="activity" class="w-3.5 h-3.5 text-orange-500"></i> Dinh dưỡng / suất
-                                    </h2>
-                                    <ul class="grid grid-cols-2 gap-2">
-                                        @if (d.Calories is > 0)
-                                        {
-                                            <li class="flex justify-between items-baseline rounded-lg bg-white border border-slate-100 px-3 py-2">
-                                                <span class="text-[10px] font-bold text-slate-500 uppercase">Calo</span>
-                                                <span class="text-sm font-black text-slate-900 tabular-nums">@d.Calories.Value.ToString("N0")</span>
-                                            </li>
-                                        }
-                                        @if (d.Protein is > 0)
-                                        {
-                                            <li class="flex justify-between items-baseline rounded-lg bg-white border border-slate-100 px-3 py-2">
-                                                <span class="text-[10px] font-bold text-slate-500 uppercase">Protein</span>
-                                                <span class="text-sm font-black text-slate-900 tabular-nums">@d.Protein.Value.ToString("N0")<span class="text-[10px] font-bold text-slate-400">g</span></span>
-                                            </li>
-                                        }
-                                        @if (d.Carbs is > 0)
-                                        {
-                                            <li class="flex justify-between items-baseline rounded-lg bg-white border border-slate-100 px-3 py-2">
-                                                <span class="text-[10px] font-bold text-slate-500 uppercase">Carbs</span>
-                                                <span class="text-sm font-black text-slate-900 tabular-nums">@d.Carbs.Value.ToString("N0")<span class="text-[10px] font-bold text-slate-400">g</span></span>
-                                            </li>
-                                        }
-                                        @if (d.Fat is > 0)
-                                        {
-                                            <li class="flex justify-between items-baseline rounded-lg bg-white border border-slate-100 px-3 py-2">
-                                                <span class="text-[10px] font-bold text-slate-500 uppercase">Béo</span>
-                                                <span class="text-sm font-black text-slate-900 tabular-nums">@d.Fat.Value.ToString("N0")<span class="text-[10px] font-bold text-slate-400">g</span></span>
-                                            </li>
-                                        }
-                                    </ul>
-                                </div>
+                                <p class="text-center text-[11px] font-mono text-slate-400">Mã món: <span class="text-slate-600 font-semibold">@d.Code</span></p>
+                            }
+
+                            <p class="flex gap-2 text-[11px] leading-relaxed text-slate-500 rounded-xl bg-white/70 border border-slate-200/80 px-3 py-2.5">
+                                <i data-lucide="image" class="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5"></i>
+                                <span>@MenuDishDisplayHelper.ServingNotice.ImageCaption</span>
+                            </p>
+
+                            <div class="rounded-xl border border-slate-200/90 bg-white p-4 space-y-3">
+                                <p class="text-xs text-slate-600 flex items-start gap-2">
+                                    <i data-lucide="utensils" class="w-4 h-4 text-orange-500 shrink-0 mt-0.5"></i>
+                                    Đặt suất ăn qua thực đơn tuần hoặc tự chọn thực đơn doanh nghiệp.
+                                </p>
+                                <a asp-controller="OrganizationMealOrder" asp-action="Index"
+                                   class="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-bold text-white hover:bg-orange-600 transition shadow-md shadow-slate-900/15">
+                                    <i data-lucide="chef-hat" class="w-4 h-4"></i> Tự chọn thực đơn
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cột phải: mô tả + nguyên liệu -->
+                    <div class="lg:col-span-7 xl:col-span-7 p-4 sm:p-5 lg:p-6 xl:p-7 flex flex-col gap-5 min-h-0">
+
+                        <div class="flex flex-wrap gap-1.5">
+                            @if (!string.IsNullOrEmpty(cookingLabel))
+                            {
+                                <span class="inline-flex items-center gap-1 text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 text-slate-700">
+                                    <i data-lucide="flame" class="w-3 h-3 text-orange-500"></i>@cookingLabel
+                                </span>
+                            }
+                            @if (d.DishSlotCategoryCodes?.Count > 0)
+                            {
+                                @foreach (var slot in d.DishSlotCategoryCodes.Take(4))
+                                {
+                                    <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-orange-50 text-orange-800 border border-orange-100">
+                                        @MenuDishDisplayHelper.CategoryLabel(slot)
+                                    </span>
+                                }
+                            }
+                            @if (!string.IsNullOrWhiteSpace(d.DietaryLabel))
+                            {
+                                <span class="text-[11px] font-bold px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-100">@d.DietaryLabel</span>
                             }
                         </div>
 
-                        <!-- Nguyên liệu -->
-                        <div>
+                        <div class="rounded-2xl border border-slate-100 bg-gradient-to-br from-slate-50/80 to-white p-4 sm:p-5">
                             <h2 class="text-xs font-black uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-                                <i data-lucide="wheat" class="w-3.5 h-3.5 text-orange-500"></i>
-                                Thành phần nguyên liệu
-                                <span class="ml-1 font-normal normal-case text-slate-400">— định lượng / 1 suất</span>
+                                <i data-lucide="align-left" class="w-3.5 h-3.5 text-orange-500"></i> Mô tả món
                             </h2>
-                            @if (quotas.Count > 0)
+                            @if (!string.IsNullOrEmpty(description))
                             {
-                                <div class="rounded-xl border border-slate-200 overflow-hidden">
-                                    @foreach (var q in quotas.OrderBy(x => x.IngredientName))
-                                    {
-                                        <div class="ingredient-row flex items-center justify-between gap-4 px-4 py-2.5 border-b border-slate-100 last:border-0 text-sm">
-                                            <span class="font-semibold text-slate-800 flex items-center gap-2 min-w-0">
-                                                <span class="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0"></span>
-                                                <span class="truncate">@q.IngredientName</span>
-                                            </span>
-                                            <span class="font-bold text-slate-600 tabular-nums shrink-0 text-right">
-                                                @q.Quantity.ToString("0.##") <span class="text-slate-400 font-semibold">@(q.Unit ?? "")</span>
-                                            </span>
-                                        </div>
-                                    }
-                                </div>
+                                <p class="text-sm sm:text-[15px] text-slate-700 leading-relaxed whitespace-pre-line">@description</p>
                             }
                             else
                             {
-                                <p class="text-sm text-slate-400 rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center">Chưa khai báo nguyên liệu.</p>
+                                <p class="text-sm text-slate-400 italic">Chưa có mô tả chi tiết.</p>
                             }
                         </div>
 
-                        <!-- CTA đặt món -->
-                        <div class="mt-auto pt-2 border-t border-slate-100 flex flex-col sm:flex-row sm:items-center gap-3">
-                            <p class="text-xs text-slate-500 flex items-center gap-2 flex-1">
-                                <i data-lucide="utensils" class="w-4 h-4 text-orange-500 shrink-0"></i>
-                                Đặt suất ăn qua thực đơn tuần hoặc tự chọn thực đơn doanh nghiệp.
-                            </p>
-                            <a asp-controller="OrganizationMealOrder" asp-action="Index"
-                               class="inline-flex items-center justify-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs font-bold text-white hover:bg-orange-600 transition shrink-0">
-                                <i data-lucide="chef-hat" class="w-4 h-4"></i> Tự chọn thực đơn
-                            </a>
+                        @if (hasNutrition)
+                        {
+                            <div class="rounded-2xl border border-slate-100 bg-white p-4 sm:p-5">
+                                <h2 class="text-xs font-black uppercase tracking-wider text-slate-500 mb-3 flex items-center gap-1.5">
+                                    <i data-lucide="activity" class="w-3.5 h-3.5 text-orange-500"></i> Dinh dưỡng tham chiếu / suất
+                                </h2>
+                                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2">
+                                    @if (d.Calories is > 0)
+                                    {
+                                        <div class="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
+                                            <p class="text-[9px] font-bold uppercase text-slate-400">Calo</p>
+                                            <p class="text-lg font-black text-slate-900 tabular-nums mt-0.5">@d.Calories.Value.ToString("N0")</p>
+                                        </div>
+                                    }
+                                    @if (d.Protein is > 0)
+                                    {
+                                        <div class="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
+                                            <p class="text-[9px] font-bold uppercase text-slate-400">Protein</p>
+                                            <p class="text-lg font-black text-slate-900 tabular-nums mt-0.5">@d.Protein.Value.ToString("N0")<span class="text-xs text-slate-400 font-bold">g</span></p>
+                                        </div>
+                                    }
+                                    @if (d.Carbs is > 0)
+                                    {
+                                        <div class="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
+                                            <p class="text-[9px] font-bold uppercase text-slate-400">Carbs</p>
+                                            <p class="text-lg font-black text-slate-900 tabular-nums mt-0.5">@d.Carbs.Value.ToString("N0")<span class="text-xs text-slate-400 font-bold">g</span></p>
+                                        </div>
+                                    }
+                                    @if (d.Fat is > 0)
+                                    {
+                                        <div class="rounded-xl bg-slate-50 border border-slate-100 px-3 py-2.5 text-center">
+                                            <p class="text-[9px] font-bold uppercase text-slate-400">Béo</p>
+                                            <p class="text-lg font-black text-slate-900 tabular-nums mt-0.5">@d.Fat.Value.ToString("N0")<span class="text-xs text-slate-400 font-bold">g</span></p>
+                                        </div>
+                                    }
+                                </div>
+                                <p class="mt-3 flex gap-2 text-[11px] leading-relaxed text-slate-500">
+                                    <i data-lucide="info" class="w-3.5 h-3.5 text-amber-600 shrink-0 mt-0.5"></i>
+                                    <span>@MenuDishDisplayHelper.ServingNotice.NutritionNote</span>
+                                </p>
+                            </div>
+                        }
+
+                        <!-- Nguyên liệu -->
+                        <div class="flex-1 flex flex-col min-h-0">
+                            <div class="flex flex-wrap items-start justify-between gap-3 mb-3">
+                                <div>
+                                    <h2 class="text-sm font-black text-slate-900 flex items-center gap-2">
+                                        <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-orange-100 text-orange-600">
+                                            <i data-lucide="wheat" class="w-4 h-4"></i>
+                                        </span>
+                                        Thành phần nguyên liệu
+                                    </h2>
+                                    <p class="text-xs text-slate-500 mt-1 ml-10">Định lượng tham chiếu cho 01 suất ăn</p>
+                                </div>
+                                <button type="button" @@click="showQuotaNote = !showQuotaNote"
+                                        class="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] font-bold text-amber-800 hover:bg-amber-100 transition shrink-0">
+                                    <i data-lucide="scale" class="w-3.5 h-3.5"></i>
+                                    <span x-text="showQuotaNote ? 'Ẩn ghi chú' : 'Về định mức'"></span>
+                                </button>
+                            </div>
+
+                            <div x-show="showQuotaNote" x-transition.opacity.duration.200ms class="mb-4 rounded-xl border border-amber-200/80 bg-gradient-to-r from-amber-50 to-orange-50/40 px-4 py-3 text-[13px] leading-relaxed text-amber-950/85">
+                                <p class="font-bold text-amber-900 text-xs uppercase tracking-wide mb-1">@MenuDishDisplayHelper.ServingNotice.IngredientTitle</p>
+                                <p>@MenuDishDisplayHelper.ServingNotice.IngredientBody</p>
+                            </div>
+
+                            @if (quotas.Count > 0)
+                            {
+                                @if (mainQuotas.Count > 0)
+                                {
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Nguyên liệu chính</p>
+                                    <div class="grid sm:grid-cols-2 gap-2 mb-4">
+                                        @foreach (var q in mainQuotas)
+                                        {
+                                            <div class="ingredient-chip rounded-xl px-3 py-2.5 flex items-center justify-between gap-3">
+                                                <span class="text-sm font-semibold text-slate-800 truncate">@q.IngredientName</span>
+                                                <span class="text-xs font-bold text-orange-700 bg-orange-50 border border-orange-100 rounded-lg px-2 py-1 tabular-nums shrink-0">
+                                                    @MenuDishDisplayHelper.FormatQuotaQuantity(q.Quantity, q.Unit)
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+
+                                @if (spiceQuotas.Count > 0)
+                                {
+                                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
+                                        <i data-lucide="sparkles" class="w-3 h-3 text-amber-500"></i> Gia vị &amp; nước chấm
+                                    </p>
+                                    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                                        @foreach (var q in spiceQuotas)
+                                        {
+                                            <div class="ingredient-chip ingredient-chip--spice rounded-xl px-3 py-2 flex items-center justify-between gap-2">
+                                                <span class="text-[13px] font-medium text-slate-700 truncate">@q.IngredientName</span>
+                                                <span class="text-[11px] font-bold text-amber-800 tabular-nums shrink-0">
+                                                    @MenuDishDisplayHelper.FormatQuotaQuantity(q.Quantity, q.Unit)
+                                                </span>
+                                            </div>
+                                        }
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <p class="text-sm text-slate-400 rounded-xl border border-dashed border-slate-200 px-4 py-8 text-center bg-slate-50/50">Chưa khai báo nguyên liệu.</p>
+                            }
                         </div>
                     </div>
                 </div>
             </article>
 
-            <!-- Gợi ý đi kèm -->
-            <section id="suggested-dishes-section" aria-labelledby="suggested-heading">
+            <section id="suggested-dishes-section" aria-labelledby="suggested-heading" class="pb-4">
                 <div class="flex items-center justify-between gap-4 mb-4">
                     <div>
                         <h2 id="suggested-heading" class="text-lg font-black text-slate-900 tracking-tight">
@@ -341,17 +404,16 @@
                         </h2>
                         <p class="text-xs text-slate-500 mt-0.5">Kết hợp cân bằng bữa ăn trọn vẹn</p>
                     </div>
-                    <span class="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-white border border-slate-200 rounded-full px-3 py-1">
-                        <i data-lucide="sparkles" class="w-3 h-3"></i> Gợi ý
+                    <span class="hidden sm:inline-flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-slate-400 bg-white border border-slate-200 rounded-full px-3 py-1 shadow-sm">
+                        <i data-lucide="sparkles" class="w-3 h-3"></i> Gợi ý AI
                     </span>
                 </div>
 
-                <div id="suggested-dishes-list"
-                     data-dish-id="@d.Id"
-                     class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                <div id="suggested-dishes-list" data-dish-id="@d.Id"
+                     class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                     @if (suggestedDishes.Count == 0)
                     {
-                        <div class="col-span-full rounded-xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">
+                        <div class="col-span-full rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-10 text-center text-sm text-slate-500">
                             Chưa có gợi ý món đi kèm phù hợp. Hãy xem thêm tại thư viện món.
                         </div>
                     }
@@ -364,7 +426,7 @@
                             : MenuDishDisplayHelper.CategoryLabel(suggestCatKey);
                         var detailUrl = Url.Action("DishDetail", "Menu", new { id = item.Id, menuId = ctx?.MenuId }) ?? $"/Menu/DishDetail/{item.Id}";
 
-                        <article class="suggest-card group rounded-2xl border border-slate-200/90 bg-white overflow-hidden">
+                        <article class="suggest-card group rounded-2xl border border-slate-200/90 bg-white overflow-hidden shadow-sm">
                             <a href="@detailUrl" class="block relative aspect-[5/4] overflow-hidden bg-slate-100">
                                 <img src="@suggestImg" alt="@item.Name" loading="lazy"
                                      class="h-full w-full object-cover transition duration-500 group-hover:scale-105" />
@@ -380,16 +442,10 @@
                                 {
                                     <p class="text-[10px] text-slate-500 mt-1 line-clamp-2">@item.MatchReason</p>
                                 }
-                                <div class="mt-2.5 flex gap-1.5">
-                                    <a href="@detailUrl"
-                                       class="flex-1 inline-flex items-center justify-center gap-1 rounded-lg bg-orange-50 text-orange-700 border border-orange-100 px-2 py-1.5 text-[10px] font-bold hover:bg-orange-100 transition">
-                                        <i data-lucide="eye" class="w-3 h-3"></i> Xem món
-                                    </a>
-                                    <a href="@detailUrl"
-                                       class="inline-flex items-center justify-center rounded-lg border border-slate-200 px-2 py-1.5 text-[10px] font-bold text-slate-600 hover:border-orange-200 hover:text-orange-600 transition">
-                                        <i data-lucide="arrow-up-right" class="w-3 h-3"></i>
-                                    </a>
-                                </div>
+                                <a href="@detailUrl"
+                                   class="mt-2.5 w-full inline-flex items-center justify-center gap-1 rounded-lg bg-orange-50 text-orange-700 border border-orange-100 px-2 py-2 text-[11px] font-bold hover:bg-orange-100 transition">
+                                    <i data-lucide="eye" class="w-3.5 h-3.5"></i> Xem chi tiết
+                                </a>
                             </div>
                         </article>
                     }
