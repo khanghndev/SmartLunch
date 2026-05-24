@@ -45,14 +45,15 @@ public sealed class GetReviewMeContextQueryHandler : IRequestHandler<GetReviewMe
         }
 
         var reviewable = new List<ReviewableOrderDto>();
-        var canSubmit = false;
 
         foreach (var order in orders)
         {
             var already = await _reviews.ExistsForUserAsync(request.UserId, null, order.Id, cancellationToken);
-            var eligible = OrganizationReviewRules.IsReviewableOrderStatus(order);
-            if (eligible && !already)
-                canSubmit = true;
+            if (already)
+                continue;
+
+            if (!OrganizationReviewRules.IsReviewableOrderStatus(order))
+                continue;
 
             reviewable.Add(new ReviewableOrderDto
             {
@@ -62,9 +63,11 @@ public sealed class GetReviewMeContextQueryHandler : IRequestHandler<GetReviewMe
                 ScheduledDate = order.ScheduledDate,
                 Status = order.Status,
                 OrganizationName = order.Contract?.Organization?.Name,
-                AlreadyReviewed = already,
+                AlreadyReviewed = false,
             });
         }
+
+        var canSubmit = reviewable.Count > 0;
 
         return new GetReviewMeContextResponse
         {
@@ -73,7 +76,7 @@ public sealed class GetReviewMeContextQueryHandler : IRequestHandler<GetReviewMe
             Message = canSubmit
                 ? null
                 : "Bạn đã đánh giá các đơn đủ điều kiện, hoặc đơn chưa ở trạng thái hoàn tất (đã giao / đã thanh toán).",
-            ReviewableOrders = reviewable.Where(o => !o.AlreadyReviewed).ToList(),
+            ReviewableOrders = reviewable,
         };
     }
 }
