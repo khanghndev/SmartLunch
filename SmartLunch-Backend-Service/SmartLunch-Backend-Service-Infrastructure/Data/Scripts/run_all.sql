@@ -103,6 +103,7 @@ SOURCE 04_seed_data/11_seed_ingredients.sql;
 SOURCE 04_seed_data/12_seed_stock_issues.sql;
 SOURCE 04_seed_data/13_seed_intake_proposals.sql;
 SOURCE 04_seed_data/14_seed_dishes.sql;
+SOURCE 04_seed_data/19_seed_dish_images.sql;
 SOURCE 04_seed_data/15_seed_menus.sql;
 SOURCE 04_seed_data/16_seed_orders.sql;
 SOURCE 04_seed_data/17_seed_remaining_tables.sql;

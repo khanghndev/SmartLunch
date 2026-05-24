@@ -1,0 +1,352 @@
+[
+  {
+    "name": "Cơm sườn nướng",
+    "slug": "com-suon-nuong",
+    "objectName": "dishes/seed/com-suon-nuong.jpg",
+    "sizeBytes": 82497,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_98203c4cffd497aa7a96ff1549da02b928/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Cơm gà chiên mắm",
+    "slug": "com-ga-chien-mam",
+    "objectName": "dishes/seed/com-ga-chien-mam.jpg",
+    "sizeBytes": 219192,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_b10ba463e13476ca376146b8a1f742d512/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Cơm chiên dương châu",
+    "slug": "com-chien-duong-chau",
+    "objectName": "dishes/seed/com-chien-duong-chau.jpg",
+    "sizeBytes": 181929,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_33df68d0c73aeef3d35ec79fca33fa0272/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Thịt heo kho trứng",
+    "slug": "thit-heo-kho-trung",
+    "objectName": "dishes/seed/thit-heo-kho-trung.jpg",
+    "sizeBytes": 207668,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_7ffd2010679dfe74cb01ed9ff462abb671/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Gà kho gừng",
+    "slug": "ga-kho-gung",
+    "objectName": "dishes/seed/ga-kho-gung.jpg",
+    "sizeBytes": 462249,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_ff76275b43e4603471361bb21e0f0de5dc/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Cá lóc kho tộ",
+    "slug": "ca-loc-kho-to",
+    "objectName": "dishes/seed/ca-loc-kho-to.jpg",
+    "sizeBytes": 202974,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_d791e78bef14794ab57cb1a1aa7e3d9c3b/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Thịt bò xào hành tây",
+    "slug": "thit-bo-xao-hanh-tay",
+    "objectName": "dishes/seed/thit-bo-xao-hanh-tay.jpg",
+    "sizeBytes": 174981,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_182801b6010e4b7bac894b210db0d2e11d/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Cơm cá basa kho tộ",
+    "slug": "com-ca-basa-kho-to",
+    "objectName": "dishes/seed/com-ca-basa-kho-to.jpg",
+    "sizeBytes": 182206,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_eb3de77b78ce309e0055277e7377289c70/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Thịt heo xào cà chua",
+    "slug": "thit-heo-xao-ca-chua",
+    "objectName": "dishes/seed/thit-heo-xao-ca-chua.jpg",
+    "sizeBytes": 161790,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_d8f9a5451d819c67eb5b9589daa1799b8b/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Gà nướng sả",
+    "slug": "ga-nuong-sa",
+    "objectName": "dishes/seed/ga-nuong-sa.jpg",
+    "sizeBytes": 215380,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_24e53a3b01838d1947f1f8adaee66780d7/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Tôm rang me",
+    "slug": "tom-rang-me",
+    "objectName": "dishes/seed/tom-rang-me.jpg",
+    "sizeBytes": 192137,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_fc6eda8bf6e807f9e9df021ab49257ac27/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Cá basa chiên giòn",
+    "slug": "ca-basa-chien-gion",
+    "objectName": "dishes/seed/ca-basa-chien-gion.jpg",
+    "sizeBytes": 200349,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_53803c327f2fc4ecd7c5a836bc572c2e73/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Bò xào cà chua",
+    "slug": "bo-xao-ca-chua",
+    "objectName": "dishes/seed/bo-xao-ca-chua.jpg",
+    "sizeBytes": 486414,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_60a49042287b7878feaaf12103af8cada2/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Cơm rang thịt gà",
+    "slug": "com-rang-thit-ga",
+    "objectName": "dishes/seed/com-rang-thit-ga.jpg",
+    "sizeBytes": 215852,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_25312ee6358c1b716558574765ca6815f8/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Thịt heo xào sả ớt",
+    "slug": "thit-heo-xao-sa-ot",
+    "objectName": "dishes/seed/thit-heo-xao-sa-ot.jpg",
+    "sizeBytes": 80538,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_68a824e8f43288d89b0dcbc119fc5d82b3/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Gà hấp gừng",
+    "slug": "ga-hap-gung",
+    "objectName": "dishes/seed/ga-hap-gung.jpg",
+    "sizeBytes": 121022,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_82802cd1f520f4d79437f4df4e9fc90719/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Canh chua tôm",
+    "slug": "canh-chua-tom",
+    "objectName": "dishes/seed/canh-chua-tom.jpg",
+    "sizeBytes": 143514,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_9d94d047aac21f1f883b449f68fa2151c9/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Canh bí đỏ thịt bằm",
+    "slug": "canh-bi-do-thit-bam",
+    "objectName": "dishes/seed/canh-bi-do-thit-bam.jpg",
+    "sizeBytes": 331487,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_b820a7d2a29a117f62724856cd70c4cd99/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Canh cải ngọt thịt bằm",
+    "slug": "canh-cai-ngot-thit-bam",
+    "objectName": "dishes/seed/canh-cai-ngot-thit-bam.jpg",
+    "sizeBytes": 100449,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_fdfac60c3226a6e000ff6564a1353cde95/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Canh khổ qua nhồi thịt",
+    "slug": "canh-kho-qua-nhoi-thit",
+    "objectName": "dishes/seed/canh-kho-qua-nhoi-thit.jpg",
+    "sizeBytes": 15448,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_93bf6bcda1096c322651886390ae7ce387/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Canh mồng tơi tôm",
+    "slug": "canh-mong-toi-tom",
+    "objectName": "dishes/seed/canh-mong-toi-tom.jpg",
+    "sizeBytes": 14957,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_67a3900e516dd442e04f5f1c8b68258157/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Canh rau củ thịt bằm",
+    "slug": "canh-rau-cu-thit-bam",
+    "objectName": "dishes/seed/canh-rau-cu-thit-bam.jpg",
+    "sizeBytes": 15424,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_31ee3304643e67c13ae441d6d0ed2a0bdb/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Canh cà chua trứng",
+    "slug": "canh-ca-chua-trung",
+    "objectName": "dishes/seed/canh-ca-chua-trung.jpg",
+    "sizeBytes": 14428,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_180d4f40c12216a30415dd6f103349aa40/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Canh đậu hũ cà chua",
+    "slug": "canh-dau-hu-ca-chua",
+    "objectName": "dishes/seed/canh-dau-hu-ca-chua.jpg",
+    "sizeBytes": 14535,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_4a961db340130d30bc413684d79615da0a/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Canh khoai tây thịt bằm",
+    "slug": "canh-khoai-tay-thit-bam",
+    "objectName": "dishes/seed/canh-khoai-tay-thit-bam.jpg",
+    "sizeBytes": 14926,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_a8c8230f6f9a3cd46eb7fe3ab62dae5b46/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Canh cải ngọt cà chua",
+    "slug": "canh-cai-ngot-ca-chua",
+    "objectName": "dishes/seed/canh-cai-ngot-ca-chua.jpg",
+    "sizeBytes": 15297,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_b9e72bc43e31821fcc33ef0a9a3a0fd80d/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Canh khổ qua cà chua",
+    "slug": "canh-kho-qua-ca-chua",
+    "objectName": "dishes/seed/canh-kho-qua-ca-chua.jpg",
+    "sizeBytes": 15590,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_ccdae237c7f60f49f75f65ff1bd2df26b8/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Rau muống xào tỏi",
+    "slug": "rau-muong-xao-toi",
+    "objectName": "dishes/seed/rau-muong-xao-toi.jpg",
+    "sizeBytes": 14741,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_a099c1bf4a8295551a40a1cc373812d315/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Đậu hũ sốt cà chua",
+    "slug": "dau-hu-sot-ca-chua",
+    "objectName": "dishes/seed/dau-hu-sot-ca-chua.jpg",
+    "sizeBytes": 14311,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_1629c86973bc9f8d4ffedabeb286c57000/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Cải ngọt xào tỏi",
+    "slug": "cai-ngot-xao-toi",
+    "objectName": "dishes/seed/cai-ngot-xao-toi.jpg",
+    "sizeBytes": 192717,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_41c49d9f9178d9f183051e1d1b241d5675/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Đậu cove xào thịt",
+    "slug": "dau-cove-xao-thit",
+    "objectName": "dishes/seed/dau-cove-xao-thit.jpg",
+    "sizeBytes": 13813,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_99f858c22a0d482f7dea92e7b9203e515d/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Bí đỏ xào tôm",
+    "slug": "bi-do-xao-tom",
+    "objectName": "dishes/seed/bi-do-xao-tom.jpg",
+    "sizeBytes": 13672,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_8ec0c32d41e73df7273f13b68f95ed0fcb/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Cà rốt xào trứng",
+    "slug": "ca-rot-xao-trung",
+    "objectName": "dishes/seed/ca-rot-xao-trung.jpg",
+    "sizeBytes": 162848,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_d0fe66bcf398736d7a71380ef7b75ebab1/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Khoai tây xào thịt",
+    "slug": "khoai-tay-xao-thit",
+    "objectName": "dishes/seed/khoai-tay-xao-thit.jpg",
+    "sizeBytes": 484441,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_25bcbb0e3eefc42a8ef24be6d4e9a19fb7/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Bí đỏ xào tỏi",
+    "slug": "bi-do-xao-toi",
+    "objectName": "dishes/seed/bi-do-xao-toi.jpg",
+    "sizeBytes": 13388,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_faad285cb1073b5957a62c93b647943e03/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Cải ngọt luộc",
+    "slug": "cai-ngot-luoc",
+    "objectName": "dishes/seed/cai-ngot-luoc.jpg",
+    "sizeBytes": 28004,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_53da185a53d73e20f12567a021427e8af5/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Cà chua xào trứng",
+    "slug": "ca-chua-xao-trung",
+    "objectName": "dishes/seed/ca-chua-xao-trung.jpg",
+    "sizeBytes": 117529,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_0ef0e26291d80ef95870b5ac08348c2744/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Trứng chiên",
+    "slug": "trung-chien",
+    "objectName": "dishes/seed/trung-chien.jpg",
+    "sizeBytes": 12694,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_81f4590069533e1a593e3430c19f77866d/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Khoai tây chiên",
+    "slug": "khoai-tay-chien",
+    "objectName": "dishes/seed/khoai-tay-chien.jpg",
+    "sizeBytes": 14200,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_bcbf9905575463b62d8500fa07f4e20628/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Đậu hũ chiên giòn",
+    "slug": "dau-hu-chien-gion",
+    "objectName": "dishes/seed/dau-hu-chien-gion.jpg",
+    "sizeBytes": 14395,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_9fc46314a6d9c1c6cebb6b779a6452133e/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Trứng luộc",
+    "slug": "trung-luoc",
+    "objectName": "dishes/seed/trung-luoc.jpg",
+    "sizeBytes": 12584,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_0985457a50aebe9f14bb618b72c819160b/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Dưa leo trộn",
+    "slug": "dua-leo-tron",
+    "objectName": "dishes/seed/dua-leo-tron.jpg",
+    "sizeBytes": 12849,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_559b3453388f77ccea413ee30b3ce04110/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Salad dưa leo cà rốt",
+    "slug": "salad-dua-leo-ca-rot",
+    "objectName": "dishes/seed/salad-dua-leo-ca-rot.jpg",
+    "sizeBytes": 15083,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_0aa37343955b6e81af9785a88f2a6045df/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Sốt cà chua chấm",
+    "slug": "sot-ca-chua-cham",
+    "objectName": "dishes/seed/sot-ca-chua-cham.jpg",
+    "sizeBytes": 14613,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_4b304bd91ed4c29f1b3fd711fc15141a79/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Khoai tây luộc",
+    "slug": "khoai-tay-luoc",
+    "objectName": "dishes/seed/khoai-tay-luoc.jpg",
+    "sizeBytes": 13154,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_271f33f9210cafdc874c6f68336d5c7e42/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Cà rốt muối chua",
+    "slug": "ca-rot-muoi-chua",
+    "objectName": "dishes/seed/ca-rot-muoi-chua.jpg",
+    "sizeBytes": 14261,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_47d8d312bf65087e605c2aeefb559a1fbf/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Chè bí đỏ",
+    "slug": "che-bi-do",
+    "objectName": "dishes/seed/che-bi-do.jpg",
+    "sizeBytes": 12423,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_c351d9c514217c58bd8ec5a988e37d3208/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Trái cây dầm",
+    "slug": "trai-cay-dam",
+    "objectName": "dishes/seed/trai-cay-dam.jpg",
+    "sizeBytes": 12965,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_d313df0a18de1473fcfde28a34f2c24e86/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Phở bò",
+    "slug": "pho-bo",
+    "objectName": "dishes/seed/pho-bo.jpg",
+    "sizeBytes": 11975,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_587589325bb1b38becb5e8472ec1d58689/view?project=69bab7660023ca1dd830"
+  },
+  {
+    "name": "Bánh canh cua",
+    "slug": "banh-canh-cua",
+    "objectName": "dishes/seed/banh-canh-cua.jpg",
+    "sizeBytes": 13544,
+    "viewUrl": "https://syd.cloud.appwrite.io/v1/storage/buckets/69bfa6de000fdacda87d/files/f_8cfd9183b8748d94e920f1f12184f17fb8/view?project=69bab7660023ca1dd830"
+  }
+]

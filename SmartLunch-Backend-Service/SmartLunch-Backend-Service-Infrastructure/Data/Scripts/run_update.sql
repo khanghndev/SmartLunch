@@ -40,6 +40,8 @@ SOURCE migrations/57_warehousestaff_partner_payment_create.sql;
 SOURCE migrations/58_orders_recipient_delivery_email.sql;
 SOURCE migrations/59_organization_legal_documents.sql;
 
+SOURCE 04_seed_data/19_seed_dish_images.sql;
+
 -- ---------- Tối ưu thống kê (tùy chọn, an toàn) ----------
 SOURCE 05_maintenance/01_analyze_optimize.sql;
 

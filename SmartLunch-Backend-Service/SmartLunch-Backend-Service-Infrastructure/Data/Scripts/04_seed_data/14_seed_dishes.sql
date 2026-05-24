@@ -295,18 +295,6 @@ WHERE d.Name IN (
 -- Món nước composite: main + soup + vegetable + noodle_soup (AI primary = noodle_soup)
 INSERT INTO dish_dish_categories (DishId, DishCategoryId)
 SELECT d.Id, c.Id FROM dishes d, dish_categories c WHERE d.Name = 'Phở bò' AND c.SlotKey = 'main';
-INSERT INTO dish_dish_categories (DishId, DishCategoryId)
-SELECT d.Id, c.Id FROM dishes d, dish_categories c WHERE d.Name = 'Phở bò' AND c.SlotKey = 'soup';
-INSERT INTO dish_dish_categories (DishId, DishCategoryId)
-SELECT d.Id, c.Id FROM dishes d, dish_categories c WHERE d.Name = 'Phở bò' AND c.SlotKey = 'vegetable';
-INSERT INTO dish_dish_categories (DishId, DishCategoryId)
-SELECT d.Id, c.Id FROM dishes d, dish_categories c WHERE d.Name = 'Phở bò' AND c.SlotKey = 'noodle_soup';
 
 INSERT INTO dish_dish_categories (DishId, DishCategoryId)
 SELECT d.Id, c.Id FROM dishes d, dish_categories c WHERE d.Name = 'Bánh canh cua' AND c.SlotKey = 'main';
-INSERT INTO dish_dish_categories (DishId, DishCategoryId)
-SELECT d.Id, c.Id FROM dishes d, dish_categories c WHERE d.Name = 'Bánh canh cua' AND c.SlotKey = 'soup';
-INSERT INTO dish_dish_categories (DishId, DishCategoryId)
-SELECT d.Id, c.Id FROM dishes d, dish_categories c WHERE d.Name = 'Bánh canh cua' AND c.SlotKey = 'vegetable';
-INSERT INTO dish_dish_categories (DishId, DishCategoryId)
-SELECT d.Id, c.Id FROM dishes d, dish_categories c WHERE d.Name = 'Bánh canh cua' AND c.SlotKey = 'noodle_soup';
