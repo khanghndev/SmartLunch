@@ -18,6 +18,7 @@ using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetO
 using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetOrganizationDishesByCategory;
 using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetPublicDishDetail;
 using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetPublicDishesBrowse;
+using SmartLunch.Backend.Service.Application.Queries.OrganizationMealOrders.GetDishSuggestions;
 
 namespace SmartLunch.Backend.Service.API.Controllers;
 
@@ -148,6 +149,39 @@ public class OrganizationMealOrderController : ControllerBase
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetDishResponse>.ErrorResult(
                     "An error occurred while retrieving dish",
+                    new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Gợi ý món ăn đi kèm phù hợp với món hiện tại (công khai).</summary>
+    [AllowAnonymous]
+    [HttpGet("dish/{id:int}/suggestions")]
+    public async Task<ActionResult<BaseApiResponse<GetDishSuggestionsResponse>>> GetDishSuggestions(
+        int id,
+        [FromQuery] int maxItems = 4)
+    {
+        try
+        {
+            var response = await _mediator.Send(new GetDishSuggestionsQuery(id, maxItems));
+            return Ok(BaseApiResponse<GetDishSuggestionsResponse>.SuccessResult(
+                response,
+                "Dish suggestions retrieved successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetDishSuggestionsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetDishSuggestionsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Org meal order: dish suggestions {DishId}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetDishSuggestionsResponse>.ErrorResult(
+                    "An error occurred while retrieving dish suggestions",
                     new[] { ex.Message }));
         }
     }

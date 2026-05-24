@@ -61,6 +61,10 @@ public sealed class GetPublicDishesBrowseQueryHandler
                 PrimarySlotKey = dto.PrimarySlotKey,
                 CategoryLabel = DishDtoMapping.FormatMealSlotNamesDisplay(dish),
                 DietaryLabel = dto.DietaryLabel,
+                Calories = dto.Calories,
+                Protein = dto.Protein,
+                Fat = dto.Fat,
+                Carbs = dto.Carbs,
             });
         }
 

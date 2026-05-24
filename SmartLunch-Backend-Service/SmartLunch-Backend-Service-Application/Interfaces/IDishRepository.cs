@@ -35,4 +35,23 @@ public interface IDishRepository
 
     /// <summary>Tra Id từ <c>cooking_methods.MethodKey</c> (enum AI), không phân biệt hoa thường.</summary>
     Task<int?> ResolveCookingMethodIdByMethodKeyAsync(string methodKey, CancellationToken cancellationToken = default);
+
+    /// <summary>Món active có ít nhất một SlotKey trong danh sách (dùng cho gợi ý đi kèm).</summary>
+    Task<List<Dish>> GetActiveDishesForSlotKeysAsync(
+        IReadOnlyList<string> slotKeys,
+        int excludeDishId,
+        int limit,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Toàn bộ món active (fallback khi lọc slot không ra kết quả).</summary>
+    Task<List<Dish>> GetActiveDishesForPairingPoolAsync(
+        int excludeDishId,
+        int limit,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Số lần món candidate xuất hiện cùng ngày/buổi với anchor trên thực đơn tuần.</summary>
+    Task<Dictionary<int, int>> GetMenuCoOccurrenceCountsAsync(
+        int anchorDishId,
+        IEnumerable<int> candidateIds,
+        CancellationToken cancellationToken = default);
 }

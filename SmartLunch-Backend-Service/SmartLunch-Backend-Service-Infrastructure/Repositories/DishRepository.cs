@@ -261,4 +261,98 @@ public class DishRepository : IDishRepository
             .Select(m => (int?)m.Id)
             .FirstOrDefaultAsync(cancellationToken);
     }
+
+    public async Task<List<Dish>> GetActiveDishesForSlotKeysAsync(
+        IReadOnlyList<string> slotKeys,
+        int excludeDishId,
+        int limit,
+        CancellationToken cancellationToken = default)
+    {
+        var keys = slotKeys
+            .Where(k => !string.IsNullOrWhiteSpace(k))
+            .Select(k => k.Trim().ToLowerInvariant())
+            .Distinct()
+            .ToList();
+
+        if (keys.Count == 0 || limit <= 0)
+            return new List<Dish>();
+
+        limit = Math.Clamp(limit, 1, 500);
+
+        var categoryIds = await _context.DishCategories
+            .AsNoTracking()
+            .Where(c => keys.Contains(c.SlotKey))
+            .Select(c => c.Id)
+            .ToListAsync(cancellationToken);
+
+        if (categoryIds.Count == 0)
+            return new List<Dish>();
+
+        // Xáo pool theo anchor — tránh luôn lấy 200 món đầu bảng chữ cái (A→Z)
+        return await QueryActiveDishesWithGraph()
+            .Where(d =>
+                d.Id != excludeDishId &&
+                d.DishDishCategories.Any(ddc => categoryIds.Contains(ddc.DishCategoryId)))
+            .OrderBy(d => ((long)d.Id * 1103515245L + excludeDishId) % int.MaxValue)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<List<Dish>> GetActiveDishesForPairingPoolAsync(
+        int excludeDishId,
+        int limit,
+        CancellationToken cancellationToken = default)
+    {
+        if (limit <= 0)
+            return new List<Dish>();
+
+        limit = Math.Clamp(limit, 1, 500);
+
+        return await QueryActiveDishesWithGraph()
+            .Where(d => d.Id != excludeDishId)
+            .OrderBy(d => ((long)d.Id * 1103515245L + excludeDishId) % int.MaxValue)
+            .Take(limit)
+            .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Dictionary<int, int>> GetMenuCoOccurrenceCountsAsync(
+        int anchorDishId,
+        IEnumerable<int> candidateIds,
+        CancellationToken cancellationToken = default)
+    {
+        var candidates = candidateIds
+            .Where(id => id > 0 && id != anchorDishId)
+            .Distinct()
+            .ToList();
+
+        if (candidates.Count == 0)
+            return new Dictionary<int, int>();
+
+        var rows = await _context.MenuSchedules
+            .AsNoTracking()
+            .Where(ms1 => ms1.DishId == anchorDishId)
+            .Join(
+                _context.MenuSchedules.AsNoTracking(),
+                ms1 => new { ms1.MenuId, Day = ms1.Date.Date, ms1.MealSlot },
+                ms2 => new { ms2.MenuId, Day = ms2.Date.Date, ms2.MealSlot },
+                (_, ms2) => ms2)
+            .Where(ms2 => candidates.Contains(ms2.DishId))
+            .GroupBy(ms2 => ms2.DishId)
+            .Select(g => new { DishId = g.Key, Count = g.Count() })
+            .ToListAsync(cancellationToken);
+
+        return rows.ToDictionary(r => r.DishId, r => r.Count);
+    }
+
+    private IQueryable<Dish> QueryActiveDishesWithGraph() =>
+        _context.Dishes
+            .AsNoTracking()
+            .Where(d => d.IsActive)
+            .Include(d => d.CookingMethod)
+            .Include(d => d.DishDishCategories)
+                .ThenInclude(ddc => ddc.DishCategory)
+            .Include(d => d.DishIngredients)
+                .ThenInclude(di => di.Ingredient)
+            .Include(d => d.DishImages)
+                .ThenInclude(img => img.MediaFile);
 }

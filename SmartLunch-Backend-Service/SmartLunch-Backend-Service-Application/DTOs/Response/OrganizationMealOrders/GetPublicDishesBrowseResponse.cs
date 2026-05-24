@@ -10,6 +10,10 @@ public sealed class PublicDishBrowseItemDto
     public string? PrimarySlotKey { get; set; }
     public string? CategoryLabel { get; set; }
     public string? DietaryLabel { get; set; }
+    public decimal? Calories { get; set; }
+    public decimal? Protein { get; set; }
+    public decimal? Fat { get; set; }
+    public decimal? Carbs { get; set; }
 }
 
 public sealed class GetPublicDishesBrowseResponse
