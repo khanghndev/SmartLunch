@@ -2,6 +2,7 @@ using MediatR;
 using SmartLunch.Backend.Service.Application.Common.Caching;
 using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Dishes;
+using SmartLunch.Backend.Service.Application.Helpers;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 
@@ -10,11 +11,16 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Dishes.Upda
 public class UpdateDishCommandHandler : IRequestHandler<UpdateDishCommand, GetDishResponse>
 {
     private readonly IDishRepository _dishRepository;
+    private readonly IMediaFileRepository _mediaFileRepository;
     private readonly ICacheService _cacheService;
 
-    public UpdateDishCommandHandler(IDishRepository dishRepository, ICacheService cacheService)
+    public UpdateDishCommandHandler(
+        IDishRepository dishRepository,
+        IMediaFileRepository mediaFileRepository,
+        ICacheService cacheService)
     {
         _dishRepository = dishRepository;
+        _mediaFileRepository = mediaFileRepository;
         _cacheService = cacheService;
     }
 
@@ -81,16 +87,8 @@ public class UpdateDishCommandHandler : IRequestHandler<UpdateDishCommand, GetDi
                 });
             }
 
-            // Update the primary ImageUrl to match the 'cover' image if possible
-            var cover = entity.DishImages
-                .OrderByDescending(i => i.Role == "cover")
-                .ThenBy(i => i.SortOrder)
-                .FirstOrDefault();
-
-            if (cover != null && cover.MediaFile != null)
-            {
-                entity.ImageUrl = cover.MediaFile.ObjectName;
-            }
+            await DishCoverImageSync.ApplyCoverObjectNameAsync(
+                entity, req.Images, _mediaFileRepository, cancellationToken);
         }
         else if (!string.IsNullOrWhiteSpace(req.ImageUrl))
         {
@@ -102,7 +100,8 @@ public class UpdateDishCommandHandler : IRequestHandler<UpdateDishCommand, GetDi
         if (req.DishSlotCategoryCodes is not null)
             await _dishRepository.ReplaceDishDishCategoriesAsync(request.DishId, req.DishSlotCategoryCodes, cancellationToken);
 
-        await _cacheService.RemoveAsync(MasterDataCacheKeys.Dish(request.DishId), cancellationToken);
+        await MasterDataCacheInvalidation.InvalidateDishCachesAsync(
+            _cacheService, request.DishId, cancellationToken);
 
         // Reload to get fresh data with resolved URLs
         var reloaded = await _dishRepository.GetByIdWithIngredientsAsync(entity.Id);

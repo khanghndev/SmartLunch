@@ -37,7 +37,9 @@ public class GetDishesQueryHandler : IRequestHandler<GetDishesQuery, GetDishesRe
 
     public async Task<GetDishesResponse> Handle(GetDishesQuery request, CancellationToken cancellationToken)
     {
+        var listVersion = await MasterDataCacheInvalidation.GetDishesListVersionAsync(_cacheService, cancellationToken);
         var cacheKey = MasterDataCacheKeys.Dishes(
+            listVersion,
             request.Page,
             request.PageSize,
             request.SearchTerm,

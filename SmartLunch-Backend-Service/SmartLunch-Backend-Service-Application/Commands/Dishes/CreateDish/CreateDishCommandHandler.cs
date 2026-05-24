@@ -1,6 +1,8 @@
 using MediatR;
+using SmartLunch.Backend.Service.Application.Common.Caching;
 using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Dishes;
+using SmartLunch.Backend.Service.Application.Helpers;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 
@@ -9,10 +11,17 @@ namespace SmartLunch.Backend.Service.Application.Commands.MasterData.Dishes.Crea
 public class CreateDishCommandHandler : IRequestHandler<CreateDishCommand, GetDishResponse>
 {
     private readonly IDishRepository _dishRepository;
+    private readonly IMediaFileRepository _mediaFileRepository;
+    private readonly ICacheService _cacheService;
 
-    public CreateDishCommandHandler(IDishRepository dishRepository)
+    public CreateDishCommandHandler(
+        IDishRepository dishRepository,
+        IMediaFileRepository mediaFileRepository,
+        ICacheService cacheService)
     {
         _dishRepository = dishRepository;
+        _mediaFileRepository = mediaFileRepository;
+        _cacheService = cacheService;
     }
 
     public async Task<GetDishResponse> Handle(CreateDishCommand request, CancellationToken cancellationToken)
@@ -66,14 +75,14 @@ public class CreateDishCommandHandler : IRequestHandler<CreateDishCommand, GetDi
                 });
             }
 
-            // Temporarily use objectName if we can (though MediaFile isn't loaded yet, 
-            // the repository will save it and we reload later)
-            // But actually we can't get ObjectName here without querying MediaFiles.
-            // We'll let the reload handle it.
+            await DishCoverImageSync.ApplyCoverObjectNameAsync(
+                entity, req.Images, _mediaFileRepository, cancellationToken);
         }
 
         await _dishRepository.CreateAsync(entity);
         await _dishRepository.ReplaceDishDishCategoriesAsync(entity.Id, req.DishSlotCategoryCodes, cancellationToken);
+
+        await MasterDataCacheInvalidation.BumpDishesListVersionAsync(_cacheService, cancellationToken);
 
         var reloaded = await _dishRepository.GetByIdWithIngredientsAsync(entity.Id);
         var dish = reloaded ?? entity;

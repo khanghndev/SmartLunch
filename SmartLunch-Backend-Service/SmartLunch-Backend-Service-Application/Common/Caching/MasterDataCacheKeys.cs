@@ -4,10 +4,12 @@ namespace SmartLunch.Backend.Service.Application.Common.Caching;
 
 public static class MasterDataCacheKeys
 {
+    public const string DishesListVersion = "master-data:dishes:list:version";
+
     public static string Dish(int dishId) => $"master-data:dishes:detail:{dishId}";
 
-    public static string Dishes(int page, int pageSize, string? searchTerm, bool? isActive, string? category) =>
-        $"master-data:dishes:list:page={page}:pageSize={pageSize}:search={Normalize(searchTerm)}:active={Normalize(isActive)}:category={Normalize(category)}";
+    public static string Dishes(long listVersion, int page, int pageSize, string? searchTerm, bool? isActive, string? category) =>
+        $"master-data:dishes:list:v{listVersion}:page={page}:pageSize={pageSize}:search={Normalize(searchTerm)}:active={Normalize(isActive)}:category={Normalize(category)}";
 
     public static string Partner(int partnerId) => $"master-data:partners:detail:{partnerId}";
 
