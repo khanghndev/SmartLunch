@@ -18,20 +18,22 @@ public class ManagerPaginationVm
     public string? ScheduledOn { get; set; }
     public string? SearchTerm { get; set; }
     public string? RoleName { get; set; }
+    public string? Category { get; set; }
 
     public int FromRecord => TotalCount == 0 ? 0 : (Page - 1) * PageSize + 1;
     public int ToRecord => TotalCount == 0 ? 0 : Math.Min(Page * PageSize, TotalCount);
 
     public object RouteAt(int targetPage)
     {
-        if (!string.IsNullOrEmpty(SearchTerm) || !string.IsNullOrEmpty(RoleName))
+        if (!string.IsNullOrEmpty(SearchTerm) || !string.IsNullOrEmpty(RoleName) || !string.IsNullOrEmpty(Category))
         {
             return new
             {
                 page = targetPage,
                 pageSize = PageSize,
                 searchTerm = SearchTerm,
-                roleName = RoleName
+                roleName = RoleName,
+                category = Category
             };
         }
 

@@ -1,3 +1,4 @@
+@using Khoa_Luan_KS_Web.Models
 @model Khoa_Luan_KS_Web.Services.GetDishesResponse
 @{
     ViewData["Title"] = "Quản lý Món Ăn";
@@ -33,10 +34,12 @@
         return label.Contains("chay") || label.Contains("vegetarian") || label.Contains("vegan");
     }
 
-    string ImgUrl(Khoa_Luan_KS_Web.Services.DishDto d) =>
-        !string.IsNullOrWhiteSpace(d.ImageUrl)
-            ? d.ImageUrl!
-            : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80";
+    string ImgUrl(Khoa_Luan_KS_Web.Services.DishDto d)
+    {
+        if (string.IsNullOrWhiteSpace(d.ImageUrl))
+            return "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&q=80";
+        return MenuDishDisplayHelper.ImageSrc(d.ImageUrl, d.UpdatedAt, d.CreatedAt);
+    }
 
     string KcalText(Khoa_Luan_KS_Web.Services.DishDto d) =>
         d.Calories.HasValue ? $"{d.Calories.Value:0} Kcal" : "—";

@@ -2,6 +2,9 @@ namespace Khoa_Luan_KS_Web.Models;
 
 public static class MealFormOptions
 {
+    /// <summary>Giá mặc định lưu DB khi không nhập trên form (tính tiền theo suất đơn hàng).</summary>
+    public const decimal DefaultStoredPrice = 0m;
+
     public static readonly (string Value, string Label)[] SlotCategories =
     {
         ("main", "Món chính"),

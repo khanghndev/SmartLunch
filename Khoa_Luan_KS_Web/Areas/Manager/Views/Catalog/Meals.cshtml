@@ -1,8 +1,21 @@
 ﻿@using Khoa_Luan_KS_Web.Models
+@using Khoa_Luan_KS_Web.Areas.Manager.Models
 @model Khoa_Luan_KS_Web.Services.GetDishesResponse
 @{
     ViewData["Title"] = "Quản lý Món ăn";
     Layout = "_LayoutManager";
+
+    var pagination = ViewBag.Pagination as ManagerPaginationVm ?? new ManagerPaginationVm
+    {
+        Controller = "Catalog",
+        Action = "Meals",
+        Page = 1,
+        PageSize = 20,
+        TotalCount = Model.TotalCount,
+        ItemCount = Model.Items.Count,
+        SearchTerm = Context.Request.Query["searchTerm"].ToString(),
+        Category = Context.Request.Query["category"].ToString()
+    };
 
     string CatLabel(string? cat) => MealFormOptions.SlotLabel(cat);
     string CatDot(string? cat) => (cat ?? "").ToLowerInvariant() switch {
@@ -67,7 +80,7 @@
         @foreach (var t in filterTabs)
         {
             var active = curCat == t.Key;
-            <a href="/Manager/Catalog/Meals?category=@t.Key@(!string.IsNullOrEmpty(curSearch) ? "&searchTerm=" + curSearch : "")"
+            <a href="/Manager/Catalog/Meals?page=1&amp;category=@t.Key@(!string.IsNullOrEmpty(curSearch) ? "&amp;searchTerm=" + Uri.EscapeDataString(curSearch) : "")"
                class="flex items-center gap-1.5 px-4 py-2 rounded-xl text-sm font-bold transition-all @(active ? "bg-green-600 text-white shadow-md" : "bg-white text-slate-600 border border-slate-200 hover:border-green-300 hover:text-green-600")">
                 @t.Label
             </a>
@@ -75,6 +88,7 @@
 
         <!-- Search -->
         <form method="get" action="/Manager/Catalog/Meals" class="ml-auto">
+            <input type="hidden" name="page" value="1" />
             <input type="hidden" name="category" value="@curCat" />
             <div class="relative">
                 <i class="fas fa-search absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs pointer-events-none"></i>
@@ -112,8 +126,7 @@
             <div class="grid grid-cols-12 px-6 py-3 bg-slate-50 border-b border-slate-100 text-[10px] font-black text-slate-400 uppercase tracking-widest">
                 <div class="col-span-5">Tên món ăn</div>
                 <div class="col-span-2 text-center">Phân loại</div>
-                <div class="col-span-2 text-center">Dinh dưỡng</div>
-                <div class="col-span-1 text-right">Đơn giá</div>
+                <div class="col-span-3 text-center">Dinh dưỡng</div>
                 <div class="col-span-1 text-center">Trạng thái</div>
                 <div class="col-span-1 text-center">Thao tác</div>
             </div>
@@ -127,7 +140,7 @@
                         <div class="w-14 h-14 rounded-xl overflow-hidden shrink-0 bg-slate-100 border border-slate-200">
                             @if (!string.IsNullOrEmpty(dish.ImageUrl))
                             {
-                                <img src="@dish.ImageUrl" alt="@dish.Name" class="w-full h-full object-cover" />
+                                <img src="@MenuDishDisplayHelper.ImageSrc(dish.ImageUrl, dish.UpdatedAt, dish.CreatedAt)" alt="@dish.Name" class="w-full h-full object-cover" />
                             }
                             else
                             {
@@ -161,7 +174,7 @@
                     </div>
 
                     <!-- Dinh dưỡng pills -->
-                    <div class="col-span-2 flex flex-col items-center gap-1">
+                    <div class="col-span-3 flex flex-col items-center gap-1">
                         @if (dish.Calories.HasValue)
                         {
                             <span class="text-[10px] font-bold text-orange-600 bg-orange-50 px-2 py-0.5 rounded-full w-full text-center">🔥 @dish.Calories kcal</span>
@@ -174,11 +187,6 @@
                         {
                             <span class="text-[10px] text-slate-300 font-bold">— chưa có —</span>
                         }
-                    </div>
-
-                    <!-- Giá -->
-                    <div class="col-span-1 text-right">
-                        <span class="font-black text-green-700 text-sm">@dish.Price.ToString("N0")₫</span>
                     </div>
 
                     <!-- Trạng thái -->
@@ -213,19 +221,14 @@
                 </div>
             }
 
-            <!-- Pagination footer -->
-            <div class="px-6 py-4 bg-slate-50/60 border-t border-slate-100 flex items-center justify-between">
-                <p class="text-xs text-slate-500 font-medium">
-                    Hiển thị <span class="font-bold text-slate-700">@Model.Items.Count</span> / <span class="font-bold text-slate-700">@Model.TotalCount</span> món ăn
-                    @if (!string.IsNullOrEmpty(curCat) || !string.IsNullOrEmpty(curSearch))
-                    {
-                        <a href="/Manager/Catalog/Meals" class="ml-2 text-green-600 font-bold hover:underline">Xóa bộ lọc</a>
-                    }
-                </p>
-                <div class="flex gap-2">
-                    <button disabled class="px-4 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-300 cursor-not-allowed">← Trước</button>
-                    <button disabled class="px-4 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-300 cursor-not-allowed">Sau →</button>
-                </div>
+            <div class="relative">
+                @if (!string.IsNullOrEmpty(curCat) || !string.IsNullOrEmpty(curSearch))
+                {
+                    <div class="absolute right-4 top-3 z-10">
+                        <a href="/Manager/Catalog/Meals" class="text-xs text-green-600 font-bold hover:underline bg-white/90 px-2 py-1 rounded-lg border border-green-100">Xóa bộ lọc</a>
+                    </div>
+                }
+                <partial name="_PaginationBar" model="pagination" />
             </div>
         }
     </div>

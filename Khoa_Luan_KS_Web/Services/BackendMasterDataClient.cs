@@ -569,6 +569,18 @@ public class BackendMasterDataClient
         return await HandleResponse<DishDetailResponse>(res, ct);
     }
 
+    public async Task<GetDishSuggestionsClientResponse> GetPublicDishSuggestionsAsync(
+        int dishId,
+        int maxItems = 4,
+        CancellationToken ct = default)
+    {
+        var client = CreateAnonymousClient();
+        using var res = await client.GetAsync(
+            $"/api/v1/organization/meal-order/dish/{dishId}/suggestions?maxItems={Math.Clamp(maxItems, 1, 8)}",
+            ct);
+        return await HandleResponse<GetDishSuggestionsClientResponse>(res, ct);
+    }
+
     public async Task<GetOrganizationDishesByCategoryClientResponse> GetOrganizationDishesByCategoryAsync(
         int categoryId, string accessToken, int page = 1, int pageSize = 20, CancellationToken ct = default)
     {
@@ -1759,6 +1771,29 @@ public class PublicDishBrowseItemClientDto
     public string? PrimarySlotKey { get; set; }
     public string? CategoryLabel { get; set; }
     public string? DietaryLabel { get; set; }
+    public decimal? Calories { get; set; }
+    public decimal? Protein { get; set; }
+    public decimal? Fat { get; set; }
+    public decimal? Carbs { get; set; }
+}
+
+public class SuggestedDishItemClientDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Description { get; set; }
+    public string? ImageUrl { get; set; }
+    public string? PrimarySlotKey { get; set; }
+    public string? CategoryLabel { get; set; }
+    public string? DietaryLabel { get; set; }
+    public string? MatchReason { get; set; }
+}
+
+public class GetDishSuggestionsClientResponse
+{
+    public int AnchorDishId { get; set; }
+    public string? AnchorPrimarySlotKey { get; set; }
+    public List<SuggestedDishItemClientDto> Items { get; set; } = new();
 }
 
 public class PrepareOrganizationMealContractClientRequest

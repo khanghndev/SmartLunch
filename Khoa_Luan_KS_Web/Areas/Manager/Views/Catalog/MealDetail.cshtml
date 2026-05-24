@@ -1,3 +1,4 @@
+@using Khoa_Luan_KS_Web.Models
 @model Khoa_Luan_KS_Web.Services.DishDetailResponse
 @{
     ViewData["Title"] = Model.Dish.Name + " - Chi tiết Thực đơn";
@@ -50,7 +51,7 @@
                 @if (!string.IsNullOrEmpty(d.ImageUrl))
                 {
                     <div class="relative h-64 lg:h-80 bg-slate-50">
-                        <img id="main-dish-image" src="@d.ImageUrl" alt="@d.Name" class="w-full h-full object-cover transition-all duration-300" />
+                        <img id="main-dish-image" src="@MenuDishDisplayHelper.ImageSrc(d.ImageUrl, d.UpdatedAt, d.CreatedAt)" alt="@d.Name" class="w-full h-full object-cover transition-all duration-300" />
                         <div class="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent"></div>
                         <!-- Status pill -->
                         <div class="absolute top-4 right-4">
@@ -80,9 +81,9 @@
                         <div class="p-3 border-t border-slate-50 flex items-center gap-2 overflow-x-auto">
                             @foreach (var img in d.Images.OrderByDescending(x => x.Role == "cover").ThenBy(x => x.SortOrder))
                             {
-                                <button onclick="document.getElementById('main-dish-image').src = '@img.Url'"
+                                <button onclick="document.getElementById('main-dish-image').src = '@MenuDishDisplayHelper.ImageSrc(img.Url, d.UpdatedAt, d.CreatedAt)'"
                                         class="w-12 h-12 rounded-lg border border-slate-200 overflow-hidden shrink-0 hover:ring-2 hover:ring-green-500 transition-all focus:ring-2 focus:ring-green-500 outline-none">
-                                    <img src="@img.Url" class="w-full h-full object-cover" />
+                                    <img src="@MenuDishDisplayHelper.ImageSrc(img.Url, d.UpdatedAt, d.CreatedAt)" class="w-full h-full object-cover" />
                                 </button>
                             }
                         </div>
@@ -96,18 +97,11 @@
                     </div>
                 }
 
-                <!-- Price + Actions bar -->
-                <div class="p-5 border-t border-slate-50 flex items-center justify-between gap-4">
-                    <div>
-                        <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Đơn giá / suất</p>
-                        <p class="text-2xl font-black text-green-600">@d.Price.ToString("N0") <span class="text-sm">₫</span></p>
-                    </div>
-                    <div class="flex gap-2">
-                        <a href="/Manager/Catalog/MealEdit/@d.Id"
-                           class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-100">
-                            <i class="fas fa-pen"></i> Chỉnh sửa
-                        </a>
-                    </div>
+                <div class="p-5 border-t border-slate-50 flex items-center justify-end gap-2">
+                    <a href="/Manager/Catalog/MealEdit/@d.Id"
+                       class="flex items-center gap-2 px-4 py-2.5 bg-blue-600 text-white text-xs font-bold rounded-xl hover:bg-blue-700 transition-all shadow-md shadow-blue-100">
+                        <i class="fas fa-pen"></i> Chỉnh sửa
+                    </a>
                 </div>
             </div>
         </div>

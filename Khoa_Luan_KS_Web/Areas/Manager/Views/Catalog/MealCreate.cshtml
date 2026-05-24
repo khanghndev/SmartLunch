@@ -93,21 +93,9 @@
                                   class="w-full bg-white border border-slate-200 text-slate-900 text-sm rounded-xl focus:ring-green-500 focus:border-green-500 block p-3.5 shadow-sm font-medium leading-relaxed"></textarea>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                        <div>
-                            <label class="block text-xs font-bold text-slate-600 uppercase tracking-wide mb-1.5">Giá bán (VNĐ)</label>
-                            <div class="flex">
-                                <input type="number" min="0" step="500" x-model.number="formData.price"
-                                       class="w-full bg-white border border-slate-200 border-r-0 rounded-l-xl text-green-700 text-lg focus:ring-green-500 focus:border-green-500 font-black block p-3 shadow-sm" />
-                                <span class="inline-flex items-center px-4 bg-slate-50 border border-slate-200 rounded-r-xl text-slate-600 text-sm font-bold">₫</span>
-                            </div>
-                        </div>
-                        <div class="flex items-end">
-                            <label class="flex items-center gap-2 cursor-pointer select-none">
-                                <input type="checkbox" x-model="formData.isActive" class="w-4 h-4 rounded border-slate-300 text-green-600 focus:ring-green-500" />
-                                <span class="text-sm font-bold text-slate-700">Đưa vào thực đơn ngay (đang bán)</span>
-                            </label>
-                        </div>
+                    <div class="flex items-center gap-2 rounded-xl border border-slate-100 bg-slate-50 px-4 py-3">
+                        <input type="checkbox" x-model="formData.isActive" class="w-4 h-4 rounded border-slate-300 text-green-600 focus:ring-green-500" />
+                        <span class="text-sm font-bold text-slate-700">Đưa vào thực đơn ngay (đang bán)</span>
                     </div>
                 </div>
             </div>
@@ -206,7 +194,7 @@
                 cookingMethod: '',
                 description: '',
                 dietaryLabel: '',
-                price: 0,
+                price: @MealFormOptions.DefaultStoredPrice,
                 isActive: true,
                 calories: null,
                 protein: null,
@@ -299,7 +287,7 @@
                         description: this.formData.description?.trim() || null,
                         dishSlotCategoryCodes: [this.formData.primarySlot],
                         cookingMethod: this.formData.cookingMethod,
-                        price: Number(this.formData.price) || 0,
+                        price: @MealFormOptions.DefaultStoredPrice,
                         dietaryLabel: this.formData.dietaryLabel || null,
                         calories: this.numOrNull(this.formData.calories),
                         protein: this.numOrNull(this.formData.protein),

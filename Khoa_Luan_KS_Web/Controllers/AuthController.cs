@@ -150,6 +150,7 @@ namespace Khoa_Luan_KS_Web.Controllers
             }
         }
 
+        [HttpGet]
         public IActionResult ForgotPassword() => View();
 
         [HttpPost]

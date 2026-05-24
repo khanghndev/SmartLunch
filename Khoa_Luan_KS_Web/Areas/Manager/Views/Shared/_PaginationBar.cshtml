@@ -19,7 +19,8 @@
         search = Model.Search,
         scheduledOn = Model.ScheduledOn,
         searchTerm = Model.SearchTerm,
-        roleName = Model.RoleName
+        roleName = Model.RoleName,
+        category = Model.Category
     }) ?? "#";
 }
 
@@ -41,6 +42,7 @@
             <input type="hidden" name="scheduledOn" value="@Model.ScheduledOn" />
             <input type="hidden" name="searchTerm" value="@Model.SearchTerm" />
             <input type="hidden" name="roleName" value="@Model.RoleName" />
+            <input type="hidden" name="category" value="@Model.Category" />
             <label class="text-[10px] font-bold text-slate-400 uppercase whitespace-nowrap">Số dòng/trang</label>
             <select name="pageSize" onchange="this.form.submit()"
                     class="bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg px-2 py-1.5 outline-none focus:border-green-500">

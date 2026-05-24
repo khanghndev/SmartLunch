@@ -1,5 +1,7 @@
 using Khoa_Luan_KS_Web.Services;
 
+using Khoa_Luan_KS_Web.Services;
+
 namespace Khoa_Luan_KS_Web.Models;
 
 public sealed class DishGalleryViewModel
@@ -18,6 +20,7 @@ public sealed class DishDetailPageViewModel
     public string? LoadError { get; set; }
     /// <summary>Khi mở từ thực đơn tuần (menuId + scheduleId).</summary>
     public DishDetailMenuContext? MenuContext { get; set; }
+    public List<SuggestedDishItemClientDto> SuggestedDishes { get; set; } = new();
 }
 
 public sealed class DishDetailMenuContext
