@@ -46,6 +46,12 @@ abstract final class OrganizationShellConfig {
           labelVi: 'Hợp đồng & Thanh toán',
           route: AppRoutes.orgContractSettlement,
         ),
+        DrawerItem(
+          icon: Icons.star_rounded,
+          label: 'reviews',
+          labelVi: 'Đánh giá suất ăn',
+          route: AppRoutes.orgReviews,
+        ),
       ],
     ),
     DrawerSection(

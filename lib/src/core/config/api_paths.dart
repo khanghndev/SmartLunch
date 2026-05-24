@@ -56,6 +56,11 @@ abstract final class ApiPaths {
   static const String managerReviews = '$prefix/master-data/Review';
   static const String managerComplaints = '$prefix/master-data/Complaint';
 
+  // --- Customer reviews (Organization B2B — khớp web Customer/Reviews) ---
+  static const String customerReviewsPublic = '$prefix/customer-reviews/public';
+  static const String customerReviewsMe = '$prefix/customer-reviews/me';
+  static const String customerReviews = '$prefix/customer-reviews';
+
   // --- Media ---
   static const String mediaUploadUrl = '$prefix/Media/upload-url';
 }

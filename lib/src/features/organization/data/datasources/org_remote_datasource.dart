@@ -1,10 +1,12 @@
 import 'dart:typed_data';
 
+import '../../../../core/config/api_paths.dart';
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../utils/org_meal_order_request_builder.dart';
 import '../models/bulk_order_models.dart';
 import '../models/contract_models.dart';
+import '../models/customer_review_models.dart';
 
 /// Remote datasource Organization — meal-order + contracts.
 class OrgRemoteDataSource {
@@ -262,6 +264,55 @@ class OrgRemoteDataSource {
       rethrow;
     } catch (e) {
       throw ApiException('Lỗi tải lịch sử thanh toán: $e', statusCode: 500);
+    }
+  }
+
+  Future<PublicReviewsPageModel> getPublicReviews({
+    int page = 1,
+    int pageSize = 50,
+  }) async {
+    try {
+      final response = await _client.get(
+        ApiPaths.customerReviewsPublic,
+        queryParameters: {'page': page, 'pageSize': pageSize},
+      );
+      return PublicReviewsPageModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải đánh giá công khai: $e', statusCode: 500);
+    }
+  }
+
+  Future<ReviewMeContextModel> getReviewMeContext() async {
+    try {
+      final response = await _client.get(ApiPaths.customerReviewsMe);
+      return ReviewMeContextModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải ngữ cảnh đánh giá: $e', statusCode: 500);
+    }
+  }
+
+  Future<void> createCustomerReview({
+    required int orderId,
+    required int rating,
+    required String comment,
+  }) async {
+    try {
+      await _client.post(
+        ApiPaths.customerReviews,
+        body: {
+          'orderId': orderId,
+          'rating': rating,
+          'comment': comment.trim(),
+        },
+      );
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi gửi đánh giá: $e', statusCode: 500);
     }
   }
 }

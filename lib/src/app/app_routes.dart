@@ -38,6 +38,7 @@ class AppRoutes {
   static const orgProfile = '/org/profile';
   static const orgNotifications = '/org/notifications';
   static const orgContractSettlement = '/org/contract-settlement';
+  static const orgReviews = '/org/reviews';
 
   static const chatbot = '/chatbot';
   static const notifications = '/notifications';

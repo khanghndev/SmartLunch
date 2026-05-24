@@ -225,6 +225,13 @@ class _OrganizationHomePageState extends State<OrganizationHomePage> {
             preview: _isLoading ? null : '$_categoryCount danh mục món',
           ),
           DashboardFeature(
+            title: 'Đánh giá suất ăn',
+            subtitle: 'Xem & gửi phản hồi chất lượng',
+            icon: Icons.star_rounded,
+            color: kOrgRoleShell.primaryAlt,
+            route: AppRoutes.orgReviews,
+          ),
+          DashboardFeature(
             title: 'Thống kê suất ăn',
             subtitle: 'Theo ngày / ca trong kỳ',
             icon: Icons.analytics_rounded,

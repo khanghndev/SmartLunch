@@ -5,6 +5,7 @@ import 'dart:typed_data';
 import 'datasources/org_remote_datasource.dart';
 import 'models/bulk_order_models.dart';
 import 'models/contract_models.dart';
+import 'models/customer_review_models.dart';
 import '../utils/org_meal_promotion_builder.dart';
 
 class OrgRepository {
@@ -123,4 +124,24 @@ class OrgRepository {
 
   Future<ContractPaymentListModel> getContractPayments(int contractId) =>
       _remote.getContractPayments(contractId);
+
+  Future<PublicReviewsPageModel> getPublicReviews({
+    int page = 1,
+    int pageSize = 50,
+  }) =>
+      _remote.getPublicReviews(page: page, pageSize: pageSize);
+
+  Future<ReviewMeContextModel> getReviewMeContext() =>
+      _remote.getReviewMeContext();
+
+  Future<void> submitCustomerReview({
+    required int orderId,
+    required int rating,
+    required String comment,
+  }) =>
+      _remote.createCustomerReview(
+        orderId: orderId,
+        rating: rating,
+        comment: comment,
+      );
 }
