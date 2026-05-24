@@ -13,11 +13,15 @@ class AuthStorage {
   static const _usernameKey = 'auth_username';
   static const _rolesKey = 'auth_roles';
 
+  /// Cache RAM — tránh đọc Secure Storage 6+ lần mỗi HTTP request (gây chậm rõ trên mobile).
+  static AuthSession? _memoryCache;
+
   const AuthStorage();
 
   FlutterSecureStorage get _storage => const FlutterSecureStorage();
 
   Future<void> saveSession(AuthSession session) async {
+    _memoryCache = session;
     await _storage.write(key: _accessTokenKey, value: session.accessToken);
     await _storage.write(key: _refreshTokenKey, value: session.refreshToken);
     await _storage.write(
@@ -31,6 +35,10 @@ class AuthStorage {
   }
 
   Future<AuthSession?> readSession() async {
+    if (_memoryCache != null) {
+      return _memoryCache;
+    }
+
     final accessToken = await _storage.read(key: _accessTokenKey);
     final refreshToken = await _storage.read(key: _refreshTokenKey);
     if (accessToken == null || refreshToken == null) {
@@ -52,7 +60,7 @@ class AuthStorage {
       }
     }
 
-    return AuthSession(
+    final session = AuthSession(
       userId: userId,
       username: username,
       email: email,
@@ -62,9 +70,12 @@ class AuthStorage {
           DateTime.now(),
       roles: roles,
     );
+    _memoryCache = session;
+    return session;
   }
 
   Future<void> clear() async {
+    _memoryCache = null;
     await _storage.deleteAll();
   }
 }

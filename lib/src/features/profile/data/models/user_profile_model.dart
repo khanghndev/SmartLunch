@@ -1,14 +1,29 @@
 class UserUnitModel {
   final int id;
   final String name;
+  final String? address;
+  final String? phone;
+  final String? contactEmail;
+  final String? legalRepresentative;
 
-  const UserUnitModel({required this.id, required this.name});
+  const UserUnitModel({
+    required this.id,
+    required this.name,
+    this.address,
+    this.phone,
+    this.contactEmail,
+    this.legalRepresentative,
+  });
 
   factory UserUnitModel.fromJson(Map<String, dynamic>? json) {
     if (json == null) return const UserUnitModel(id: 0, name: '');
     return UserUnitModel(
       id: json['id'] as int? ?? 0,
       name: json['name']?.toString() ?? json['organizationName']?.toString() ?? '',
+      address: json['address']?.toString(),
+      phone: json['phone']?.toString(),
+      contactEmail: json['contactEmail']?.toString(),
+      legalRepresentative: json['legalRepresentative']?.toString(),
     );
   }
 }

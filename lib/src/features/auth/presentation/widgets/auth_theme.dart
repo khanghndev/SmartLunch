@@ -117,6 +117,7 @@ class AuthPageStyle {
     roleLabel: 'GIA NHẬP CỘNG ĐỒNG',
     title: 'Tạo tài khoản',
     subtitle: 'Vui lòng điền thông tin để đăng ký thành viên HUITMeal.',
+    showFormRoleBadge: false,
     heroTitle: 'Bắt đầu hành trình',
     heroSubtitle: 'Ăn sạch & sống khỏe cùng HUITMeal.',
     heroImageUrl:

@@ -22,4 +22,12 @@ class AppEnv {
   static String get apiBaseUrl {
     return _defaultBaseUrl;
   }
+
+  /// Gốc web (PayOS return/cancel) — `--dart-define=SMARTLUNCH_WEB=https://host`.
+  static const String _webBaseUrl = String.fromEnvironment(
+    'SMARTLUNCH_WEB',
+    defaultValue: 'https://postcard-afar-coil.ngrok-free.dev',
+  );
+
+  static String get webBaseUrl => _webBaseUrl;
 }

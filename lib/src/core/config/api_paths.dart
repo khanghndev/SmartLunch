@@ -14,7 +14,7 @@ abstract final class ApiPaths {
   static const String authLogout = '$prefix/Auth/logout';
   static const String authRefreshToken = '$prefix/Auth/refresh-token';
 
-  // --- Master data: thực đơn tuần (Customer / Organization / Shipper nếu policy cho phép) ---
+  // --- Master data: thực đơn tuần (Customer) ---
   static String weeklyMenuList() => '$prefix/master-data/WeeklyMenu';
   static String weeklyMenuDetail(int id) =>
       '$prefix/master-data/WeeklyMenu/$id/detail';

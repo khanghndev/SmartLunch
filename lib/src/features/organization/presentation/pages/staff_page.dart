@@ -16,6 +16,7 @@ class StaffPage extends StatefulWidget {
 class _StaffPageState extends State<StaffPage> {
   UserProfileModel? _profile;
   bool _loading = true;
+  String? _error;
 
   @override
   void initState() {
@@ -24,7 +25,10 @@ class _StaffPageState extends State<StaffPage> {
   }
 
   Future<void> _load() async {
-    setState(() => _loading = true);
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
     try {
       final p = await ProfileRepository.instance.getProfile();
       if (!mounted) return;
@@ -32,8 +36,12 @@ class _StaffPageState extends State<StaffPage> {
         _profile = p;
         _loading = false;
       });
-    } catch (_) {
-      if (mounted) setState(() => _loading = false);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _error = orgApiError(e);
+        _loading = false;
+      });
     }
   }
 
@@ -44,85 +52,76 @@ class _StaffPageState extends State<StaffPage> {
       onRefresh: _load,
       body: _loading
           ? const OrgLoadingBody()
-          : ListView(
-              padding: const EdgeInsets.all(16),
-              children: [
-                OrgCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Đơn vị được gán', style: AppDesignSystem.sectionTitle()),
-                      const SizedBox(height: 12),
-                      if (_profile?.unit != null) ...[
-                        _row(Icons.business_rounded, 'Tên đơn vị', _profile!.unit!.name),
-                        _row(Icons.tag_rounded, 'Mã đơn vị', '${_profile!.unit!.id}'),
-                      ] else
-                        Text(
-                          'Tài khoản chưa gán đơn vị. Liên hệ quản trị hệ thống.',
-                          style: AppDesignSystem.body(color: AppDesignSystem.danger),
-                        ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                OrgCard(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Liên hệ đại diện', style: AppDesignSystem.sectionTitle()),
-                      const SizedBox(height: 12),
-                      _row(Icons.person_rounded, 'Họ tên', _profile?.displayName ?? '—'),
-                      _row(Icons.email_outlined, 'Email', _profile?.email ?? '—'),
-                      _row(Icons.phone_outlined, 'Điện thoại', _profile?.phoneNumber ?? '—'),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  padding: const EdgeInsets.all(14),
-                  decoration: BoxDecoration(
-                    color: AppDesignSystem.warning.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Icon(Icons.info_outline, color: AppDesignSystem.warning),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
+          : _error != null
+              ? OrgErrorBody(message: _error!, onRetry: _load)
+              : ModuleListView(
+                  padding: orgListPadding(context),
+                  children: [
+                    const OrgPageIntro(
+                      title: 'Nhân sự & đơn vị',
+                      description:
+                          'Thông tin đơn vị và đại diện từ hồ sơ đăng nhập. Danh sách nhân viên chi tiết quản trị trên web.',
+                      icon: Icons.groups_rounded,
+                    ),
+                    const SizedBox(height: 14),
+                    OrgCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const OrgSectionHeader(title: 'Đơn vị được gán'),
+                          const SizedBox(height: 8),
+                          if (_profile?.unit != null) ...[
+                            OrgDetailField(
+                              icon: Icons.business_rounded,
+                              label: 'Tên đơn vị',
+                              value: _profile!.unit!.name,
+                            ),
+                            OrgDetailField(
+                              icon: Icons.tag_rounded,
+                              label: 'Mã đơn vị',
+                              value: '${_profile!.unit!.id}',
+                            ),
+                          ] else
+                            Text(
+                              'Tài khoản chưa gán đơn vị. Liên hệ quản trị hệ thống.',
+                              style: AppDesignSystem.body(color: AppDesignSystem.danger),
+                            ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    OrgCard(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const OrgSectionHeader(title: 'Liên hệ đại diện'),
+                          const SizedBox(height: 8),
+                          OrgDetailField(
+                            icon: Icons.person_rounded,
+                            label: 'Họ tên',
+                            value: _profile?.displayName ?? '—',
+                          ),
+                          OrgDetailField(
+                            icon: Icons.email_outlined,
+                            label: 'Email',
+                            value: _profile?.email ?? '—',
+                          ),
+                          OrgDetailField(
+                            icon: Icons.phone_outlined,
+                            label: 'Điện thoại',
+                            value: _profile?.phoneNumber ?? '—',
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const OrgInfoBanner(
+                      message:
                           'Danh sách nhân viên chi tiết theo đơn vị hiện chỉ quản trị trên web. '
                           'Mobile hiển thị thông tin đơn vị từ hồ sơ đăng nhập.',
-                          style: AppDesignSystem.body(size: 12),
-                        ),
-                      ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
-              ],
-            ),
-    );
-  }
-
-  Widget _row(IconData icon, String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: orgAccent),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: AppDesignSystem.body(size: 12)),
-                Text(value, style: AppDesignSystem.label()),
-              ],
-            ),
-          ),
-        ],
-      ),
     );
   }
 }

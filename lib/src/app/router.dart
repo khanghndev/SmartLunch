@@ -31,13 +31,13 @@ import '../features/shipper/presentation/pages/shipper_profile_page.dart';
 import '../features/shipper/presentation/pages/shipper_notifications_page.dart';
 import '../features/shipper/presentation/pages/delivery_schedule_page.dart';
 import '../features/shipper/presentation/pages/delivery_history_page.dart';
-import '../features/shipper/presentation/pages/shipper_weekly_menu_page.dart';
-
 // Organization
 import '../features/organization/presentation/pages/organization_home_page.dart';
 import '../features/organization/presentation/pages/staff_page.dart';
 import '../features/organization/presentation/pages/bulk_order_page.dart';
 import '../features/organization/presentation/pages/org_meal_order_review_page.dart';
+import '../features/organization/presentation/pages/org_order_annex_sign_page.dart';
+import '../features/organization/data/models/org_order_annex_sign_args.dart';
 import '../features/organization/data/models/bulk_order_models.dart';
 import '../features/organization/presentation/pages/org_statistics_page.dart';
 import '../features/organization/presentation/pages/org_reports_page.dart';
@@ -120,11 +120,6 @@ class AppRouter {
           settings: settings,
         );
       }
-      case AppRoutes.shipperWeeklyMenu:
-        return MaterialPageRoute(
-          builder: (_) => const ShipperWeeklyMenuPage(),
-          settings: settings,
-        );
       case AppRoutes.shipperProfile:
         return MaterialPageRoute(builder: (_) => const ShipperProfilePage(), settings: settings);
       case AppRoutes.shipperNotifications:
@@ -153,6 +148,20 @@ class AppRouter {
         }
         return MaterialPageRoute(
           builder: (_) => OrgMealOrderReviewPage(draft: draft),
+          settings: settings,
+        );
+      case AppRoutes.orgOrderAnnexSign:
+        final args = settings.arguments;
+        if (args is! OrgOrderAnnexSignArgs) {
+          return MaterialPageRoute(
+            builder: (_) => const Scaffold(
+              body: Center(child: Text('Thiếu thông tin đơn hàng để ký phụ lục.')),
+            ),
+            settings: settings,
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => OrgOrderAnnexSignPage(args: args),
           settings: settings,
         );
       case AppRoutes.orgStatistics:

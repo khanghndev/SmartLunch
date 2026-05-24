@@ -1,3 +1,5 @@
+import '../../utils/org_order_payment_status.dart';
+
 /// Models cho Organization: Contracts và Payments.
 /// Khớp endpoint `/api/v1/company/contracts/...` trong `UI_MOB.md`.
 
@@ -99,7 +101,11 @@ class ContractPaymentModel {
   final String date;
   final String method;
   final PaymentStatus status;
-  final String? payosUrl;    // link PayOS nếu có
+  final String? payosUrl;
+  /// Đơn B2B gắn hợp đồng (từ `customer.orders[]`).
+  final int? orderId;
+  final String? orderPaymentStatus;
+  final String? annexPdfUrl;
 
   const ContractPaymentModel({
     required this.id,
@@ -109,20 +115,47 @@ class ContractPaymentModel {
     required this.method,
     required this.status,
     this.payosUrl,
+    this.orderId,
+    this.orderPaymentStatus,
+    this.annexPdfUrl,
   });
+
+  bool get isB2bOrder => orderId != null && orderId! > 0;
+
+  String get paymentStatusLabel => orderPaymentStatus != null
+      ? OrgOrderPaymentStatus.label(orderPaymentStatus)
+      : status.label;
+
+  bool get canPayDeposit =>
+      OrgOrderPaymentStatus.canPayDeposit(
+        orderPaymentStatus,
+        annexPdfUrl: annexPdfUrl,
+      );
+
+  bool get needsAnnexSign =>
+      isB2bOrder &&
+      OrgOrderPaymentStatus.needsAnnexSign(
+        orderPaymentStatus,
+        annexPdfUrl: annexPdfUrl,
+      );
 
   factory ContractPaymentModel.fromJson(Map<String, dynamic> json) =>
       ContractPaymentModel(
         id: json['id']?.toString() ?? '',
         description: json['description']?.toString() ??
-            json['note']?.toString() ?? '',
+            json['note']?.toString() ??
+            '',
         amount: (json['amount'] as num?)?.toDouble() ?? 0,
         date: json['date']?.toString() ?? json['createdAt']?.toString() ?? '',
         method: json['method']?.toString() ??
-            json['paymentMethod']?.toString() ?? 'Khác',
+            json['paymentMethod']?.toString() ??
+            'Khác',
         status: PaymentStatusX.fromString(json['status']?.toString()),
         payosUrl: json['payosUrl']?.toString() ??
             json['paymentUrl']?.toString(),
+        orderId: json['orderId'] as int?,
+        orderPaymentStatus: json['orderPaymentStatus']?.toString(),
+        annexPdfUrl: json['annexPdfUrl']?.toString(),
       );
 }
 
@@ -184,11 +217,15 @@ class ContractFinancePaymentsModel {
       final paid = (o['paidAmount'] as num?)?.toDouble() ?? 0;
       final pending = (o['pendingPaymentAmount'] as num?)?.toDouble() ?? 0;
       final total = (o['orderTotal'] as num?)?.toDouble() ?? 0;
-      final statusRaw = o['recordedPaymentStatus']?.toString() ?? '';
+      final statusRaw =
+          (o['recordedPaymentStatus']?.toString() ?? '').trim().toLowerCase();
       PaymentStatus status;
-      if (statusRaw.toLowerCase().contains('paid') || paid >= total && total > 0) {
+      if (statusRaw == 'deposit_paid' ||
+          statusRaw == 'partial' ||
+          statusRaw == 'paid' ||
+          (paid >= total && total > 0)) {
         status = PaymentStatus.success;
-      } else if (statusRaw.toLowerCase().contains('fail')) {
+      } else if (statusRaw.contains('fail')) {
         status = PaymentStatus.failed;
       } else {
         status = PaymentStatus.pending;
@@ -196,6 +233,9 @@ class ContractFinancePaymentsModel {
       final scheduled = o['scheduledDate']?.toString() ?? '';
       return ContractPaymentModel(
         id: 'order-$orderId',
+        orderId: orderId > 0 ? orderId : null,
+        orderPaymentStatus: statusRaw.isEmpty ? null : statusRaw,
+        annexPdfUrl: o['annexPdfUrl']?.toString(),
         description: o['invoiceCode']?.toString().isNotEmpty == true
             ? 'Đơn ${o['invoiceCode']}'
             : 'Đơn hàng #$orderId',

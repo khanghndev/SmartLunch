@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../core/navigation/session_guard.dart';
 import 'app_config.dart';
 import 'app_routes.dart';
 import 'router.dart';
@@ -14,6 +15,7 @@ class SmartLunchApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final router = AppRouter(config);
     return MaterialApp(
+      navigatorKey: SessionGuard.instance.navigatorKey,
       title: config.appName,
       theme: AppTheme.light(config.flavor),
       debugShowCheckedModeBanner: false,

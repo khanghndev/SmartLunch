@@ -1,12 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../../../app/app_routes.dart';
-import '../../../auth/data/repositories/auth_repository.dart';
+import '../../../../core/theme/app_design_system.dart';
+import '../../../../core/widgets/app_confirm_dialog.dart';
+import '../../../../core/widgets/role_tab_shell.dart';
 import '../../data/profile_repository.dart';
 import '../../data/models/user_profile_model.dart';
 
 class ProfilePage extends StatefulWidget {
   final VoidCallback? onMenuPressed;
-  const ProfilePage({super.key, this.onMenuPressed});
+  /// `true` khi nằm trong tab shell (header module bên ngoài).
+  final bool embeddedInModuleShell;
+
+  const ProfilePage({
+    super.key,
+    this.onMenuPressed,
+    this.embeddedInModuleShell = false,
+  });
 
   @override
   State<ProfilePage> createState() => _ProfilePageState();
@@ -21,34 +30,19 @@ class _ProfilePageState extends State<ProfilePage> {
     _profileFuture = ProfileRepository.instance.getProfile();
   }
 
-  Future<void> _handleLogout() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Xác nhận đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này không?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Đăng xuất', style: TextStyle(color: Colors.redAccent)),
-          ),
-        ],
-      ),
-    );
-
-    if (confirm == true) {
-      await AuthRepository.instance.clearSession();
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          AppRoutes.login,
-          (route) => false,
-        );
-      }
+  RolePalette _paletteForRoles(List<String> roles) {
+    if (roles.contains('Manager')) return RolePalette.manager;
+    if (roles.contains('Organization') || roles.contains('Company')) {
+      return RolePalette.organization;
     }
+    if (roles.contains('Shipper')) return RolePalette.shipper;
+    return RolePalette.customer;
+  }
+
+  Future<void> _handleLogout() async {
+    final profile = await _profileFuture;
+    if (!mounted) return;
+    await performAppLogout(context, role: _paletteForRoles(profile.roles));
   }
 
   String _getRoleLabelVi(List<String> roles) {
@@ -67,20 +61,7 @@ class _ProfilePageState extends State<ProfilePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: widget.onMenuPressed ?? () => Scaffold.of(context).openDrawer(),
-        ),
-        title: const Text('Hồ sơ cá nhân', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: FutureBuilder<UserProfileModel>(
+    final content = FutureBuilder<UserProfileModel>(
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -128,8 +109,11 @@ class _ProfilePageState extends State<ProfilePage> {
           final roleColor = _getRoleColor(profile.roles);
           final roleLabel = _getRoleLabelVi(profile.roles);
 
+          final tabBottom = RoleTabScope.maybeOf(context)?.bottomInset ?? 24;
+
           return SingleChildScrollView(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
+            keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+            padding: EdgeInsets.fromLTRB(20, 24, 20, tabBottom),
             child: Column(
               children: [
                 // Header Card
@@ -286,7 +270,26 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           );
         },
+      );
+
+    if (widget.embeddedInModuleShell) {
+      return ColoredBox(color: Colors.grey.shade50, child: content);
+    }
+
+    return Scaffold(
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        leading: IconButton(
+          icon: const Icon(Icons.menu),
+          onPressed: widget.onMenuPressed ?? () => Scaffold.of(context).openDrawer(),
+        ),
+        title: const Text('Hồ sơ cá nhân', style: TextStyle(fontWeight: FontWeight.bold)),
+        backgroundColor: Colors.white,
+        foregroundColor: Colors.black87,
+        elevation: 0,
+        centerTitle: true,
       ),
+      body: content,
     );
   }
 

@@ -5,6 +5,9 @@ import '../../../../app/app_routes.dart';
 import '../../../../core/theme/app_design_system.dart';
 import '../../data/models/shipper_delivery_models.dart';
 import '../../data/repositories/shipper_repository.dart';
+import '../../utils/shipper_geo.dart';
+import '../../utils/shipper_maps_launcher.dart';
+import '../widgets/shipper_route_map_panel.dart';
 import '../widgets/shipper_ui.dart';
 
 class DeliveryDetailPage extends StatefulWidget {
@@ -70,13 +73,19 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
         _updating = false;
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Đã cập nhật: ${shipperDeliveryStatusLabelVi(status)}')),
+        SnackBar(
+          content: Text('Đã cập nhật: ${shipperDeliveryStatusLabelVi(status)}'),
+          backgroundColor: AppDesignSystem.success,
+        ),
       );
     } catch (e) {
       if (!mounted) return;
       setState(() => _updating = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(shipperApiError(e))),
+        SnackBar(
+          content: Text(shipperApiError(e)),
+          backgroundColor: AppDesignSystem.danger,
+        ),
       );
     }
   }
@@ -102,6 +111,7 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
               if (ctrl.text.trim().isEmpty) return;
               Navigator.pop(ctx, ctrl.text.trim());
             },
+            style: FilledButton.styleFrom(backgroundColor: shipperAccent),
             child: const Text('Xác nhận'),
           ),
         ],
@@ -123,7 +133,7 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Hủy')),
           FilledButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: FilledButton.styleFrom(backgroundColor: kShipperRole.primary),
+            style: FilledButton.styleFrom(backgroundColor: shipperAccent),
             child: const Text('Đồng ý'),
           ),
         ],
@@ -145,13 +155,28 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
     );
   }
 
+  Future<void> _openMaps() async {
+    final d = _delivery;
+    if (d == null) return;
+    final ok = await ShipperMapsLauncher.openAddress(
+      d.deliveryAddress,
+      seed: d.deliveryId,
+    );
+    if (!mounted) return;
+    if (!ok) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Không mở được Google Maps trên thiết bị')),
+      );
+    }
+  }
+
   List<Widget> _actionButtons(ShipperDeliveryDetailModel d) {
     if (_updating) {
       return [
-        const Center(child: Padding(
+        const Padding(
           padding: EdgeInsets.all(16),
-          child: CircularProgressIndicator(),
-        )),
+          child: Center(child: CircularProgressIndicator()),
+        ),
       ];
     }
     final s = d.deliveryStatus.toLowerCase();
@@ -159,23 +184,45 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
 
     if (s == 'pending' || s == 'assigned') {
       buttons.addAll([
-        _primaryBtn('Nhận đơn', Icons.check_circle_outline, () =>
-            _confirmAction('received', 'Xác nhận nhận đơn giao này?')),
-        _outlineBtn('Từ chối đơn', Icons.cancel_outlined, () =>
-            _promptNotesThenUpdate('rejected', 'Lý do từ chối')),
+        ShipperPrimaryButton(
+          label: 'Nhận đơn',
+          icon: Icons.check_circle_outline,
+          onPressed: () => _confirmAction('received', 'Xác nhận nhận đơn giao này?'),
+        ),
+        const SizedBox(height: 8),
+        ShipperOutlineButton(
+          label: 'Từ chối đơn',
+          icon: Icons.cancel_outlined,
+          onPressed: () => _promptNotesThenUpdate('rejected', 'Lý do từ chối'),
+        ),
       ]);
     } else if (s == 'received') {
       buttons.addAll([
-        _primaryBtn('Bắt đầu giao', Icons.local_shipping_outlined, () =>
-            _confirmAction('in_transit', 'Bắt đầu giao đơn này?')),
-        _outlineBtn('Giao thất bại', Icons.error_outline, () =>
-            _promptNotesThenUpdate('failed', 'Lý do giao thất bại')),
+        ShipperPrimaryButton(
+          label: 'Bắt đầu giao',
+          icon: Icons.local_shipping_outlined,
+          onPressed: () => _confirmAction('in_transit', 'Bắt đầu giao đơn này?'),
+        ),
+        const SizedBox(height: 8),
+        ShipperOutlineButton(
+          label: 'Giao thất bại',
+          icon: Icons.error_outline,
+          onPressed: () => _promptNotesThenUpdate('failed', 'Lý do giao thất bại'),
+        ),
       ]);
     } else if (s == 'in_transit') {
       buttons.addAll([
-        _primaryBtn('Xác nhận giao (chụp ảnh)', Icons.camera_alt_outlined, _openProof),
-        _outlineBtn('Giao thất bại', Icons.error_outline, () =>
-            _promptNotesThenUpdate('failed', 'Lý do giao thất bại')),
+        ShipperPrimaryButton(
+          label: 'Xác nhận giao (chụp ảnh)',
+          icon: Icons.camera_alt_outlined,
+          onPressed: _openProof,
+        ),
+        const SizedBox(height: 8),
+        ShipperOutlineButton(
+          label: 'Giao thất bại',
+          icon: Icons.error_outline,
+          onPressed: () => _promptNotesThenUpdate('failed', 'Lý do giao thất bại'),
+        ),
       ]);
     } else if (s == 'completed') {
       if (d.proofImageUrl != null && d.proofImageUrl!.isNotEmpty) {
@@ -184,19 +231,22 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Ảnh xác nhận giao', style: AppDesignSystem.label()),
-                const SizedBox(height: 8),
-                Text(
-                  d.proofImageUrl!,
-                  style: AppDesignSystem.body(size: 11),
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                const ShipperSectionHeader(title: 'Ảnh xác nhận giao (PoD)'),
+                const SizedBox(height: 10),
+                ShipperProofImage(imageUrl: d.proofImageUrl, height: 220),
                 if (d.proofCapturedAtUtc != null) ...[
-                  const SizedBox(height: 4),
+                  const SizedBox(height: 8),
                   Text(
                     'Chụp lúc: ${formatShipperDateTime(d.proofCapturedAtUtc!)}',
                     style: AppDesignSystem.body(size: 12),
+                  ),
+                ],
+                if (d.deliveredAtUtc != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Giao thực tế: ${formatShipperDateTime(d.deliveredAtUtc!)}',
+                    style: AppDesignSystem.body(size: 12, color: AppDesignSystem.success)
+                        .copyWith(fontWeight: FontWeight.w600),
                   ),
                 ],
               ],
@@ -207,48 +257,6 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
     }
 
     return buttons;
-  }
-
-  Widget _primaryBtn(String label, IconData icon, VoidCallback onTap) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: SizedBox(
-        width: double.infinity,
-        child: FilledButton.icon(
-          onPressed: onTap,
-          icon: Icon(icon),
-          label: Text(label),
-          style: FilledButton.styleFrom(
-            backgroundColor: kShipperRole.primary,
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _outlineBtn(String label, IconData icon, VoidCallback onTap) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: SizedBox(
-        width: double.infinity,
-        child: OutlinedButton.icon(
-          onPressed: onTap,
-          icon: Icon(icon, color: AppDesignSystem.danger),
-          label: Text(label, style: const TextStyle(color: AppDesignSystem.danger)),
-          style: OutlinedButton.styleFrom(
-            padding: const EdgeInsets.symmetric(vertical: 14),
-            side: const BorderSide(color: AppDesignSystem.danger),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-      ),
-    );
   }
 
   @override
@@ -262,9 +270,16 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
               ? ShipperErrorBody(message: _error!, onRetry: _load)
               : _delivery == null
                   ? const ShipperLoadingBody()
-                  : ListView(
-                      padding: const EdgeInsets.all(16),
+                  : ModuleListView(
+                      padding: shipperListPadding(context),
                       children: [
+                        ShipperPageIntro(
+                          title: 'Đơn #${_delivery!.orderId}',
+                          description:
+                              'Cập nhật trạng thái, mở bản đồ chỉ đường hoặc chụp ảnh xác nhận khi giao xong.',
+                          icon: Icons.local_shipping_rounded,
+                        ),
+                        const SizedBox(height: 14),
                         ShipperCard(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
@@ -273,66 +288,80 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
                                 children: [
                                   Expanded(
                                     child: Text(
-                                      'Đơn #${_delivery!.orderId}',
-                                      style: AppDesignSystem.title(size: 20),
+                                      'Thông tin giao',
+                                      style: AppDesignSystem.sectionTitle(),
                                     ),
                                   ),
-                                  ShipperStatusChip(status: _delivery!.deliveryStatus),
+                                  ShipperStatusBadge(status: _delivery!.deliveryStatus),
                                 ],
                               ),
-                              const SizedBox(height: 16),
-                              _infoRow(Icons.location_on_outlined, 'Địa điểm giao',
-                                  _delivery!.deliveryAddress,
-                                  onCopy: () => _copyAddress(_delivery!.deliveryAddress)),
-                              _infoRow(Icons.restaurant_outlined, 'Số suất ăn',
-                                  '${_delivery!.mealCount} suất'),
-                              _infoRow(Icons.schedule_outlined, 'Thời gian giao dự kiến',
-                                  formatShipperDateTime(_delivery!.scheduledDateUtc)),
+                              const SizedBox(height: 12),
+                              ShipperDetailField(
+                                icon: Icons.location_on_outlined,
+                                label: 'Địa điểm giao',
+                                value: _delivery!.deliveryAddress,
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.map_rounded, size: 22),
+                                      color: shipperAccent,
+                                      onPressed: _openMaps,
+                                      tooltip: 'Chỉ đường Google Maps',
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.copy_outlined, size: 20),
+                                      onPressed: () =>
+                                          _copyAddress(_delivery!.deliveryAddress),
+                                      tooltip: 'Sao chép',
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              ShipperDetailField(
+                                icon: Icons.restaurant_outlined,
+                                label: 'Số suất ăn',
+                                value: '${_delivery!.mealCount} suất',
+                              ),
+                              ShipperDetailField(
+                                icon: Icons.schedule_outlined,
+                                label: 'Thời gian giao dự kiến',
+                                value: formatShipperDateTime(_delivery!.scheduledDateUtc),
+                              ),
                               if (_delivery!.deliveredAtUtc != null)
-                                _infoRow(Icons.check_circle_outline, 'Giao thực tế',
-                                    formatShipperDateTime(_delivery!.deliveredAtUtc!)),
-                              if (_delivery!.notes != null &&
-                                  _delivery!.notes!.isNotEmpty)
-                                _infoRow(Icons.notes_outlined, 'Ghi chú',
-                                    _delivery!.notes!),
+                                ShipperDetailField(
+                                  icon: Icons.check_circle_outline,
+                                  label: 'Giao thực tế',
+                                  value: formatShipperDateTime(_delivery!.deliveredAtUtc!),
+                                ),
+                              if (_delivery!.notes != null && _delivery!.notes!.isNotEmpty)
+                                ShipperDetailField(
+                                  icon: Icons.notes_outlined,
+                                  label: 'Ghi chú',
+                                  value: _delivery!.notes!,
+                                ),
                             ],
                           ),
                         ),
                         const SizedBox(height: 16),
-                        Text('Thao tác', style: AppDesignSystem.sectionTitle()),
-                        const SizedBox(height: 8),
+                        const ShipperSectionHeader(
+                          title: 'Bản đồ điểm giao (OSM)',
+                          subtitle: 'Xem vị trí ước lượng từ địa chỉ',
+                        ),
+                        const SizedBox(height: 10),
+                        ShipperOsmMap(
+                          markers: [ShipperMapMarker.fromDetail(_delivery!)],
+                          origin: kShipperDefaultStart,
+                          height: 220,
+                          drawRoutePolyline: false,
+                          onOpenGoogleMaps: _openMaps,
+                        ),
+                        const SizedBox(height: 16),
+                        const ShipperSectionHeader(title: 'Thao tác'),
+                        const SizedBox(height: 10),
                         ..._actionButtons(_delivery!),
                       ],
                     ),
-    );
-  }
-
-  Widget _infoRow(IconData icon, String label, String value, {VoidCallback? onCopy}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Icon(icon, size: 20, color: kShipperRole.primary),
-          const SizedBox(width: 10),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(label, style: AppDesignSystem.body(size: 12)),
-                const SizedBox(height: 2),
-                Text(value, style: AppDesignSystem.label()),
-              ],
-            ),
-          ),
-          if (onCopy != null)
-            IconButton(
-              icon: const Icon(Icons.copy_outlined, size: 20),
-              onPressed: onCopy,
-              tooltip: 'Sao chép',
-            ),
-        ],
-      ),
     );
   }
 }

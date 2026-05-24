@@ -1,5 +1,8 @@
+import 'dart:typed_data';
+
 import '../../../../core/network/api_client.dart';
 import '../../../../core/network/api_exception.dart';
+import '../../utils/org_meal_order_request_builder.dart';
 import '../models/bulk_order_models.dart';
 import '../models/contract_models.dart';
 
@@ -47,32 +50,58 @@ class OrgRemoteDataSource {
     }
   }
 
+  Future<ListEligiblePromotionsModel> listEligiblePromotions(
+    Map<String, dynamic> previewBody,
+  ) async {
+    try {
+      final response = await _client.post(
+        '$_prefix/organization/meal-order/promotions/eligible',
+        body: previewBody,
+      );
+      return ListEligiblePromotionsModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải mã khuyến mãi: $e', statusCode: 500);
+    }
+  }
+
+  Future<PreviewPromotionModel> previewPromotion(
+    Map<String, dynamic> previewBody,
+  ) async {
+    try {
+      final response = await _client.post(
+        '$_prefix/organization/meal-order/promotions/preview',
+        body: previewBody,
+      );
+      return PreviewPromotionModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi xem trước khuyến mãi: $e', statusCode: 500);
+    }
+  }
+
   Future<PrepareMealDraftModel> prepareMealContract({
     required int organizationId,
     required double price,
     required List<MealDayDraftModel> mealDays,
+    required OrganizationMealDeliveryModel delivery,
     String? promotionCode,
+    int? promotionId,
     String organizationName = '',
   }) async {
     try {
       final response = await _client.post(
         '$_prefix/organization/meal-order/contract',
-        body: {
-          'organizationId': organizationId,
-          'price': price,
-          if (promotionCode != null && promotionCode.isNotEmpty)
-            'promotionCode': promotionCode,
-          'mealDays': mealDays.map((d) {
-            return {
-              'serviceDate': d.serviceDate,
-              'mealPlan': {
-                'main': d.linesFor('main').map((l) => l.toJson()).toList(),
-                'side': d.linesFor('side').map((l) => l.toJson()).toList(),
-                'soup': d.linesFor('soup').map((l) => l.toJson()).toList(),
-              },
-            };
-          }).toList(),
-        },
+        body: OrgMealOrderRequestBuilder.contractBody(
+          organizationId: organizationId,
+          price: price,
+          mealDays: mealDays,
+          delivery: delivery,
+          promotionCode: promotionCode,
+          promotionId: promotionId,
+        ),
       );
       return PrepareMealDraftModel.fromJson(
         response,
@@ -105,13 +134,48 @@ class OrgRemoteDataSource {
     }
   }
 
+  Future<Uint8List> getOrderAnnexPreviewPdf(int orderId) async {
+    try {
+      return await _client.getBytes(
+        '$_prefix/master-data/Order/$orderId/annex-preview',
+      );
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải PDF phụ lục: $e', statusCode: 500);
+    }
+  }
+
+  Future<SignOrderAnnexResultModel> signOrderAnnex({
+    required int orderId,
+    required String digitalSignature,
+  }) async {
+    try {
+      final response = await _client.post(
+        '$_prefix/master-data/Order/$orderId/sign-annex',
+        body: {'digitalSignature': digitalSignature},
+      );
+      return SignOrderAnnexResultModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi ký phụ lục đơn: $e', statusCode: 500);
+    }
+  }
+
   Future<InitiateMealPaymentModel> initiateMealPayment({
     required int orderId,
+    required String returnUrl,
+    required String cancelUrl,
   }) async {
     try {
       final response = await _client.post(
         '$_prefix/organization/meal-order/pay',
-        body: {'orderId': orderId},
+        body: {
+          'orderId': orderId,
+          'returnUrl': returnUrl,
+          'cancelUrl': cancelUrl,
+        },
       );
       return InitiateMealPaymentModel.fromJson(response);
     } on ApiException {

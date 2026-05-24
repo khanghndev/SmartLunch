@@ -26,12 +26,12 @@ class AppRoutes {
   static const shipperNotifications = '/shipper/notifications';
   static const shipperSchedule = '/shipper/schedule';
   static const shipperHistory = '/shipper/history';
-  static const shipperWeeklyMenu = '/shipper/weekly-menu';
 
   static const orgHome = '/org';
   static const orgStaff = '/org/staff';
   static const orgBulkOrder = '/org/bulk-order';
   static const orgMealOrderReview = '/org/meal-order/review';
+  static const orgOrderAnnexSign = '/org/meal-order/sign';
   static const orgStatistics = '/org/statistics';
   static const orgReports = '/org/reports';
   static const orgReconciliation = '/org/reconciliation';

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_design_system.dart';
+import 'role_tab_shell.dart';
 
 class DashboardTopAction {
   final IconData icon;
@@ -67,6 +68,7 @@ class DashboardRecentItem {
   final IconData icon;
   final Color? iconColor;
   final String? route;
+  final Object? routeArguments;
 
   const DashboardRecentItem({
     required this.title,
@@ -75,6 +77,7 @@ class DashboardRecentItem {
     required this.icon,
     this.iconColor,
     this.route,
+    this.routeArguments,
   });
 }
 
@@ -154,6 +157,8 @@ class RoleDashboardBody extends StatelessWidget {
   final bool isLoading;
   final String? errorMessage;
   final Future<void> Function()? onRefresh;
+  /// `false` khi dùng [RoleModuleHeader] bên ngoài (tab shell đồng bộ Customer).
+  final bool showInternalHeader;
 
   const RoleDashboardBody({
     super.key,
@@ -172,28 +177,37 @@ class RoleDashboardBody extends StatelessWidget {
     this.isLoading = false,
     this.errorMessage,
     this.onRefresh,
+    this.showInternalHeader = true,
   });
 
   @override
   Widget build(BuildContext context) {
+    final tabInset = RoleTabScope.maybeOf(context)?.bottomInset ?? bottomInset;
+    final keyboardInset = MediaQuery.viewInsetsOf(context).bottom;
+    final scrollBottom = tabInset + keyboardInset + 24;
+
     final scrollView = CustomScrollView(
-      physics: const AlwaysScrollableScrollPhysics(),
+      physics: const AlwaysScrollableScrollPhysics(
+        parent: BouncingScrollPhysics(),
+      ),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       slivers: [
-        SliverToBoxAdapter(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
-            child: _DashboardHeader(
-              title: title,
-              subtitle: subtitle,
-              icon: icon,
-              accent: accent,
-              accentAlt: accentAlt,
-              leadingAction: leadingAction,
-              topActions: topActions,
-              quickActions: quickActions,
+        if (showInternalHeader)
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 16),
+              child: _DashboardHeader(
+                title: title,
+                subtitle: subtitle,
+                icon: icon,
+                accent: accent,
+                accentAlt: accentAlt,
+                leadingAction: leadingAction,
+                topActions: topActions,
+                quickActions: quickActions,
+              ),
             ),
           ),
-        ),
         if (errorMessage != null && errorMessage!.isNotEmpty)
           SliverToBoxAdapter(
             child: Padding(
@@ -281,7 +295,7 @@ class RoleDashboardBody extends StatelessWidget {
           ),
         ),
         SliverPadding(
-          padding: EdgeInsets.fromLTRB(20, 0, 20, 24 + bottomInset),
+          padding: EdgeInsets.fromLTRB(20, 0, 20, scrollBottom),
           sliver: SliverList(
             delegate: SliverChildBuilderDelegate(
               (context, index) => Padding(
@@ -295,17 +309,15 @@ class RoleDashboardBody extends StatelessWidget {
       ],
     );
 
-    return Container(
+    return ColoredBox(
       color: AppDesignSystem.gray50,
-      child: SafeArea(
-        child: onRefresh != null
-            ? RefreshIndicator(
-                onRefresh: onRefresh!,
-                color: accent,
-                child: scrollView,
-              )
-            : scrollView,
-      ),
+      child: onRefresh != null
+          ? RefreshIndicator(
+              onRefresh: onRefresh!,
+              color: accent,
+              child: scrollView,
+            )
+          : scrollView,
     );
   }
 }
@@ -442,7 +454,10 @@ class _RecentItemTile extends StatelessWidget {
       child: InkWell(
         borderRadius: BorderRadius.circular(14),
         onTap: item.route != null
-            ? () => Navigator.of(context).pushNamed(item.route!)
+            ? () => Navigator.of(context).pushNamed(
+                  item.route!,
+                  arguments: item.routeArguments,
+                )
             : null,
         child: Container(
           padding: const EdgeInsets.all(14),
@@ -593,6 +608,8 @@ class DashboardMetricCard extends StatelessWidget {
                   ),
                   child: Text(
                     trend!,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: (trendPositive ?? true)
                           ? Colors.green.shade700
@@ -677,7 +694,7 @@ class _DashboardHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(10),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.18),
+                  color: Colors.white.withValues(alpha: 0.18),
                   borderRadius: BorderRadius.circular(14),
                 ),
                 child: Icon(icon, color: Colors.white),

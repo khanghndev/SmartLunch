@@ -71,26 +71,32 @@ class _OrgStatisticsPageState extends State<OrgStatisticsPage> {
       title: 'Thống kê suất ăn',
       onRefresh: _load,
       body: _loading
-          ? const OrgLoadingBody()
+          ? const OrgLoadingBody(message: 'Đang tải thống kê đơn vị…')
           : _error != null
               ? OrgErrorBody(message: _error!, onRetry: _load)
-              : ListView(
-                  padding: const EdgeInsets.all(16),
+              : ModuleListView(
+                  padding: orgListPadding(context),
                   children: [
-                    ModulePeriodChips(
+                    const OrgPageIntro(
+                      title: 'Thống kê suất ăn đơn vị',
+                      description:
+                          'Theo dõi số suất và giá trị theo ngày phục vụ, lọc theo kỳ 7 / 30 / 90 ngày.',
+                      icon: Icons.analytics_rounded,
+                    ),
+                    const SizedBox(height: 14),
+                    OrgPeriodChips(
                       labels: _ranges,
                       selected: _rangeIndex,
                       onSelected: (i) {
                         setState(() => _rangeIndex = i);
                         _load();
                       },
-                      role: kOrgRole,
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     Row(
                       children: [
                         Expanded(
-                          child: ModuleStatTile(
+                          child: OrgStatTile(
                             label: 'Tổng suất',
                             value: '$_totalMeals',
                             icon: Icons.restaurant_rounded,
@@ -99,7 +105,7 @@ class _OrgStatisticsPageState extends State<OrgStatisticsPage> {
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: ModuleStatTile(
+                          child: OrgStatTile(
                             label: 'Giá trị',
                             value: formatOrgVnd(_totalAmount),
                             icon: Icons.payments_outlined,
@@ -108,56 +114,37 @@ class _OrgStatisticsPageState extends State<OrgStatisticsPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
-                    Text('Chi tiết theo ngày / ca', style: AppDesignSystem.sectionTitle()),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 18),
+                    const OrgSectionHeader(
+                      title: 'Chi tiết theo ngày / ca',
+                      subtitle: 'Dữ liệu lọc theo đơn vị đăng nhập',
+                    ),
+                    const SizedBox(height: 10),
                     if (_items.isEmpty)
-                      const ModuleEmptyList(message: 'Chưa có dữ liệu thống kê')
+                      const OrgEmptyList(message: 'Chưa có dữ liệu thống kê trong kỳ đã chọn')
                     else
-                      ..._items.map((item) {
-                        final d = item.date;
-                        final label =
-                            '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: OrgCard(
-                            padding: const EdgeInsets.all(14),
-                            child: Row(
-                              children: [
-                                Expanded(
-                                  child: Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Text(label, style: AppDesignSystem.label()),
-                                      Text(
-                                        item.mealSlot.isNotEmpty
-                                            ? item.mealSlot
-                                            : 'Tất cả ca',
-                                        style: AppDesignSystem.body(size: 12),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.end,
-                                  children: [
-                                    Text(
-                                      '${item.totalMeals} suất',
-                                      style: AppDesignSystem.sectionTitle(color: orgAccent),
-                                    ),
-                                    Text(
-                                      formatOrgVnd(item.totalAmount),
-                                      style: AppDesignSystem.body(size: 12),
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      }),
+                      ..._items.map(_detailRow),
                   ],
                 ),
+    );
+  }
+
+  Widget _detailRow(MealStatisticItemModel item) {
+    final d = item.date;
+    final label =
+        '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
+    final slot = item.mealSlot.isNotEmpty ? item.mealSlot : 'Tất cả ca';
+
+    return OrgDataRow(
+      icon: Icons.calendar_today_rounded,
+      iconColor: orgAccent,
+      title: label,
+      subtitle: slot,
+      trailing: formatOrgVnd(item.totalAmount),
+      badge: OrgStatusBadge(
+        label: '${item.totalMeals} suất',
+        color: orgAccent,
+      ),
     );
   }
 }

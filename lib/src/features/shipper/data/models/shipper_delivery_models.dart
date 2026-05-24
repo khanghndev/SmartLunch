@@ -11,8 +11,9 @@ String shipperDeliveryStatusLabelVi(String apiStatus) {
     case 'completed':
       return 'Hoàn tất';
     case 'failed':
+      return 'Giao thất bại';
     case 'rejected':
-      return 'Thất bại';
+      return 'Từ chối';
     default:
       return apiStatus;
   }

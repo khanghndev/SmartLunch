@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_design_system.dart';
 import '../../data/models/finance_models.dart';
 import '../../data/repositories/manager_repository.dart';
 import '../widgets/manager_ui.dart';
@@ -85,10 +85,18 @@ class _CashFlowPageState extends State<CashFlowPage> {
           ? const ManagerLoadingBody()
           : _error != null
               ? ManagerErrorBody(message: _error!, onRetry: _load)
-              : ListView(
-                  physics: const AlwaysScrollableScrollPhysics(),
-                  padding: const EdgeInsets.fromLTRB(16, 16, 16, 32),
+              : ModuleListView(
+                  refreshColor: managerAccent,
+                  onRefresh: _load,
+                  padding: managerListPadding(context),
                   children: [
+                    const ManagerPageIntro(
+                      title: 'Dòng tiền & lợi nhuận',
+                      description:
+                          'Tổng hợp thu — chi — lợi nhuận ròng và lịch sử giao dịch theo kỳ bạn chọn.',
+                      icon: Icons.account_balance_wallet_rounded,
+                    ),
+                    const SizedBox(height: 14),
                     ManagerPeriodChips(
                       labels: _periodLabels,
                       selected: _periodIndex,
@@ -97,15 +105,15 @@ class _CashFlowPageState extends State<CashFlowPage> {
                         _load();
                       },
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 14),
                     Row(
                       children: [
                         Expanded(
                           child: ManagerStatTile(
                             label: 'Tổng thu',
                             value: formatVnd(s?.totalIncome ?? 0, compact: true),
-                            icon: Icons.arrow_downward_rounded,
-                            color: AppColors.success,
+                            icon: Icons.south_west_rounded,
+                            color: AppDesignSystem.success,
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -113,8 +121,8 @@ class _CashFlowPageState extends State<CashFlowPage> {
                           child: ManagerStatTile(
                             label: 'Tổng chi',
                             value: formatVnd(s?.totalExpense ?? 0, compact: true),
-                            icon: Icons.arrow_upward_rounded,
-                            color: AppColors.danger,
+                            icon: Icons.north_east_rounded,
+                            color: AppDesignSystem.danger,
                           ),
                         ),
                       ],
@@ -123,7 +131,7 @@ class _CashFlowPageState extends State<CashFlowPage> {
                     ManagerStatTile(
                       label: 'Lợi nhuận ròng',
                       value: formatVnd(s?.totalProfit ?? 0, compact: true),
-                      icon: Icons.account_balance_wallet_rounded,
+                      icon: Icons.trending_up_rounded,
                       color: managerAccent,
                     ),
                     const SizedBox(height: 16),
@@ -131,13 +139,11 @@ class _CashFlowPageState extends State<CashFlowPage> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            'Biểu đồ dòng tiền',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                  fontWeight: FontWeight.w800,
-                                ),
+                          const ManagerSectionHeader(
+                            title: 'Biểu đồ dòng tiền',
+                            subtitle: 'Thu theo từng kỳ',
                           ),
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 16),
                           ManagerBarChart(
                             data: {
                               for (final b in s?.items ?? <CashFlowItemModel>[])
@@ -147,14 +153,12 @@ class _CashFlowPageState extends State<CashFlowPage> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Text(
-                      'Lịch sử giao dịch',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w800,
-                          ),
+                    const SizedBox(height: 20),
+                    const ManagerSectionHeader(
+                      title: 'Lịch sử giao dịch',
+                      subtitle: '25 giao dịch gần nhất trong kỳ',
                     ),
-                    const SizedBox(height: 8),
+                    const SizedBox(height: 10),
                     if (_history.isEmpty)
                       const ManagerGlassCard(
                         child: ManagerEmptyList(
@@ -170,49 +174,14 @@ class _CashFlowPageState extends State<CashFlowPage> {
   }
 
   Widget _txnTile(PaymentTransactionModel t) {
-    final color = t.isIncome ? AppColors.success : AppColors.danger;
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: ManagerGlassCard(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(10),
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.12),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Icon(
-                t.isIncome ? Icons.add_circle_outline : Icons.remove_circle_outline,
-                color: color,
-              ),
-            ),
-            const SizedBox(width: 12),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    t.description,
-                    style: const TextStyle(fontWeight: FontWeight.w600),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  Text(
-                    '${formatShortDate(t.date)} · ${t.method}',
-                    style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                  ),
-                ],
-              ),
-            ),
-            Text(
-              '${t.isIncome ? '+' : '-'}${formatVnd(t.amount, compact: true)}',
-              style: TextStyle(fontWeight: FontWeight.w700, color: color),
-            ),
-          ],
-        ),
-      ),
+    final color = t.isIncome ? AppDesignSystem.success : AppDesignSystem.danger;
+    return ManagerDataRow(
+      icon: t.isIncome ? Icons.add_circle_outline_rounded : Icons.remove_circle_outline_rounded,
+      iconColor: color,
+      title: t.description,
+      subtitle: '${formatShortDate(t.date)} · ${t.method}',
+      trailing: '${t.isIncome ? '+' : '-'}${formatVnd(t.amount, compact: true)}',
+      trailingColor: color,
     );
   }
 }

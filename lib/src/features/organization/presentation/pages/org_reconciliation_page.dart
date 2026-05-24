@@ -39,14 +39,21 @@ class _OrgReconciliationPageState extends State<OrgReconciliationPage> {
         setState(() => _loading = false);
         return;
       }
-      for (final c in contracts.items) {
-        try {
-          final payments = await OrgRepository.instance.getContractPayments(c.id);
-          for (final p in payments.items) {
-            _rows.add(_PaymentRow(contract: c, payment: p));
+      final paymentBundles = await Future.wait(
+        contracts.items.map((c) async {
+          try {
+            final payments =
+                await OrgRepository.instance.getContractPayments(c.id);
+            return (contract: c, payments: payments.items);
+          } catch (e) {
+            debugPrint('Payments contract ${c.id}: $e');
+            return (contract: c, payments: <ContractPaymentModel>[]);
           }
-        } catch (e) {
-          debugPrint('Payments contract ${c.id}: $e');
+        }),
+      );
+      for (final bundle in paymentBundles) {
+        for (final p in bundle.payments) {
+          _rows.add(_PaymentRow(contract: bundle.contract, payment: p));
         }
       }
       _rows.sort((a, b) => b.payment.date.compareTo(a.payment.date));
@@ -69,22 +76,40 @@ class _OrgReconciliationPageState extends State<OrgReconciliationPage> {
       .where((r) => r.payment.status == PaymentStatus.success)
       .fold(0.0, (s, r) => s + r.payment.amount);
 
+  Color _statusColor(PaymentStatus status) {
+    switch (status) {
+      case PaymentStatus.success:
+        return AppDesignSystem.success;
+      case PaymentStatus.failed:
+        return AppDesignSystem.danger;
+      default:
+        return AppDesignSystem.warning;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return OrgPageShell(
       title: 'Đối soát thanh toán',
       onRefresh: _load,
       body: _loading
-          ? const OrgLoadingBody()
+          ? const OrgLoadingBody(message: 'Đang tải thanh toán hợp đồng…')
           : _error != null
               ? OrgErrorBody(message: _error!, onRetry: _load)
-              : ListView(
-                  padding: const EdgeInsets.all(16),
+              : ModuleListView(
+                  padding: orgListPadding(context),
                   children: [
+                    const OrgPageIntro(
+                      title: 'Đối soát thanh toán',
+                      description:
+                          'Tổng hợp các kỳ thanh toán PayOS gắn hợp đồng B2B của đơn vị.',
+                      icon: Icons.receipt_long_rounded,
+                    ),
+                    const SizedBox(height: 14),
                     Row(
                       children: [
                         Expanded(
-                          child: ModuleStatTile(
+                          child: OrgStatTile(
                             label: 'Đã thanh toán',
                             value: formatOrgVnd(_paidAmount),
                             icon: Icons.check_circle_outline,
@@ -93,7 +118,7 @@ class _OrgReconciliationPageState extends State<OrgReconciliationPage> {
                         ),
                         const SizedBox(width: 10),
                         Expanded(
-                          child: ModuleStatTile(
+                          child: OrgStatTile(
                             label: 'Còn phải thu',
                             value: formatOrgVnd(_pendingAmount),
                             icon: Icons.schedule_rounded,
@@ -102,69 +127,40 @@ class _OrgReconciliationPageState extends State<OrgReconciliationPage> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 18),
+                    OrgSectionHeader(
+                      title: 'Lịch sử thanh toán',
+                      subtitle: _contractCount > 0
+                          ? '$_contractCount hợp đồng · ${_rows.length} kỳ'
+                          : 'Chưa có hợp đồng',
+                    ),
+                    const SizedBox(height: 10),
                     if (_rows.isEmpty)
-                      ModuleEmptyList(
+                      OrgEmptyList(
                         message: _contractCount == 0
-                            ? 'Chưa có hợp đồng. Kiểm tra user_organizations hoặc đăng nhập đúng tài khoản đơn vị.'
+                            ? 'Chưa có hợp đồng. Kiểm tra tài khoản đơn vị hoặc liên hệ quản trị.'
                             : 'Chưa có đơn/thanh toán gắn hợp đồng trong kỳ.',
                       )
                     else
-                      ..._rows.map((row) => _paymentTile(row)),
+                      ..._rows.map(_paymentRow),
                   ],
                 ),
     );
   }
 
-  Widget _paymentTile(_PaymentRow row) {
+  Widget _paymentRow(_PaymentRow row) {
     final p = row.payment;
     final c = row.contract;
-    Color statusColor;
-    switch (p.status) {
-      case PaymentStatus.success:
-        statusColor = AppDesignSystem.success;
-        break;
-      case PaymentStatus.failed:
-        statusColor = AppDesignSystem.danger;
-        break;
-      default:
-        statusColor = AppDesignSystem.warning;
-    }
+    final color = _statusColor(p.status);
 
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: OrgCard(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(c.code, style: AppDesignSystem.label()),
-                ),
-                Text(
-                  p.status.label,
-                  style: AppDesignSystem.body(size: 11, color: statusColor),
-                ),
-              ],
-            ),
-            const SizedBox(height: 4),
-            Text(p.description, style: AppDesignSystem.body(size: 13)),
-            const SizedBox(height: 4),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(p.date, style: AppDesignSystem.body(size: 12)),
-                Text(
-                  formatOrgVnd(p.amount),
-                  style: AppDesignSystem.sectionTitle(color: orgAccent),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
+    return OrgDataRow(
+      icon: Icons.description_outlined,
+      iconColor: orgAccent,
+      title: c.code,
+      subtitle: '${p.description}\n${p.date}',
+      trailing: formatOrgVnd(p.amount),
+      trailingColor: orgAccent,
+      badge: OrgStatusBadge(label: p.status.label, color: color),
     );
   }
 }

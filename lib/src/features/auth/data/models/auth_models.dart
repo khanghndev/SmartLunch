@@ -30,6 +30,29 @@ class LoginData {
   }
 }
 
+class RefreshTokenData {
+  final String accessToken;
+  final String refreshToken;
+  final DateTime refreshTokenExpiresAt;
+
+  RefreshTokenData({
+    required this.accessToken,
+    required this.refreshToken,
+    required this.refreshTokenExpiresAt,
+  });
+
+  factory RefreshTokenData.fromJson(Map<String, dynamic> json) {
+    return RefreshTokenData(
+      accessToken: json['accessToken']?.toString() ?? '',
+      refreshToken: json['refreshToken']?.toString() ?? '',
+      refreshTokenExpiresAt: DateTime.tryParse(
+            json['refreshTokenExpiresAt']?.toString() ?? '',
+          ) ??
+          DateTime.now(),
+    );
+  }
+}
+
 class RegisterData {
   final String username;
   final String email;
@@ -64,15 +87,19 @@ class AuthSession {
   });
 
   AuthSession copyWith({
+    String? accessToken,
+    String? refreshToken,
+    DateTime? refreshTokenExpiresAt,
     List<String>? roles,
   }) {
     return AuthSession(
       userId: userId,
       username: username,
       email: email,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-      refreshTokenExpiresAt: refreshTokenExpiresAt,
+      accessToken: accessToken ?? this.accessToken,
+      refreshToken: refreshToken ?? this.refreshToken,
+      refreshTokenExpiresAt:
+          refreshTokenExpiresAt ?? this.refreshTokenExpiresAt,
       roles: roles ?? this.roles,
     );
   }

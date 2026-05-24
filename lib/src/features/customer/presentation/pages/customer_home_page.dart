@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../../../../app/app_routes.dart';
 import '../../../../core/theme/app_design_system.dart';
-import '../../../../core/widgets/role_dashboard.dart';
-import '../../../../core/widgets/premium_drawer.dart';
-import '../../../organization/data/org_repository.dart';
+import '../../../../core/widgets/role_tab_shell.dart';
 import '../../../organization/data/models/bulk_order_models.dart';
+import '../../../organization/data/org_repository.dart';
+import '../widgets/customer_ui.dart';
 import 'menu_page.dart';
 
 class CustomerHomePage extends StatefulWidget {
@@ -15,109 +16,29 @@ class CustomerHomePage extends StatefulWidget {
 }
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
   int _currentIndex = 0;
 
-  late final List<Widget> _pages;
-
-  @override
-  void initState() {
-    super.initState();
-    _pages = [
-      _CustomerDashboard(
-        onNavigateToMenu: () => setState(() => _currentIndex = 1),
-      ),
-      const MenuPage(),
-    ];
-  }
-
-  void _onDrawerNavigate(String route) {
-    if (route == AppRoutes.login) {
-      Navigator.of(context).pushReplacementNamed(AppRoutes.login);
-    } else {
-      Navigator.of(context).pushNamed(route);
-    }
-  }
+  void _goToMenu() => setState(() => _currentIndex = 1);
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      drawer: PremiumDrawer(
-        userName: 'Khách hàng',
-        userRole: 'Khám phá thực đơn',
-        roleBadge: 'Customer',
-        gradient: RolePalette.customer.gradient,
-        accentColor: RolePalette.customer.primary,
-        selectedIndex: _currentIndex,
-        onSelectTab: (index) {
-          if (index < _pages.length) {
-            setState(() => _currentIndex = index);
-          }
-        },
-        onNavigate: _onDrawerNavigate,
-        onLogout: () {}, // Not used since profile is null
-        sections: const [
-          DrawerSection(
-            title: 'Menu chính',
-            items: [
-              DrawerItem(
-                icon: Icons.home_rounded,
-                label: 'home',
-                labelVi: 'Trang chủ',
-                tabIndex: 0,
-              ),
-              DrawerItem(
-                icon: Icons.restaurant_menu_rounded,
-                label: 'menu',
-                labelVi: 'Thực đơn',
-                tabIndex: 1,
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) => setState(() => _currentIndex = index),
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            selectedItemColor: RolePalette.customer.primary,
-            unselectedItemColor: Colors.grey.shade400,
-            elevation: 0,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.home_outlined),
-                activeIcon: Icon(Icons.home),
-                label: 'Trang chủ',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.restaurant_menu_outlined),
-                activeIcon: Icon(Icons.restaurant_menu),
-                label: 'Thực đơn',
-              ),
-            ],
-          ),
-        ),
-      ),
+    return CustomerTabShell(
+      scaffoldKey: _scaffoldKey,
+      currentIndex: _currentIndex,
+      onIndexChanged: (i) => setState(() => _currentIndex = i),
+      onDrawerNavigate: (route) => customerDefaultDrawerNavigate(context, route),
+      tabs: [
+        _CustomerDashboard(onNavigateToMenu: _goToMenu),
+        const MenuPage(),
+      ],
     );
   }
 }
 
 class _CustomerDashboard extends StatefulWidget {
   final VoidCallback onNavigateToMenu;
-  
+
   const _CustomerDashboard({required this.onNavigateToMenu});
 
   @override
@@ -125,9 +46,12 @@ class _CustomerDashboard extends StatefulWidget {
 }
 
 class _CustomerDashboardState extends State<_CustomerDashboard> {
+  final _searchCtrl = TextEditingController();
   bool _isLoading = true;
+  String? _error;
   List<DishCategoryModel> _categories = [];
   List<Map<String, dynamic>> _featuredDishes = [];
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -135,14 +59,23 @@ class _CustomerDashboardState extends State<_CustomerDashboard> {
     _fetchData();
   }
 
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
   Future<void> _fetchData() async {
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
     try {
       final catResponse = await OrgRepository.instance.getDishCategories();
       final categories = catResponse.categories;
-      List<Map<String, dynamic>> dishes = [];
-      
+      var dishes = <Map<String, dynamic>>[];
+
       if (categories.isNotEmpty) {
-        // Fetch dishes from the first category as featured
         final dishRes =
             await OrgRepository.instance.getDishesByCategory(categories.first.id);
         dishes = dishRes.dishes
@@ -150,13 +83,13 @@ class _CustomerDashboardState extends State<_CustomerDashboard> {
               (d) => {
                 'id': d.id,
                 'name': d.name,
-                'price': d.price,
                 'imageUrl': d.imageUrl,
+                'categoryName': categories.first.name,
               },
             )
             .toList();
       }
-      
+
       if (mounted) {
         setState(() {
           _categories = categories;
@@ -166,297 +99,180 @@ class _CustomerDashboardState extends State<_CustomerDashboard> {
       }
     } catch (e) {
       if (mounted) {
-        setState(() => _isLoading = false);
+        setState(() {
+          _error = customerApiError(e);
+          _isLoading = false;
+        });
       }
     }
   }
 
+  List<Map<String, dynamic>> get _filteredFeatured {
+    if (_searchQuery.trim().isEmpty) return _featuredDishes;
+    final q = _searchQuery.toLowerCase();
+    return _featuredDishes
+        .where((d) => (d['name']?.toString() ?? '').toLowerCase().contains(q))
+        .toList();
+  }
+
+  void _submitSearch() {
+    setState(() => _searchQuery = _searchCtrl.text.trim());
+  }
+
+  void _openDishDetail(Map<String, dynamic> dish) {
+    Navigator.of(context).pushNamed(
+      AppRoutes.customerMealDetail,
+      arguments: CustomerDishDetailArgs(
+        id: dish['id'] as int? ?? 0,
+        name: dish['name']?.toString() ?? 'Món ăn',
+        imageUrl: dish['imageUrl']?.toString(),
+        categoryName: dish['categoryName']?.toString(),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => Scaffold.of(context).openDrawer(),
-        ),
-        title: const Text(
-          'HUITMeal',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        backgroundColor: RolePalette.customer.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
+    final bottom = RoleTabScope.of(context).bottomInset;
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth = (200 * dpr).round();
+
+    return ColoredBox(
+      color: AppDesignSystem.gray50,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CustomerModuleHeader(
+            title: 'Trang chủ',
+            subtitle: 'Khám phá thực đơn HUITMeal',
+            bottomPanel: CustomerHeaderSearchPanel(
+              controller: _searchCtrl,
+              onChanged: (v) => setState(() => _searchQuery = v),
+              onSubmit: _submitSearch,
+            ),
+          ),
+          Expanded(
+            child: _isLoading
+                ? const CustomerLoadingBody(message: 'Đang tải thực đơn gợi ý…')
+                : _error != null
+                    ? CustomerErrorBody(message: _error!, onRetry: _fetchData)
+                    : RefreshIndicator(
+                        color: kCustomerRole.primary,
+                        onRefresh: _fetchData,
+                        child: _buildScrollContent(bottom, cacheWidth),
+                      ),
+          ),
+        ],
       ),
-      body: _isLoading 
-          ? Center(child: CircularProgressIndicator(color: RolePalette.customer.primary))
-          : RefreshIndicator(
-              onRefresh: _fetchData,
-              color: RolePalette.customer.primary,
-              child: SingleChildScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    // Header Section
-                    Container(
-                      padding: const EdgeInsets.all(24),
-                      decoration: const BoxDecoration(
-                        color: AppDesignSystem.orange500,
-                        borderRadius: BorderRadius.only(
-                          bottomLeft: Radius.circular(32),
-                          bottomRight: Radius.circular(32),
-                        ),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            'Xin chào,',
-                            style: TextStyle(color: Colors.white70, fontSize: 16),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Hôm nay bạn muốn thưởng thức món gì?',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: const TextField(
-                              style: TextStyle(color: Colors.white),
-                              decoration: InputDecoration(
-                                icon: Icon(Icons.search, color: Colors.white70),
-                                hintText: 'Tìm kiếm món ăn...',
-                                hintStyle: TextStyle(color: Colors.white70),
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(20, 24, 20, 0),
-                      child: GridView.count(
-                        crossAxisCount: 2,
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        crossAxisSpacing: 12,
-                        mainAxisSpacing: 12,
-                        childAspectRatio: 1.4,
-                        children: [
-                          DashboardMetricCard(
-                            title: 'Danh mục món',
-                            value: '${_categories.length}',
-                            icon: Icons.category_rounded,
-                            color: AppDesignSystem.orange500,
-                            trend: _categories.isEmpty ? 'Đang cập nhật' : 'Sẵn sàng',
-                            trendPositive: _categories.isNotEmpty,
-                          ),
-                          DashboardMetricCard(
-                            title: 'Món gợi ý',
-                            value: '${_featuredDishes.length}',
-                            icon: Icons.restaurant_rounded,
-                            color: AppDesignSystem.orange400,
-                            trend: 'Từ thực đơn hôm nay',
-                            trendPositive: true,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 24),
+    );
+  }
 
-                    // Featured Dishes Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Gợi ý cho bạn',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade800,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: widget.onNavigateToMenu,
-                            child: Text(
-                              'Xem tất cả',
-                              style: TextStyle(color: RolePalette.customer.link),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (_featuredDishes.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 24),
-                        child: Text('Chưa có gợi ý món ăn nào.', style: TextStyle(color: Colors.grey)),
-                      )
-                    else
-                      SingleChildScrollView(
-                        scrollDirection: Axis.horizontal,
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: Row(
-                          children: _featuredDishes.take(5).map((dish) {
-                            final name = dish['name'] ?? 'Món ăn';
-                            final price = dish['price'] ?? 0;
-                            final imageUrl = dish['imageUrl'];
-                            
-                            return Container(
-                              width: 160,
-                              margin: const EdgeInsets.only(right: 16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 5),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Container(
-                                    height: 120,
-                                    decoration: BoxDecoration(
-                                      color: Colors.grey.shade200,
-                                      borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                                      image: imageUrl != null && imageUrl.toString().isNotEmpty
-                                          ? DecorationImage(
-                                              image: NetworkImage(imageUrl),
-                                              fit: BoxFit.cover,
-                                            )
-                                          : null,
-                                    ),
-                                    child: imageUrl == null || imageUrl.toString().isEmpty
-                                        ? const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 48))
-                                        : null,
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(12),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          name,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          '${price}đ',
-                                          style: const TextStyle(
-                                            color: AppDesignSystem.orange500,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 14,
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
+  Widget _buildScrollContent(double bottom, int cacheWidth) {
+    final featured = _filteredFeatured;
 
-                    const SizedBox(height: 32),
-
-                    // Dish Categories Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 24),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            'Danh mục món ăn',
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.grey.shade800,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    if (_categories.isEmpty)
-                      const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 24),
-                        child: Text('Chưa có danh mục nào.', style: TextStyle(color: Colors.grey)),
-                      )
-                    else
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 24),
-                        child: Wrap(
-                          spacing: 12,
-                          runSpacing: 12,
-                          children: _categories.map((cat) {
-                            return GestureDetector(
-                              onTap: widget.onNavigateToMenu,
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  borderRadius: BorderRadius.circular(16),
-                                  border: Border.all(color: Colors.grey.shade200),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.02),
-                                      blurRadius: 5,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.restaurant, size: 18, color: Colors.blue.shade400),
-                                    const SizedBox(width: 8),
-                                    Text(
-                                      cat.name,
-                                      style: TextStyle(
-                                        color: Colors.grey.shade800,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ),
-                      
-                    const SizedBox(height: 48),
-                  ],
-                ),
+    return CustomScrollView(
+      physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+      slivers: [
+        const SliverToBoxAdapter(
+          child: CustomerPageIntro(
+            title: 'Suất ăn sạch — giao tận nơi',
+            description:
+                'Xem món gợi ý, duyệt danh mục hoặc mở thực đơn đầy đủ theo từng loại món.',
+            icon: Icons.eco_rounded,
+          ),
+        ),
+        SliverToBoxAdapter(child: CustomerQuickActions(onOpenMenu: widget.onNavigateToMenu)),
+        SliverToBoxAdapter(
+          child: CustomerStatBanner(
+            categoryCount: _categories.length,
+            dishCount: _featuredDishes.length,
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: CustomerSectionHeader(
+            title: 'Gợi ý cho bạn',
+            subtitle: _searchQuery.isEmpty
+                ? 'Món phổ biến từ thực đơn hôm nay'
+                : 'Kết quả cho "$_searchQuery"',
+            actionLabel: 'Xem tất cả',
+            onAction: widget.onNavigateToMenu,
+          ),
+        ),
+        if (featured.isEmpty)
+          SliverToBoxAdapter(
+            child: CustomerEmptyState(
+              title: _searchQuery.isEmpty ? 'Chưa có món gợi ý' : 'Không tìm thấy món phù hợp',
+              subtitle: _searchQuery.isEmpty
+                  ? 'Kéo xuống để tải lại hoặc mở thực đơn đầy đủ'
+                  : 'Thử từ khóa khác hoặc xem toàn bộ thực đơn',
+              actionLabel: 'Mở thực đơn',
+              onAction: widget.onNavigateToMenu,
+              compact: true,
+            ),
+          )
+        else
+          SliverToBoxAdapter(
+            child: SizedBox(
+              height: 256,
+              child: ListView.separated(
+                primary: false,
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                itemCount: featured.take(10).length,
+                separatorBuilder: (_, __) => const SizedBox(width: 14),
+                itemBuilder: (context, index) {
+                  final dish = featured[index];
+                  return CustomerFeaturedCard(
+                    name: dish['name']?.toString() ?? 'Món ăn',
+                    imageUrl: dish['imageUrl']?.toString(),
+                    cacheWidth: cacheWidth,
+                    onTap: () => _openDishDetail(dish),
+                  );
+                },
               ),
             ),
+          ),
+        const SliverToBoxAdapter(
+          child: CustomerSectionHeader(
+            title: 'Danh mục món ăn',
+            subtitle: 'Chọn nhóm món để xem trong thực đơn',
+          ),
+        ),
+        if (_categories.isEmpty)
+          SliverToBoxAdapter(
+            child: CustomerEmptyState(
+              icon: Icons.category_outlined,
+              title: 'Chưa có danh mục',
+              subtitle: 'Hệ thống đang cập nhật thực đơn',
+              actionLabel: 'Tải lại',
+              onAction: _fetchData,
+              compact: true,
+            ),
+          )
+        else
+          SliverPadding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            sliver: SliverList(
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final cat = _categories[index];
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: CustomerCategoryCard(
+                      name: cat.name,
+                      icon: customerCategoryIcon(index),
+                      accent: customerCategoryColor(index),
+                      onTap: widget.onNavigateToMenu,
+                    ),
+                  );
+                },
+                childCount: _categories.length,
+              ),
+            ),
+          ),
+        SliverPadding(padding: EdgeInsets.only(bottom: bottom)),
+      ],
     );
   }
 }

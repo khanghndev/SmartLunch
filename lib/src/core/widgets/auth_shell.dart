@@ -46,6 +46,11 @@ class _AuthShellState extends State<AuthShell> {
     if (widget.style.minimalHero) {
       return (h * 0.28).clamp(200.0, 260.0);
     }
+    final hasFeatures =
+        widget.style.features != null && widget.style.features!.isNotEmpty;
+    if (hasFeatures) {
+      return (h * 0.38).clamp(280.0, 360.0);
+    }
     return (h * 0.34).clamp(220.0, 300.0);
   }
 
@@ -201,7 +206,7 @@ class _AuthHero extends StatelessWidget {
             ),
           ),
           Padding(
-            padding: EdgeInsets.fromLTRB(16, topPad + 8, 16, 16),
+            padding: EdgeInsets.fromLTRB(16, topPad + 8, 16, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -230,67 +235,91 @@ class _AuthHero extends StatelessWidget {
                     const Expanded(child: _BrandMark()),
                   ],
                 ),
-                const Spacer(),
-                if (style.minimalHero)
-                  Center(
-                    child: Text(
-                      'HUITMeal',
-                      style: AuthTheme.titleStyle(
-                        size: compact ? 26 : 34,
-                        color: Colors.white,
-                      ),
-                    ),
-                  )
-                else if (!compact) ...[
-                  if (style.roleLabel.isNotEmpty)
-                    _HeroChip(label: style.roleLabel, icon: style.icon),
-                  if (style.heroTitle.isNotEmpty) ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      style.heroTitle,
-                      style: AuthTheme.titleStyle(size: 24, color: Colors.white),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  if (style.heroSubtitle.isNotEmpty) ...[
-                    const SizedBox(height: 6),
-                    Text(
-                      style.heroSubtitle,
-                      style: AuthTheme.bodyStyle(color: const Color(0xFFD1D5DB)),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ],
-                  if (style.showTrustStats && style.trustStats != null) ...[
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        for (var i = 0; i < style.trustStats!.length; i++) ...[
-                          if (i > 0) const SizedBox(width: 8),
-                          Expanded(
-                            child: _TrustStat(
-                              value: style.trustStats![i].value,
-                              label: style.trustStats![i].label,
+                Expanded(
+                  child: style.minimalHero
+                      ? Center(
+                          child: Text(
+                            'HUITMeal',
+                            style: AuthTheme.titleStyle(
+                              size: compact ? 26 : 34,
+                              color: Colors.white,
                             ),
                           ),
-                        ],
-                      ],
-                    ),
-                  ],
-                  if (style.features != null)
-                    ...style.features!.map(
-                      (f) => Padding(
-                        padding: const EdgeInsets.only(top: 8),
-                        child: AuthFeatureRow(icon: f.icon, text: f.text),
-                      ),
-                    ),
-                ],
+                        )
+                      : compact
+                          ? const SizedBox.shrink()
+                          : Align(
+                              alignment: Alignment.bottomLeft,
+                              child: SingleChildScrollView(
+                                physics: const ClampingScrollPhysics(),
+                                child: _AuthHeroBody(style: style),
+                              ),
+                            ),
+                ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+class _AuthHeroBody extends StatelessWidget {
+  final AuthPageStyle style;
+
+  const _AuthHeroBody({required this.style});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (style.roleLabel.isNotEmpty)
+          _HeroChip(label: style.roleLabel, icon: style.icon),
+        if (style.heroTitle.isNotEmpty) ...[
+          const SizedBox(height: 8),
+          Text(
+            style.heroTitle,
+            style: AuthTheme.titleStyle(size: 22, color: Colors.white),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+        if (style.heroSubtitle.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Text(
+            style.heroSubtitle,
+            style: AuthTheme.bodyStyle(color: const Color(0xFFD1D5DB)),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ],
+        if (style.showTrustStats && style.trustStats != null) ...[
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              for (var i = 0; i < style.trustStats!.length; i++) ...[
+                if (i > 0) const SizedBox(width: 8),
+                Expanded(
+                  child: _TrustStat(
+                    value: style.trustStats![i].value,
+                    label: style.trustStats![i].label,
+                  ),
+                ),
+              ],
+            ],
+          ),
+        ],
+        if (style.features != null)
+          ...style.features!.map(
+            (f) => Padding(
+              padding: const EdgeInsets.only(top: 6),
+              child: AuthFeatureRow(icon: f.icon, text: f.text),
+            ),
+          ),
+      ],
     );
   }
 }

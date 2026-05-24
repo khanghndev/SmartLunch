@@ -1,8 +1,11 @@
 import '../../../core/config/app_env.dart';
 import '../../../core/network/api_client.dart';
+import 'dart:typed_data';
+
 import 'datasources/org_remote_datasource.dart';
 import 'models/bulk_order_models.dart';
 import 'models/contract_models.dart';
+import '../utils/org_meal_promotion_builder.dart';
 
 class OrgRepository {
   OrgRepository._({OrgRemoteDataSource? remote})
@@ -23,18 +26,50 @@ class OrgRepository {
   }) =>
       _remote.getDishesByCategory(categoryId, page: page, pageSize: pageSize);
 
+  Future<ListEligiblePromotionsModel> listEligibleMealPromotions({
+    required int organizationId,
+    required double price,
+    required List<MealDayDraftModel> mealDays,
+  }) {
+    final body = OrgMealPromotionBuilder.toPreviewRequest(
+      organizationId: organizationId,
+      price: price,
+      mealDays: mealDays,
+    );
+    return _remote.listEligiblePromotions(body);
+  }
+
+  Future<PreviewPromotionModel> previewMealPromotion({
+    required int organizationId,
+    required double price,
+    required List<MealDayDraftModel> mealDays,
+    required String promotionCode,
+  }) {
+    final body = OrgMealPromotionBuilder.toPreviewRequest(
+      organizationId: organizationId,
+      price: price,
+      mealDays: mealDays,
+      promotionCode: promotionCode,
+    );
+    return _remote.previewPromotion(body);
+  }
+
   Future<PrepareMealDraftModel> prepareMealContract({
     required int organizationId,
     required double price,
     required List<MealDayDraftModel> mealDays,
+    required OrganizationMealDeliveryModel delivery,
     String? promotionCode,
+    int? promotionId,
     String organizationName = '',
   }) =>
       _remote.prepareMealContract(
         organizationId: organizationId,
         price: price,
         mealDays: mealDays,
+        delivery: delivery,
         promotionCode: promotionCode,
+        promotionId: promotionId,
         organizationName: organizationName,
       );
 
@@ -47,8 +82,28 @@ class OrgRepository {
         depositPercent: depositPercent,
       );
 
-  Future<InitiateMealPaymentModel> initiateMealPayment({required int orderId}) =>
-      _remote.initiateMealPayment(orderId: orderId);
+  Future<Uint8List> getOrderAnnexPreviewPdf(int orderId) =>
+      _remote.getOrderAnnexPreviewPdf(orderId);
+
+  Future<SignOrderAnnexResultModel> signOrderAnnex({
+    required int orderId,
+    required String digitalSignature,
+  }) =>
+      _remote.signOrderAnnex(
+        orderId: orderId,
+        digitalSignature: digitalSignature,
+      );
+
+  Future<InitiateMealPaymentModel> initiateMealPayment({
+    required int orderId,
+    required String returnUrl,
+    required String cancelUrl,
+  }) =>
+      _remote.initiateMealPayment(
+        orderId: orderId,
+        returnUrl: returnUrl,
+        cancelUrl: cancelUrl,
+      );
 
   Future<ContractListModel> getContracts({int page = 1, int pageSize = 20}) =>
       _remote.getContracts(page: page, pageSize: pageSize);

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:smartlunch_mobile/src/app/app_routes.dart';
 
-import '../constants/app_colors.dart';
+import '../theme/app_design_system.dart';
 import '../../features/profile/data/models/user_profile_model.dart';
 import '../../features/profile/data/profile_repository.dart';
 
+/// Drawer điều hướng chuẩn mọi module — gradient theo role, menu section, đăng xuất.
 class PremiumDrawer extends StatefulWidget {
   final String userName;
   final String userRole;
@@ -37,6 +38,7 @@ class PremiumDrawer extends StatefulWidget {
 
 class _PremiumDrawerState extends State<PremiumDrawer> {
   UserProfileModel? _profile;
+  bool _loadingProfile = true;
 
   @override
   void initState() {
@@ -47,9 +49,14 @@ class _PremiumDrawerState extends State<PremiumDrawer> {
   Future<void> _loadProfile() async {
     try {
       final profile = await ProfileRepository.instance.getProfile();
-      if (mounted) setState(() => _profile = profile);
+      if (mounted) {
+        setState(() {
+          _profile = profile;
+          _loadingProfile = false;
+        });
+      }
     } catch (_) {
-      // Fail silently — fallback to props
+      if (mounted) setState(() => _loadingProfile = false);
     }
   }
 
@@ -65,214 +72,95 @@ class _PremiumDrawerState extends State<PremiumDrawer> {
 
   @override
   Widget build(BuildContext context) {
-    final displayName = _profile?.displayName ?? widget.userName;
-    final displayRole =
-        _profile?.email.isNotEmpty == true ? _profile!.email : widget.userRole;
-    final displayBadge =
-        _profile?.roles.isNotEmpty == true
-            ? _profile!.roles.first
-            : widget.roleBadge;
+    final profile = _profile;
+    final displayName = profile?.displayName ?? widget.userName;
+    final displaySubtitle = profile?.email.isNotEmpty == true
+        ? profile!.email
+        : widget.userRole;
+    final badgeRaw = profile?.roles.isNotEmpty == true
+        ? profile!.roles.first
+        : widget.roleBadge;
+    final displayBadge = formatDrawerRoleBadge(badgeRaw);
+    final isLoggedIn = profile != null;
 
     return Drawer(
-      width: MediaQuery.of(context).size.width * 0.87,
-      child: Container(
-        color: AppColors.surface,
-        child: SafeArea(
-          child: Column(
-            children: [
-              _DrawerHeader(
-                userName: displayName,
-                userRole: displayRole,
-                roleBadge: displayBadge,
-                gradient: widget.gradient,
-              ),
-              Expanded(
-                child: ListView(
-                  padding: const EdgeInsets.fromLTRB(10, 8, 10, 12),
-                  children: [
-                    ...widget.sections.map(
-                      (section) => _DrawerSectionWidget(
-                        section: section,
-                        selectedIndex: widget.selectedIndex,
-                        accentColor: widget.accentColor,
-                        onSelectTab: (index) => _selectTab(context, index),
-                        onNavigate: (route) => _navigate(context, route),
-                      ),
+      width: (MediaQuery.sizeOf(context).width * 0.86).clamp(280.0, 340.0),
+      backgroundColor: AppDesignSystem.gray50,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.only(
+          topRight: Radius.circular(20),
+          bottomRight: Radius.circular(20),
+        ),
+      ),
+      child: SafeArea(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _DrawerProfileHeader(
+              userName: displayName,
+              subtitle: displaySubtitle,
+              roleBadge: displayBadge,
+              avatarUrl: profile?.avatarUrl,
+              gradient: widget.gradient,
+              accentColor: widget.accentColor,
+              isLoading: _loadingProfile,
+              onClose: () => Navigator.of(context).pop(),
+            ),
+            Expanded(
+              child: ListView(
+                padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+                children: [
+                  for (var i = 0; i < widget.sections.length; i++) ...[
+                    if (i > 0) const SizedBox(height: 4),
+                    _DrawerSectionWidget(
+                      section: widget.sections[i],
+                      selectedIndex: widget.selectedIndex,
+                      accentColor: widget.accentColor,
+                      onSelectTab: (index) => _selectTab(context, index),
+                      onNavigate: (route) => _navigate(context, route),
                     ),
                   ],
-                ),
+                ],
               ),
-              _LogoutTile(
-                label: _profile == null ? 'Đăng nhập' : 'Đăng xuất',
-                icon:
-                    _profile == null
-                        ? Icons.login_rounded
-                        : Icons.logout_rounded,
-                color: _profile == null ? AppColors.customer : AppColors.danger,
-                onTap: () {
-                  Navigator.of(context).pop();
-                  if (_profile == null) {
-                    Navigator.of(context).pushNamed(AppRoutes.login);
-                  } else {
-                    widget.onLogout();
-                  }
-                },
-              ),
-            ],
-          ),
+            ),
+            const _DrawerBrandFooter(),
+            _DrawerAuthAction(
+              label: isLoggedIn ? 'Đăng xuất' : 'Đăng nhập',
+              icon: isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
+              color: isLoggedIn ? AppDesignSystem.danger : widget.accentColor,
+              onTap: () {
+                Navigator.of(context).pop();
+                if (isLoggedIn) {
+                  widget.onLogout();
+                } else {
+                  Navigator.of(context).pushNamed(AppRoutes.login);
+                }
+              },
+            ),
+            const SizedBox(height: 8),
+          ],
         ),
       ),
     );
   }
 }
 
-class _DrawerHeader extends StatelessWidget {
-  final String userName;
-  final String userRole;
-  final String roleBadge;
-  final List<Color> gradient;
-
-  const _DrawerHeader({
-    required this.userName,
-    required this.userRole,
-    required this.roleBadge,
-    required this.gradient,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(10, 10, 10, 8),
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: gradient,
-        ),
-        borderRadius: BorderRadius.circular(22),
-        boxShadow: [
-          BoxShadow(
-            color: gradient.first.withOpacity(0.32),
-            blurRadius: 22,
-            offset: const Offset(0, 10),
-            spreadRadius: -6,
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Container(
-            width: 56,
-            height: 56,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withOpacity(0.38)),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(16),
-              child: Image.asset(
-                'assets/images/linh_vat.png',
-                fit: BoxFit.contain,
-                errorBuilder: (_, __, ___) {
-                  return const Icon(
-                    Icons.restaurant_rounded,
-                    color: Colors.white,
-                  );
-                },
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  userName,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w800,
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  userRole,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: Colors.white.withOpacity(0.95),
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 4,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
-                    borderRadius: BorderRadius.circular(999),
-                    border: Border.all(color: Colors.white.withOpacity(0.4)),
-                  ),
-                  child: Text(
-                    roleBadge,
-                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.25,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _LogoutTile extends StatelessWidget {
-  final String label;
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-
-  const _LogoutTile({
-    required this.label,
-    required this.icon,
-    required this.color,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.fromLTRB(14, 0, 14, 16),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withOpacity(0.2)),
-      ),
-      child: ListTile(
-        onTap: onTap,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        leading: Icon(icon, color: color),
-        title: Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: color,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ),
-    );
-  }
+/// Hiển thị role badge tiếng Việt khi có thể.
+String formatDrawerRoleBadge(String raw) {
+  final key = raw.trim().toLowerCase();
+  const map = {
+    'customer': 'Khách hàng',
+    'manager': 'Quản lý',
+    'admin': 'Quản trị',
+    'shipper': 'Giao hàng',
+    'delivery': 'Giao hàng',
+    'organization': 'Tổ chức',
+    'company': 'Doanh nghiệp',
+    'org': 'Tổ chức',
+  };
+  if (map.containsKey(key)) return map[key]!;
+  if (raw.isEmpty) return 'HUITMeal';
+  return raw.length <= 3 ? raw.toUpperCase() : raw;
 }
 
 class DrawerSection {
@@ -300,6 +188,262 @@ class DrawerItem {
   });
 }
 
+class _DrawerProfileHeader extends StatelessWidget {
+  final String userName;
+  final String subtitle;
+  final String roleBadge;
+  final String? avatarUrl;
+  final List<Color> gradient;
+  final Color accentColor;
+  final bool isLoading;
+  final VoidCallback onClose;
+
+  const _DrawerProfileHeader({
+    required this.userName,
+    required this.subtitle,
+    required this.roleBadge,
+    required this.gradient,
+    required this.accentColor,
+    required this.isLoading,
+    required this.onClose,
+    this.avatarUrl,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(12, 8, 12, 12),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: gradient,
+        ),
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: gradient.first.withValues(alpha: 0.28),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -24,
+              top: -24,
+              child: Icon(
+                Icons.restaurant_menu_rounded,
+                size: 120,
+                color: Colors.white.withValues(alpha: 0.08),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(
+                        'HUITMeal',
+                        style: AppDesignSystem.font.copyWith(
+                          color: Colors.white.withValues(alpha: 0.9),
+                          fontWeight: FontWeight.w800,
+                          fontSize: 13,
+                          letterSpacing: 0.2,
+                        ),
+                      ),
+                      const Spacer(),
+                      _DrawerIconButton(
+                        icon: Icons.close_rounded,
+                        onTap: onClose,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  if (isLoading)
+                    const _HeaderSkeleton()
+                  else
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        _DrawerAvatar(url: avatarUrl, accent: accentColor),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                userName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppDesignSystem.title(
+                                  size: 18,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              const SizedBox(height: 3),
+                              Text(
+                                subtitle,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: AppDesignSystem.body(
+                                  size: 12,
+                                  color: Colors.white.withValues(alpha: 0.88),
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withValues(alpha: 0.18),
+                                  borderRadius: BorderRadius.circular(999),
+                                  border: Border.all(color: Colors.white24),
+                                ),
+                                child: Text(
+                                  roleBadge,
+                                  style: AppDesignSystem.roleBadge(Colors.white),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DrawerAvatar extends StatelessWidget {
+  final String? url;
+  final Color accent;
+
+  const _DrawerAvatar({this.url, required this.accent});
+
+  @override
+  Widget build(BuildContext context) {
+    final trimmed = url?.trim();
+    return Container(
+      width: 52,
+      height: 52,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.12),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(12),
+        child: trimmed != null && trimmed.isNotEmpty
+            ? Image.network(
+                trimmed,
+                fit: BoxFit.cover,
+                errorBuilder: (_, __, ___) => _fallback(accent),
+              )
+            : Image.asset(
+                'assets/images/linh_vat.png',
+                fit: BoxFit.contain,
+                errorBuilder: (_, __, ___) => _fallback(accent),
+              ),
+      ),
+    );
+  }
+
+  Widget _fallback(Color accent) {
+    return ColoredBox(
+      color: accent.withValues(alpha: 0.15),
+      child: Icon(Icons.person_rounded, color: accent, size: 28),
+    );
+  }
+}
+
+class _HeaderSkeleton extends StatelessWidget {
+  const _HeaderSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 52,
+          height: 52,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.2),
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                height: 14,
+                width: 120,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.25),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                height: 10,
+                width: 160,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.18),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DrawerIconButton extends StatelessWidget {
+  final IconData icon;
+  final VoidCallback onTap;
+
+  const _DrawerIconButton({required this.icon, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white.withValues(alpha: 0.14),
+      borderRadius: BorderRadius.circular(10),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(10),
+        child: Padding(
+          padding: const EdgeInsets.all(6),
+          child: Icon(icon, color: Colors.white, size: 20),
+        ),
+      ),
+    );
+  }
+}
+
 class _DrawerSectionWidget extends StatelessWidget {
   final DrawerSection section;
   final int selectedIndex;
@@ -318,23 +462,32 @@ class _DrawerSectionWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         if (section.title != null) ...[
           Padding(
-            padding: const EdgeInsets.fromLTRB(8, 14, 8, 8),
-            child: Text(
-              section.title!.toUpperCase(),
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                color: AppColors.inkSoft,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1,
-              ),
+            padding: const EdgeInsets.fromLTRB(4, 10, 4, 6),
+            child: Row(
+              children: [
+                Container(
+                  width: 3,
+                  height: 14,
+                  decoration: BoxDecoration(
+                    color: accentColor,
+                    borderRadius: BorderRadius.circular(2),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  section.title!.toUpperCase(),
+                  style: AppDesignSystem.roleBadge(accentColor),
+                ),
+              ],
             ),
           ),
         ],
         ...section.items.map(
-          (item) => _DrawerItemWidget(
+          (item) => _DrawerItemTile(
             item: item,
             isSelected: item.tabIndex != null && item.tabIndex == selectedIndex,
             accentColor: accentColor,
@@ -347,14 +500,14 @@ class _DrawerSectionWidget extends StatelessWidget {
   }
 }
 
-class _DrawerItemWidget extends StatelessWidget {
+class _DrawerItemTile extends StatelessWidget {
   final DrawerItem item;
   final bool isSelected;
   final Color accentColor;
   final ValueChanged<int> onSelectTab;
   final ValueChanged<String> onNavigate;
 
-  const _DrawerItemWidget({
+  const _DrawerItemTile({
     required this.item,
     required this.isSelected,
     required this.accentColor,
@@ -366,53 +519,156 @@ class _DrawerItemWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final iconColor = item.iconColor ?? accentColor;
 
-    return Container(
-      margin: const EdgeInsets.symmetric(vertical: 4),
-      decoration: BoxDecoration(
-        color: isSelected ? AppColors.tint(accentColor, 0.12) : Colors.white,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Material(
+        color: isSelected ? accentColor.withValues(alpha: 0.1) : Colors.white,
         borderRadius: BorderRadius.circular(14),
-        border: Border.all(
-          color: isSelected ? accentColor.withOpacity(0.32) : AppColors.border,
+        child: InkWell(
+          onTap: () {
+            final tabIndex = item.tabIndex;
+            final route = item.route;
+            if (tabIndex != null) {
+              onSelectTab(tabIndex);
+            } else if (route != null) {
+              onNavigate(route);
+            }
+          },
+          borderRadius: BorderRadius.circular(14),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(
+                color: isSelected
+                    ? accentColor.withValues(alpha: 0.35)
+                    : AppDesignSystem.gray100,
+              ),
+              boxShadow: isSelected
+                  ? null
+                  : [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.03),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+              child: Row(
+                children: [
+                  Container(
+                    width: 38,
+                    height: 38,
+                    decoration: BoxDecoration(
+                      color: isSelected
+                          ? accentColor.withValues(alpha: 0.15)
+                          : iconColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(11),
+                    ),
+                    child: Icon(
+                      item.icon,
+                      color: isSelected ? accentColor : iconColor,
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Text(
+                      item.labelVi,
+                      style: AppDesignSystem.label(
+                        color: isSelected ? accentColor : AppDesignSystem.gray900,
+                      ).copyWith(
+                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                        fontSize: 14,
+                      ),
+                    ),
+                  ),
+                  Icon(
+                    isSelected
+                        ? Icons.radio_button_checked_rounded
+                        : Icons.chevron_right_rounded,
+                    color: isSelected
+                        ? accentColor
+                        : AppDesignSystem.gray400,
+                    size: 20,
+                  ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
-      child: ListTile(
-        onTap: () {
-          final tabIndex = item.tabIndex;
-          final route = item.route;
-          if (tabIndex != null) {
-            onSelectTab(tabIndex);
-          } else if (route != null) {
-            onNavigate(route);
-          }
-        },
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-        leading: Container(
-          width: 34,
-          height: 34,
-          decoration: BoxDecoration(
-            color:
-                isSelected
-                    ? accentColor.withOpacity(0.18)
-                    : iconColor.withOpacity(0.12),
-            borderRadius: BorderRadius.circular(10),
+    );
+  }
+}
+
+class _DrawerBrandFooter extends StatelessWidget {
+  const _DrawerBrandFooter();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.restaurant_menu_rounded,
+              size: 16, color: AppDesignSystem.gray400),
+          const SizedBox(width: 6),
+          Text(
+            'HUITMeal · Suất ăn doanh nghiệp',
+            style: AppDesignSystem.body(size: 11, color: AppDesignSystem.gray400),
           ),
-          child: Icon(
-            item.icon,
-            color: isSelected ? accentColor : iconColor,
-            size: 20,
+        ],
+      ),
+    );
+  }
+}
+
+class _DrawerAuthAction extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  const _DrawerAuthAction({
+    required this.label,
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 12),
+      child: Material(
+        color: color.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(14),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              border: Border.all(color: color.withValues(alpha: 0.22)),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(icon, color: color, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    label,
+                    style: AppDesignSystem.label(color: color),
+                  ),
+                ],
+              ),
+            ),
           ),
-        ),
-        title: Text(
-          item.labelVi,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: isSelected ? accentColor : AppColors.ink,
-            fontWeight: isSelected ? FontWeight.w700 : FontWeight.w600,
-          ),
-        ),
-        trailing: Icon(
-          isSelected ? Icons.check_rounded : Icons.chevron_right_rounded,
-          color: isSelected ? accentColor : AppColors.inkSoft.withOpacity(0.8),
-          size: isSelected ? 18 : 20,
         ),
       ),
     );

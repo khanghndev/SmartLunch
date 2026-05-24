@@ -30,6 +30,12 @@ class _ChatbotPageState extends State<ChatbotPage> {
     ),
   ];
 
+  static const _suggestions = [
+    'Cách đặt suất tập trung?',
+    'Ký hợp đồng B2B',
+    'Thanh toán PayOS',
+  ];
+
   @override
   void dispose() {
     _input.dispose();
@@ -37,17 +43,18 @@ class _ChatbotPageState extends State<ChatbotPage> {
     super.dispose();
   }
 
-  void _send() {
-    final text = _input.text.trim();
+  void _send([String? preset]) {
+    final text = (preset ?? _input.text).trim();
     if (text.isEmpty) return;
     setState(() {
       _messages.add(_ChatMessage(text: text, fromUser: true));
-      _messages.add(_ChatMessage(
-        fromUser: false,
-        text: _botReply(text),
-      ));
+      _messages.add(_ChatMessage(fromUser: false, text: _botReply(text)));
     });
     _input.clear();
+    _scrollToEnd();
+  }
+
+  void _scrollToEnd() {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (_scroll.hasClients) {
         _scroll.animateTo(
@@ -83,13 +90,41 @@ class _ChatbotPageState extends State<ChatbotPage> {
           Expanded(
             child: ListView.builder(
               controller: _scroll,
-              padding: const EdgeInsets.all(16),
-              itemCount: _messages.length,
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+              itemCount: _messages.length + 1,
               itemBuilder: (context, i) {
-                final m = _messages[i];
+                if (i == 0) {
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const OrgPageIntro(
+                        title: 'Trợ lý HUITMeal',
+                        description:
+                            'Gợi ý nhanh về đặt suất, hợp đồng và thanh toán. Chọn câu hỏi mẫu bên dưới.',
+                        icon: Icons.smart_toy_rounded,
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: _suggestions
+                            .map(
+                              (s) => ActionChip(
+                                label: Text(s, style: AppDesignSystem.body(size: 12)),
+                                onPressed: () => _send(s),
+                                backgroundColor: orgAccent.withValues(alpha: 0.08),
+                                side: BorderSide(color: orgAccent.withValues(alpha: 0.25)),
+                              ),
+                            )
+                            .toList(),
+                      ),
+                      const SizedBox(height: 14),
+                    ],
+                  );
+                }
+                final m = _messages[i - 1];
                 return Align(
-                  alignment:
-                      m.fromUser ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: m.fromUser ? Alignment.centerRight : Alignment.centerLeft,
                   child: Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
@@ -97,13 +132,25 @@ class _ChatbotPageState extends State<ChatbotPage> {
                       maxWidth: MediaQuery.sizeOf(context).width * 0.78,
                     ),
                     decoration: BoxDecoration(
-                      color: m.fromUser
-                          ? orgAccent
-                          : Colors.white,
-                      borderRadius: BorderRadius.circular(16),
+                      color: m.fromUser ? orgAccent : Colors.white,
+                      borderRadius: BorderRadius.only(
+                        topLeft: const Radius.circular(16),
+                        topRight: const Radius.circular(16),
+                        bottomLeft: Radius.circular(m.fromUser ? 16 : 4),
+                        bottomRight: Radius.circular(m.fromUser ? 4 : 16),
+                      ),
                       border: m.fromUser
                           ? null
                           : Border.all(color: AppDesignSystem.gray200),
+                      boxShadow: m.fromUser
+                          ? null
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.04),
+                                blurRadius: 6,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
                     ),
                     child: Text(
                       m.text,
@@ -145,7 +192,7 @@ class _ChatbotPageState extends State<ChatbotPage> {
                   ),
                   const SizedBox(width: 8),
                   IconButton.filled(
-                    onPressed: _send,
+                    onPressed: () => _send(),
                     style: IconButton.styleFrom(backgroundColor: orgAccent),
                     icon: const Icon(Icons.send_rounded, color: Colors.white),
                   ),

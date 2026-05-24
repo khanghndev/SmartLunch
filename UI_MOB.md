@@ -20,7 +20,6 @@ Manager
 
 Shipper
 - Xem danh sách đơn cần giao
-- Xem thực đơn: theo tuần
 - Xem chi tiết đơn: 
   + Địa điểm giao
   + Số suất ăn
@@ -31,10 +30,10 @@ Shipper
   + Giao thất bại (Ghi chú lý do giao thất bại)
   + Từ chối đơn hàng
   + Đã nhận hàng
-- Google Maps:
-  + Tích hợp Google Maps
-  + Xem bản đồ điểm giao
-  + Tự động sắp xếp tuyến giao hàng tối ưu
+- Bản đồ giao hàng:
+  + **OSM (OpenStreetMap)** in-app — `flutter_map`, xem điểm giao & tuyến nối
+  + Tự động sắp xếp tuyến tối ưu (`POST /shipper/routes/optimize`)
+  + **Google Maps** (ngoài app) — chỉ đường / điều hướng qua `url_launcher`
 - Giao hàng:
   + Xác nhận giao hàng
   + Chụp ảnh xác nhận giao hàng
@@ -98,15 +97,58 @@ Nguồn chuẩn: `lib/src/core/theme/app_design_system.dart` + `lib/src/features
 #### Widget dùng chung cho module nội bộ
 | Widget | File | Mô tả |
 | :--- | :--- | :--- |
-| `ModulePageShell` | `lib/src/core/widgets/module_page_shell.dart` | AppBar gradient + body `gray50` |
-| `ModuleCard` | ↑ | Card chuẩn Auth |
-| `RoleDashboardBody` | `lib/src/core/widgets/role_dashboard.dart` | Dashboard home các role |
+| `ModulePageShell` | `lib/src/core/widgets/module_page_shell.dart` | AppBar gradient + body `gray50`, `resizeToAvoidBottomInset` |
+| `ModuleListView` / `moduleListPadding` | `lib/src/core/widgets/module_scroll.dart` | Padding đáy = safe area + bàn phím + extra |
+| `RoleTabShell` / `RoleTabScope` | `lib/src/core/widgets/role_tab_shell.dart` | Home 2 tab + bottom nav; `bottomInset` cho scroll |
+| `RoleModuleHeader` / `RoleModuleTabPage` | `lib/src/core/widgets/role_module_header.dart` | Hero ảnh + gradient theo role; menu, HUITMeal, title/subtitle; panel trắng tùy chọn |
+| `RoleModuleTabShell` | `lib/src/core/widgets/role_module_shell.dart` | `PremiumDrawer` + bottom nav + `RoleTabScope` (Manager / Org / Shipper) |
+| `CustomerTabShell` | `customer_shell.dart` | Shell Customer (tương đương) |
+| `ManagerShellConfig` / `OrganizationShellConfig` / `ShipperShellConfig` | `*_shell.dart` trong từng feature | Cấu hình drawer + bottom nav đồng bộ |
+| `ModuleCard` | `module_page_shell.dart` | Card chuẩn Auth |
+| `RoleDashboardBody` | `lib/src/core/widgets/role_dashboard.dart` | Dashboard home các role; `showInternalHeader: false` khi dùng `RoleModuleHeader` |
 | `SectionCard` | `lib/src/core/widgets/section_card.dart` | Section trong form |
 | `ManagerPageShell` / `manager_ui.dart` | `lib/src/features/manager/presentation/widgets/manager_ui.dart` | Wrapper Manager → `RolePalette.manager` |
+| `CustomerPageShell` / `customer_ui.dart` | `lib/src/features/customer/presentation/widgets/customer_ui.dart` | Wrapper Customer + `CustomerDishCard` |
+| `PremiumDrawer` | `lib/src/core/widgets/premium_drawer.dart` | Drawer module: header gradient, avatar API, menu theo section, đăng xuất |
+| `showAppLogoutDialog` / `performAppLogout` | `lib/src/core/widgets/app_confirm_dialog.dart` | Dialog xác nhận bo góc 20, Outfit, nút **Ở lại** / **Đăng xuất** |
+| `ApiClient` | `lib/src/core/network/api_client.dart` | HTTP client; Bearer token từ `AuthStorage` |
+| `SessionGuard` | `lib/src/core/navigation/session_guard.dart` | Refresh thất bại → xóa session → `AppRoutes.login` |
+| `TokenRefreshCoordinator` | `lib/src/core/auth/token_refresh_coordinator.dart` | 401 → `POST /api/v1/Auth/refresh-token` → lưu JWT mới |
+
+##### HTTP 401 — refresh token rồi mới về login
+1. Request (trừ login/register) nhận **401** → `TokenRefreshCoordinator.tryRefresh()`:
+   - `POST /api/v1/Auth/refresh-token` body `{ "refreshToken" }`, header `Authorization: Bearer <accessToken hiện tại>` (khớp BE `[Authorize]`).
+   - Thành công: lưu `accessToken`, `refreshToken`, `refreshTokenExpiresAt` vào `AuthStorage` → **retry** request một lần.
+2. Refresh thất bại hoặc retry vẫn 401 → `SessionGuard.handleUnauthorized()`: `clearSession()` + `pushNamedAndRemoveUntil(/login)`.
+3. Nhiều request 401 đồng thời: chỉ một lần refresh (shared `Completer`).
+4. `MaterialApp.navigatorKey` = `SessionGuard.instance.navigatorKey` (`app.dart`).
+5. Ném `ApiUnauthorizedException` khi buộc đăng nhập lại.
+
+##### Header + shell tab (Customer, Manager, Organization, Shipper)
+- Tab shell: `CustomerTabShell` hoặc `RoleModuleTabShell` — drawer + bottom nav + `RoleTabScope`.
+- Mỗi tab: `Column` = `RoleModuleHeader` (cố định) + `Expanded` body scroll.
+- Dashboard tab: shortcut trong `RoleHeaderQuickActionsPanel`; thông báo ở `headerTrailing`.
+- Tab Hồ sơ: header `Hồ sơ cá nhân` + `ProfilePage(embeddedInModuleShell: true)` (không AppBar trùng).
+- Trang con (push): vẫn `ModulePageShell` / `ManagerPageShell` / `OrgPageShell`.
+
+##### UX scroll (mọi module tab)
+- Tab home: `RoleTabShell` — nội dung cuộn có `RoleTabScope.bottomInset` (không bị bottom nav che).
+- Trang con: `ModulePageShell` + `ModuleListView` / `managerListPadding` — padding đáy gồm bàn phím khi nhập liệu.
+- `RoleDashboardBody`: tự cộng `RoleTabScope` + `viewInsets.bottom`.
+- Ảnh món: `cacheWidth` theo DPR — tránh méo pixel.
+- Tránh `ListView` lồng `SizedBox(height: cố định)` + `TabBarView` — dùng `Expanded` + tab scroll riêng.
 
 #### Theme Material (`app_theme.dart`)
 - `ThemeData` dùng **Outfit**, `scaffoldBackgroundColor: gray50`, input/button/card khớp Auth.
 - Accent theo `AppFlavor`: `RolePalette.customer` | `.shipper` | `.manager` | `.organization`.
+
+#### PremiumDrawer (điều hướng module)
+- Header gradient theo `RolePalette` module; nút đóng; logo **HUITMeal**.
+- Avatar: `GET /api/v1/Auth/profile` → `avatarUrl`, fallback `assets/images/linh_vat.png`.
+- Role badge tiếng Việt qua `formatDrawerRoleBadge`.
+- Mục menu: card trắng, icon accent, tab đang chọn có viền + radio checked.
+- Footer brand + nút **Đăng nhập** / **Đăng xuất** full-width.
+- Dùng chung: Customer, Manager, Organization, Shipper (`DrawerSection` + `DrawerItem`).
 
 #### Quy tắc khi tạo UI mới
 1. Import `app_design_system.dart`; chọn `RolePalette` đúng module.
@@ -141,6 +183,14 @@ File hỗ trợ: `dashboard_format.dart` (`formatDashboardVnd`, `formatDashboard
 
 ### Manager
 
+#### UI báo cáo & module con (`manager_ui.dart`)
+- `ManagerPageIntro` — banner mô tả đầu mỗi màn báo cáo.
+- `ManagerTabBar` / `ManagerTabbedBody` — tab trong card trắng; KPI cố định phía trên.
+- `ManagerSectionHeader`, `ManagerDataRow`, `ManagerStatusBadge` — danh sách & trạng thái thống nhất.
+- `ManagerBarChart`, `ManagerStatTile`, `ManagerPeriodChips` — số liệu & biểu đồ.
+- `ManagerReportNavCard`, `ManagerPrimaryButton` — xuất báo cáo.
+- Màn con: `ManagerPageShell` + `AppDesignSystem` (không dùng `Colors.grey` / `Theme.of` rời).
+
 | Đầu mục Nghiệp vụ | Màn hình UI (.dart) | File Data Layer (.dart) | Endpoint API Backend | Trạng thái |
 | :--- | :--- | :--- | :--- | :--- |
 | **Xuất báo cáo Excel / PDF** | [reports_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/manager/presentation/pages/reports_page.dart)<br>[report_export_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/manager/presentation/pages/report_export_page.dart) | [manager_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/manager/data/datasources/manager_remote_datasource.dart)<br>[manager_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/manager/data/repositories/manager_repository.dart) | Local Task / Download URL | ✅ Hoàn thành |
@@ -153,25 +203,50 @@ File hỗ trợ: `dashboard_format.dart` (`formatDashboardVnd`, `formatDashboard
 
 ### Shipper
 
+#### Drawer Shipper (`shipper_shell.dart` → `ShipperShellConfig.drawerSections`)
+| Section | Mục menu |
+| :--- | :--- |
+| **Điều phối** | Dashboard, Danh sách đơn hàng, Bản đồ tuyến đường |
+| **Công việc** | Lịch trình giao, Lịch sử giao hàng |
+| **Cá nhân** | Hồ sơ cá nhân |
+
+*(Không có mục Thực đơn tuần.)*
+
+#### UI giao hàng & module con (`shipper_ui.dart`)
+- `ShipperPageIntro` — banner mô tả đầu mỗi màn.
+- `ShipperSectionHeader`, `ShipperDataRow`, `ShipperStatusBadge`, `ShipperDetailField` — danh sách & chi tiết.
+- `ShipperStatTile`, `ShipperPeriodChips`, `ShipperInfoBanner` — KPI và lọc.
+- `ShipperPrimaryButton`, `ShipperOutlineButton`, `ShipperDeliveryTile` — hành động & tile đơn.
+- `ShipperOsmMap` / `ShipperRouteMapPanel` — bản đồ OSM (fit bounds, polyline tuyến, attribution).
+- `ShipperMapsLauncher` — mở Google Maps chỉ đường (app/web).
+- `ShipperProofImage` — xem ảnh PoD sau khi giao hoàn tất.
+- Phụ thuộc: `flutter_map`, `latlong2`, `url_launcher`.
+
 | Đầu mục Nghiệp vụ | Màn hình UI (.dart) | File Data Layer (.dart) | Endpoint API Backend | Trạng thái |
 | :--- | :--- | :--- | :--- | :--- |
-| **Đăng nhập & Xác thực** | [login_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/auth/presentation/pages/login_page.dart) | [auth_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/auth/data/datasources/auth_remote_datasource.dart)<br>[auth_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/auth/data/repositories/auth_repository.dart)<br>[auth_models.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/auth/data/models/auth_models.dart) | `POST /api/v1/Auth/login` | ✅ Hoàn thành (Gọi API thực) |
-| **Danh sách đơn cần giao** | [delivery_list_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/delivery_list_page.dart)<br>[courier_home_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/shipper_home_page.dart) | [shipper_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/datasources/shipper_remote_datasource.dart)<br>[shipper_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/repositories/shipper_repository.dart)<br>[shipper_delivery_models.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/models/shipper_delivery_models.dart) | `GET /api/v1/shipper/deliveries` | ✅ Hoàn thành (Gọi API thực) |
-| **Xem thực đơn tuần** | [shipper_weekly_menu_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/shipper_weekly_menu_page.dart) | [customer_menu_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/data/datasources/customer_menu_remote_datasource.dart)<br>[customer_menu_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/data/repositories/customer_menu_repository.dart) | `GET /api/v1/master-data/WeeklyMenu` | ✅ Hoàn thành (Gọi API thực) |
+| **Danh sách đơn cần giao** | [delivery_list_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/delivery_list_page.dart)<br>[shipper_home_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/shipper_home_page.dart) | [shipper_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/datasources/shipper_remote_datasource.dart)<br>[shipper_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/repositories/shipper_repository.dart)<br>[shipper_delivery_models.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/models/shipper_delivery_models.dart) | `GET /api/v1/shipper/deliveries` | ✅ Hoàn thành (Gọi API thực) |
 | **Xem chi tiết đơn giao** *(Địa điểm, suất, thời gian)* | [delivery_detail_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/delivery_detail_page.dart) | [shipper_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/datasources/shipper_remote_datasource.dart)<br>[shipper_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/repositories/shipper_repository.dart)<br>[shipper_delivery_models.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/models/shipper_delivery_models.dart) | `GET /api/v1/shipper/deliveries/{id}` | ✅ Hoàn thành (Gọi API thực) |
 | **Cập nhật trạng thái đơn** *(Đang giao/Thành công/Thất bại...)* | [delivery_detail_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/delivery_detail_page.dart)<br>[delivery_schedule_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/delivery_schedule_page.dart) | [shipper_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/datasources/shipper_remote_datasource.dart)<br>[shipper_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/repositories/shipper_repository.dart) | `PATCH /api/v1/shipper/deliveries/{id}/status` | ✅ Hoàn thành (Gọi API thực) |
-| **Bản đồ giao hàng & Tối ưu tuyến** | [route_map_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/route_map_page.dart) | [shipper_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/datasources/shipper_remote_datasource.dart)<br>[shipper_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/repositories/shipper_repository.dart) | `POST /api/v1/shipper/routes/optimize` | ✅ Hoàn thành (Gọi API thực) |
+| **Bản đồ giao hàng & Tối ưu tuyến** | [route_map_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/route_map_page.dart)<br>[shipper_route_map_panel.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/widgets/shipper_route_map_panel.dart)<br>[shipper_maps_launcher.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/utils/shipper_maps_launcher.dart) | [shipper_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/datasources/shipper_remote_datasource.dart)<br>[shipper_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/repositories/shipper_repository.dart) | `POST /api/v1/shipper/routes/optimize` + OSM map + Google Maps (url_launcher) | ✅ Hoàn thành |
 | **Xác nhận giao, chụp ảnh PoD** | [proof_of_delivery_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/proof_of_delivery_page.dart) | [shipper_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/datasources/shipper_remote_datasource.dart)<br>[shipper_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/repositories/shipper_repository.dart) | `POST /api/v1/shipper/deliveries/{id}/proof` | ✅ Hoàn thành (Gọi API thực) |
 | **Lịch sử giao hàng** | [delivery_history_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/delivery_history_page.dart) | [shipper_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/data/datasources/shipper_remote_datasource.dart) | `GET /api/v1/shipper/deliveries?status=completed\|failed` | ✅ Hoàn thành (Gọi API thực) |
 | **Trang chủ & Cá nhân Shipper** | [shipper_home_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/shipper_home_page.dart)<br>[shipper_profile_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/shipper_profile_page.dart)<br>[shipper_notifications_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/shipper/presentation/pages/shipper_notifications_page.dart) | — | Dashboard Shipper / Thông báo | ✅ Hoàn thành |
 
 ### Organization
 
+#### UI báo cáo & module con (`organization_ui.dart`)
+- `OrgPageIntro` — banner mô tả đầu mỗi màn báo cáo / nghiệp vụ.
+- `OrgSectionHeader`, `OrgDataRow`, `OrgStatusBadge`, `OrgDetailField` — danh sách & chi tiết thống nhất.
+- `OrgStatTile`, `OrgPeriodChips`, `OrgInfoBanner` — KPI và lọc kỳ.
+- `OrgPrimaryButton`, `OrgCard`, `OrgLoadingBody`, `OrgErrorBody`, `OrgEmptyList` — trạng thái & hành động.
+- `orgListPadding` / `ModuleListView` — scroll chuẩn trong `OrgPageShell`.
+- Màn con: `OrgPageShell` + `AppDesignSystem` + `RolePalette.organization` (không màu hard-code).
+
 | Đầu mục Nghiệp vụ | Màn hình UI (.dart) | File Data Layer (.dart) | Endpoint API Backend | Trạng thái |
 | :--- | :--- | :--- | :--- | :--- |
 | **Chatbot CSKH** | [chatbot_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/chatbot_page.dart) | — | Tích hợp dịch vụ chatbot AI | ✅ Hoàn thành |
-| **Đặt suất ăn tập trung** *(3 bước — khớp web `OrganizationMealOrder`)* | [bulk_order_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/bulk_order_page.dart) *(Bước 1–2: giá, ngày, khuyến mãi, thực đơn theo ngày)*<br>[org_meal_order_review_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/org_meal_order_review_page.dart) *(Bước 3: xem nháp, % đặt cọc, checkout + PayOS)*<br>[org_dish_picker_sheet.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/widgets/org_dish_picker_sheet.dart) | [org_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/datasources/org_remote_datasource.dart)<br>[org_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/org_repository.dart)<br>[bulk_order_models.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/models/bulk_order_models.dart)<br>[org_meal_order_date_rules.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/utils/org_meal_order_date_rules.dart) | `GET /api/v1/organization/meal-order/dish-category`<br>`GET /api/v1/organization/meal-order/dish/category?categoryId=`<br>`POST /api/v1/organization/meal-order/contract`<br>`POST /api/v1/organization/meal-order/checkout`<br>`POST /api/v1/organization/meal-order/pay` | ✅ Hoàn thành (Gọi API thực) |
-| **Thanh toán & đối soát hợp đồng** | [contract_settlement_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/contract_settlement_page.dart) | [org_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/datasources/org_remote_datasource.dart)<br>[org_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/org_repository.dart)<br>[contract_models.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/models/contract_models.dart) | `GET /api/v1/company/contracts`<br>`GET /api/v1/company/contracts/{id}`<br>`POST /api/v1/company/contracts/{id}/sign`<br>`POST /api/v1/organization/meal-order/pay` | ✅ Hoàn thành (Gọi API thực) |
+| **Đặt suất ăn tập trung** *(khớp web `OrganizationMealOrder`)* | [bulk_order_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/bulk_order_page.dart) *(4 bước: Thiết lập → Thực đơn → KM → Giao hàng)*<br>[org_meal_order_review_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/org_meal_order_review_page.dart) *(nháp HĐ + giao hàng + % cọc)*<br>[org_order_annex_sign_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/org_order_annex_sign_page.dart) *(checkout → ký phụ lục → PayOS `returnUrl`/`cancelUrl`)*<br>[org_signature_pad.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/widgets/org_signature_pad.dart) | `POST …/meal-order/contract` (+ `delivery`), `checkout`, `sign-annex`, `pay-deposit` | ✅ Hoàn thành |
+| **Thanh toán & đối soát hợp đồng** | [contract_settlement_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/contract_settlement_page.dart) *(nút **Thanh toán đặt cọc** → PayOS; ký HĐ bằng pad)* | [org_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/datasources/org_remote_datasource.dart)<br>[org_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/org_repository.dart)<br>[contract_models.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/models/contract_models.dart)<br>[org_meal_pay_deposit.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/utils/org_meal_pay_deposit.dart) | `GET /api/v1/company/contracts`<br>`GET …/contracts/{id}/payments`<br>`POST …/contracts/{id}/sign`<br>`POST …/meal-order/pay` | ✅ Hoàn thành |
 | **Đánh giá suất ăn** | [meal_detail_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/presentation/pages/meal_detail_page.dart) | [customer_menu_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/data/repositories/customer_menu_repository.dart) | `POST /api/v1/master-data/Review` | ✅ Hoàn thành (Gọi API thực) |
 | **Danh sách nhân sự đơn vị** | [staff_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/staff_page.dart) | `GET /api/v1/Auth/profile` (`unit`) | Thông tin đơn vị từ hồ sơ; danh sách NV chi tiết trên web Admin | ✅ Hoàn thành (mức hồ sơ) |
 | **Thống kê / Báo cáo / Đối soát** | [org_statistics_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/org_statistics_page.dart)<br>[org_reports_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/org_reports_page.dart)<br>[org_reconciliation_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/presentation/pages/org_reconciliation_page.dart) | [meal_statistics_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/core/analytics/meal_statistics_repository.dart)<br>[org_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/org_repository.dart) | `GET .../Order/statistics/meal-count`<br>`GET .../company/contracts` + payments | ✅ Hoàn thành |
@@ -181,7 +256,23 @@ File hỗ trợ: `dashboard_format.dart` (`formatDashboardVnd`, `formatDashboard
 
 | Đầu mục Nghiệp vụ | Màn hình UI (.dart) | File Data Layer (.dart) | Endpoint API Backend | Trạng thái |
 | :--- | :--- | :--- | :--- | :--- |
-| **Xem thực đơn theo loại món & Category** | [menu_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/presentation/pages/menu_page.dart)<br>[meal_detail_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/presentation/pages/meal_detail_page.dart) | [org_remote_datasource.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/datasources/org_remote_datasource.dart)<br>[org_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/org_repository.dart)<br>[bulk_order_models.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/models/bulk_order_models.dart) | `GET /api/v1/organization/meal-order/dish-category`<br>`GET /api/v1/organization/meal-order/dish/category` | ✅ Hoàn thành (Gọi API thực) |
+| **Xem thực đơn theo loại món & Category** | [customer_home_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/presentation/pages/customer_home_page.dart)<br>[menu_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/presentation/pages/menu_page.dart)<br>[meal_detail_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/presentation/pages/meal_detail_page.dart) | [org_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/org_repository.dart) | `GET /api/v1/organization/meal-order/dish-category`<br>`GET /api/v1/organization/meal-order/dish/category` | ✅ Hoàn thành (Gọi API thực) |
+
+##### Giao diện Customer (đồng bộ module — `customer_shell.dart` + `customer_ui.dart`)
+- **Shell**: `CustomerTabShell` — `PremiumDrawer` + `BottomNavigationBar` + `RoleTabScope` cấu hình tại `CustomerShellConfig` (cùng mục Trang chủ / Thực đơn).
+- **Header chung**: `CustomerModuleHeader` — hero ảnh + gradient giống nhau mọi tab; chỉ đổi `title` / `subtitle`; panel trắng: `CustomerHeaderSearchPanel` (Trang chủ) hoặc `CustomerHeaderCategoryPanel` (Thực đơn) — chip danh mục dùng `RoleHeaderChip`, **không** giới hạn `height` cố định (tránh cắt chữ).
+
+#### UI module con Customer (`customer_ui.dart`)
+- `CustomerPageIntro`, `CustomerGlassCard`, `CustomerSectionHeader` — section rõ ràng.
+- `CustomerLoadingBody` / `CustomerErrorBody` — trạng thái tải & lỗi chuẩn.
+- `CustomerQuickActions` — shortcut dùng `RoleHeaderQuickActionsPanel`.
+- `CustomerFeaturedCard`, `CustomerDishCard`, `CustomerCategoryCard` — thẻ món & danh mục.
+- `CustomerDishDetailArgs` — truyền `id`, `name`, `imageUrl`, `categoryName` sang màn chi tiết.
+- `CustomerEmptyState` / `CustomerPrimaryButton` — empty & CTA đồng bộ Manager.
+- Màn con push: `CustomerPageShell` (chi tiết món, v.v.).
+- **Trang chủ**: nội dung scroll dưới header cố định — gợi ý, danh mục.
+- **Thực đơn**: header `title: Thực đơn`, chip category trong panel; grid món (không giá, không filter text).
+- **Tab shell**: `RoleTabShell` — scroll không bị bottom nav che.
 
 ### Các Module dùng chung & Ngoài UI_MOB
 
@@ -267,13 +358,52 @@ Tất cả các API trả về cấu trúc chuẩn JSON như sau:
 |--------------|--------|------------------|-------------------|---------------------|
 | Xem thể loại suất ăn | GET | `/api/v1/organization/meal-order/dish-category` | Lấy các category và khung ngày được đặt | `roles:Company,Organization` |
 | Xem danh sách món ăn | GET | `/api/v1/organization/meal-order/dish/category` | Query: `categoryId`, `page`, `pageSize` | `roles:Company,Organization` |
-| Chuẩn bị nháp hợp đồng | POST | `/api/v1/organization/meal-order/contract` | Body: `{ "organizationId", "price", "promotionCode"?, "mealDays": [ { "serviceDate": "yyyy-MM-dd", "mealPlan": { "main"\|"side"\|"soup": [ { "dishId", "quantity" } ] } } ] }` — `organizationId` lấy từ `profile.unit.id` | `roles:Company,Organization` |
+| Danh sách KM đủ điều kiện | POST | `/api/v1/organization/meal-order/promotions/eligible` | Body `PreviewPromotionRequest`: `channel: "b2b_org"`, `organizationId`, `subtotal`, `totalQuantity`, `lines[]` (chỉ món main) | `roles:Company,Organization` |
+| Xem trước mã KM | POST | `/api/v1/organization/meal-order/promotions/preview` | Cùng body + `promotionCode` | `roles:Company,Organization` |
+| Chuẩn bị nháp hợp đồng | POST | `/api/v1/organization/meal-order/contract` | Body: `{ "organizationId", "price", "promotionCode"?, "promotionId"?, "mealDays": … }` — `organizationId` từ `profile.unit.id` | `roles:Company,Organization` |
 | Xác nhận đặt hàng (checkout) | POST | `/api/v1/organization/meal-order/checkout` | Body: `{ "draftId", "depositPercent" }` — `draftId` từ bước contract | `roles:Company,Organization` |
-| Tạo liên kết thanh toán PayOS | POST | `/api/v1/organization/meal-order/pay` | Body: `{ "orderId" }` | `roles:Company,Organization` |
+| Tạo liên kết thanh toán PayOS | POST | `/api/v1/organization/meal-order/pay` | Body: `{ "orderId", "returnUrl", "cancelUrl" }` (bắt buộc nếu BE chưa cấu hình `PayOS:DefaultReturnUrl`) | `roles:Company,Organization` |
+| Ký phụ lục đặt hàng (PNG data URL) | POST | `/api/v1/master-data/Order/{id}/sign-annex` | Body: `{ "digitalSignature" }` — sau checkout, trước PayOS | `roles:Organization` + `orders.create` |
+| Xem trước PDF phụ lục | GET | `/api/v1/master-data/Order/{id}/annex-preview` | Trả `application/pdf` — mobile `OrgAnnexPdfPage` (pdfx) | `orders.read` |
 | Xem danh sách hợp đồng đơn vị | GET | `/api/v1/company/contracts` | Response `data.contracts[]` (theo membership `user_organizations`) | `roles:Company,Organization` |
 | Thanh toán / đối soát theo HĐ | GET | `/api/v1/company/contracts/{id}/payments` | Response `data.customer.orders[]` + `data.supplier.paymentLines[]` | `roles:Company,Organization` |
 | Xem chi tiết hợp đồng | GET | `/api/v1/company/contracts/{id}` | Lấy chi tiết qua Route parameter `{id}` | `roles:Company,Organization` |
 | Ký hợp đồng số (B2B) | POST | `/api/v1/company/contracts/{id}/sign` | Body: `{ "signatureImageUrl", "signedName" }` | `roles:Company,Organization` |
+
+**Hiệu năng (contract / checkout / pay):**
+
+| Endpoint | Thời gian chủ yếu | Ghi chú |
+|----------|-------------------|---------|
+| `POST …/contract` | 3–15s | BE tạo PDF HĐ + upload cloud — **web & mobile cùng BE** |
+| `POST …/checkout` | 2–10s | Tạo đơn DB + gửi email xác nhận |
+| `POST …/pay` | 5–45s+ | BE ↔ PayOS (retry 429, orderCode trùng, tạo payment mới) — **không phải do Flutter chậm hơn web** |
+
+**Ngrok khi dev (web + mobile cùng môi trường):**
+
+```
+PayOS (webhook) ──HTTPS──► ngrok ──► BE :5001
+PayOS (return sau thanh toán) ──► URL web public (thường cùng host ngrok)
+App mobile ──HTTPS──► ngrok ──► BE :5001          (SMARTLUNCH_API)
+Web MVC ──► BackendApi:BaseUrl ──► BE              (repo mặc định localhost:5001;
+                                                    nếu bạn đổi sang URL ngrok thì = mobile)
+```
+
+- **Webhook** chỉ cần ngrok trỏ vào **BE** — không liên quan app mobile.
+- **returnUrl / cancelUrl** mobile gửi qua `SMARTLUNCH_WEB` (ngrok) — giống web build URL từ `Request.Host` khi bạn mở site qua ngrok.
+- Khi **cả web và mobile đều gọi cùng một URL ngrok tới BE**, thời gian `POST …/pay` trên server **giống nhau** (log ~44s là thời gian xử lý BE, không phải “mobile đi đường vòng”).
+
+**Vì sao web vẫn *cảm giác* nhanh hơn khi PayOS lỗi (dù cùng ngrok)?**
+
+| | Web | Mobile |
+|---|-----|--------|
+| Gọi API | Form POST → MVC → `InitiateOrganizationMealPayment` → **cùng** `POST …/pay` | `await` trực tiếp **cùng** `POST …/pay` |
+| Trong lúc chờ ~44s | Tab trình duyệt loading (toàn trang) | Nút “Đang mở PayOS…” trên **cùng màn** |
+| Khi lỗi (không có checkoutUrl) | `Redirect` sang OrderDetail + `TempData` → **trang mới**, dễ tưởng “xong” | Dialog lỗi trên màn cũ → dễ tưởng app “treo 1 phút” |
+| Khi thành công | Redirect **ngay** sang PayOS (rời site) | Chờ API xong rồi mới `launchUrl` |
+
+Thêm: mobile dễ bấm **Thanh toán cọc** nhiều lần trên cùng đơn → BE log `orderCode already exists` + PayOS 429 → nhánh xử lý **rất lâu**; web thường bấm một lần từ Orders sau khi vừa ký phụ lục.
+
+**Tối ưu tùy chọn (không bắt buộc nếu đã dùng ngrok cho mọi thứ):** `SMARTLUNCH_API` = LAN/`10.0.2.2` (API nhanh hơn vài trăm ms), `SMARTLUNCH_WEB` = ngrok (chỉ redirect PayOS). Cache JWT RAM (`AuthStorage`), payments dashboard gọi song song.
 
 ---
 
@@ -404,8 +534,7 @@ lib/src/features/
         │   ├── route_map_page.dart
         │   ├── shipper_home_page.dart
         │   ├── shipper_notifications_page.dart
-        │   ├── shipper_profile_page.dart
-        │   └── shipper_weekly_menu_page.dart
+        │   └── shipper_profile_page.dart
         └── widgets/
             └── shipper_ui.dart
 ```

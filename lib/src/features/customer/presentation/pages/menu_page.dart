@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
+
 import '../../../../app/app_routes.dart';
-import '../../../organization/data/org_repository.dart';
+import '../../../../core/theme/app_design_system.dart';
+import '../../../../core/widgets/role_tab_shell.dart';
 import '../../../organization/data/models/bulk_order_models.dart';
+import '../../../organization/data/org_repository.dart';
+import '../widgets/customer_ui.dart';
 
 class MenuPage extends StatefulWidget {
   const MenuPage({super.key});
@@ -14,7 +18,7 @@ class _MenuPageState extends State<MenuPage> {
   bool _isLoadingCategories = true;
   String? _error;
   List<DishCategoryModel> _categories = [];
-  
+
   int _selectedCategoryId = 0;
   bool _isLoadingDishes = false;
   List<Map<String, dynamic>> _dishes = [];
@@ -45,7 +49,7 @@ class _MenuPageState extends State<MenuPage> {
     } catch (e) {
       if (mounted) {
         setState(() {
-          _error = e.toString();
+          _error = customerApiError(e);
           _isLoadingCategories = false;
         });
       }
@@ -56,6 +60,7 @@ class _MenuPageState extends State<MenuPage> {
     try {
       setState(() => _isLoadingDishes = true);
       final res = await OrgRepository.instance.getDishesByCategory(categoryId);
+      final catName = _selectedCategoryName;
       if (mounted) {
         setState(() {
           _dishes = res.dishes
@@ -63,8 +68,8 @@ class _MenuPageState extends State<MenuPage> {
                 (d) => {
                   'id': d.id,
                   'name': d.name,
-                  'price': d.price,
                   'imageUrl': d.imageUrl,
+                  'categoryName': catName,
                 },
               )
               .toList();
@@ -74,7 +79,14 @@ class _MenuPageState extends State<MenuPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoadingDishes = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Lỗi tải món: $e')));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(customerApiError(e)),
+            behavior: SnackBarBehavior.floating,
+            backgroundColor: AppDesignSystem.danger,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          ),
+        );
       }
     }
   }
@@ -85,226 +97,159 @@ class _MenuPageState extends State<MenuPage> {
     _fetchDishes(id);
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => Scaffold.of(context).openDrawer(),
-        ),
-        title: const Text('Thực đơn', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0.5,
-        centerTitle: true,
+  String? get _selectedCategoryName {
+    for (final c in _categories) {
+      if (c.id == _selectedCategoryId) return c.name;
+    }
+    return null;
+  }
+
+  List<CustomerMenuCategory> get _menuCategories => _categories
+      .map((c) => CustomerMenuCategory(id: c.id, name: c.name))
+      .toList();
+
+  String get _menuSubtitle {
+    if (_isLoadingCategories) return 'Đang tải danh mục...';
+    if (_isLoadingDishes) return 'Đang tải món...';
+    final name = _selectedCategoryName;
+    if (name != null) {
+      return '${_dishes.length} món · $name';
+    }
+    return '${_dishes.length} món · Chọn loại món bên dưới';
+  }
+
+  void _openDishDetail(Map<String, dynamic> dish) {
+    Navigator.of(context).pushNamed(
+      AppRoutes.customerMealDetail,
+      arguments: CustomerDishDetailArgs(
+        id: dish['id'] as int? ?? 0,
+        name: dish['name']?.toString() ?? 'Món ăn',
+        imageUrl: dish['imageUrl']?.toString(),
+        categoryName: dish['categoryName']?.toString(),
       ),
-      body: _buildBody(),
     );
   }
 
-  Widget _buildBody() {
+  @override
+  Widget build(BuildContext context) {
+    final bottom = RoleTabScope.of(context).bottomInset;
+
+    return ColoredBox(
+      color: AppDesignSystem.gray50,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          CustomerModuleHeader(
+            title: 'Thực đơn',
+            subtitle: _menuSubtitle,
+            bottomPanel: CustomerHeaderCategoryPanel(
+              categories: _menuCategories,
+              selectedCategoryId: _selectedCategoryId,
+              onCategorySelected: _onCategorySelected,
+              isLoading: _isLoadingCategories,
+            ),
+          ),
+          Expanded(child: _buildBody(bottom)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBody(double bottomInset) {
     if (_isLoadingCategories) {
-      return const Center(child: CircularProgressIndicator(color: Colors.blueAccent));
+      return const CustomerLoadingBody(message: 'Đang tải danh mục món…');
     }
     if (_error != null) {
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.error_outline, size: 48, color: Colors.red.shade300),
-            const SizedBox(height: 16),
-            Text('Lỗi: $_error', textAlign: TextAlign.center),
-            ElevatedButton(onPressed: _fetchCategories, child: const Text('Thử lại')),
-          ],
-        ),
-      );
+      return CustomerErrorBody(message: _error!, onRetry: _fetchCategories);
     }
     if (_categories.isEmpty) {
-      return const Center(child: Text('Không có danh mục món ăn nào.'));
+      return CustomerEmptyState(
+        title: 'Chưa có danh mục món',
+        subtitle: 'Vui lòng quay lại sau hoặc kéo để tải lại',
+        actionLabel: 'Tải lại',
+        onAction: _fetchCategories,
+      );
     }
 
-    return Column(
-      children: [
-        // Categories Header (Horizontal List)
-        Container(
-          height: 64,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.05),
-                blurRadius: 4,
-                offset: const Offset(0, 2),
-              ),
-            ],
-          ),
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-            itemCount: _categories.length,
-            itemBuilder: (context, index) {
-              final cat = _categories[index];
-              final isSelected = cat.id == _selectedCategoryId;
-              return GestureDetector(
-                onTap: () => _onCategorySelected(cat.id),
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 200),
-                  margin: const EdgeInsets.only(right: 12),
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  decoration: BoxDecoration(
-                    gradient: isSelected
-                        ? const LinearGradient(colors: [Colors.blueAccent, Colors.lightBlue])
-                        : null,
-                    color: isSelected ? null : Colors.grey.shade100,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: isSelected
-                        ? [
-                            BoxShadow(
-                              color: Colors.blueAccent.withValues(alpha: 0.3),
-                              blurRadius: 8,
-                              offset: const Offset(0, 4),
-                            )
-                          ]
-                        : null,
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(
-                    cat.name,
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : Colors.black87,
-                      fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-        
-        // Dishes Grid
-        Expanded(
-          child: _isLoadingDishes
-              ? const Center(child: CircularProgressIndicator(color: Colors.blueAccent))
-              : _dishes.isEmpty
-                  ? Center(
+    if (_isLoadingDishes) {
+      return const CustomerLoadingBody(message: 'Đang tải danh sách món…');
+    }
+
+    if (_dishes.isEmpty) {
+      return CustomerEmptyState(
+        icon: Icons.restaurant_outlined,
+        title: 'Chưa có món trong danh mục',
+        subtitle: _selectedCategoryName != null
+            ? 'Danh mục: $_selectedCategoryName'
+            : null,
+        actionLabel: 'Tải lại',
+        onAction: () => _fetchDishes(_selectedCategoryId),
+      );
+    }
+
+    final dpr = MediaQuery.devicePixelRatioOf(context);
+    final cacheWidth = (MediaQuery.sizeOf(context).width / 2 * dpr).round();
+
+    return RefreshIndicator(
+      color: kCustomerRole.primary,
+      onRefresh: () => _fetchDishes(_selectedCategoryId),
+      child: CustomScrollView(
+        physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
+        slivers: [
+          SliverToBoxAdapter(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
+              child: CustomerGlassCard(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+                child: Row(
+                  children: [
+                    Icon(Icons.grid_view_rounded, color: kCustomerRole.primary, size: 22),
+                    const SizedBox(width: 10),
+                    Expanded(
                       child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.restaurant_menu, size: 64, color: Colors.grey.shade300),
-                          const SizedBox(height: 16),
                           Text(
-                            'Chưa có món ăn trong danh mục này',
-                            style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+                            _selectedCategoryName ?? 'Danh mục',
+                            style: AppDesignSystem.sectionTitle(),
+                          ),
+                          Text(
+                            '${_dishes.length} món · Chạm để xem chi tiết',
+                            style: AppDesignSystem.body(size: 12),
                           ),
                         ],
                       ),
-                    )
-                  : RefreshIndicator(
-                      onRefresh: () => _fetchDishes(_selectedCategoryId),
-                      color: Colors.blueAccent,
-                      child: GridView.builder(
-                        padding: const EdgeInsets.all(16),
-                        physics: const AlwaysScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 2,
-                          childAspectRatio: 0.75,
-                          crossAxisSpacing: 16,
-                          mainAxisSpacing: 16,
-                        ),
-                        itemCount: _dishes.length,
-                        itemBuilder: (context, index) {
-                          final dish = _dishes[index];
-                          final id = dish['id'] ?? 0;
-                          final name = dish['name'] ?? 'Món ăn';
-                          final price = dish['price'] ?? 0;
-                          final imageUrl = dish['imageUrl'];
-                          
-                          return GestureDetector(
-                            onTap: () {
-                              Navigator.of(context).pushNamed(
-                                AppRoutes.customerMealDetail,
-                                arguments: id,
-                              );
-                            },
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(20),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.05),
-                                    blurRadius: 10,
-                                    offset: const Offset(0, 4),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Expanded(
-                                    child: Container(
-                                      decoration: BoxDecoration(
-                                        color: Colors.grey.shade200,
-                                        borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-                                        image: imageUrl != null && imageUrl.toString().isNotEmpty
-                                            ? DecorationImage(
-                                                image: NetworkImage(imageUrl),
-                                                fit: BoxFit.cover,
-                                              )
-                                            : null,
-                                      ),
-                                      child: imageUrl == null || imageUrl.toString().isEmpty
-                                          ? const Center(child: Icon(Icons.fastfood, color: Colors.grey, size: 48))
-                                          : null,
-                                    ),
-                                  ),
-                                  Padding(
-                                    padding: const EdgeInsets.all(12.0),
-                                    child: Column(
-                                      crossAxisAlignment: CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          name,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                                        ),
-                                        const SizedBox(height: 8),
-                                        Row(
-                                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                          children: [
-                                            Text(
-                                              '${price}đ',
-                                              style: const TextStyle(
-                                                color: Colors.blueAccent,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 14,
-                                              ),
-                                            ),
-                                            Container(
-                                              padding: const EdgeInsets.all(4),
-                                              decoration: BoxDecoration(
-                                                color: Colors.blue.shade50,
-                                                borderRadius: BorderRadius.circular(8),
-                                              ),
-                                              child: const Icon(Icons.add, size: 16, color: Colors.blueAccent),
-                                            ),
-                                          ],
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          );
-                        },
-                      ),
                     ),
-        ),
-      ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(16, 4, 16, bottomInset),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 0.76,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) {
+                  final dish = _dishes[index];
+                  return CustomerDishCard(
+                    name: dish['name']?.toString() ?? 'Món ăn',
+                    imageUrl: dish['imageUrl']?.toString(),
+                    cacheWidth: cacheWidth,
+                    onTap: () => _openDishDetail(dish),
+                  );
+                },
+                childCount: _dishes.length,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

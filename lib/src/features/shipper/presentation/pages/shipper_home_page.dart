@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import '../../../../app/app_routes.dart';
 import '../../../../core/theme/app_design_system.dart';
 import '../../../../core/widgets/dashboard_format.dart';
-import '../../../../core/widgets/premium_drawer.dart';
 import '../../../../core/widgets/role_dashboard.dart';
+import '../../../../core/widgets/role_module_header.dart';
+import '../../../../core/widgets/role_module_shell.dart';
+import '../widgets/shipper_shell.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
-import '../../../auth/data/repositories/auth_repository.dart';
+import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../profile/data/profile_repository.dart';
 import '../../../profile/data/models/user_profile_model.dart';
 import '../../data/models/shipper_delivery_models.dart';
@@ -98,32 +100,48 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
       trailing: shipperDeliveryStatusLabelVi(d.deliveryStatus),
       icon: Icons.local_shipping_outlined,
       iconColor: RolePalette.shipper.primary,
-      route: AppRoutes.shipperDeliveryList,
+      route: AppRoutes.shipperDeliveryDetail,
+      routeArguments: d.deliveryId,
     );
   }
 
   double get _completionRate =>
       _todayTotal == 0 ? 0 : (_completedCount / _todayTotal) * 100;
 
-  List<Widget> get _pages => [
-        _buildShipperDashboard(),
-        ProfilePage(onMenuPressed: () => _scaffoldKey.currentState?.openDrawer()),
-      ];
-
-  Widget _buildShipperDashboard() {
-    final shipper = RolePalette.shipper;
+  Widget _buildDashboardTab(BuildContext context) {
+    final shipper = kShipperRoleShell;
     final name = _profile?.displayName ?? 'Shipper';
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
-        title: const Text('Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: shipper.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
+    return RoleModuleTabPage(
+      role: shipper,
+      headerTitle: 'Dashboard',
+      headerSubtitle: 'Xin chào, $name · Tổng quan giao hàng hôm nay',
+      trustPill: 'Giao hàng',
+      headerTrailing: RoleModuleIconButton(
+        icon: Icons.notifications_rounded,
+        onTap: () => Navigator.of(context).pushNamed(AppRoutes.shipperNotifications),
+      ),
+      headerBottomPanel: RoleHeaderQuickActionsPanel(
+        actions: [
+          RoleHeaderQuickAction(
+            label: 'Đơn cần giao',
+            icon: Icons.list_alt_rounded,
+            color: shipper.primary,
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.shipperDeliveryList),
+          ),
+          RoleHeaderQuickAction(
+            label: 'Bản đồ',
+            icon: Icons.map_rounded,
+            color: AppDesignSystem.success,
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.shipperRouteMap),
+          ),
+          RoleHeaderQuickAction(
+            label: 'Lịch giao',
+            icon: Icons.calendar_month_rounded,
+            color: shipper.primaryAlt,
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.shipperSchedule),
+          ),
+        ],
       ),
       body: RoleDashboardBody(
         title: 'Xin chào, $name',
@@ -131,28 +149,12 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
         icon: Icons.local_shipping_rounded,
         accent: shipper.primary,
         accentAlt: shipper.primaryAlt,
+        showInternalHeader: false,
         isLoading: _isLoading,
         errorMessage: _loadError,
         onRefresh: _loadDashboardData,
-        topActions: [
-          DashboardTopAction(
-            icon: Icons.notifications_rounded,
-            tooltip: 'Thông báo',
-            route: AppRoutes.shipperNotifications,
-          ),
-        ],
-        quickActions: const [
-          DashboardQuickAction(
-            label: 'Đơn cần giao',
-            icon: Icons.list_alt_rounded,
-            route: AppRoutes.shipperDeliveryList,
-          ),
-          DashboardQuickAction(
-            label: 'Bản đồ',
-            icon: Icons.map_rounded,
-            route: AppRoutes.shipperRouteMap,
-          ),
-        ],
+        topActions: const [],
+        quickActions: const [],
         summaryMetrics: [
           DashboardMetricCard(
             title: 'Đơn hôm nay',
@@ -213,46 +215,24 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
             route: AppRoutes.shipperHistory,
             preview: _isLoading ? null : '$_completedCount đơn hoàn tất hôm nay',
           ),
-          DashboardFeature(
-            title: 'Thực đơn tuần',
-            subtitle: 'Xem món theo kỳ phục vụ',
-            icon: Icons.restaurant_menu_rounded,
-            color: AppDesignSystem.gray700,
-            route: AppRoutes.shipperWeeklyMenu,
-          ),
         ],
       ),
     );
   }
 
-  Future<void> _handleLogout() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Xác nhận đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này không?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Đăng xuất', style: TextStyle(color: Colors.redAccent)),
-          ),
-        ],
-      ),
+  Widget _buildProfileTab() {
+    final email = _profile?.email ?? 'Tài khoản giao hàng';
+    return RoleModuleTabPage(
+      role: kShipperRoleShell,
+      headerTitle: 'Hồ sơ cá nhân',
+      headerSubtitle: email,
+      trustPill: 'Giao hàng',
+      body: const ProfilePage(embeddedInModuleShell: true),
     );
+  }
 
-    if (confirm == true) {
-      await AuthRepository.instance.clearSession();
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          AppRoutes.login,
-          (route) => false,
-        );
-      }
-    }
+  Future<void> _handleLogout() async {
+    await performAppLogout(context, role: kShipperRoleShell);
   }
 
   void _onDrawerNavigate(String route) {
@@ -265,118 +245,22 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      drawer: PremiumDrawer(
-        userName: _profile?.displayName ?? 'Đang tải...',
-        userRole: 'Nhân viên giao hàng',
-        roleBadge: 'Shipper',
-        gradient: RolePalette.shipper.gradient,
-        accentColor: RolePalette.shipper.primary,
-        selectedIndex: _currentIndex,
-        onSelectTab: (index) {
-          if (index < _pages.length) {
-            setState(() => _currentIndex = index);
-          }
-        },
-        onNavigate: _onDrawerNavigate,
-        onLogout: _handleLogout,
-        sections: const [
-          DrawerSection(
-            title: 'Điều phối',
-            items: [
-              DrawerItem(
-                icon: Icons.dashboard_rounded,
-                label: 'dashboard',
-                labelVi: 'Dashboard',
-                tabIndex: 0,
-              ),
-              DrawerItem(
-                icon: Icons.list_alt_rounded,
-                label: 'deliveries',
-                labelVi: 'Danh sách đơn hàng',
-                route: AppRoutes.shipperDeliveryList,
-              ),
-              DrawerItem(
-                icon: Icons.map_rounded,
-                label: 'route_map',
-                labelVi: 'Bản đồ tuyến đường',
-                route: AppRoutes.shipperRouteMap,
-              ),
-            ],
-          ),
-          DrawerSection(
-            title: 'Công việc',
-            items: [
-              DrawerItem(
-                icon: Icons.restaurant_menu_rounded,
-                label: 'weekly_menu',
-                labelVi: 'Thực đơn tuần',
-                route: AppRoutes.shipperWeeklyMenu,
-              ),
-              DrawerItem(
-                icon: Icons.calendar_month_rounded,
-                label: 'schedule',
-                labelVi: 'Lịch trình giao',
-                route: AppRoutes.shipperSchedule,
-              ),
-              DrawerItem(
-                icon: Icons.history_rounded,
-                label: 'history',
-                labelVi: 'Lịch sử giao hàng',
-                route: AppRoutes.shipperHistory,
-              ),
-            ],
-          ),
-          DrawerSection(
-            title: 'Cá nhân',
-            items: [
-              DrawerItem(
-                icon: Icons.person_rounded,
-                label: 'profile',
-                labelVi: 'Hồ sơ cá nhân',
-                tabIndex: 1,
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) => setState(() => _currentIndex = index),
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            selectedItemColor: RolePalette.shipper.primary,
-            unselectedItemColor: AppDesignSystem.gray400,
-            elevation: 0,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.local_shipping_outlined),
-                activeIcon: Icon(Icons.local_shipping_rounded),
-                label: 'Vận chuyển',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline_rounded),
-                activeIcon: Icon(Icons.person_rounded),
-                label: 'Hồ sơ',
-              ),
-            ],
-          ),
-        ),
-      ),
+    return RoleModuleTabShell(
+      scaffoldKey: _scaffoldKey,
+      role: kShipperRoleShell,
+      currentIndex: _currentIndex,
+      onIndexChanged: (i) => setState(() => _currentIndex = i),
+      drawerUserName: _profile?.displayName ?? 'Đang tải...',
+      drawerUserRole: ShipperShellConfig.drawerUserRole,
+      drawerRoleBadge: ShipperShellConfig.roleBadge,
+      drawerSections: ShipperShellConfig.drawerSections,
+      onLogout: _handleLogout,
+      onDrawerNavigate: _onDrawerNavigate,
+      navItems: ShipperShellConfig.navItems,
+      tabs: [
+        _buildDashboardTab(context),
+        _buildProfileTab(),
+      ],
     );
   }
 }

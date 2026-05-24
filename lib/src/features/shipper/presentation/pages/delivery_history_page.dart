@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/app_routes.dart';
+import '../../../../core/theme/app_design_system.dart';
 import '../../data/models/shipper_delivery_models.dart';
 import '../../data/repositories/shipper_repository.dart';
 import '../widgets/shipper_ui.dart';
@@ -13,6 +14,9 @@ class DeliveryHistoryPage extends StatefulWidget {
 }
 
 class _DeliveryHistoryPageState extends State<DeliveryHistoryPage> {
+  static const _filters = ['Tất cả', 'Hoàn tất', 'Thất bại'];
+
+  int _filterIndex = 0;
   List<ShipperDeliveryListItemModel> _items = [];
   bool _loading = true;
   String? _error;
@@ -29,23 +33,38 @@ class _DeliveryHistoryPageState extends State<DeliveryHistoryPage> {
       _error = null;
     });
     try {
-      final completed = await ShipperRepository.instance.getDeliveries(
-        status: 'completed',
-        pageSize: 50,
-      );
-      final failed = await ShipperRepository.instance.getDeliveries(
-        status: 'failed',
-        pageSize: 50,
-      );
-      final rejected = await ShipperRepository.instance.getDeliveries(
-        status: 'rejected',
-        pageSize: 50,
-      );
-      final merged = [
-        ...completed.data,
-        ...failed.data,
-        ...rejected.data,
-      ];
+      final List<ShipperDeliveryListItemModel> merged;
+      if (_filterIndex == 1) {
+        merged = (await ShipperRepository.instance.getDeliveries(
+          status: 'completed',
+          pageSize: 50,
+        ))
+            .data;
+      } else if (_filterIndex == 2) {
+        final failed = await ShipperRepository.instance.getDeliveries(
+          status: 'failed',
+          pageSize: 50,
+        );
+        final rejected = await ShipperRepository.instance.getDeliveries(
+          status: 'rejected',
+          pageSize: 50,
+        );
+        merged = [...failed.data, ...rejected.data];
+      } else {
+        final completed = await ShipperRepository.instance.getDeliveries(
+          status: 'completed',
+          pageSize: 50,
+        );
+        final failed = await ShipperRepository.instance.getDeliveries(
+          status: 'failed',
+          pageSize: 50,
+        );
+        final rejected = await ShipperRepository.instance.getDeliveries(
+          status: 'rejected',
+          pageSize: 50,
+        );
+        merged = [...completed.data, ...failed.data, ...rejected.data];
+      }
       merged.sort((a, b) => b.scheduledDateUtc.compareTo(a.scheduledDateUtc));
       if (!mounted) return;
       setState(() {
@@ -61,37 +80,85 @@ class _DeliveryHistoryPageState extends State<DeliveryHistoryPage> {
     }
   }
 
+  int get _completedCount =>
+      _items.where((d) => d.deliveryStatus.toLowerCase() == 'completed').length;
+
+  int get _failedCount => _items.length - _completedCount;
+
   @override
   Widget build(BuildContext context) {
     return ShipperPageShell(
       title: 'Lịch sử giao hàng',
       onRefresh: _load,
       body: _loading
-          ? const ShipperLoadingBody()
+          ? const ShipperLoadingBody(message: 'Đang tải lịch sử…')
           : _error != null
               ? ShipperErrorBody(message: _error!, onRetry: _load)
-              : _items.isEmpty
-                  ? const ModuleEmptyList(
-                      message: 'Chưa có đơn hoàn tất hoặc thất bại',
+              : ModuleListView(
+                  padding: shipperListPadding(context),
+                  children: [
+                    const ShipperPageIntro(
+                      title: 'Lịch sử giao hàng',
+                      description:
+                          'Đơn đã hoàn tất hoặc thất bại / từ chối. Chạm để xem chi tiết và ảnh PoD.',
                       icon: Icons.history_rounded,
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.all(16),
-                      itemCount: _items.length,
-                      itemBuilder: (context, i) {
-                        final item = _items[i];
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: ShipperDeliveryTile(
-                            item: item,
-                            onTap: () => Navigator.of(context).pushNamed(
-                              AppRoutes.shipperDeliveryDetail,
-                              arguments: item.deliveryId,
-                            ),
-                          ),
-                        );
+                    ),
+                    const SizedBox(height: 14),
+                    ShipperPeriodChips(
+                      labels: _filters,
+                      selected: _filterIndex,
+                      onSelected: (i) {
+                        setState(() => _filterIndex = i);
+                        _load();
                       },
                     ),
+                    if (_items.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ShipperStatTile(
+                              label: 'Hoàn tất',
+                              value: '$_completedCount',
+                              icon: Icons.check_circle_outline,
+                              color: AppDesignSystem.success,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ShipperStatTile(
+                              label: 'Thất bại / từ chối',
+                              value: '$_failedCount',
+                              icon: Icons.cancel_outlined,
+                              color: AppDesignSystem.danger,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    ShipperSectionHeader(
+                      title: 'Danh sách',
+                      subtitle: '${_items.length} đơn',
+                    ),
+                    const SizedBox(height: 10),
+                    if (_items.isEmpty)
+                      const ShipperEmptyList(
+                        message: 'Chưa có đơn hoàn tất hoặc thất bại',
+                        icon: Icons.history_rounded,
+                      )
+                    else
+                      ..._items.map(
+                        (item) => ShipperDeliveryTile(
+                          item: item,
+                          onTap: () => Navigator.of(context).pushNamed(
+                            AppRoutes.shipperDeliveryDetail,
+                            arguments: item.deliveryId,
+                          ),
+                        ),
+                      ),
+                  ],
+                ),
     );
   }
 }

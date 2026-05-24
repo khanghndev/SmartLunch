@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../../../../core/analytics/meal_statistics_repository.dart';
+import '../../../../core/theme/app_design_system.dart';
 import '../../data/models/finance_models.dart';
 import '../../data/models/review_complaint_models.dart';
 import '../../data/repositories/manager_repository.dart';
@@ -90,7 +91,9 @@ class _ReportExportPageState extends State<ReportExportPage> {
       case 'feedback':
         final reviews = await ManagerRepository.instance.getReviews(pageSize: 50);
         final complaints = await ManagerRepository.instance.getComplaints(pageSize: 50);
-        buffer.writeln('Đánh giá: ${reviews.totalCount} (TB ${reviews.averageRating.toStringAsFixed(1)}★)');
+        buffer.writeln(
+          'Đánh giá: ${reviews.totalCount} (TB ${reviews.averageRating.toStringAsFixed(1)}★)',
+        );
         for (final r in reviews.items) {
           buffer.writeln('★${r.stars} ${r.customerName}: ${r.comment}');
         }
@@ -125,10 +128,12 @@ class _ReportExportPageState extends State<ReportExportPage> {
         SnackBar(
           content: Text(
             'Đã tạo báo cáo ${_format.toUpperCase()} và sao chép nội dung. '
-            'Bạn có thể dán vào Excel/Word hoặc lưu file PDF.',
+            'Dán vào Excel hoặc trình soạn PDF để lưu file.',
+            style: const TextStyle(fontSize: 13),
           ),
           behavior: SnackBarBehavior.floating,
           backgroundColor: managerAccent,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
         ),
       );
     } catch (e) {
@@ -136,7 +141,8 @@ class _ReportExportPageState extends State<ReportExportPage> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(apiErrorMessage(e)),
-          backgroundColor: Colors.redAccent,
+          backgroundColor: AppDesignSystem.danger,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     } finally {
@@ -148,20 +154,24 @@ class _ReportExportPageState extends State<ReportExportPage> {
   Widget build(BuildContext context) {
     return ManagerPageShell(
       title: 'Xuất: $_reportTitle',
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: ModuleListView(
+        padding: managerListPadding(context),
         children: [
+          ManagerPageIntro(
+            title: _reportTitle(),
+            description: 'Chọn kỳ và định dạng, sau đó nhấn xuất để sao chép dữ liệu báo cáo.',
+            icon: Icons.description_outlined,
+          ),
+          const SizedBox(height: 14),
           ManagerGlassCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Khoảng thời gian',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
+                const ManagerSectionHeader(
+                  title: 'Khoảng thời gian',
+                  subtitle: 'Dữ liệu lấy theo số ngày gần nhất',
                 ),
-                const SizedBox(height: 10),
+                const SizedBox(height: 12),
                 ManagerPeriodChips(
                   labels: _ranges,
                   selected: _rangeIndex,
@@ -175,50 +185,82 @@ class _ReportExportPageState extends State<ReportExportPage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  'Định dạng',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w800,
-                      ),
-                ),
-                const SizedBox(height: 8),
-                RadioListTile<String>(
-                  title: const Text('Excel (.xlsx / CSV)'),
-                  subtitle: const Text('Sao chép dữ liệu dạng bảng'),
+                const ManagerSectionHeader(title: 'Định dạng xuất'),
+                const SizedBox(height: 4),
+                _FormatTile(
+                  title: 'Excel / CSV',
+                  subtitle: 'Bảng dữ liệu — dán vào Excel',
                   value: 'excel',
                   groupValue: _format,
-                  activeColor: managerAccent,
-                  onChanged: (v) => setState(() => _format = v!),
+                  onSelect: (v) => setState(() => _format = v),
                 ),
-                RadioListTile<String>(
-                  title: const Text('PDF'),
-                  subtitle: const Text('Nội dung văn bản — dán vào trình soạn PDF'),
+                _FormatTile(
+                  title: 'PDF (văn bản)',
+                  subtitle: 'Nội dung có cấu trúc — dán vào Word/PDF',
                   value: 'pdf',
                   groupValue: _format,
-                  activeColor: managerAccent,
-                  onChanged: (v) => setState(() => _format = v!),
+                  onSelect: (v) => setState(() => _format = v),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 24),
-          FilledButton.icon(
-            onPressed: _exporting ? null : _export,
-            icon: _exporting
-                ? const SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white),
-                  )
-                : const Icon(Icons.download_rounded),
-            label: Text(_exporting ? 'Đang tạo báo cáo...' : 'Xuất báo cáo'),
-            style: FilledButton.styleFrom(
-              backgroundColor: managerAccent,
-              minimumSize: const Size.fromHeight(52),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
+          ManagerPrimaryButton(
+            label: _exporting ? 'Đang tạo báo cáo…' : 'Xuất báo cáo',
+            icon: Icons.download_rounded,
+            loading: _exporting,
+            onPressed: _export,
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _FormatTile extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final String value;
+  final String groupValue;
+  final ValueChanged<String> onSelect;
+
+  const _FormatTile({
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    required this.groupValue,
+    required this.onSelect,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final selected = value == groupValue;
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () => onSelect(value),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          child: Row(
+            children: [
+              Icon(
+                selected ? Icons.radio_button_checked : Icons.radio_button_off,
+                color: selected ? managerAccent : AppDesignSystem.gray400,
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(title, style: AppDesignSystem.label()),
+                    Text(subtitle, style: AppDesignSystem.body(size: 12)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }

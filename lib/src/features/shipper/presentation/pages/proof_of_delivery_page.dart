@@ -53,7 +53,7 @@ class _ProofOfDeliveryPageState extends State<ProofOfDeliveryPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không chọn được ảnh: $e')),
+        SnackBar(content: Text('Không chọn được ảnh: ${shipperApiError(e)}')),
       );
     }
   }
@@ -99,12 +99,14 @@ class _ProofOfDeliveryPageState extends State<ProofOfDeliveryPage> {
   Widget build(BuildContext context) {
     return ShipperPageShell(
       title: 'Xác nhận giao hàng',
-      body: ListView(
-        padding: const EdgeInsets.all(16),
+      body: ModuleListView(
+        padding: shipperListPadding(context),
         children: [
-          Text(
-            'Chụp ảnh minh chứng giao hàng (PoD). Hệ thống sẽ tự đánh dấu đơn là hoàn tất.',
-            style: AppDesignSystem.body(),
+          const ShipperPageIntro(
+            title: 'Proof of Delivery (PoD)',
+            description:
+                'Chụp ảnh minh chứng tại điểm giao. Hệ thống tự đánh dấu đơn hoàn tất và ghi nhận thời gian.',
+            icon: Icons.camera_alt_rounded,
           ),
           const SizedBox(height: 16),
           ShipperCard(
@@ -131,9 +133,7 @@ class _ProofOfDeliveryPageState extends State<ProofOfDeliveryPage> {
             children: [
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _submitting
-                      ? null
-                      : () => _pickImage(ImageSource.camera),
+                  onPressed: _submitting ? null : () => _pickImage(ImageSource.camera),
                   icon: const Icon(Icons.camera_alt_outlined),
                   label: const Text('Chụp ảnh'),
                 ),
@@ -141,9 +141,7 @@ class _ProofOfDeliveryPageState extends State<ProofOfDeliveryPage> {
               const SizedBox(width: 8),
               Expanded(
                 child: OutlinedButton.icon(
-                  onPressed: _submitting
-                      ? null
-                      : () => _pickImage(ImageSource.gallery),
+                  onPressed: _submitting ? null : () => _pickImage(ImageSource.gallery),
                   icon: const Icon(Icons.photo_library_outlined),
                   label: const Text('Thư viện'),
                 ),
@@ -156,33 +154,15 @@ class _ProofOfDeliveryPageState extends State<ProofOfDeliveryPage> {
             maxLines: 3,
             decoration: AppDesignSystem.inputDecoration(
               label: 'Ghi chú (tuỳ chọn)',
-              focusColor: kShipperRole.primary,
+              focusColor: shipperAccent,
             ),
           ),
           const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            child: FilledButton.icon(
-              onPressed: _submitting ? null : _submit,
-              icon: _submitting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        color: Colors.white,
-                      ),
-                    )
-                  : const Icon(Icons.check_rounded),
-              label: Text(_submitting ? 'Đang gửi...' : 'Hoàn tất giao hàng'),
-              style: FilledButton.styleFrom(
-                backgroundColor: kShipperRole.primary,
-                padding: const EdgeInsets.symmetric(vertical: 14),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
+          ShipperPrimaryButton(
+            label: _submitting ? 'Đang gửi…' : 'Hoàn tất giao hàng',
+            icon: Icons.check_rounded,
+            loading: _submitting,
+            onPressed: _submitting ? null : _submit,
           ),
         ],
       ),

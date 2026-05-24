@@ -18,6 +18,9 @@ class _OrgReportsPageState extends State<OrgReportsPage> {
   bool _loading = true;
   String? _error;
   String _reportText = '';
+  String _orgName = '';
+  int _totalMeals = 0;
+  double _totalAmount = 0;
 
   @override
   void initState() {
@@ -51,7 +54,10 @@ class _OrgReportsPageState extends State<OrgReportsPage> {
       final buf = StringBuffer()
         ..writeln('BÁO CÁO SUẤT ĂN ĐƠN VỊ')
         ..writeln('Đơn vị: $orgName')
-        ..writeln('Kỳ: ${range.$1.day}/${range.$1.month}/${range.$1.year} – ${range.$2.day}/${range.$2.month}/${range.$2.year}')
+        ..writeln(
+          'Kỳ: ${range.$1.day}/${range.$1.month}/${range.$1.year} – '
+          '${range.$2.day}/${range.$2.month}/${range.$2.year}',
+        )
         ..writeln('')
         ..writeln('Tổng suất: $totalMeals')
         ..writeln('Tổng giá trị: ${formatOrgVnd(totalAmount)}')
@@ -59,7 +65,8 @@ class _OrgReportsPageState extends State<OrgReportsPage> {
         ..writeln('--- Chi tiết món ---');
       for (final d in details.take(50)) {
         buf.writeln(
-          '${d.date.day}/${d.date.month}: ${d.dishName} (${d.mealSlot}) x${d.quantity} — ${formatOrgVnd(d.totalAmount)}',
+          '${d.date.day}/${d.date.month}: ${d.dishName} (${d.mealSlot}) '
+          'x${d.quantity} — ${formatOrgVnd(d.totalAmount)}',
         );
       }
       if (details.length > 50) {
@@ -68,6 +75,9 @@ class _OrgReportsPageState extends State<OrgReportsPage> {
 
       if (!mounted) return;
       setState(() {
+        _orgName = orgName;
+        _totalMeals = totalMeals;
+        _totalAmount = totalAmount;
         _reportText = buf.toString();
         _loading = false;
       });
@@ -80,52 +90,94 @@ class _OrgReportsPageState extends State<OrgReportsPage> {
     }
   }
 
+  void _copyReport() {
+    if (_reportText.isEmpty) return;
+    Clipboard.setData(ClipboardData(text: _reportText));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Đã sao chép báo cáo vào bộ nhớ tạm')),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return OrgPageShell(
       title: 'Báo cáo',
       onRefresh: _generate,
       body: _loading
-          ? const OrgLoadingBody()
+          ? const OrgLoadingBody(message: 'Đang tạo báo cáo 30 ngày…')
           : _error != null
               ? OrgErrorBody(message: _error!, onRetry: _generate)
-              : ListView(
-                  padding: const EdgeInsets.all(16),
+              : ModuleListView(
+                  padding: orgListPadding(context),
                   children: [
+                    const OrgPageIntro(
+                      title: 'Báo cáo suất ăn đơn vị',
+                      description:
+                          'Tóm tắt 30 ngày gần nhất. Sao chép nội dung để gửi email; xuất Excel/PDF trên web Manager.',
+                      icon: Icons.summarize_rounded,
+                    ),
+                    const SizedBox(height: 14),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: OrgStatTile(
+                            label: 'Tổng suất',
+                            value: '$_totalMeals',
+                            icon: Icons.restaurant_rounded,
+                            color: orgAccent,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: OrgStatTile(
+                            label: 'Giá trị',
+                            value: formatOrgVnd(_totalAmount),
+                            icon: Icons.payments_outlined,
+                            color: AppDesignSystem.success,
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
                     OrgCard(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Báo cáo 30 ngày gần nhất', style: AppDesignSystem.sectionTitle()),
-                          const SizedBox(height: 8),
-                          Text(
-                            'Sao chép nội dung để gửi email hoặc lưu ghi chú. Xuất Excel/PDF thực hiện trên web Manager.',
-                            style: AppDesignSystem.body(size: 12),
+                          OrgSectionHeader(
+                            title: 'Nội dung báo cáo',
+                            subtitle: _orgName.isNotEmpty ? _orgName : null,
                           ),
                           const SizedBox(height: 12),
-                          SelectableText(
-                            _reportText,
-                            style: AppDesignSystem.body(size: 13, color: AppDesignSystem.gray900),
+                          const OrgInfoBanner(
+                            message:
+                                'Đây là bản tóm tắt văn bản. Để xuất file chính thức, dùng màn Báo cáo trên web quản trị.',
+                            icon: Icons.info_outline_rounded,
+                          ),
+                          const SizedBox(height: 14),
+                          Container(
+                            width: double.infinity,
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: AppDesignSystem.gray50,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: AppDesignSystem.gray200),
+                            ),
+                            child: SelectableText(
+                              _reportText,
+                              style: AppDesignSystem.body(
+                                size: 13,
+                                color: AppDesignSystem.gray900,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
-                    SizedBox(
-                      width: double.infinity,
-                      child: FilledButton.icon(
-                        onPressed: _reportText.isEmpty
-                            ? null
-                            : () {
-                                Clipboard.setData(ClipboardData(text: _reportText));
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Đã sao chép báo cáo')),
-                                );
-                              },
-                        icon: const Icon(Icons.copy_rounded),
-                        label: const Text('Sao chép báo cáo'),
-                        style: FilledButton.styleFrom(backgroundColor: orgAccent),
-                      ),
+                    const SizedBox(height: 14),
+                    OrgPrimaryButton(
+                      label: 'Sao chép báo cáo',
+                      icon: Icons.copy_rounded,
+                      onPressed: _reportText.isEmpty ? null : _copyReport,
                     ),
                   ],
                 ),

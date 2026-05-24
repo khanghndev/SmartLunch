@@ -62,8 +62,16 @@ class _DeliverySchedulePageState extends State<DeliverySchedulePage> {
     }
   }
 
+  int _countByStatus(Set<String> statuses) => _items
+      .where((d) => statuses.contains(d.deliveryStatus.toLowerCase()))
+      .length;
+
   @override
   Widget build(BuildContext context) {
+    final pending = _countByStatus({'pending', 'assigned', 'received'});
+    final inTransit = _countByStatus({'in_transit'});
+    final done = _countByStatus({'completed'});
+
     return ShipperPageShell(
       title: 'Lịch trình giao',
       onRefresh: _load,
@@ -71,14 +79,21 @@ class _DeliverySchedulePageState extends State<DeliverySchedulePage> {
           ? const ShipperLoadingBody()
           : _error != null
               ? ShipperErrorBody(message: _error!, onRetry: _load)
-              : ListView(
-                  padding: const EdgeInsets.all(16),
+              : ModuleListView(
+                  padding: shipperListPadding(context),
                   children: [
+                    const ShipperPageIntro(
+                      title: 'Lịch trình giao hàng',
+                      description:
+                          'Xem tất cả đơn theo ngày phục vụ. Chọn ngày để lên kế hoạch tuyến đường.',
+                      icon: Icons.calendar_month_rounded,
+                    ),
+                    const SizedBox(height: 14),
                     ShipperCard(
                       onTap: _pickDate,
                       child: Row(
                         children: [
-                          Icon(Icons.calendar_month_rounded, color: kShipperRole.primary),
+                          Icon(Icons.calendar_month_rounded, color: shipperAccent),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Column(
@@ -94,28 +109,63 @@ class _DeliverySchedulePageState extends State<DeliverySchedulePage> {
                           ),
                           Text(
                             '${_items.length} đơn',
-                            style: AppDesignSystem.label(color: kShipperRole.primary),
+                            style: AppDesignSystem.label(color: shipperAccent),
                           ),
                           const Icon(Icons.chevron_right_rounded),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    if (_items.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ShipperStatTile(
+                              label: 'Chờ / nhận',
+                              value: '$pending',
+                              icon: Icons.pending_actions_rounded,
+                              color: AppDesignSystem.warning,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ShipperStatTile(
+                              label: 'Đang giao',
+                              value: '$inTransit',
+                              icon: Icons.local_shipping_rounded,
+                              color: shipperAccent,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: ShipperStatTile(
+                              label: 'Xong',
+                              value: '$done',
+                              icon: Icons.check_circle_outline,
+                              color: AppDesignSystem.success,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    ShipperSectionHeader(
+                      title: 'Đơn trong ngày',
+                      subtitle: formatShipperDate(_selected),
+                    ),
+                    const SizedBox(height: 10),
                     if (_items.isEmpty)
-                      const ModuleEmptyList(
+                      const ShipperEmptyList(
                         message: 'Không có lịch giao trong ngày này',
                         icon: Icons.event_busy_rounded,
                       )
                     else
                       ..._items.map(
-                        (item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: ShipperDeliveryTile(
-                            item: item,
-                            onTap: () => Navigator.of(context).pushNamed(
-                              AppRoutes.shipperDeliveryDetail,
-                              arguments: item.deliveryId,
-                            ),
+                        (item) => ShipperDeliveryTile(
+                          item: item,
+                          onTap: () => Navigator.of(context).pushNamed(
+                            AppRoutes.shipperDeliveryDetail,
+                            arguments: item.deliveryId,
                           ),
                         ),
                       ),

@@ -2,10 +2,12 @@ import 'package:flutter/material.dart';
 import '../../../../app/app_routes.dart';
 import '../../../../core/theme/app_design_system.dart';
 import '../../../../core/widgets/dashboard_format.dart';
-import '../../../../core/widgets/premium_drawer.dart';
 import '../../../../core/widgets/role_dashboard.dart';
+import '../../../../core/widgets/role_module_header.dart';
+import '../../../../core/widgets/role_module_shell.dart';
+import '../widgets/organization_shell.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
-import '../../../auth/data/repositories/auth_repository.dart';
+import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../profile/data/profile_repository.dart';
 import '../../../profile/data/models/user_profile_model.dart';
 import '../../data/org_repository.dart';
@@ -68,17 +70,22 @@ class _OrganizationHomePageState extends State<OrganizationHomePage> {
           .take(3)
           .toList();
 
-      for (final c in activeContracts) {
-        try {
-          final payments = await OrgRepository.instance.getContractPayments(c.id);
-          for (final p in payments.items) {
-            if (p.status == PaymentStatus.pending) {
-              pendingCount++;
-              pendingAmount += p.amount;
-            }
+      final paymentResults = await Future.wait(
+        activeContracts.map((c) async {
+          try {
+            return await OrgRepository.instance.getContractPayments(c.id);
+          } catch (_) {
+            return null;
           }
-        } catch (_) {
-          // Bỏ qua nếu không tải được payments từng HĐ
+        }),
+      );
+      for (final payments in paymentResults) {
+        if (payments == null) continue;
+        for (final p in payments.items) {
+          if (p.status == PaymentStatus.pending) {
+            pendingCount++;
+            pendingAmount += p.amount;
+          }
         }
       }
 
@@ -121,25 +128,35 @@ class _OrganizationHomePageState extends State<OrganizationHomePage> {
     }
   }
 
-  List<Widget> get _pages => [
-        _buildOrganizationDashboard(),
-        ProfilePage(onMenuPressed: () => _scaffoldKey.currentState?.openDrawer()),
-      ];
-
-  Widget _buildOrganizationDashboard() {
-    final org = RolePalette.organization;
+  Widget _buildDashboardTab(BuildContext context) {
+    final org = kOrgRoleShell;
     final displayName = _profile?.displayName ?? 'Đơn vị';
 
-    return Scaffold(
-      appBar: AppBar(
-        leading: IconButton(
-          icon: const Icon(Icons.menu),
-          onPressed: () => _scaffoldKey.currentState?.openDrawer(),
-        ),
-        title: const Text('Dashboard', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: org.primary,
-        foregroundColor: Colors.white,
-        elevation: 0,
+    return RoleModuleTabPage(
+      role: org,
+      headerTitle: 'Dashboard',
+      headerSubtitle: 'Xin chào, $displayName · Tổng quan đặt suất & hợp đồng B2B',
+      trustPill: 'B2B',
+      headerTrailing: RoleModuleIconButton(
+        icon: Icons.notifications_rounded,
+        onTap: () => Navigator.of(context).pushNamed(AppRoutes.orgNotifications),
+      ),
+      headerBottomPanel: RoleHeaderQuickActionsPanel(
+        actions: [
+          RoleHeaderQuickAction(
+            label: 'Đặt suất ăn',
+            icon: Icons.restaurant_menu_rounded,
+            color: org.primary,
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.orgBulkOrder),
+          ),
+          RoleHeaderQuickAction(
+            label: 'Hợp đồng',
+            icon: Icons.request_quote_rounded,
+            color: org.primaryAlt,
+            onTap: () =>
+                Navigator.of(context).pushNamed(AppRoutes.orgContractSettlement),
+          ),
+        ],
       ),
       body: RoleDashboardBody(
         title: 'Xin chào, $displayName',
@@ -147,28 +164,12 @@ class _OrganizationHomePageState extends State<OrganizationHomePage> {
         icon: Icons.business_rounded,
         accent: org.primary,
         accentAlt: org.primaryAlt,
+        showInternalHeader: false,
         isLoading: _isLoading,
         errorMessage: _loadError,
         onRefresh: _loadDashboardData,
-        topActions: [
-          DashboardTopAction(
-            icon: Icons.notifications_rounded,
-            tooltip: 'Thông báo',
-            route: AppRoutes.orgNotifications,
-          ),
-        ],
-        quickActions: const [
-          DashboardQuickAction(
-            label: 'Đặt suất ăn',
-            icon: Icons.restaurant_menu_rounded,
-            route: AppRoutes.orgBulkOrder,
-          ),
-          DashboardQuickAction(
-            label: 'Hợp đồng',
-            icon: Icons.request_quote_rounded,
-            route: AppRoutes.orgContractSettlement,
-          ),
-        ],
+        topActions: const [],
+        quickActions: const [],
         summaryMetrics: [
           DashboardMetricCard(
             title: 'Hợp đồng',
@@ -262,34 +263,19 @@ class _OrganizationHomePageState extends State<OrganizationHomePage> {
     );
   }
 
-  Future<void> _handleLogout() async {
-    final confirm = await showDialog<bool>(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Xác nhận đăng xuất'),
-        content: const Text('Bạn có chắc chắn muốn đăng xuất khỏi tài khoản này không?'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Hủy', style: TextStyle(color: Colors.grey)),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text('Đăng xuất', style: TextStyle(color: Colors.redAccent)),
-          ),
-        ],
-      ),
+  Widget _buildProfileTab() {
+    final email = _profile?.email ?? 'Tài khoản đơn vị';
+    return RoleModuleTabPage(
+      role: kOrgRoleShell,
+      headerTitle: 'Hồ sơ đơn vị',
+      headerSubtitle: email,
+      trustPill: 'B2B',
+      body: const ProfilePage(embeddedInModuleShell: true),
     );
+  }
 
-    if (confirm == true) {
-      await AuthRepository.instance.clearSession();
-      if (mounted) {
-        Navigator.of(context).pushNamedAndRemoveUntil(
-          AppRoutes.login,
-          (route) => false,
-        );
-      }
-    }
+  Future<void> _handleLogout() async {
+    await performAppLogout(context, role: kOrgRoleShell);
   }
 
   void _onDrawerNavigate(String route) {
@@ -302,130 +288,22 @@ class _OrganizationHomePageState extends State<OrganizationHomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      key: _scaffoldKey,
-      drawer: PremiumDrawer(
-        userName: _profile?.displayName ?? 'Đang tải...',
-        userRole: 'Tổ chức B2B',
-        roleBadge: 'Organization',
-        gradient: RolePalette.organization.gradient,
-        accentColor: RolePalette.organization.primary,
-        selectedIndex: _currentIndex,
-        onSelectTab: (index) {
-          if (index < _pages.length) {
-            setState(() => _currentIndex = index);
-          }
-        },
-        onNavigate: _onDrawerNavigate,
-        onLogout: _handleLogout,
-        sections: const [
-          DrawerSection(
-            title: 'Dịch vụ chính',
-            items: [
-              DrawerItem(
-                icon: Icons.dashboard_rounded,
-                label: 'dashboard',
-                labelVi: 'Dashboard',
-                tabIndex: 0,
-              ),
-              DrawerItem(
-                icon: Icons.restaurant_menu_rounded,
-                label: 'bulk_order',
-                labelVi: 'Đặt suất ăn tập trung',
-                route: AppRoutes.orgBulkOrder,
-              ),
-              DrawerItem(
-                icon: Icons.request_quote_rounded,
-                label: 'contracts',
-                labelVi: 'Hợp đồng & Thanh toán',
-                route: AppRoutes.orgContractSettlement,
-              ),
-            ],
-          ),
-          DrawerSection(
-            title: 'Quản lý đơn vị',
-            items: [
-              DrawerItem(
-                icon: Icons.people_alt_rounded,
-                label: 'staff',
-                labelVi: 'Danh sách nhân sự',
-                route: AppRoutes.orgStaff,
-              ),
-              DrawerItem(
-                icon: Icons.analytics_rounded,
-                label: 'statistics',
-                labelVi: 'Thống kê suất ăn',
-                route: AppRoutes.orgStatistics,
-              ),
-              DrawerItem(
-                icon: Icons.description_outlined,
-                label: 'reports',
-                labelVi: 'Báo cáo',
-                route: AppRoutes.orgReports,
-              ),
-              DrawerItem(
-                icon: Icons.account_balance_wallet_outlined,
-                label: 'reconciliation',
-                labelVi: 'Đối soát thanh toán',
-                route: AppRoutes.orgReconciliation,
-              ),
-            ],
-          ),
-          DrawerSection(
-            title: 'Cá nhân & Hỗ trợ',
-            items: [
-              DrawerItem(
-                icon: Icons.person_rounded,
-                label: 'profile',
-                labelVi: 'Hồ sơ đơn vị',
-                tabIndex: 1,
-              ),
-              DrawerItem(
-                icon: Icons.support_agent_rounded,
-                label: 'support',
-                labelVi: 'Chatbot CSKH',
-                route: AppRoutes.chatbot,
-              ),
-            ],
-          ),
-        ],
-      ),
-      body: IndexedStack(index: _currentIndex, children: _pages),
-      bottomNavigationBar: Container(
-        decoration: BoxDecoration(
-          color: Colors.white,
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.05),
-              blurRadius: 20,
-              offset: const Offset(0, -5),
-            ),
-          ],
-        ),
-        child: SafeArea(
-          child: BottomNavigationBar(
-            currentIndex: _currentIndex,
-            onTap: (index) => setState(() => _currentIndex = index),
-            type: BottomNavigationBarType.fixed,
-            backgroundColor: Colors.white,
-            selectedItemColor: RolePalette.organization.primary,
-            unselectedItemColor: AppDesignSystem.gray400,
-            elevation: 0,
-            items: const [
-              BottomNavigationBarItem(
-                icon: Icon(Icons.business_outlined),
-                activeIcon: Icon(Icons.business_rounded),
-                label: 'Dashboard',
-              ),
-              BottomNavigationBarItem(
-                icon: Icon(Icons.person_outline_rounded),
-                activeIcon: Icon(Icons.person_rounded),
-                label: 'Hồ sơ',
-              ),
-            ],
-          ),
-        ),
-      ),
+    return RoleModuleTabShell(
+      scaffoldKey: _scaffoldKey,
+      role: kOrgRoleShell,
+      currentIndex: _currentIndex,
+      onIndexChanged: (i) => setState(() => _currentIndex = i),
+      drawerUserName: _profile?.displayName ?? 'Đang tải...',
+      drawerUserRole: OrganizationShellConfig.drawerUserRole,
+      drawerRoleBadge: OrganizationShellConfig.roleBadge,
+      drawerSections: OrganizationShellConfig.drawerSections,
+      onLogout: _handleLogout,
+      onDrawerNavigate: _onDrawerNavigate,
+      navItems: OrganizationShellConfig.navItems,
+      tabs: [
+        _buildDashboardTab(context),
+        _buildProfileTab(),
+      ],
     );
   }
 }

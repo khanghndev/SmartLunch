@@ -67,6 +67,16 @@ class _DeliveryListPageState extends State<DeliveryListPage> {
     }
   }
 
+  int get _pendingCount => _items
+      .where((d) {
+        final s = d.deliveryStatus.toLowerCase();
+        return s == 'pending' || s == 'assigned' || s == 'received';
+      })
+      .length;
+
+  int get _inTransitCount =>
+      _items.where((d) => d.deliveryStatus.toLowerCase() == 'in_transit').length;
+
   void _openDetail(ShipperDeliveryListItemModel item) {
     Navigator.of(context)
         .pushNamed(AppRoutes.shipperDeliveryDetail, arguments: item.deliveryId)
@@ -79,35 +89,67 @@ class _DeliveryListPageState extends State<DeliveryListPage> {
       title: 'Đơn cần giao',
       onRefresh: _load,
       body: _loading
-          ? const ShipperLoadingBody()
+          ? const ShipperLoadingBody(message: 'Đang tải danh sách đơn…')
           : _error != null
               ? ShipperErrorBody(message: _error!, onRetry: _load)
-              : ListView(
-                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
+              : ModuleListView(
+                  padding: shipperListPadding(context),
                   children: [
-                    ModulePeriodChips(
+                    const ShipperPageIntro(
+                      title: 'Đơn cần giao',
+                      description:
+                          'Lọc theo hôm nay, trạng thái chờ nhận hoặc đang giao. Chạm đơn để xem chi tiết và cập nhật.',
+                      icon: Icons.inventory_2_rounded,
+                    ),
+                    const SizedBox(height: 14),
+                    ShipperPeriodChips(
                       labels: _filters.map((f) => f.label).toList(),
                       selected: _filterIndex,
                       onSelected: (i) {
                         setState(() => _filterIndex = i);
                         _load();
                       },
-                      role: kShipperRole,
                     ),
-                    const SizedBox(height: 12),
+                    if (!_loading && _items.isNotEmpty) ...[
+                      const SizedBox(height: 14),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ShipperStatTile(
+                              label: 'Chờ xử lý',
+                              value: '$_pendingCount',
+                              icon: Icons.hourglass_top_rounded,
+                              color: AppDesignSystem.warning,
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ShipperStatTile(
+                              label: 'Đang giao',
+                              value: '$_inTransitCount',
+                              icon: Icons.local_shipping_rounded,
+                              color: shipperAccent,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                    const SizedBox(height: 14),
+                    ShipperSectionHeader(
+                      title: 'Danh sách',
+                      subtitle: '${_items.length} đơn',
+                    ),
+                    const SizedBox(height: 10),
                     if (_items.isEmpty)
-                      const ModuleEmptyList(
+                      const ShipperEmptyList(
                         message: 'Không có đơn giao trong bộ lọc này',
                         icon: Icons.inventory_2_outlined,
                       )
                     else
                       ..._items.map(
-                        (item) => Padding(
-                          padding: const EdgeInsets.only(bottom: 10),
-                          child: ShipperDeliveryTile(
-                            item: item,
-                            onTap: () => _openDetail(item),
-                          ),
+                        (item) => ShipperDeliveryTile(
+                          item: item,
+                          onTap: () => _openDetail(item),
                         ),
                       ),
                   ],

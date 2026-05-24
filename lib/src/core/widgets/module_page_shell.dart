@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../theme/app_design_system.dart';
+import 'module_scroll.dart';
 
 /// AppBar + scaffold chuẩn cho mọi module (style Auth).
 class ModulePageShell extends StatelessWidget {
@@ -28,6 +29,7 @@ class ModulePageShell extends StatelessWidget {
         : body;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       backgroundColor: AppDesignSystem.gray50,
       appBar: AppBar(
         elevation: 0,
@@ -46,6 +48,30 @@ class ModulePageShell extends StatelessWidget {
       ),
       floatingActionButton: floatingAction,
       body: content,
+    );
+  }
+}
+
+/// ListView trong [ModulePageShell] — padding đáy gồm safe area + bàn phím.
+class ModuleBodyListView extends StatelessWidget {
+  final List<Widget> children;
+  final Future<void> Function()? onRefresh;
+  final RolePalette role;
+
+  const ModuleBodyListView({
+    super.key,
+    required this.children,
+    required this.role,
+    this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ModuleListView(
+      refreshColor: role.primary,
+      onRefresh: onRefresh,
+      padding: moduleListPadding(context),
+      children: children,
     );
   }
 }

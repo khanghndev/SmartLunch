@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_design_system.dart';
 import '../../data/models/finance_models.dart';
 import '../../data/repositories/manager_repository.dart';
 import '../widgets/manager_ui.dart';
@@ -67,6 +67,18 @@ class _ManagerReconciliationPageState extends State<ManagerReconciliationPage>
     }
   }
 
+  Widget _introHeader() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+      child: const ManagerPageIntro(
+        title: 'Đối soát thanh toán',
+        description:
+            'Kiểm tra lệch đơn, công nợ đơn vị B2B và nhà cung cấp trong 30 ngày gần nhất.',
+        icon: Icons.receipt_long_rounded,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ManagerPageShell(
@@ -76,31 +88,14 @@ class _ManagerReconciliationPageState extends State<ManagerReconciliationPage>
           ? const ManagerLoadingBody()
           : _error != null
               ? ManagerErrorBody(message: _error!, onRetry: _load)
-              : Column(
+              : ManagerTabbedBody(
+                  controller: _tabs,
+                  tabLabels: const ['Đối soát đơn', 'Công nợ ĐV', 'Công nợ NCC'],
+                  top: _introHeader(),
                   children: [
-                    Material(
-                      color: Colors.white,
-                      child: TabBar(
-                        controller: _tabs,
-                        labelColor: managerAccent,
-                        indicatorColor: managerAccent,
-                        tabs: const [
-                          Tab(text: 'Đối soát đơn'),
-                          Tab(text: 'Công nợ ĐV'),
-                          Tab(text: 'Công nợ NCC'),
-                        ],
-                      ),
-                    ),
-                    Expanded(
-                      child: TabBarView(
-                        controller: _tabs,
-                        children: [
-                          _reconciliationList(),
-                          _receivableList(),
-                          _payableList(),
-                        ],
-                      ),
-                    ),
+                    _reconciliationList(),
+                    _receivableList(),
+                    _payableList(),
                   ],
                 ),
     );
@@ -110,7 +105,7 @@ class _ManagerReconciliationPageState extends State<ManagerReconciliationPage>
     final items = _reconciliation?.items ?? [];
     final mismatch = _reconciliation?.mismatchCount ?? 0;
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: managerListPadding(context).copyWith(top: 12),
       children: [
         Row(
           children: [
@@ -119,7 +114,7 @@ class _ManagerReconciliationPageState extends State<ManagerReconciliationPage>
                 label: 'Tổng đơn',
                 value: '${_reconciliation?.orderCount ?? 0}',
                 icon: Icons.shopping_bag_rounded,
-                color: AppColors.info,
+                color: AppDesignSystem.info,
               ),
             ),
             const SizedBox(width: 10),
@@ -128,14 +123,14 @@ class _ManagerReconciliationPageState extends State<ManagerReconciliationPage>
                 label: 'Lệch đối soát',
                 value: '$mismatch',
                 icon: Icons.warning_amber_rounded,
-                color: AppColors.warning,
+                color: AppDesignSystem.warning,
               ),
             ),
           ],
         ),
         const SizedBox(height: 12),
         if (items.isEmpty)
-          const ManagerGlassCard(child: ManagerEmptyList())
+          const ManagerGlassCard(child: ManagerEmptyList(message: 'Không có đơn đối soát'))
         else
           ...items.map(_reconTile),
       ],
@@ -144,62 +139,33 @@ class _ManagerReconciliationPageState extends State<ManagerReconciliationPage>
 
   Widget _reconTile(ReconciliationItemModel item) {
     final statusColor = switch (item.status) {
-      ReconciliationStatus.matched => AppColors.success,
-      ReconciliationStatus.disputed => AppColors.danger,
-      _ => AppColors.warning,
+      ReconciliationStatus.matched => AppDesignSystem.success,
+      ReconciliationStatus.disputed => AppDesignSystem.danger,
+      _ => AppDesignSystem.warning,
     };
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: ManagerGlassCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    item.orgName.isNotEmpty ? item.orgName : 'Đơn #${item.id}',
-                    style: const TextStyle(fontWeight: FontWeight.w700),
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    item.status.label,
-                    style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 6),
-            Text(
-              'Đơn: ${formatVnd(item.amount, compact: true)} · Đã thu: ${formatVnd(item.paidAmount, compact: true)}',
-              style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-            ),
-            if (item.difference.abs() > 0.01)
-              Text(
-                'Chênh lệch: ${formatVnd(item.difference, compact: true)}',
-                style: TextStyle(fontSize: 12, color: AppColors.danger, fontWeight: FontWeight.w600),
-              ),
-            if (item.issue != null && item.issue!.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(item.issue!, style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
-              ),
-          ],
-        ),
-      ),
+    final subtitle = StringBuffer()
+      ..write('Đơn: ${formatVnd(item.amount, compact: true)}')
+      ..write(' · Đã thu: ${formatVnd(item.paidAmount, compact: true)}');
+    if (item.difference.abs() > 0.01) {
+      subtitle.write(' · Chênh: ${formatVnd(item.difference, compact: true)}');
+    }
+    if (item.issue != null && item.issue!.isNotEmpty) {
+      subtitle.write('\n${item.issue!}');
+    }
+
+    return ManagerDataRow(
+      icon: Icons.receipt_long_outlined,
+      iconColor: statusColor,
+      title: item.orgName.isNotEmpty ? item.orgName : 'Đơn #${item.id}',
+      subtitle: subtitle.toString(),
+      badge: ManagerStatusBadge(label: item.status.label, color: statusColor),
     );
   }
 
   Widget _receivableList() {
     final lines = _receivables?.lines ?? [];
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: managerListPadding(context).copyWith(top: 12),
       children: [
         ManagerStatTile(
           label: 'Tổng công nợ đơn vị',
@@ -209,13 +175,19 @@ class _ManagerReconciliationPageState extends State<ManagerReconciliationPage>
         ),
         const SizedBox(height: 12),
         if (lines.isEmpty)
-          const ManagerGlassCard(child: ManagerEmptyList())
+          const ManagerGlassCard(child: ManagerEmptyList(message: 'Không có công nợ đơn vị'))
         else
-          ...lines.map((o) => _debtTile(
-                title: o.organizationName,
-                subtitle: '${o.orderCount} đơn · Đã thu ${formatVnd(o.totalPaid, compact: true)}',
-                amount: o.totalReceivable,
-              )),
+          ...lines.map(
+            (o) => ManagerDataRow(
+              icon: Icons.apartment_rounded,
+              iconColor: managerAccent,
+              title: o.organizationName,
+              subtitle:
+                  '${o.orderCount} đơn · Đã thu ${formatVnd(o.totalPaid, compact: true)}',
+              trailing: formatVnd(o.totalReceivable, compact: true),
+              trailingColor: AppDesignSystem.danger,
+            ),
+          ),
       ],
     );
   }
@@ -223,53 +195,29 @@ class _ManagerReconciliationPageState extends State<ManagerReconciliationPage>
   Widget _payableList() {
     final lines = _payables?.lines ?? [];
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: managerListPadding(context).copyWith(top: 12),
       children: [
         ManagerStatTile(
           label: 'Tổng công nợ NCC',
           value: formatVnd(_payables?.grandTotal ?? 0, compact: true),
           icon: Icons.local_shipping_rounded,
-          color: AppColors.danger,
+          color: AppDesignSystem.danger,
         ),
         const SizedBox(height: 12),
         if (lines.isEmpty)
-          const ManagerGlassCard(child: ManagerEmptyList())
+          const ManagerGlassCard(child: ManagerEmptyList(message: 'Không có công nợ NCC'))
         else
-          ...lines.map((p) => _debtTile(
-                title: p.partnerName,
-                subtitle: 'Hợp đồng ${formatVnd(p.totalContractValue, compact: true)}',
-                amount: p.outstanding,
-              )),
+          ...lines.map(
+            (p) => ManagerDataRow(
+              icon: Icons.handshake_rounded,
+              iconColor: AppDesignSystem.info,
+              title: p.partnerName,
+              subtitle: 'Hợp đồng ${formatVnd(p.totalContractValue, compact: true)}',
+              trailing: formatVnd(p.outstanding, compact: true),
+              trailingColor: AppDesignSystem.danger,
+            ),
+          ),
       ],
-    );
-  }
-
-  Widget _debtTile({
-    required String title,
-    required String subtitle,
-    required double amount,
-  }) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: ManagerGlassCard(
-        child: Row(
-          children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                  Text(subtitle, style: TextStyle(fontSize: 12, color: Colors.grey.shade600)),
-                ],
-              ),
-            ),
-            Text(
-              formatVnd(amount, compact: true),
-              style: TextStyle(fontWeight: FontWeight.w800, color: AppColors.danger),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

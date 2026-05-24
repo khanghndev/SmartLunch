@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/constants/app_colors.dart';
+import '../../../../core/theme/app_design_system.dart';
 import '../../data/models/review_complaint_models.dart';
 import '../../data/repositories/manager_repository.dart';
 import '../widgets/manager_ui.dart';
@@ -76,39 +76,28 @@ class _FeedbackComplaintsPageState extends State<FeedbackComplaintsPage>
           : _error != null
               ? ManagerErrorBody(message: _error!, onRetry: _load)
               : Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-                      child: TextField(
-                        controller: _searchCtrl,
-                        decoration: InputDecoration(
-                          hintText: 'Tìm đánh giá...',
-                          prefixIcon: const Icon(Icons.search_rounded),
-                          filled: true,
-                          fillColor: Colors.white,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(color: AppColors.border),
-                          ),
-                          enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(14),
-                            borderSide: BorderSide(color: AppColors.border),
-                          ),
-                        ),
-                        onSubmitted: (_) => _load(),
+                    const Padding(
+                      padding: EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: ManagerPageIntro(
+                        title: 'Chất lượng dịch vụ',
+                        description:
+                            'Theo dõi đánh giá suất ăn và xử lý khiếu nại từ khách hàng / đơn vị.',
+                        icon: Icons.feedback_rounded,
                       ),
                     ),
-                    Material(
-                      color: Colors.transparent,
-                      child: TabBar(
-                        controller: _tabs,
-                        labelColor: managerAccent,
-                        indicatorColor: managerAccent,
-                        tabs: [
-                          Tab(text: 'Đánh giá (${_reviews.length})'),
-                          Tab(text: 'Khiếu nại (${_complaints.length})'),
-                        ],
-                      ),
+                    ManagerSearchField(
+                      controller: _searchCtrl,
+                      hint: 'Tìm theo tên khách hoặc nội dung đánh giá…',
+                      onSubmitted: _load,
+                    ),
+                    ManagerTabBar(
+                      controller: _tabs,
+                      tabs: [
+                        'Đánh giá (${_reviews.length})',
+                        'Khiếu nại (${_complaints.length})',
+                      ],
                     ),
                     Expanded(
                       child: TabBarView(
@@ -126,7 +115,7 @@ class _FeedbackComplaintsPageState extends State<FeedbackComplaintsPage>
 
   Widget _reviewsList() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: managerListPadding(context).copyWith(top: 12),
       children: [
         ManagerStatTile(
           label: 'Điểm trung bình',
@@ -144,57 +133,24 @@ class _FeedbackComplaintsPageState extends State<FeedbackComplaintsPage>
   }
 
   Widget _reviewTile(ReviewModel r) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: ManagerGlassCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                CircleAvatar(
-                  backgroundColor: managerAccent.withValues(alpha: 0.15),
-                  child: Text(
-                    r.customerName.isNotEmpty ? r.customerName[0].toUpperCase() : '?',
-                    style: TextStyle(color: managerAccent, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                const SizedBox(width: 10),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(r.customerName, style: const TextStyle(fontWeight: FontWeight.w700)),
-                      if (r.dishName.isNotEmpty)
-                        Text(
-                          r.dishName,
-                          style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                        ),
-                    ],
-                  ),
-                ),
-                Row(
-                  children: List.generate(
-                    5,
-                    (i) => Icon(
-                      i < r.stars ? Icons.star_rounded : Icons.star_border_rounded,
-                      size: 16,
-                      color: managerAccent,
-                    ),
-                  ),
-                ),
-              ],
-            ),
-            if (r.comment.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Text(r.comment, style: TextStyle(color: Colors.grey.shade800)),
-            ],
-            const SizedBox(height: 6),
-            Text(
-              formatShortDate(r.createdAt),
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-            ),
-          ],
+    return ManagerDataRow(
+      icon: Icons.person_rounded,
+      iconColor: managerAccent,
+      title: r.customerName.isNotEmpty ? r.customerName : 'Khách hàng',
+      subtitle: [
+        if (r.dishName.isNotEmpty) r.dishName,
+        if (r.comment.isNotEmpty) r.comment,
+        formatShortDate(r.createdAt),
+      ].where((s) => s.isNotEmpty).join(' · '),
+      badge: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: List.generate(
+          5,
+          (i) => Icon(
+            i < r.stars ? Icons.star_rounded : Icons.star_border_rounded,
+            size: 14,
+            color: managerAccent,
+          ),
         ),
       ),
     );
@@ -202,7 +158,7 @@ class _FeedbackComplaintsPageState extends State<FeedbackComplaintsPage>
 
   Widget _complaintsList() {
     return ListView(
-      padding: const EdgeInsets.all(16),
+      padding: managerListPadding(context).copyWith(top: 12),
       children: [
         if (_complaints.isEmpty)
           const ManagerGlassCard(child: ManagerEmptyList(message: 'Chưa có khiếu nại'))
@@ -214,59 +170,22 @@ class _FeedbackComplaintsPageState extends State<FeedbackComplaintsPage>
 
   Widget _complaintTile(ComplaintModel c) {
     final statusColor = switch (c.status) {
-      ComplaintStatus.resolved => AppColors.success,
-      ComplaintStatus.processing => AppColors.info,
-      _ => AppColors.warning,
+      ComplaintStatus.resolved => AppDesignSystem.success,
+      ComplaintStatus.processing => AppDesignSystem.info,
+      _ => AppDesignSystem.warning,
     };
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: ManagerGlassCard(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Expanded(
-                  child: Text(c.title, style: const TextStyle(fontWeight: FontWeight.w700)),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: statusColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    c.status.label,
-                    style: TextStyle(color: statusColor, fontSize: 11, fontWeight: FontWeight.w600),
-                  ),
-                ),
-              ],
-            ),
-            if (c.organizationName.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  c.organizationName,
-                  style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
-                ),
-              ),
-            if (c.description.isNotEmpty) ...[
-              const SizedBox(height: 6),
-              Text(
-                c.description,
-                maxLines: 3,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: Colors.grey.shade700),
-              ),
-            ],
-            const SizedBox(height: 6),
-            Text(
-              formatShortDate(c.createdAt),
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
-            ),
-          ],
-        ),
-      ),
+    final subtitle = [
+      if (c.organizationName.isNotEmpty) c.organizationName,
+      if (c.description.isNotEmpty) c.description,
+      formatShortDate(c.createdAt),
+    ].where((s) => s.isNotEmpty).join('\n');
+
+    return ManagerDataRow(
+      icon: Icons.report_problem_outlined,
+      iconColor: statusColor,
+      title: c.title,
+      subtitle: subtitle,
+      badge: ManagerStatusBadge(label: c.status.label, color: statusColor),
     );
   }
 }
