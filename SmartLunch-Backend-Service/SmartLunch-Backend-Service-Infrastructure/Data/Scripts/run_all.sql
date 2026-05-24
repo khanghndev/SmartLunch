@@ -65,6 +65,7 @@ SOURCE 01_tables/39_banners.sql;
 SOURCE 01_tables/40_notifications.sql;
 SOURCE 01_tables/41_system_logs.sql;
 SOURCE 01_tables/42_system_backups.sql;
+SOURCE 01_tables/51_system_backups_add_source.sql;
 SOURCE 01_tables/50_system_backup_schedule.sql;
 SOURCE 01_tables/43_dish_images.sql;
 SOURCE 01_tables/44_weekly_menu_images.sql;

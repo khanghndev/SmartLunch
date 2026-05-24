@@ -4,6 +4,7 @@ CREATE TABLE system_backups (
     StorageBucket VARCHAR(255) NOT NULL,
     StorageObjectName VARCHAR(1024) NOT NULL,
     SizeBytes BIGINT NOT NULL DEFAULT 0,
+    BackupSource VARCHAR(16) NOT NULL DEFAULT 'Manual' COMMENT 'Manual | Scheduled',
     CreatedAtUtc DATETIME NOT NULL,
     RestoredAtUtc DATETIME NULL,
     DeletedAtUtc DATETIME NULL,
