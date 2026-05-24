@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
-"""Download dish cover images (Wikimedia Commons) and upload to Appwrite Storage."""
+"""
+Download dish images (Wikimedia) and upload to Appwrite Storage.
+
+Ảnh seed chính thức nằm trên cloud (object: dishes/seed/*.jpg).
+DB seed dùng 19_seed_dish_images.sql — không cần giữ thư mục images/ trong repo.
+Chạy generate_image_sql.py sau khi upload để cập nhật SQL.
+"""
 
 from __future__ import annotations
 
@@ -10,6 +16,8 @@ import time
 import urllib.error
 import urllib.parse
 import urllib.request
+import threading
+import concurrent.futures
 from io import BytesIO
 from pathlib import Path
 
@@ -20,9 +28,23 @@ MANIFEST = ROOT / "SmartLunch-Backend-Service-Infrastructure/Data/Assets/dishes/
 ASSETS_DIR = ROOT / "SmartLunch-Backend-Service-Infrastructure/Data/Assets/dishes/images"
 APPSETTINGS = ROOT / "SmartLunch-Backend-Service-API/appsettings.Development.json"
 
-USER_AGENT = "SmartLunchSeed/1.0 (thesis demo)"
+# Polite User-Agent conforming to Wikimedia Robot Policy (including contact email)
+USER_AGENT = "SmartLunchSeed/1.0 (hoangngockhang.huit@gmail.com; thesis demo)"
 OBJECT_PREFIX = "dishes/seed"
 BUCKET_ID = "69bfa6de000fdacda87d"
+
+wiki_lock = threading.Lock()
+log_lock = threading.Lock()
+
+
+def log(msg: str) -> None:
+    with log_lock:
+        try:
+            print(msg)
+            sys.stdout.flush()
+        except UnicodeEncodeError:
+            print(msg.encode("ascii", errors="replace").decode("ascii"))
+            sys.stdout.flush()
 
 
 def load_config() -> dict:
@@ -58,48 +80,68 @@ def http_json(url: str, headers: dict | None = None, retries: int = 6) -> dict:
     raise last_err  # type: ignore[misc]
 
 
-def fetch_wikimedia_image_url(search: str) -> str | None:
-    time.sleep(3.0)
-    for term in (search, " ".join(search.split()[:3]), search.split()[0]):
-        if not term:
-            continue
-        try:
-            params = urllib.parse.urlencode(
-                {
-                    "action": "query",
-                    "generator": "search",
-                    "gsrnamespace": "6",
-                    "gsrsearch": term,
-                    "gsrlimit": "5",
-                    "prop": "imageinfo",
-                    "iiprop": "url|mime",
-                    "iiurlwidth": "960",
-                    "format": "json",
-                }
-            )
-            data = http_json(f"https://commons.wikimedia.org/w/api.php?{params}")
-        except urllib.error.HTTPError as ex:
-            if ex.code == 429:
-                return None
-            raise
-        pages = data.get("query", {}).get("pages", {})
-        for page in sorted(pages.values(), key=lambda p: p.get("index", 999)):
-            infos = page.get("imageinfo") or []
-            if not infos:
+def fetch_wikimedia_image_url(search: str, index: int = 0) -> str | None:
+    with wiki_lock:
+        time.sleep(1.5)  # Safe delay between API calls to conform to Wikimedia guidelines
+        for term in (search, " ".join(search.split()[:3]), search.split()[0]):
+            if not term:
                 continue
-            info = infos[0]
-            mime = info.get("mime", "")
-            if not mime.startswith("image/"):
-                continue
-            return info.get("thumburl") or info.get("url")
-    return None
+            try:
+                params = urllib.parse.urlencode(
+                    {
+                        "action": "query",
+                        "generator": "search",
+                        "gsrnamespace": "6",
+                        "gsrsearch": term,
+                        "gsrlimit": "10",
+                        "prop": "imageinfo",
+                        "iiprop": "url|mime",
+                        "iiurlwidth": "960",
+                        "format": "json",
+                    }
+                )
+                data = http_json(f"https://commons.wikimedia.org/w/api.php?{params}")
+            except urllib.error.HTTPError as ex:
+                if ex.code == 429:
+                    time.sleep(5)
+                    return None
+                raise
+            pages = data.get("query", {}).get("pages", {})
+            sorted_pages = sorted(pages.values(), key=lambda p: p.get("index", 999))
+            
+            matches = []
+            for page in sorted_pages:
+                title = page.get("title", "")
+                # Skip books, documents, and non-food pages
+                skip_keywords = [
+                    ".djvu", ".pdf", "book", "sammy", "recipe", "cookery", "cookbook", 
+                    "cook book", "document", "ia ", "menu", "page", "recipe", "report", 
+                    "catalog", "bulletin", "circular", "manual", "journal", "leaflet", "plate"
+                ]
+                if any(k in title.lower() for k in skip_keywords):
+                    continue
+
+                infos = page.get("imageinfo") or []
+                if not infos:
+                    continue
+                info = infos[0]
+                mime = info.get("mime", "")
+                if not mime.startswith("image/"):
+                    continue
+                matches.append(info.get("thumburl") or info.get("url"))
+                
+            if len(matches) > index:
+                return matches[index]
+            elif len(matches) > 0:
+                return matches[0]  # Fallback
+                
+        return None
 
 
 def download_file(url: str, dest: Path) -> None:
     last_err: Exception | None = None
     for attempt in range(4):
         try:
-            time.sleep(1.0)
             req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
             with urllib.request.urlopen(req, timeout=60) as res:
                 dest.write_bytes(res.read())
@@ -168,6 +210,7 @@ def upload_to_appwrite(cfg: dict, object_name: str, payload: bytes, content_type
             res.read()
     except urllib.error.HTTPError as ex:
         if ex.code == 409:
+            # File already exists, let's delete and re-upload to be fresh
             delete_url = f"{cfg['endpoint']}/storage/buckets/{cfg['bucket_id']}/files/{urllib.parse.quote(file_id, safe='')}"
             del_req = urllib.request.Request(
                 delete_url,
@@ -188,13 +231,6 @@ def upload_to_appwrite(cfg: dict, object_name: str, payload: bytes, content_type
         raise RuntimeError(f"Upload failed ({ex.code}): {body_text}") from ex
 
 
-def log(msg: str) -> None:
-    try:
-        print(msg)
-    except UnicodeEncodeError:
-        print(msg.encode("ascii", errors="replace").decode("ascii"))
-
-
 def public_view_url(cfg: dict, object_name: str) -> str:
     file_id = to_file_id(object_name)
     return (
@@ -205,57 +241,98 @@ def public_view_url(cfg: dict, object_name: str) -> str:
 
 def main() -> int:
     if not MANIFEST.exists():
-        print(f"Missing manifest: {MANIFEST}", file=sys.stderr)
+        log(f"Missing manifest: {MANIFEST}")
         return 1
 
     cfg = load_config()
     ASSETS_DIR.mkdir(parents=True, exist_ok=True)
 
+    # Clean up existing placeholder images (files under 25KB that have suffixes)
+    log("Scanning assets directory for temporary placeholders to clean...")
+    removed_count = 0
+    for path in ASSETS_DIR.glob("*.jpg"):
+        if path.name.endswith(("-1.jpg", "-2.jpg", "-3.jpg")):
+            if path.stat().st_size < 25000:
+                log(f"[cleanup] Deleting placeholder: {path.name} ({path.stat().st_size} bytes)")
+                try:
+                    path.unlink()
+                    removed_count += 1
+                except Exception as e:
+                    log(f"[cleanup-fail] {path.name}: {e}")
+    if removed_count > 0:
+        log(f"Cleaned up {removed_count} local placeholders.")
+
     with MANIFEST.open(encoding="utf-8") as f:
         dishes = json.load(f)
 
     results = []
+    results_lock = threading.Lock()
+    tasks = []
+
     for item in dishes:
+        for img_idx in range(4):
+            tasks.append((item, img_idx))
+
+    log(f"Starting seeding process for {len(dishes)} dishes (Total {len(tasks)} images)...")
+
+    def process_task(task: tuple[dict, int]) -> dict | None:
+        item, img_idx = task
         slug = item["slug"]
         search = item["search"]
-        object_name = f"{OBJECT_PREFIX}/{slug}.jpg"
-        local_path = ASSETS_DIR / f"{slug}.jpg"
+        suffix = "" if img_idx == 0 else f"-{img_idx}"
+        slug_with_suffix = f"{slug}{suffix}"
+        object_name = f"{OBJECT_PREFIX}/{slug_with_suffix}.jpg"
+        local_path = ASSETS_DIR / f"{slug_with_suffix}.jpg"
 
-        if not local_path.exists() or local_path.stat().st_size == 0:
-            image_url = fetch_wikimedia_image_url(search)
-            if image_url:
-                log(f"[download] {item['name']} <- {image_url}")
-                try:
-                    download_file(image_url, local_path)
-                except Exception as ex:
-                    log(f"[download-fail] {slug}: {ex} -> placeholder")
-                    generate_placeholder(local_path, item["name"], slug)
-            else:
-                log(f"[placeholder] {item['name']} - no Wikimedia match")
-                generate_placeholder(local_path, item["name"], slug)
-
-        payload = local_path.read_bytes()
-        content_type = "image/jpeg"
-        log(f"[upload] {object_name} ({len(payload)} bytes)")
         try:
+            if not local_path.exists() or local_path.stat().st_size == 0:
+                image_url = fetch_wikimedia_image_url(search, index=img_idx)
+                if image_url:
+                    log(f"[download] {item['name']} ({img_idx}) <- {image_url}")
+                    try:
+                        download_file(image_url, local_path)
+                    except Exception as ex:
+                        log(f"[download-fail] {slug_with_suffix}: {ex} -> placeholder")
+                        generate_placeholder(local_path, f"{item['name']} ({img_idx})", slug_with_suffix)
+                else:
+                    log(f"[placeholder] {item['name']} ({img_idx}) - no Wikimedia match")
+                    generate_placeholder(local_path, f"{item['name']} ({img_idx})", slug_with_suffix)
+
+            payload = local_path.read_bytes()
+            content_type = "image/jpeg"
+            log(f"[upload] {object_name} ({len(payload)} bytes)")
             upload_to_appwrite(cfg, object_name, payload, content_type)
-        except Exception as ex:
-            log(f"[upload-fail] {object_name}: {ex}")
-            continue
-        view_url = public_view_url(cfg, object_name)
-        results.append(
-            {
+            view_url = public_view_url(cfg, object_name)
+
+            return {
                 "name": item["name"],
                 "slug": slug,
+                "imgIndex": img_idx,
                 "objectName": object_name,
                 "sizeBytes": len(payload),
                 "viewUrl": view_url,
             }
-        )
+        except Exception as ex:
+            log(f"[task-error] {slug_with_suffix}: {ex}")
+            return None
+
+    # Use ThreadPoolExecutor with 5 workers (polite concurrency)
+    with concurrent.futures.ThreadPoolExecutor(max_workers=5) as executor:
+        futures = {executor.submit(process_task, t): t for t in tasks}
+        for future in concurrent.futures.as_completed(futures):
+            res = future.result()
+            if res:
+                with results_lock:
+                    results.append(res)
+
+    # Sort results to be fully deterministic
+    results.sort(key=lambda r: (r["slug"], r["imgIndex"]))
 
     out = ROOT / "scratch" / "dish_image_upload_results.json"
     out.write_text(json.dumps(results, ensure_ascii=False, indent=2), encoding="utf-8")
-    log(f"\nDone: {len(results)}/{len(dishes)} uploaded. Results -> {out}")
+    log(f"\nDone: {len(results)}/{len(tasks)} images successfully uploaded. Results -> {out}")
+    log("Next: python scratch/generate_image_sql.py")
+    log("Local cache in Data/Assets/dishes/images/ can be deleted (gitignored).")
     return 0 if results else 1
 
 

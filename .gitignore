@@ -421,3 +421,6 @@ docker-compose.override.yml
 *.swp
 *.bak
 *.orig
+
+# Dish seed JPEG cache (files live on Appwrite: dishes/seed/*)
+SmartLunch-Backend-Service/SmartLunch-Backend-Service-Infrastructure/Data/Assets/dishes/images/
