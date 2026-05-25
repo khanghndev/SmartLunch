@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../core/navigation/session_guard.dart';
+import '../core/theme/app_design_system.dart';
 import 'app_config.dart';
 import 'app_routes.dart';
 import 'router.dart';
@@ -21,6 +22,10 @@ class SmartLunchApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       onGenerateRoute: router.onGenerateRoute,
       initialRoute: AppRoutes.initialFor(config.flavor),
+      builder: (context, child) => DefaultTextStyle(
+        style: AppDesignSystem.body(color: AppDesignSystem.gray900),
+        child: child ?? const SizedBox.shrink(),
+      ),
     );
   }
 }

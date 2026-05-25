@@ -257,17 +257,20 @@ class _ShipperOsmMapState extends State<ShipperOsmMap> {
   }
 
   Marker _buildMarker(ShipperMapMarker m) {
+    final color = m.color ?? shipperAccent;
     return Marker(
       point: LatLng(m.latitude, m.longitude),
-      width: 44,
-      height: 44,
+      width: 36,
+      height: 48,
+      alignment: Alignment.topCenter,
       child: Column(
+        mainAxisSize: MainAxisSize.min,
         children: [
           Container(
-            width: 30,
-            height: 30,
+            width: 28,
+            height: 28,
             decoration: BoxDecoration(
-              color: m.color ?? shipperAccent,
+              color: color,
               shape: BoxShape.circle,
               border: Border.all(color: Colors.white, width: 2),
               boxShadow: [
@@ -283,11 +286,11 @@ class _ShipperOsmMapState extends State<ShipperOsmMap> {
               style: const TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.w800,
-                fontSize: 12,
+                fontSize: 11,
               ),
             ),
           ),
-          Icon(Icons.arrow_drop_down, size: 18, color: m.color ?? shipperAccent),
+          Icon(Icons.arrow_drop_down, size: 16, color: color),
         ],
       ),
     );

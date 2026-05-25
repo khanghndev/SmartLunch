@@ -53,10 +53,7 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Color _getRoleColor(List<String> roles) {
-    if (roles.contains('Manager')) return Colors.amber.shade700;
-    if (roles.contains('Organization')) return Colors.teal;
-    if (roles.contains('Shipper')) return Colors.deepOrange;
-    return Colors.blueAccent;
+    return _paletteForRoles(roles).primary;
   }
 
   @override
@@ -65,7 +62,11 @@ class _ProfilePageState extends State<ProfilePage> {
         future: _profileFuture,
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator(color: Colors.blueAccent));
+            return Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+              ),
+            );
           }
 
           if (snapshot.hasError) {
@@ -75,25 +76,25 @@ class _ProfilePageState extends State<ProfilePage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Icon(Icons.error_outline_rounded, size: 64, color: Colors.red.shade400),
+                    Icon(
+                      Icons.error_outline_rounded,
+                      size: 64,
+                      color: AppDesignSystem.danger,
+                    ),
                     const SizedBox(height: 16),
-                    const Text(
+                    Text(
                       'Không thể tải thông tin hồ sơ',
-                      style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                      style: AppDesignSystem.sectionTitle(),
+                      textAlign: TextAlign.center,
                     ),
                     const SizedBox(height: 8),
                     Text(
                       snapshot.error.toString(),
                       textAlign: TextAlign.center,
-                      style: const TextStyle(color: Colors.grey),
+                      style: AppDesignSystem.body(size: 13),
                     ),
                     const SizedBox(height: 24),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.blueAccent,
-                        foregroundColor: Colors.white,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
+                    FilledButton(
                       onPressed: () => setState(() {
                         _profileFuture = ProfileRepository.instance.getProfile();
                       }),
@@ -116,34 +117,26 @@ class _ProfilePageState extends State<ProfilePage> {
             padding: EdgeInsets.fromLTRB(20, 24, 20, tabBottom),
             child: Column(
               children: [
-                // Header Card
                 Container(
                   padding: const EdgeInsets.all(24),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(24),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 15,
-                        offset: const Offset(0, 5),
-                      ),
-                    ],
-                  ),
+                  decoration: AppDesignSystem.card(),
                   child: Column(
                     children: [
                       CircleAvatar(
                         radius: 50,
                         backgroundColor: roleColor.withValues(alpha: 0.1),
-                        backgroundImage: profile.avatarUrl != null && profile.avatarUrl!.isNotEmpty
+                        backgroundImage: profile.avatarUrl != null &&
+                                profile.avatarUrl!.isNotEmpty
                             ? NetworkImage(profile.avatarUrl!)
                             : null,
-                        child: profile.avatarUrl == null || profile.avatarUrl!.isEmpty
+                        child: profile.avatarUrl == null ||
+                                profile.avatarUrl!.isEmpty
                             ? Text(
-                                profile.displayName.substring(0, 1).toUpperCase(),
-                                style: TextStyle(
-                                  fontSize: 36,
-                                  fontWeight: FontWeight.bold,
+                                profile.displayName
+                                    .substring(0, 1)
+                                    .toUpperCase(),
+                                style: AppDesignSystem.title(
+                                  size: 36,
                                   color: roleColor,
                                 ),
                               )
@@ -152,48 +145,41 @@ class _ProfilePageState extends State<ProfilePage> {
                       const SizedBox(height: 16),
                       Text(
                         profile.displayName,
-                        style: const TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.black87,
-                        ),
+                        style: AppDesignSystem.title(size: 22),
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 6),
                       Text(
                         profile.email,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
+                        style: AppDesignSystem.body(size: 14),
+                        textAlign: TextAlign.center,
                       ),
                       const SizedBox(height: 16),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 16,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: roleColor.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(20),
                         ),
                         child: Text(
                           roleLabel,
-                          style: TextStyle(
-                            color: roleColor,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                          ),
+                          style: AppDesignSystem.label(color: roleColor)
+                              .copyWith(fontSize: 12),
                         ),
                       ),
                     ],
                   ),
                 ),
                 const SizedBox(height: 28),
-
-                // Settings List
                 _buildSectionTitle('Tài khoản'),
                 const SizedBox(height: 8),
                 _buildSettingCard([
                   _buildSettingTile(
                     icon: Icons.person_outline_rounded,
-                    iconColor: Colors.blue,
+                    iconColor: AppDesignSystem.info,
                     title: 'Thông tin cá nhân',
                     subtitle: 'Họ tên, ngày sinh, số điện thoại...',
                     route: AppRoutes.profilePersonalInfo,
@@ -201,20 +187,19 @@ class _ProfilePageState extends State<ProfilePage> {
                   _buildSettingDivider(),
                   _buildSettingTile(
                     icon: Icons.location_on_outlined,
-                    iconColor: Colors.green,
+                    iconColor: AppDesignSystem.success,
                     title: 'Sổ địa chỉ',
                     subtitle: 'Danh sách địa điểm nhận hàng',
                     route: AppRoutes.profileAddresses,
                   ),
                 ]),
                 const SizedBox(height: 24),
-
                 _buildSectionTitle('Cài đặt & Bảo mật'),
                 const SizedBox(height: 8),
                 _buildSettingCard([
                   _buildSettingTile(
                     icon: Icons.security_outlined,
-                    iconColor: Colors.purple,
+                    iconColor: RolePalette.manager.primary,
                     title: 'Bảo mật & Mật khẩu',
                     subtitle: 'Đổi mật khẩu, tăng tính an toàn',
                     route: AppRoutes.profileSecurity,
@@ -222,47 +207,42 @@ class _ProfilePageState extends State<ProfilePage> {
                   _buildSettingDivider(),
                   _buildSettingTile(
                     icon: Icons.notifications_none_rounded,
-                    iconColor: Colors.amber.shade800,
+                    iconColor: AppDesignSystem.warning,
                     title: 'Cài đặt thông báo',
                     subtitle: 'Tần suất nhận tin nhắn, cập nhật',
                     route: AppRoutes.profileNotifications,
                   ),
                 ]),
                 const SizedBox(height: 24),
-
                 _buildSectionTitle('Khác'),
                 const SizedBox(height: 8),
                 _buildSettingCard([
                   _buildSettingTile(
                     icon: Icons.help_outline_rounded,
-                    iconColor: Colors.teal,
+                    iconColor: RolePalette.organization.primary,
                     title: 'Trung tâm trợ giúp',
                     subtitle: 'Giải đáp thắc mắc, gửi góp ý',
                     route: AppRoutes.profileHelp,
                   ),
                 ]),
                 const SizedBox(height: 36),
-
-                // Logout Button
                 SizedBox(
                   width: double.infinity,
-                  child: ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Colors.red.shade50,
-                      foregroundColor: Colors.redAccent,
-                      elevation: 0,
+                  child: OutlinedButton.icon(
+                    style: OutlinedButton.styleFrom(
+                      foregroundColor: AppDesignSystem.danger,
+                      backgroundColor: AppDesignSystem.danger.withValues(alpha: 0.06),
+                      side: BorderSide(
+                        color: AppDesignSystem.danger.withValues(alpha: 0.2),
+                      ),
                       padding: const EdgeInsets.symmetric(vertical: 16),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(16),
-                        side: BorderSide(color: Colors.red.shade100),
                       ),
                     ),
                     onPressed: _handleLogout,
                     icon: const Icon(Icons.logout_rounded, size: 20),
-                    label: const Text(
-                      'Đăng xuất tài khoản',
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                    ),
+                    label: const Text('Đăng xuất tài khoản'),
                   ),
                 ),
                 const SizedBox(height: 24),
@@ -273,21 +253,21 @@ class _ProfilePageState extends State<ProfilePage> {
       );
 
     if (widget.embeddedInModuleShell) {
-      return ColoredBox(color: Colors.grey.shade50, child: content);
+      return ColoredBox(
+        color: AppDesignSystem.gray50,
+        child: content,
+      );
     }
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: AppDesignSystem.gray50,
       appBar: AppBar(
         leading: IconButton(
           icon: const Icon(Icons.menu),
-          onPressed: widget.onMenuPressed ?? () => Scaffold.of(context).openDrawer(),
+          onPressed:
+              widget.onMenuPressed ?? () => Scaffold.of(context).openDrawer(),
         ),
-        title: const Text('Hồ sơ cá nhân', style: TextStyle(fontWeight: FontWeight.bold)),
-        backgroundColor: Colors.white,
-        foregroundColor: Colors.black87,
-        elevation: 0,
-        centerTitle: true,
+        title: const Text('Hồ sơ cá nhân'),
       ),
       body: content,
     );
@@ -298,29 +278,15 @@ class _ProfilePageState extends State<ProfilePage> {
       alignment: Alignment.centerLeft,
       child: Text(
         title,
-        style: TextStyle(
-          fontSize: 14,
-          fontWeight: FontWeight.bold,
-          color: Colors.grey.shade600,
-          letterSpacing: 0.5,
-        ),
+        style: AppDesignSystem.label(color: AppDesignSystem.gray500)
+            .copyWith(fontSize: 13, letterSpacing: 0.5),
       ),
     );
   }
 
   Widget _buildSettingCard(List<Widget> children) {
     return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: AppDesignSystem.card(),
       child: Column(children: children),
     );
   }
@@ -342,27 +308,24 @@ class _ProfilePageState extends State<ProfilePage> {
         ),
         child: Icon(icon, color: iconColor, size: 22),
       ),
-      title: Text(
-        title,
-        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.black87),
-      ),
+      title: Text(title, style: AppDesignSystem.label()),
       subtitle: Padding(
         padding: const EdgeInsets.only(top: 4),
-        child: Text(
-          subtitle,
-          style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
-        ),
+        child: Text(subtitle, style: AppDesignSystem.body(size: 12)),
       ),
-      trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
+      trailing: Icon(
+        Icons.chevron_right_rounded,
+        color: AppDesignSystem.gray400,
+      ),
       onTap: () => Navigator.of(context).pushNamed(route),
     );
   }
 
   Widget _buildSettingDivider() {
-    return Divider(
+    return const Divider(
       height: 1,
       thickness: 1,
-      color: Colors.grey.shade100,
+      color: AppDesignSystem.gray100,
       indent: 20,
       endIndent: 20,
     );

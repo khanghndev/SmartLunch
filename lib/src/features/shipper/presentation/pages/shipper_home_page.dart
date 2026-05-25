@@ -6,6 +6,7 @@ import '../../../../core/widgets/role_dashboard.dart';
 import '../../../../core/widgets/role_module_header.dart';
 import '../../../../core/widgets/role_module_shell.dart';
 import '../widgets/shipper_shell.dart';
+import '../widgets/shipper_ui.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../profile/data/profile_repository.dart';
@@ -153,6 +154,23 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
         isLoading: _isLoading,
         errorMessage: _loadError,
         onRefresh: _loadDashboardData,
+        prefixWidgets: [
+          ShipperWelcomeBanner(shipperName: name),
+          if (_isLoading || _todayTotal > 0)
+            ShipperHeroKpiCard(
+              label: 'Tiến độ giao hôm nay',
+              value: _isLoading ? '—' : '$_completedCount / $_todayTotal đơn',
+              hint: _isLoading
+                  ? null
+                  : '$_todayMeals suất · ${formatDashboardPercent(_completionRate)} hoàn tất',
+              progressPercent: _isLoading ? 0 : _completionRate,
+            ),
+          ShipperOpsStrip(
+            pendingLabel: _isLoading ? '—' : '$_pendingCount',
+            inTransitLabel: _isLoading ? '—' : '$_inTransitCount',
+            completedLabel: _isLoading ? '—' : '$_completedCount',
+          ),
+        ],
         topActions: const [],
         quickActions: const [],
         summaryMetrics: [

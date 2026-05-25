@@ -32,6 +32,101 @@ abstract final class AppDesignSystem {
 
   static TextStyle get font => GoogleFonts.outfit();
 
+  /// TextTheme Material 3 — một nguồn Outfit cho toàn app (UI_MOB / Auth).
+  static TextTheme typography() {
+    final base = GoogleFonts.outfitTextTheme();
+    return base.copyWith(
+      displayLarge: base.displayLarge?.copyWith(
+        fontWeight: FontWeight.w900,
+        letterSpacing: -0.4,
+        height: 1.1,
+        color: gray900,
+      ),
+      displayMedium: base.displayMedium?.copyWith(
+        fontWeight: FontWeight.w900,
+        letterSpacing: -0.3,
+        height: 1.12,
+        color: gray900,
+      ),
+      displaySmall: base.displaySmall?.copyWith(
+        fontWeight: FontWeight.w800,
+        height: 1.15,
+        color: gray900,
+      ),
+      headlineLarge: base.headlineLarge?.copyWith(
+        fontWeight: FontWeight.w800,
+        height: 1.2,
+        color: gray900,
+      ),
+      headlineMedium: base.headlineMedium?.copyWith(
+        fontWeight: FontWeight.w800,
+        height: 1.22,
+        color: gray900,
+      ),
+      headlineSmall: base.headlineSmall?.copyWith(
+        fontWeight: FontWeight.w800,
+        height: 1.25,
+        color: gray900,
+      ),
+      titleLarge: base.titleLarge?.copyWith(
+        fontWeight: FontWeight.w800,
+        fontSize: 18,
+        height: 1.25,
+        color: gray900,
+      ),
+      titleMedium: base.titleMedium?.copyWith(
+        fontWeight: FontWeight.w700,
+        height: 1.3,
+        color: gray900,
+      ),
+      titleSmall: base.titleSmall?.copyWith(
+        fontWeight: FontWeight.w700,
+        height: 1.3,
+        color: gray700,
+      ),
+      bodyLarge: base.bodyLarge?.copyWith(
+        fontWeight: FontWeight.w500,
+        fontSize: 16,
+        height: 1.45,
+        color: gray700,
+      ),
+      bodyMedium: base.bodyMedium?.copyWith(
+        fontWeight: FontWeight.w500,
+        fontSize: 14,
+        height: 1.45,
+        color: gray500,
+      ),
+      bodySmall: base.bodySmall?.copyWith(
+        fontWeight: FontWeight.w500,
+        fontSize: 12,
+        height: 1.4,
+        color: gray500,
+      ),
+      labelLarge: base.labelLarge?.copyWith(
+        fontWeight: FontWeight.w700,
+        fontSize: 14,
+        height: 1.3,
+        color: gray700,
+      ),
+      labelMedium: base.labelMedium?.copyWith(
+        fontWeight: FontWeight.w700,
+        fontSize: 12,
+        height: 1.3,
+        color: gray700,
+      ),
+      labelSmall: base.labelSmall?.copyWith(
+        fontWeight: FontWeight.w700,
+        fontSize: 11,
+        height: 1.25,
+        color: gray500,
+      ),
+    );
+  }
+
+  /// Gộp [overrides] lên nền Outfit — thay cho `TextStyle(...)` không font.
+  static TextStyle mergeWith(TextStyle? overrides) =>
+      body(color: gray900).merge(overrides ?? const TextStyle());
+
   static TextStyle title({double size = 28, Color color = gray900}) =>
       font.copyWith(
         fontSize: size,

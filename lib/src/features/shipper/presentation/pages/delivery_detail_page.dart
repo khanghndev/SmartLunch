@@ -76,6 +76,7 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
         SnackBar(
           content: Text('Đã cập nhật: ${shipperDeliveryStatusLabelVi(status)}'),
           backgroundColor: AppDesignSystem.success,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     } catch (e) {
@@ -85,6 +86,7 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
         SnackBar(
           content: Text(shipperApiError(e)),
           backgroundColor: AppDesignSystem.danger,
+          behavior: SnackBarBehavior.floating,
         ),
       );
     }
@@ -95,13 +97,14 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
     final notes = await showDialog<String>(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text(title),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: Text(title, style: AppDesignSystem.sectionTitle()),
         content: TextField(
           controller: ctrl,
           maxLines: 3,
-          decoration: const InputDecoration(
-            hintText: 'Ghi chú lý do (bắt buộc)',
-            border: OutlineInputBorder(),
+          decoration: AppDesignSystem.inputDecoration(
+            label: 'Ghi chú lý do',
+            focusColor: shipperAccent,
           ),
         ),
         actions: [
@@ -127,6 +130,7 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Xác nhận'),
         content: Text(message),
         actions: [
@@ -151,7 +155,10 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
   void _copyAddress(String address) {
     Clipboard.setData(ClipboardData(text: address));
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Đã sao chép địa chỉ')),
+      const SnackBar(
+        content: Text('Đã sao chép địa chỉ'),
+        behavior: SnackBarBehavior.floating,
+      ),
     );
   }
 
@@ -174,7 +181,7 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
     if (_updating) {
       return [
         const Padding(
-          padding: EdgeInsets.all(16),
+          padding: EdgeInsets.symmetric(vertical: 20),
           child: Center(child: CircularProgressIndicator()),
         ),
       ];
@@ -189,7 +196,7 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
           icon: Icons.check_circle_outline,
           onPressed: () => _confirmAction('received', 'Xác nhận nhận đơn giao này?'),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         ShipperOutlineButton(
           label: 'Từ chối đơn',
           icon: Icons.cancel_outlined,
@@ -203,7 +210,7 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
           icon: Icons.local_shipping_outlined,
           onPressed: () => _confirmAction('in_transit', 'Bắt đầu giao đơn này?'),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         ShipperOutlineButton(
           label: 'Giao thất bại',
           icon: Icons.error_outline,
@@ -217,7 +224,7 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
           icon: Icons.camera_alt_outlined,
           onPressed: _openProof,
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         ShipperOutlineButton(
           label: 'Giao thất bại',
           icon: Icons.error_outline,
@@ -227,15 +234,16 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
     } else if (s == 'completed') {
       if (d.proofImageUrl != null && d.proofImageUrl!.isNotEmpty) {
         buttons.add(
-          ShipperCard(
+          ShipperContentCard(
+            title: 'Ảnh xác nhận giao (PoD)',
+            headerIcon: Icons.verified_outlined,
+            accent: AppDesignSystem.success,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const ShipperSectionHeader(title: 'Ảnh xác nhận giao (PoD)'),
-                const SizedBox(height: 10),
                 ShipperProofImage(imageUrl: d.proofImageUrl, height: 220),
                 if (d.proofCapturedAtUtc != null) ...[
-                  const SizedBox(height: 8),
+                  const SizedBox(height: 10),
                   Text(
                     'Chụp lúc: ${formatShipperDateTime(d.proofCapturedAtUtc!)}',
                     style: AppDesignSystem.body(size: 12),
@@ -246,7 +254,7 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
                   Text(
                     'Giao thực tế: ${formatShipperDateTime(d.deliveredAtUtc!)}',
                     style: AppDesignSystem.body(size: 12, color: AppDesignSystem.success)
-                        .copyWith(fontWeight: FontWeight.w600),
+                        .copyWith(fontWeight: FontWeight.w700),
                   ),
                 ],
               ],
@@ -256,110 +264,131 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
       }
     }
 
+    if (buttons.isEmpty) {
+      buttons.add(
+        ShipperInfoBanner(
+          message: 'Đơn ở trạng thái ${shipperDeliveryStatusLabelVi(d.deliveryStatus)} — không còn thao tác.',
+          icon: Icons.info_outline_rounded,
+          color: shipperAccent,
+        ),
+      );
+    }
+
     return buttons;
   }
 
   @override
   Widget build(BuildContext context) {
+    final d = _delivery;
+
     return ShipperPageShell(
-      title: 'Chi tiết đơn giao',
+      title: 'Chi tiết giao hàng',
       onRefresh: _load,
       body: _loading
-          ? const ShipperLoadingBody()
+          ? const ShipperLoadingBody(message: 'Đang tải thông tin đơn…')
           : _error != null
               ? ShipperErrorBody(message: _error!, onRetry: _load)
-              : _delivery == null
+              : d == null
                   ? const ShipperLoadingBody()
                   : ModuleListView(
                       padding: shipperListPadding(context),
                       children: [
                         ShipperPageIntro(
-                          title: 'Đơn #${_delivery!.orderId}',
+                          title: 'Đơn giao #${d.deliveryId}',
                           description:
-                              'Cập nhật trạng thái, mở bản đồ chỉ đường hoặc chụp ảnh xác nhận khi giao xong.',
+                              'Theo dõi tiến trình, xem bản đồ và cập nhật trạng thái theo quy trình giao hàng.',
                           icon: Icons.local_shipping_rounded,
                         ),
-                        const SizedBox(height: 14),
-                        ShipperCard(
+                        const SizedBox(height: 12),
+                        ShipperOrderHeaderCard(
+                          orderId: d.orderId,
+                          status: d.deliveryStatus,
+                          subtitle:
+                              '${d.mealCount} suất · ${formatShipperDateTime(d.scheduledDateUtc)}',
+                        ),
+                        const SizedBox(height: 12),
+                        ShipperDeliveryProgressBar(status: d.deliveryStatus),
+                        const SizedBox(height: 12),
+                        ShipperAddressHighlightCard(
+                          address: d.deliveryAddress,
+                          onOpenMaps: _openMaps,
+                          onCopy: () => _copyAddress(d.deliveryAddress),
+                        ),
+                        const SizedBox(height: 12),
+                        ShipperContentCard(
+                          title: 'Thông tin đơn',
+                          subtitle: 'Suất ăn, lịch giao và ghi chú',
+                          headerIcon: Icons.receipt_long_outlined,
+                          accent: shipperAccent,
                           child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(
-                                      'Thông tin giao',
-                                      style: AppDesignSystem.sectionTitle(),
-                                    ),
-                                  ),
-                                  ShipperStatusBadge(status: _delivery!.deliveryStatus),
-                                ],
-                              ),
-                              const SizedBox(height: 12),
                               ShipperDetailField(
-                                icon: Icons.location_on_outlined,
-                                label: 'Địa điểm giao',
-                                value: _delivery!.deliveryAddress,
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    IconButton(
-                                      icon: const Icon(Icons.map_rounded, size: 22),
-                                      color: shipperAccent,
-                                      onPressed: _openMaps,
-                                      tooltip: 'Chỉ đường Google Maps',
-                                    ),
-                                    IconButton(
-                                      icon: const Icon(Icons.copy_outlined, size: 20),
-                                      onPressed: () =>
-                                          _copyAddress(_delivery!.deliveryAddress),
-                                      tooltip: 'Sao chép',
-                                    ),
-                                  ],
-                                ),
+                                icon: Icons.tag_outlined,
+                                label: 'Mã đơn giao',
+                                value: '#${d.deliveryId}',
+                              ),
+                              ShipperDetailField(
+                                icon: Icons.shopping_bag_outlined,
+                                label: 'Mã đơn hàng',
+                                value: '#${d.orderId}',
                               ),
                               ShipperDetailField(
                                 icon: Icons.restaurant_outlined,
                                 label: 'Số suất ăn',
-                                value: '${_delivery!.mealCount} suất',
+                                value: '${d.mealCount} suất',
                               ),
                               ShipperDetailField(
                                 icon: Icons.schedule_outlined,
                                 label: 'Thời gian giao dự kiến',
-                                value: formatShipperDateTime(_delivery!.scheduledDateUtc),
+                                value: formatShipperDateTime(d.scheduledDateUtc),
                               ),
-                              if (_delivery!.deliveredAtUtc != null)
+                              if (d.deliveredAtUtc != null)
                                 ShipperDetailField(
                                   icon: Icons.check_circle_outline,
                                   label: 'Giao thực tế',
-                                  value: formatShipperDateTime(_delivery!.deliveredAtUtc!),
+                                  value: formatShipperDateTime(d.deliveredAtUtc!),
                                 ),
-                              if (_delivery!.notes != null && _delivery!.notes!.isNotEmpty)
+                              if (d.notes != null && d.notes!.isNotEmpty)
                                 ShipperDetailField(
                                   icon: Icons.notes_outlined,
                                   label: 'Ghi chú',
-                                  value: _delivery!.notes!,
+                                  value: d.notes!,
                                 ),
                             ],
                           ),
                         ),
-                        const SizedBox(height: 16),
-                        const ShipperSectionHeader(
-                          title: 'Bản đồ điểm giao (OSM)',
-                          subtitle: 'Xem vị trí ước lượng từ địa chỉ',
+                        const SizedBox(height: 12),
+                        ShipperContentCard(
+                          title: 'Bản đồ điểm giao',
+                          subtitle: 'OpenStreetMap · tọa độ ước lượng từ địa chỉ',
+                          headerIcon: Icons.map_outlined,
+                          accent: AppDesignSystem.info,
+                          child: ShipperOsmMap(
+                            markers: [ShipperMapMarker.fromDetail(d)],
+                            origin: kShipperDefaultStart,
+                            height: 240,
+                            drawRoutePolyline: false,
+                            showGoogleMapsButton: false,
+                          ),
                         ),
                         const SizedBox(height: 10),
-                        ShipperOsmMap(
-                          markers: [ShipperMapMarker.fromDetail(_delivery!)],
-                          origin: kShipperDefaultStart,
-                          height: 220,
-                          drawRoutePolyline: false,
-                          onOpenGoogleMaps: _openMaps,
+                        ShipperOutlineButton(
+                          label: 'Mở Google Maps chỉ đường',
+                          icon: Icons.navigation_rounded,
+                          onPressed: _openMaps,
                         ),
-                        const SizedBox(height: 16),
-                        const ShipperSectionHeader(title: 'Thao tác'),
-                        const SizedBox(height: 10),
-                        ..._actionButtons(_delivery!),
+                        const SizedBox(height: 12),
+                        ShipperContentCard(
+                          title: 'Thao tác giao hàng',
+                          subtitle: 'Cập nhật trạng thái theo quy trình',
+                          headerIcon: Icons.touch_app_outlined,
+                          accent: AppDesignSystem.success,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.stretch,
+                            children: _actionButtons(d),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
                       ],
                     ),
     );

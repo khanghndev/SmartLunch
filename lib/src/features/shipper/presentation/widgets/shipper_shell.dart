@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/app_routes.dart';
-import '../../../../core/theme/app_design_system.dart';
 import '../../../../core/widgets/premium_drawer.dart';
-const RolePalette kShipperRoleShell = RolePalette.shipper;
+import 'shipper_ui.dart';
+
+export 'shipper_ui.dart' show kShipperRole;
+
+/// Alias giữ tương thích code cũ.
+const kShipperRoleShell = kShipperRole;
 
 abstract final class ShipperShellConfig {
   static const roleBadge = 'Shipper';

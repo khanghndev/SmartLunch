@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/app_routes.dart';
-import '../../../../core/theme/app_design_system.dart';
 import '../../data/models/shipper_delivery_models.dart';
 import '../../data/repositories/shipper_repository.dart';
 import '../widgets/shipper_ui.dart';
@@ -77,6 +76,9 @@ class _DeliveryListPageState extends State<DeliveryListPage> {
   int get _inTransitCount =>
       _items.where((d) => d.deliveryStatus.toLowerCase() == 'in_transit').length;
 
+  int get _completedCount =>
+      _items.where((d) => d.deliveryStatus.toLowerCase() == 'completed').length;
+
   void _openDetail(ShipperDeliveryListItemModel item) {
     Navigator.of(context)
         .pushNamed(AppRoutes.shipperDeliveryDetail, arguments: item.deliveryId)
@@ -98,46 +100,49 @@ class _DeliveryListPageState extends State<DeliveryListPage> {
                     const ShipperPageIntro(
                       title: 'Đơn cần giao',
                       description:
-                          'Lọc theo hôm nay, trạng thái chờ nhận hoặc đang giao. Chạm đơn để xem chi tiết và cập nhật.',
+                          'Lọc nhanh theo ngày và trạng thái. Chạm đơn để cập nhật trạng thái hoặc chụp PoD.',
                       icon: Icons.inventory_2_rounded,
                     ),
                     const SizedBox(height: 14),
-                    ShipperPeriodChips(
-                      labels: _filters.map((f) => f.label).toList(),
-                      selected: _filterIndex,
-                      onSelected: (i) {
-                        setState(() => _filterIndex = i);
-                        _load();
-                      },
-                    ),
-                    if (!_loading && _items.isNotEmpty) ...[
-                      const SizedBox(height: 14),
-                      Row(
+                    ShipperContentCard(
+                      title: 'Bộ lọc',
+                      subtitle: _filters[_filterIndex].label,
+                      accent: shipperAccent,
+                      child: Column(
                         children: [
-                          Expanded(
-                            child: ShipperStatTile(
-                              label: 'Chờ xử lý',
-                              value: '$_pendingCount',
-                              icon: Icons.hourglass_top_rounded,
-                              color: AppDesignSystem.warning,
-                            ),
+                          ShipperPeriodChips(
+                            labels: _filters.map((f) => f.label).toList(),
+                            selected: _filterIndex,
+                            onSelected: (i) {
+                              setState(() => _filterIndex = i);
+                              _load();
+                            },
                           ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ShipperStatTile(
-                              label: 'Đang giao',
-                              value: '$_inTransitCount',
-                              icon: Icons.local_shipping_rounded,
-                              color: shipperAccent,
+                          if (_items.isNotEmpty) ...[
+                            const SizedBox(height: 14),
+                            ShipperOpsStrip(
+                              outerMargin: false,
+                              pendingLabel: '$_pendingCount',
+                              inTransitLabel: '$_inTransitCount',
+                              completedLabel: '$_completedCount',
                             ),
-                          ),
+                          ],
                         ],
                       ),
-                    ],
+                    ),
                     const SizedBox(height: 14),
+                    ShipperShortcutRow(
+                      leftLabel: 'Bản đồ tuyến',
+                      leftIcon: Icons.map_rounded,
+                      onLeft: () => Navigator.of(context).pushNamed(AppRoutes.shipperRouteMap),
+                      rightLabel: 'Lịch giao',
+                      rightIcon: Icons.calendar_month_rounded,
+                      onRight: () => Navigator.of(context).pushNamed(AppRoutes.shipperSchedule),
+                    ),
+                    const SizedBox(height: 16),
                     ShipperSectionHeader(
-                      title: 'Danh sách',
-                      subtitle: '${_items.length} đơn',
+                      title: 'Danh sách đơn',
+                      subtitle: '${_items.length} đơn · ${_filters[_filterIndex].label}',
                     ),
                     const SizedBox(height: 10),
                     if (_items.isEmpty)

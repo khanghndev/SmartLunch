@@ -53,7 +53,10 @@ class _ProofOfDeliveryPageState extends State<ProofOfDeliveryPage> {
     } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Không chọn được ảnh: ${shipperApiError(e)}')),
+        SnackBar(
+          content: Text('Không chọn được ảnh: ${shipperApiError(e)}'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
     }
   }
@@ -83,14 +86,17 @@ class _ProofOfDeliveryPageState extends State<ProofOfDeliveryPage> {
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Đã xác nhận giao hàng thành công')),
+        const SnackBar(
+          content: Text('Đã xác nhận giao hàng thành công'),
+          behavior: SnackBarBehavior.floating,
+        ),
       );
       Navigator.of(context).pop(true);
     } catch (e) {
       if (!mounted) return;
       setState(() => _submitting = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(shipperApiError(e))),
+        SnackBar(content: Text(shipperApiError(e)), behavior: SnackBarBehavior.floating),
       );
     }
   }
@@ -103,61 +109,34 @@ class _ProofOfDeliveryPageState extends State<ProofOfDeliveryPage> {
         padding: shipperListPadding(context),
         children: [
           const ShipperPageIntro(
-            title: 'Proof of Delivery (PoD)',
+            title: 'Minh chứng giao hàng (PoD)',
             description:
-                'Chụp ảnh minh chứng tại điểm giao. Hệ thống tự đánh dấu đơn hoàn tất và ghi nhận thời gian.',
+                'Chụp ảnh tại điểm giao để hoàn tất đơn. Hệ thống ghi nhận thời gian và cập nhật trạng thái completed.',
             icon: Icons.camera_alt_rounded,
           ),
-          const SizedBox(height: 16),
-          ShipperCard(
-            child: AspectRatio(
-              aspectRatio: 4 / 3,
-              child: _imageBytes == null
-                  ? Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(Icons.add_a_photo_outlined,
-                            size: 48, color: AppDesignSystem.gray400),
-                        const SizedBox(height: 8),
-                        Text('Chưa có ảnh', style: AppDesignSystem.body()),
-                      ],
-                    )
-                  : ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Image.memory(_imageBytes!, fit: BoxFit.cover),
-                    ),
-            ),
+          const SizedBox(height: 14),
+          ShipperPhotoCaptureCard(
+            imageBytes: _imageBytes,
+            enabled: !_submitting,
+            onCamera: () => _pickImage(ImageSource.camera),
+            onGallery: () => _pickImage(ImageSource.gallery),
           ),
           const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _submitting ? null : () => _pickImage(ImageSource.camera),
-                  icon: const Icon(Icons.camera_alt_outlined),
-                  label: const Text('Chụp ảnh'),
-                ),
+          ShipperContentCard(
+            title: 'Ghi chú thêm',
+            subtitle: 'Tuỳ chọn — lý do trễ, người nhận, v.v.',
+            accent: kShipperRole.primaryAlt,
+            child: TextField(
+              controller: _notesCtrl,
+              maxLines: 3,
+              enabled: !_submitting,
+              decoration: AppDesignSystem.inputDecoration(
+                label: 'Nội dung ghi chú',
+                focusColor: shipperAccent,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: _submitting ? null : () => _pickImage(ImageSource.gallery),
-                  icon: const Icon(Icons.photo_library_outlined),
-                  label: const Text('Thư viện'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          TextField(
-            controller: _notesCtrl,
-            maxLines: 3,
-            decoration: AppDesignSystem.inputDecoration(
-              label: 'Ghi chú (tuỳ chọn)',
-              focusColor: shipperAccent,
             ),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 20),
           ShipperPrimaryButton(
             label: _submitting ? 'Đang gửi…' : 'Hoàn tất giao hàng',
             icon: Icons.check_rounded,

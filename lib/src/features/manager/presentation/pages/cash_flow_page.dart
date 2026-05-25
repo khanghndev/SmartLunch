@@ -106,51 +106,32 @@ class _CashFlowPageState extends State<CashFlowPage> {
                       },
                     ),
                     const SizedBox(height: 14),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: ManagerStatTile(
-                            label: 'Tổng thu',
-                            value: formatVnd(s?.totalIncome ?? 0, compact: true),
-                            icon: Icons.south_west_rounded,
-                            color: AppDesignSystem.success,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ManagerStatTile(
-                            label: 'Tổng chi',
-                            value: formatVnd(s?.totalExpense ?? 0, compact: true),
-                            icon: Icons.north_east_rounded,
-                            color: AppDesignSystem.danger,
-                          ),
-                        ),
-                      ],
+                    ManagerFinanceStrip(
+                      income: formatVnd(s?.totalIncome ?? 0, compact: true),
+                      expense: formatVnd(s?.totalExpense ?? 0, compact: true),
+                      profit: formatVnd(s?.totalProfit ?? 0, compact: true),
                     ),
-                    const SizedBox(height: 10),
-                    ManagerStatTile(
-                      label: 'Lợi nhuận ròng',
+                    const SizedBox(height: 12),
+                    ManagerHeroKpiCard(
+                      outerMargin: false,
+                      label: 'Lợi nhuận ròng trong kỳ',
                       value: formatVnd(s?.totalProfit ?? 0, compact: true),
+                      hint: 'Thu − Chi theo ${_periodLabels[_periodIndex].toLowerCase()}',
                       icon: Icons.trending_up_rounded,
-                      color: managerAccent,
+                      accent: managerAccent,
                     ),
-                    const SizedBox(height: 16),
-                    ManagerGlassCard(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const ManagerSectionHeader(
-                            title: 'Biểu đồ dòng tiền',
-                            subtitle: 'Thu theo từng kỳ',
-                          ),
-                          const SizedBox(height: 16),
-                          ManagerBarChart(
-                            data: {
-                              for (final b in s?.items ?? <CashFlowItemModel>[])
-                                if (b.periodKey.isNotEmpty) b.periodKey: b.income,
-                            },
-                          ),
-                        ],
+                    const SizedBox(height: 14),
+                    ManagerChartCard(
+                      title: 'Biểu đồ dòng tiền',
+                      subtitle: 'Thu theo từng kỳ',
+                      accent: AppDesignSystem.success,
+                      child: ManagerBarChart(
+                        data: {
+                          for (final b in s?.items ?? <CashFlowItemModel>[])
+                            if (b.periodKey.isNotEmpty) b.periodKey: b.income,
+                        },
+                        barColor: AppDesignSystem.success,
+                        height: 188,
                       ),
                     ),
                     const SizedBox(height: 20),

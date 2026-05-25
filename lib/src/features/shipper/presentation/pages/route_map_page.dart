@@ -77,8 +77,7 @@ class _RouteMapPageState extends State<RouteMapPage> with SingleTickerProviderSt
     try {
       const start = kShipperDefaultStart;
       final stops = <ShipperRouteStopInput>[];
-      for (var i = 0; i < _active.length; i++) {
-        final d = _active[i];
+      for (final d in _active) {
         final geo = approximateCoordsForAddress(d.deliveryAddress, seed: d.deliveryId);
         stops.add(ShipperRouteStopInput(
           deliveryId: d.deliveryId,
@@ -104,7 +103,7 @@ class _RouteMapPageState extends State<RouteMapPage> with SingleTickerProviderSt
       if (!mounted) return;
       setState(() => _optimizing = false);
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(shipperApiError(e))),
+        SnackBar(content: Text(shipperApiError(e)), behavior: SnackBarBehavior.floating),
       );
     }
   }
@@ -126,18 +125,6 @@ class _RouteMapPageState extends State<RouteMapPage> with SingleTickerProviderSt
     ShipperMapsLauncher.openMultiStopRoute(
       stops: markers.map((m) => ShipperGeoPoint(m.latitude, m.longitude)).toList(),
       origin: kShipperDefaultStart,
-    );
-  }
-
-  Widget _introHeader() {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-      child: const ShipperPageIntro(
-        title: 'Tuyến giao hàng',
-        description:
-            'Bản đồ OpenStreetMap trong app: xem điểm giao, tối ưu thứ tự, mở Google Maps chỉ đường.',
-        icon: Icons.map_rounded,
-      ),
     );
   }
 
@@ -167,21 +154,80 @@ class _RouteMapPageState extends State<RouteMapPage> with SingleTickerProviderSt
               : Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    _introHeader(),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+                      child: const ShipperPageIntro(
+                        title: 'Tuyến giao hàng',
+                        description:
+                            'OSM trong app · tối ưu thứ tự · Google Maps chỉ đường.',
+                        icon: Icons.map_rounded,
+                      ),
+                    ),
+                    if (!_loading) ...[
+                      Padding(
+                        padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
+                        child: ShipperContentCard(
+                          title: 'Điểm đang xử lý hôm nay',
+                          subtitle: '${_active.length} đơn received / in_transit',
+                          accent: shipperAccent,
+                          trailing: _active.isEmpty
+                              ? null
+                              : FilledButton.tonalIcon(
+                                  onPressed: _optimizing ? null : _optimize,
+                                  icon: _optimizing
+                                      ? const SizedBox(
+                                          width: 16,
+                                          height: 16,
+                                          child: CircularProgressIndicator(strokeWidth: 2),
+                                        )
+                                      : const Icon(Icons.route_rounded, size: 18),
+                                  label: Text(
+                                    _route != null ? 'Tối ưu lại' : 'Tối ưu',
+                                    style: AppDesignSystem.label().copyWith(fontSize: 12),
+                                  ),
+                                  style: FilledButton.styleFrom(
+                                    backgroundColor: shipperAccent.withValues(alpha: 0.12),
+                                    foregroundColor: shipperAccent,
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                                  ),
+                                ),
+                          child: _route != null
+                              ? Row(
+                                  children: [
+                                    Expanded(
+                                      child: ShipperStatTile(
+                                        label: 'Quãng đường',
+                                        value:
+                                            '${_route!.approxTotalDistanceKm.toStringAsFixed(1)} km',
+                                        icon: Icons.straighten_rounded,
+                                        color: shipperAccent,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 10),
+                                    Expanded(
+                                      child: ShipperStatTile(
+                                        label: 'Điểm dừng',
+                                        value: '${_route!.stops.length}',
+                                        icon: Icons.place_rounded,
+                                        color: AppDesignSystem.success,
+                                      ),
+                                    ),
+                                  ],
+                                )
+                              : ShipperInfoBanner(
+                                  message:
+                                      'Tọa độ ước lượng từ địa chỉ. Nhấn Tối ưu để sắp xếp thứ tự giao.',
+                                  icon: Icons.info_outline_rounded,
+                                  color: shipperAccent,
+                                ),
+                        ),
+                      ),
+                    ],
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 10, 16, 0),
-                      child: DecoratedBox(
-                        decoration: AppDesignSystem.card(radius: 14),
-                        child: TabBar(
-                          controller: _tabs,
-                          labelColor: shipperAccent,
-                          unselectedLabelColor: AppDesignSystem.gray500,
-                          indicatorColor: shipperAccent,
-                          tabs: const [
-                            Tab(text: 'Danh sách'),
-                            Tab(text: 'Bản đồ'),
-                          ],
-                        ),
+                      child: ShipperSubTabBar(
+                        controller: _tabs,
+                        tabs: const ['Danh sách', 'Bản đồ'],
                       ),
                     ),
                     Expanded(
@@ -200,30 +246,22 @@ class _RouteMapPageState extends State<RouteMapPage> with SingleTickerProviderSt
 
   Widget _listTab() {
     return ModuleListView(
-      padding: shipperListPadding(context),
+      padding: shipperListPadding(context).copyWith(top: 12),
       children: [
-        const ShipperInfoBanner(
-          message:
-              'Tọa độ ước lượng từ địa chỉ khi BE chưa có GPS. Nhấn biểu tượng tuyến trên AppBar để sắp xếp thứ tự tối ưu.',
-          icon: Icons.info_outline_rounded,
-        ),
         if (_route != null) ...[
-          const SizedBox(height: 12),
-          ShipperStatTile(
-            label: 'Quãng đường ước tính',
-            value: '${_route!.approxTotalDistanceKm.toStringAsFixed(2)} km',
-            icon: Icons.straighten_rounded,
-            color: shipperAccent,
+          ShipperContentCard(
+            title: 'Thứ tự giao đề xuất',
+            subtitle: 'Theo kết quả tối ưu tuyến',
+            accent: AppDesignSystem.success,
+            child: Column(
+              children: _route!.stops.map(_optimizedStopRow).toList(),
+            ),
           ),
-          const SizedBox(height: 14),
-          const ShipperSectionHeader(title: 'Thứ tự giao đề xuất'),
-          const SizedBox(height: 8),
-          ..._route!.stops.map(_optimizedStopRow),
           const SizedBox(height: 12),
         ],
         ShipperSectionHeader(
           title: 'Đơn đang xử lý',
-          subtitle: '${_active.length} đơn received / in_transit',
+          subtitle: '${_active.length} đơn',
         ),
         const SizedBox(height: 10),
         if (_active.isEmpty)
@@ -249,71 +287,73 @@ class _RouteMapPageState extends State<RouteMapPage> with SingleTickerProviderSt
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (_route != null)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-            child: ShipperStatTile(
-              label: 'Tuyến tối ưu (OSM)',
-              value:
-                  '${_route!.stops.length} điểm · ${_route!.approxTotalDistanceKm.toStringAsFixed(1)} km',
-              icon: Icons.route_rounded,
-              color: AppDesignSystem.success,
-            ),
-          ),
         Expanded(
           child: Padding(
             padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-            child: ShipperOsmMap(
-              markers: _mapMarkers,
-              origin: kShipperDefaultStart,
-              onOpenGoogleMaps: _openGoogleRoute,
+            child: ShipperContentCard(
+              title: 'Bản đồ OSM',
+              subtitle: _route != null
+                  ? 'Tuyến tối ưu · ${_route!.approxTotalDistanceKm.toStringAsFixed(1)} km'
+                  : 'Điểm giao ước lượng',
+              accent: AppDesignSystem.info,
+              child: SizedBox(
+                height: 280,
+                child: ShipperOsmMap(
+                  markers: _mapMarkers,
+                  origin: kShipperDefaultStart,
+                  onOpenGoogleMaps: _openGoogleRoute,
+                ),
+              ),
             ),
           ),
         ),
         if (_mapMarkers.isNotEmpty)
           SizedBox(
-            height: 160,
+            height: 168,
             child: ModuleListView(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                children: [
-                  const ShipperSectionHeader(title: 'Điểm trên bản đồ'),
-                  const SizedBox(height: 6),
-                  ..._mapMarkers.map(
-                    (m) => ShipperDataRow(
-                      icon: Icons.place_rounded,
-                      iconColor: shipperAccent,
-                      title: m.label.isNotEmpty ? m.label : 'Điểm giao',
-                      subtitle:
-                          '${m.latitude.toStringAsFixed(5)}, ${m.longitude.toStringAsFixed(5)}',
-                      trailing: m.sequence != null ? '#${m.sequence}' : null,
-                      onTap: m.deliveryId != null
-                          ? () => Navigator.of(context).pushNamed(
-                                AppRoutes.shipperDeliveryDetail,
-                                arguments: m.deliveryId,
-                              )
-                          : null,
-                    ),
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              children: [
+                const ShipperSectionHeader(title: 'Điểm trên bản đồ', subtitle: 'Chạm để mở chi tiết'),
+                const SizedBox(height: 6),
+                ..._mapMarkers.map(
+                  (m) => ShipperDataRow(
+                    icon: Icons.place_rounded,
+                    iconColor: shipperAccent,
+                    title: m.label.isNotEmpty ? m.label : 'Điểm giao',
+                    subtitle:
+                        '${m.latitude.toStringAsFixed(5)}, ${m.longitude.toStringAsFixed(5)}',
+                    trailing: m.sequence != null ? '#${m.sequence}' : null,
+                    onTap: m.deliveryId != null
+                        ? () => Navigator.of(context).pushNamed(
+                              AppRoutes.shipperDeliveryDetail,
+                              arguments: m.deliveryId,
+                            )
+                        : null,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
       ],
     );
   }
 
   Widget _optimizedStopRow(ShipperRouteStopModel stop) {
-    return ShipperDataRow(
-      icon: Icons.pin_drop_rounded,
-      iconColor: shipperAccent,
-      title: stop.label,
-      subtitle: '${stop.latitude.toStringAsFixed(5)}, ${stop.longitude.toStringAsFixed(5)}',
-      trailing: '#${stop.sequence}',
-      onTap: stop.deliveryId != null
-          ? () => Navigator.of(context).pushNamed(
-                AppRoutes.shipperDeliveryDetail,
-                arguments: stop.deliveryId,
-              )
-          : null,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: ShipperDataRow(
+        icon: Icons.pin_drop_rounded,
+        iconColor: shipperAccent,
+        title: stop.label,
+        subtitle: 'Thứ tự giao #${stop.sequence}',
+        trailing: '#${stop.sequence}',
+        onTap: stop.deliveryId != null
+            ? () => Navigator.of(context).pushNamed(
+                  AppRoutes.shipperDeliveryDetail,
+                  arguments: stop.deliveryId,
+                )
+            : null,
+      ),
     );
   }
 }

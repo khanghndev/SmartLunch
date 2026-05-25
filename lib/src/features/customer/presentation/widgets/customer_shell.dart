@@ -42,6 +42,17 @@ abstract final class CustomerShellConfig {
         ),
       ],
     ),
+    DrawerSection(
+      title: 'Tài khoản',
+      items: [
+        DrawerItem(
+          icon: Icons.person_rounded,
+          label: 'profile',
+          labelVi: 'Hồ sơ cá nhân',
+          route: AppRoutes.profile,
+        ),
+      ],
+    ),
   ];
 }
 
@@ -52,6 +63,7 @@ class CustomerTabShell extends StatelessWidget {
   final ValueChanged<int> onIndexChanged;
   final List<Widget> tabs;
   final void Function(String route) onDrawerNavigate;
+  final VoidCallback onLogout;
 
   const CustomerTabShell({
     super.key,
@@ -60,6 +72,7 @@ class CustomerTabShell extends StatelessWidget {
     required this.onIndexChanged,
     required this.tabs,
     required this.onDrawerNavigate,
+    required this.onLogout,
   });
 
   @override
@@ -81,7 +94,7 @@ class CustomerTabShell extends StatelessWidget {
           if (index < tabs.length) onIndexChanged(index);
         },
         onNavigate: onDrawerNavigate,
-        onLogout: () {},
+        onLogout: onLogout,
         sections: CustomerShellConfig.drawerSections,
       ),
       tabs: tabs,
@@ -89,10 +102,18 @@ class CustomerTabShell extends StatelessWidget {
   }
 }
 
-/// Điều hướng drawer mặc định Customer (login = quay về đăng nhập).
-void customerDefaultDrawerNavigate(BuildContext context, String route) {
+/// Điều hướng drawer mặc định Customer.
+void customerDefaultDrawerNavigate(
+  BuildContext context,
+  String route, {
+  VoidCallback? onLogout,
+}) {
   if (route == AppRoutes.login) {
-    Navigator.of(context).pushReplacementNamed(AppRoutes.login);
+    if (onLogout != null) {
+      onLogout();
+    } else {
+      navigateAppToLogin(context);
+    }
   } else {
     Navigator.of(context).pushNamed(route);
   }

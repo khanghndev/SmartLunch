@@ -132,6 +132,391 @@ typedef ManagerEmptyList = ModuleEmptyList;
 
 // ─── Báo cáo / module con — UI chuẩn Manager ─────────────────────────────────
 
+/// Banner dashboard — tổng quan vận hành tháng.
+class ManagerWelcomeBanner extends StatelessWidget {
+  final String managerName;
+  final int month;
+
+  const ManagerWelcomeBanner({
+    super.key,
+    required this.managerName,
+    required this.month,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.fromLTRB(20, 14, 20, 0),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: kManagerRole.gradient,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: kManagerRole.primary.withValues(alpha: 0.28),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Stack(
+          children: [
+            Positioned(
+              right: -16,
+              bottom: -16,
+              child: Icon(
+                Icons.insights_rounded,
+                size: 110,
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(color: Colors.white24),
+                    ),
+                    child: Text(
+                      'Tháng $month · Quản trị HUITMeal',
+                      style: AppDesignSystem.body(size: 11, color: Colors.white)
+                          .copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    'Xin chào, $managerName',
+                    style: AppDesignSystem.title(size: 22, color: Colors.white),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Theo dõi suất ăn, dòng tiền, đối soát và phản hồi trên một màn hình.',
+                    style: AppDesignSystem.body(size: 13, color: Colors.white.withValues(alpha: 0.92)),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// KPI nổi bật — lợi nhuận / chỉ số chính.
+class ManagerHeroKpiCard extends StatelessWidget {
+  final String label;
+  final String value;
+  final String? hint;
+  final IconData icon;
+  final Color accent;
+  final bool outerMargin;
+
+  const ManagerHeroKpiCard({
+    super.key,
+    required this.label,
+    required this.value,
+    this.hint,
+    required this.icon,
+    required this.accent,
+    this.outerMargin = true,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: outerMargin ? const EdgeInsets.fromLTRB(20, 12, 20, 0) : EdgeInsets.zero,
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: accent.withValues(alpha: 0.25)),
+        boxShadow: [
+          BoxShadow(
+            color: accent.withValues(alpha: 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [accent.withValues(alpha: 0.15), accent.withValues(alpha: 0.05)],
+              ),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: Icon(icon, color: accent, size: 30),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(label, style: AppDesignSystem.body(size: 12, color: AppDesignSystem.gray500)),
+                const SizedBox(height: 4),
+                Text(value, style: AppDesignSystem.title(size: 24, color: AppDesignSystem.gray900)),
+                if (hint != null) ...[
+                  const SizedBox(height: 4),
+                  Text(hint!, style: AppDesignSystem.body(size: 12, color: accent)),
+                ],
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Thu — Chi — Lợi nhuận (màn thu chi).
+class ManagerFinanceStrip extends StatelessWidget {
+  final String income;
+  final String expense;
+  final String profit;
+
+  const ManagerFinanceStrip({
+    super.key,
+    required this.income,
+    required this.expense,
+    required this.profit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 4),
+      child: Row(
+        children: [
+          Expanded(
+            child: _OpsMini(
+              icon: Icons.south_west_rounded,
+              title: 'Tổng thu',
+              value: income,
+              color: AppDesignSystem.success,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _OpsMini(
+              icon: Icons.north_east_rounded,
+              title: 'Tổng chi',
+              value: expense,
+              color: AppDesignSystem.danger,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _OpsMini(
+              icon: Icons.trending_up_rounded,
+              title: 'Lợi nhuận',
+              value: profit,
+              color: kManagerRole.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Ba chỉ số nhanh dưới banner.
+class ManagerOpsStrip extends StatelessWidget {
+  final String mealsLabel;
+  final String complaintsLabel;
+  final String reconciliationLabel;
+
+  const ManagerOpsStrip({
+    super.key,
+    required this.mealsLabel,
+    required this.complaintsLabel,
+    required this.reconciliationLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 12, 20, 0),
+      child: Row(
+        children: [
+          Expanded(
+            child: _OpsMini(
+              icon: Icons.restaurant_rounded,
+              title: 'Suất ăn',
+              value: mealsLabel,
+              color: AppDesignSystem.info,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _OpsMini(
+              icon: Icons.feedback_rounded,
+              title: 'Khiếu nại',
+              value: complaintsLabel,
+              color: AppDesignSystem.warning,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Expanded(
+            child: _OpsMini(
+              icon: Icons.receipt_long_rounded,
+              title: 'Đối soát',
+              value: reconciliationLabel,
+              color: kManagerRole.primary,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OpsMini extends StatelessWidget {
+  final IconData icon;
+  final String title;
+  final String value;
+  final Color color;
+
+  const _OpsMini({
+    required this.icon,
+    required this.title,
+    required this.value,
+    required this.color,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+      decoration: AppDesignSystem.card(radius: 14),
+      child: Column(
+        children: [
+          Icon(icon, size: 20, color: color),
+          const SizedBox(height: 6),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: AppDesignSystem.label().copyWith(fontSize: 12),
+          ),
+          Text(
+            title,
+            style: AppDesignSystem.body(size: 9, color: AppDesignSystem.gray500),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Card bọc biểu đồ — tiêu đề + nội dung sinh động.
+class ManagerChartCard extends StatelessWidget {
+  final String title;
+  final String? subtitle;
+  final Widget child;
+  final Color accent;
+  final Widget? trailing;
+
+  const ManagerChartCard({
+    super.key,
+    required this.title,
+    this.subtitle,
+    required this.child,
+    this.accent = const Color(0xFFD97706),
+    this.trailing,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ManagerGlassCard(
+      padding: EdgeInsets.zero,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Container(
+            padding: const EdgeInsets.fromLTRB(16, 14, 16, 12),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [accent.withValues(alpha: 0.12), Colors.transparent],
+              ),
+              borderRadius: const BorderRadius.vertical(top: Radius.circular(16)),
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: accent.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(Icons.bar_chart_rounded, color: accent, size: 20),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(title, style: AppDesignSystem.sectionTitle()),
+                      if (subtitle != null) ...[
+                        const SizedBox(height: 2),
+                        Text(subtitle!, style: AppDesignSystem.body(size: 12)),
+                      ],
+                    ],
+                  ),
+                ),
+                if (trailing != null) trailing!,
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(12, 0, 12, 16),
+            child: child,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class ManagerSkeletonBox extends StatelessWidget {
+  final double height;
+  final double? width;
+  final double radius;
+
+  const ManagerSkeletonBox({
+    super.key,
+    required this.height,
+    this.width,
+    this.radius = 12,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: AppDesignSystem.gray100,
+        borderRadius: BorderRadius.circular(radius),
+      ),
+    );
+  }
+}
+
 /// Banner giới thiệu đầu màn báo cáo.
 class ManagerPageIntro extends StatelessWidget {
   final String title;
@@ -150,16 +535,16 @@ class ManagerPageIntro extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            kManagerRole.primary.withValues(alpha: 0.12),
-            kManagerRole.primaryAlt.withValues(alpha: 0.06),
-          ],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(AppDesignSystem.radiusLg),
-        border: Border.all(color: kManagerRole.primary.withValues(alpha: 0.2)),
+        border: Border.all(color: AppDesignSystem.gray100),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -167,7 +552,7 @@ class ManagerPageIntro extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(10),
             decoration: BoxDecoration(
-              color: Colors.white,
+              color: kManagerRole.primary.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(icon, color: kManagerRole.primary, size: 26),
@@ -473,31 +858,56 @@ class ManagerReportNavCard extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppDesignSystem.radiusLg),
           child: Ink(
-            decoration: AppDesignSystem.card(radius: AppDesignSystem.radiusLg),
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
+            decoration: AppDesignSystem.card(radius: AppDesignSystem.radiusLg).copyWith(
+              border: Border.all(color: accent.withValues(alpha: 0.15)),
+            ),
+            child: IntrinsicHeight(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    width: 5,
+                    decoration: BoxDecoration(
+                      color: accent,
+                      borderRadius: const BorderRadius.horizontal(left: Radius.circular(16)),
+                    ),
                   ),
-                  child: Icon(icon, color: accent, size: 26),
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(title, style: AppDesignSystem.sectionTitle()),
-                      const SizedBox(height: 2),
-                      Text(subtitle, style: AppDesignSystem.body(size: 13)),
-                    ],
+                  Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.all(16),
+                      child: Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [
+                                  accent.withValues(alpha: 0.18),
+                                  accent.withValues(alpha: 0.06),
+                                ],
+                              ),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: Icon(icon, color: accent, size: 26),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(title, style: AppDesignSystem.sectionTitle()),
+                                const SizedBox(height: 2),
+                                Text(subtitle, style: AppDesignSystem.body(size: 13)),
+                              ],
+                            ),
+                          ),
+                          Icon(Icons.arrow_forward_rounded, color: accent, size: 22),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
-                Icon(Icons.chevron_right_rounded, color: AppDesignSystem.gray400),
-              ],
+                ],
+              ),
             ),
           ),
         ),

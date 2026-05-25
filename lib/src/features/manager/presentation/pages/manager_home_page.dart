@@ -8,6 +8,7 @@ import '../../../../core/widgets/role_dashboard.dart';
 import '../../../../core/widgets/role_module_header.dart';
 import '../../../../core/widgets/role_module_shell.dart';
 import '../widgets/manager_shell.dart';
+import '../widgets/manager_ui.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../profile/data/models/user_profile_model.dart';
 import '../../../profile/data/profile_repository.dart';
@@ -161,6 +162,12 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
             color: AppDesignSystem.success,
             onTap: () => Navigator.of(context).pushNamed(AppRoutes.managerCashFlow),
           ),
+          RoleHeaderQuickAction(
+            label: 'Báo cáo',
+            icon: Icons.file_download_rounded,
+            color: AppDesignSystem.info,
+            onTap: () => Navigator.of(context).pushNamed(AppRoutes.managerReports),
+          ),
         ],
       ),
       body: RoleDashboardBody(
@@ -173,6 +180,24 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
           isLoading: _isLoading,
           errorMessage: _loadError,
           onRefresh: _loadDashboardData,
+          prefixWidgets: [
+            ManagerWelcomeBanner(
+              managerName: name,
+              month: DateTime.now().month,
+            ),
+            ManagerHeroKpiCard(
+              label: 'Lợi nhuận ròng tháng',
+              value: _isLoading ? '—' : formatDashboardVnd(_totalRevenue),
+              hint: _isLoading ? null : 'Suất hôm nay: $_todayMeals',
+              icon: Icons.trending_up_rounded,
+              accent: AppDesignSystem.success,
+            ),
+            ManagerOpsStrip(
+              mealsLabel: _isLoading ? '—' : '$_totalMeals / tháng',
+              complaintsLabel: _isLoading ? '—' : '$_complaintCount',
+              reconciliationLabel: _isLoading ? '—' : '$_pendingReconciliation chờ',
+            ),
+          ],
           topActions: const [],
           quickActions: const [],
           summaryMetrics: [

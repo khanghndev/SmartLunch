@@ -104,39 +104,48 @@ class _DeliveryHistoryPageState extends State<DeliveryHistoryPage> {
                       icon: Icons.history_rounded,
                     ),
                     const SizedBox(height: 14),
-                    ShipperPeriodChips(
-                      labels: _filters,
-                      selected: _filterIndex,
-                      onSelected: (i) {
-                        setState(() => _filterIndex = i);
-                        _load();
-                      },
+                    ShipperContentCard(
+                      title: 'Bộ lọc lịch sử',
+                      accent: shipperAccent,
+                      child: ShipperPeriodChips(
+                        labels: _filters,
+                        selected: _filterIndex,
+                        onSelected: (i) {
+                          setState(() => _filterIndex = i);
+                          _load();
+                        },
+                      ),
                     ),
                     if (_items.isNotEmpty) ...[
                       const SizedBox(height: 14),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: ShipperStatTile(
-                              label: 'Hoàn tất',
-                              value: '$_completedCount',
-                              icon: Icons.check_circle_outline,
-                              color: AppDesignSystem.success,
+                      ShipperContentCard(
+                        title: 'Tổng kết',
+                        subtitle: '${_items.length} đơn · ${_filters[_filterIndex]}',
+                        accent: AppDesignSystem.success,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ShipperStatTile(
+                                label: 'Hoàn tất',
+                                value: '$_completedCount',
+                                icon: Icons.check_circle_outline,
+                                color: AppDesignSystem.success,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: ShipperStatTile(
-                              label: 'Thất bại / từ chối',
-                              value: '$_failedCount',
-                              icon: Icons.cancel_outlined,
-                              color: AppDesignSystem.danger,
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: ShipperStatTile(
+                                label: 'Thất bại / từ chối',
+                                value: '$_failedCount',
+                                icon: Icons.cancel_outlined,
+                                color: AppDesignSystem.danger,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ],
-                    const SizedBox(height: 14),
+                    const SizedBox(height: 16),
                     ShipperSectionHeader(
                       title: 'Danh sách',
                       subtitle: '${_items.length} đơn',

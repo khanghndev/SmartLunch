@@ -172,42 +172,33 @@ class _ManagerStatisticsPageState extends State<ManagerStatisticsPage>
   Widget _overviewTab() {
     return Column(
       children: [
-        ManagerGlassCard(
+        ManagerChartCard(
+          title: 'Phân bổ suất ăn',
+          subtitle: 'Chọn cách nhóm dữ liệu',
+          accent: managerAccent,
           child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const ManagerSectionHeader(
-                title: 'Phân bổ suất ăn',
-                subtitle: 'Chọn cách nhóm dữ liệu',
-              ),
-              const SizedBox(height: 12),
               ManagerPeriodChips(
                 labels: const ['Theo ngày', 'Theo ca', 'Bộ phận'],
                 selected: _viewIndex,
                 onSelected: (i) => setState(() => _viewIndex = i),
               ),
-              const SizedBox(height: 16),
-              ManagerBarChart(data: _chartData()),
+              const SizedBox(height: 14),
+              ManagerBarChart(data: _chartData(), height: 188),
             ],
           ),
         ),
         const SizedBox(height: 12),
-        ManagerGlassCard(
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const ManagerSectionHeader(
-                title: 'Doanh thu theo ngày',
-                subtitle: 'Tổng tiền theo từng ngày trong kỳ',
-              ),
-              const SizedBox(height: 16),
-              ManagerBarChart(
-                data: _meals.amountByDay().map(
-                  (k, v) => MapEntry('${k.day}/${k.month}', v),
-                ),
-                barColor: AppDesignSystem.success,
-              ),
-            ],
+        ManagerChartCard(
+          title: 'Doanh thu theo ngày',
+          subtitle: 'Tổng tiền trong kỳ đã chọn',
+          accent: AppDesignSystem.success,
+          child: ManagerBarChart(
+            data: _meals.amountByDay().map(
+              (k, v) => MapEntry('${k.day}/${k.month}', v),
+            ),
+            barColor: AppDesignSystem.success,
+            height: 188,
           ),
         ),
       ],

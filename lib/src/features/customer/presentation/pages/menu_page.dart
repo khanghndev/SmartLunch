@@ -8,7 +8,9 @@ import '../../../organization/data/org_repository.dart';
 import '../widgets/customer_ui.dart';
 
 class MenuPage extends StatefulWidget {
-  const MenuPage({super.key});
+  final int? initialCategoryId;
+
+  const MenuPage({super.key, this.initialCategoryId});
 
   @override
   State<MenuPage> createState() => _MenuPageState();
@@ -29,6 +31,17 @@ class _MenuPageState extends State<MenuPage> {
     _fetchCategories();
   }
 
+  @override
+  void didUpdateWidget(MenuPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    final nextId = widget.initialCategoryId;
+    if (nextId != null &&
+        nextId != oldWidget.initialCategoryId &&
+        _categories.any((c) => c.id == nextId)) {
+      _onCategorySelected(nextId);
+    }
+  }
+
   Future<void> _fetchCategories() async {
     try {
       setState(() {
@@ -36,15 +49,26 @@ class _MenuPageState extends State<MenuPage> {
         _error = null;
       });
       final data = await OrgRepository.instance.getDishCategories();
-      if (mounted) {
-        setState(() {
-          _categories = data.categories;
-          if (_categories.isNotEmpty) {
-            _selectedCategoryId = _categories.first.id;
-            _fetchDishes(_selectedCategoryId);
-          }
-          _isLoadingCategories = false;
-        });
+      if (!mounted) return;
+
+      var selectedId = 0;
+      if (data.categories.isNotEmpty) {
+        final preferred = widget.initialCategoryId;
+        if (preferred != null && data.categories.any((c) => c.id == preferred)) {
+          selectedId = preferred;
+        } else {
+          selectedId = data.categories.first.id;
+        }
+      }
+
+      setState(() {
+        _categories = data.categories;
+        _selectedCategoryId = selectedId;
+        _isLoadingCategories = false;
+      });
+
+      if (selectedId != 0) {
+        await _fetchDishes(selectedId);
       }
     } catch (e) {
       if (mounted) {
@@ -115,7 +139,7 @@ class _MenuPageState extends State<MenuPage> {
     if (name != null) {
       return '${_dishes.length} món · $name';
     }
-    return '${_dishes.length} món · Chọn loại món bên dưới';
+    return 'Chọn loại món bên dưới';
   }
 
   void _openDishDetail(Map<String, dynamic> dish) {
@@ -172,7 +196,7 @@ class _MenuPageState extends State<MenuPage> {
     }
 
     if (_isLoadingDishes) {
-      return const CustomerLoadingBody(message: 'Đang tải danh sách món…');
+      return const CustomerDishGridSkeleton();
     }
 
     if (_dishes.isEmpty) {
@@ -199,29 +223,11 @@ class _MenuPageState extends State<MenuPage> {
           SliverToBoxAdapter(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 4),
-              child: CustomerGlassCard(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-                child: Row(
-                  children: [
-                    Icon(Icons.grid_view_rounded, color: kCustomerRole.primary, size: 22),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            _selectedCategoryName ?? 'Danh mục',
-                            style: AppDesignSystem.sectionTitle(),
-                          ),
-                          Text(
-                            '${_dishes.length} món · Chạm để xem chi tiết',
-                            style: AppDesignSystem.body(size: 12),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
+              child: CustomerPageIntro(
+                title: 'Đang xem: ${_selectedCategoryName ?? 'Danh mục'}',
+                description:
+                    '${_dishes.length} món trong nhóm này. Chạm vào từng món để xem ảnh lớn và thông tin.',
+                icon: Icons.restaurant_menu_rounded,
               ),
             ),
           ),
@@ -230,7 +236,7 @@ class _MenuPageState extends State<MenuPage> {
             sliver: SliverGrid(
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 2,
-                childAspectRatio: 0.76,
+                childAspectRatio: 0.74,
                 crossAxisSpacing: 12,
                 mainAxisSpacing: 12,
               ),
@@ -240,6 +246,7 @@ class _MenuPageState extends State<MenuPage> {
                   return CustomerDishCard(
                     name: dish['name']?.toString() ?? 'Món ăn',
                     imageUrl: dish['imageUrl']?.toString(),
+                    categoryName: dish['categoryName']?.toString(),
                     cacheWidth: cacheWidth,
                     onTap: () => _openDishDetail(dish),
                   );

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/app_routes.dart';
-import '../../../../core/theme/app_design_system.dart';
 import '../widgets/shipper_ui.dart';
 
 /// Shipper dùng chung màn thông báo hệ thống.
@@ -21,40 +20,14 @@ class ShipperNotificationsPage extends StatelessWidget {
                 'Nhắc đơn mới, thay đổi lịch giao và cập nhật trạng thái sẽ hiển thị tại đây.',
             icon: Icons.notifications_active_rounded,
           ),
-          const SizedBox(height: 24),
-          ShipperCard(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: shipperAccent.withValues(alpha: 0.1),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.notifications_none_rounded, size: 40, color: shipperAccent),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Chưa có thông báo mới',
-                  style: AppDesignSystem.sectionTitle(),
-                  textAlign: TextAlign.center,
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  'Mở trung tâm thông báo để xem lịch sử tin đã gửi trên tài khoản của bạn.',
-                  textAlign: TextAlign.center,
-                  style: AppDesignSystem.body(size: 13, color: AppDesignSystem.gray500),
-                ),
-                const SizedBox(height: 20),
-                ShipperPrimaryButton(
-                  label: 'Mở trung tâm thông báo',
-                  icon: Icons.open_in_new_rounded,
-                  onPressed: () =>
-                      Navigator.of(context).pushNamed(AppRoutes.notifications),
-                ),
-              ],
-            ),
+          const SizedBox(height: 20),
+          ShipperPlaceholderCard(
+            icon: Icons.notifications_none_rounded,
+            title: 'Chưa có thông báo mới',
+            message:
+                'Khi hệ thống gửi tin về đơn giao hoặc lịch trình, bạn sẽ thấy tại đây. Bạn cũng có thể mở trung tâm thông báo chung.',
+            actionLabel: 'Mở trung tâm thông báo',
+            onAction: () => Navigator.of(context).pushNamed(AppRoutes.notifications),
           ),
         ],
       ),

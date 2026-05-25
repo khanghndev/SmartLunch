@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../../../../app/app_routes.dart';
-import '../../../../core/theme/app_design_system.dart';
 import '../../../../core/widgets/premium_drawer.dart';
-
-const RolePalette kManagerRole = RolePalette.manager;
 
 abstract final class ManagerShellConfig {
   static const roleBadge = 'Manager';

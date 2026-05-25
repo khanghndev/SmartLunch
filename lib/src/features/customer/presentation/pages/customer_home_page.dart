@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 
 import '../../../../app/app_routes.dart';
 import '../../../../core/theme/app_design_system.dart';
+import '../../../../core/widgets/app_confirm_dialog.dart';
+import '../../../../core/widgets/premium_drawer.dart';
 import '../../../../core/widgets/role_tab_shell.dart';
 import '../../../organization/data/models/bulk_order_models.dart';
 import '../../../organization/data/org_repository.dart';
@@ -17,9 +19,36 @@ class CustomerHomePage extends StatefulWidget {
 
 class _CustomerHomePageState extends State<CustomerHomePage> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+  final GlobalKey _categoriesSectionKey = GlobalKey();
   int _currentIndex = 0;
+  int? _menuInitialCategoryId;
 
-  void _goToMenu() => setState(() => _currentIndex = 1);
+  void _goToMenu({int? categoryId}) {
+    setState(() {
+      _menuInitialCategoryId = categoryId;
+      _currentIndex = 1;
+    });
+  }
+
+  void _scrollToCategories() {
+    final ctx = _categoriesSectionKey.currentContext;
+    if (ctx != null) {
+      Scrollable.ensureVisible(
+        ctx,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOutCubic,
+        alignment: 0.05,
+      );
+      return;
+    }
+    _goToMenu();
+  }
+
+  Future<void> _handleLogout() async {
+    await performAppLogout(context, role: kCustomerRole);
+  }
+
+  void _openLogin() => navigateAppToLogin(context);
 
   @override
   Widget build(BuildContext context) {
@@ -27,19 +56,37 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
       scaffoldKey: _scaffoldKey,
       currentIndex: _currentIndex,
       onIndexChanged: (i) => setState(() => _currentIndex = i),
-      onDrawerNavigate: (route) => customerDefaultDrawerNavigate(context, route),
+      onLogout: _handleLogout,
+      onDrawerNavigate: (route) => customerDefaultDrawerNavigate(
+        context,
+        route,
+        onLogout: _handleLogout,
+      ),
       tabs: [
-        _CustomerDashboard(onNavigateToMenu: _goToMenu),
-        const MenuPage(),
+        _CustomerDashboard(
+          categoriesSectionKey: _categoriesSectionKey,
+          onNavigateToMenu: _goToMenu,
+          onScrollToCategories: _scrollToCategories,
+          onLogin: _openLogin,
+        ),
+        MenuPage(initialCategoryId: _menuInitialCategoryId),
       ],
     );
   }
 }
 
 class _CustomerDashboard extends StatefulWidget {
-  final VoidCallback onNavigateToMenu;
+  final GlobalKey categoriesSectionKey;
+  final void Function({int? categoryId}) onNavigateToMenu;
+  final VoidCallback onScrollToCategories;
+  final VoidCallback onLogin;
 
-  const _CustomerDashboard({required this.onNavigateToMenu});
+  const _CustomerDashboard({
+    required this.categoriesSectionKey,
+    required this.onNavigateToMenu,
+    required this.onScrollToCategories,
+    required this.onLogin,
+  });
 
   @override
   State<_CustomerDashboard> createState() => _CustomerDashboardState();
@@ -75,19 +122,16 @@ class _CustomerDashboardState extends State<_CustomerDashboard> {
       final categories = catResponse.categories;
       var dishes = <Map<String, dynamic>>[];
 
-      if (categories.isNotEmpty) {
-        final dishRes =
-            await OrgRepository.instance.getDishesByCategory(categories.first.id);
-        dishes = dishRes.dishes
-            .map(
-              (d) => {
-                'id': d.id,
-                'name': d.name,
-                'imageUrl': d.imageUrl,
-                'categoryName': categories.first.name,
-              },
-            )
-            .toList();
+      for (final cat in categories.take(3)) {
+        final dishRes = await OrgRepository.instance.getDishesByCategory(cat.id);
+        for (final d in dishRes.dishes.take(4)) {
+          dishes.add({
+            'id': d.id,
+            'name': d.name,
+            'imageUrl': d.imageUrl,
+            'categoryName': cat.name,
+          });
+        }
       }
 
       if (mounted) {
@@ -144,7 +188,7 @@ class _CustomerDashboardState extends State<_CustomerDashboard> {
         children: [
           CustomerModuleHeader(
             title: 'Trang chủ',
-            subtitle: 'Khám phá thực đơn HUITMeal',
+            subtitle: 'Xem thực đơn — không cần đăng nhập',
             bottomPanel: CustomerHeaderSearchPanel(
               controller: _searchCtrl,
               onChanged: (v) => setState(() => _searchQuery = v),
@@ -153,7 +197,7 @@ class _CustomerDashboardState extends State<_CustomerDashboard> {
           ),
           Expanded(
             child: _isLoading
-                ? const CustomerLoadingBody(message: 'Đang tải thực đơn gợi ý…')
+                ? const CustomerLoadingBody(showHomeSkeleton: true)
                 : _error != null
                     ? CustomerErrorBody(message: _error!, onRetry: _fetchData)
                     : RefreshIndicator(
@@ -174,58 +218,66 @@ class _CustomerDashboardState extends State<_CustomerDashboard> {
       physics: const AlwaysScrollableScrollPhysics(parent: BouncingScrollPhysics()),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       slivers: [
-        const SliverToBoxAdapter(
-          child: CustomerPageIntro(
-            title: 'Suất ăn sạch — giao tận nơi',
-            description:
-                'Xem món gợi ý, duyệt danh mục hoặc mở thực đơn đầy đủ theo từng loại món.',
-            icon: Icons.eco_rounded,
+        const SliverToBoxAdapter(child: CustomerWelcomeBanner()),
+        const SliverToBoxAdapter(child: CustomerTrustStrip()),
+        SliverToBoxAdapter(
+          child: CustomerSessionScope(
+            builder: (context, hasSession) {
+              if (hasSession) return const SizedBox.shrink();
+              return CustomerGuestPromptBar(onLogin: widget.onLogin);
+            },
           ),
         ),
-        SliverToBoxAdapter(child: CustomerQuickActions(onOpenMenu: widget.onNavigateToMenu)),
+        SliverToBoxAdapter(
+          child: CustomerQuickActions(
+            onOpenMenu: () => widget.onNavigateToMenu(),
+            onScrollCategories: widget.onScrollToCategories,
+          ),
+        ),
         SliverToBoxAdapter(
           child: CustomerStatBanner(
             categoryCount: _categories.length,
-            dishCount: _featuredDishes.length,
+            dishCount: featured.length,
           ),
         ),
         SliverToBoxAdapter(
           child: CustomerSectionHeader(
-            title: 'Gợi ý cho bạn',
+            title: 'Món gợi ý',
             subtitle: _searchQuery.isEmpty
-                ? 'Món phổ biến từ thực đơn hôm nay'
+                ? 'Chọn món để xem ảnh và mô tả chi tiết'
                 : 'Kết quả cho "$_searchQuery"',
-            actionLabel: 'Xem tất cả',
-            onAction: widget.onNavigateToMenu,
+            actionLabel: 'Thực đơn',
+            onAction: () => widget.onNavigateToMenu(),
           ),
         ),
         if (featured.isEmpty)
           SliverToBoxAdapter(
             child: CustomerEmptyState(
-              title: _searchQuery.isEmpty ? 'Chưa có món gợi ý' : 'Không tìm thấy món phù hợp',
+              title: _searchQuery.isEmpty ? 'Chưa có món gợi ý' : 'Không tìm thấy món',
               subtitle: _searchQuery.isEmpty
-                  ? 'Kéo xuống để tải lại hoặc mở thực đơn đầy đủ'
-                  : 'Thử từ khóa khác hoặc xem toàn bộ thực đơn',
+                  ? 'Kéo xuống để tải lại hoặc mở tab Thực đơn'
+                  : 'Thử từ khóa khác',
               actionLabel: 'Mở thực đơn',
-              onAction: widget.onNavigateToMenu,
+              onAction: () => widget.onNavigateToMenu(),
               compact: true,
             ),
           )
         else
           SliverToBoxAdapter(
             child: SizedBox(
-              height: 256,
+              height: 268,
               child: ListView.separated(
                 primary: false,
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
-                itemCount: featured.take(10).length,
+                itemCount: featured.take(12).length,
                 separatorBuilder: (_, __) => const SizedBox(width: 14),
                 itemBuilder: (context, index) {
                   final dish = featured[index];
                   return CustomerFeaturedCard(
                     name: dish['name']?.toString() ?? 'Món ăn',
                     imageUrl: dish['imageUrl']?.toString(),
+                    categoryName: dish['categoryName']?.toString(),
                     cacheWidth: cacheWidth,
                     onTap: () => _openDishDetail(dish),
                   );
@@ -233,10 +285,11 @@ class _CustomerDashboardState extends State<_CustomerDashboard> {
               ),
             ),
           ),
-        const SliverToBoxAdapter(
-          child: CustomerSectionHeader(
+        SliverToBoxAdapter(
+          key: widget.categoriesSectionKey,
+          child: const CustomerSectionHeader(
             title: 'Danh mục món ăn',
-            subtitle: 'Chọn nhóm món để xem trong thực đơn',
+            subtitle: 'Chạm nhóm món để mở thực đơn tương ứng',
           ),
         ),
         if (_categories.isEmpty)
@@ -252,19 +305,22 @@ class _CustomerDashboardState extends State<_CustomerDashboard> {
           )
         else
           SliverPadding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            sliver: SliverList(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
+            sliver: SliverGrid(
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                childAspectRatio: 1.05,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+              ),
               delegate: SliverChildBuilderDelegate(
                 (context, index) {
                   final cat = _categories[index];
-                  return Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: CustomerCategoryCard(
-                      name: cat.name,
-                      icon: customerCategoryIcon(index),
-                      accent: customerCategoryColor(index),
-                      onTap: widget.onNavigateToMenu,
-                    ),
+                  return CustomerCategoryTile(
+                    name: cat.name,
+                    icon: customerCategoryIcon(index),
+                    accent: customerCategoryColor(index),
+                    onTap: () => widget.onNavigateToMenu(categoryId: cat.id),
                   );
                 },
                 childCount: _categories.length,

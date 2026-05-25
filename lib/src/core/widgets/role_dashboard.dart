@@ -159,6 +159,8 @@ class RoleDashboardBody extends StatelessWidget {
   final Future<void> Function()? onRefresh;
   /// `false` khi dùng [RoleModuleHeader] bên ngoài (tab shell đồng bộ Customer).
   final bool showInternalHeader;
+  /// Nội dung cuộn phía trên KPI (banner module, v.v.).
+  final List<Widget>? prefixWidgets;
 
   const RoleDashboardBody({
     super.key,
@@ -178,6 +180,7 @@ class RoleDashboardBody extends StatelessWidget {
     this.errorMessage,
     this.onRefresh,
     this.showInternalHeader = true,
+    this.prefixWidgets,
   });
 
   @override
@@ -192,6 +195,9 @@ class RoleDashboardBody extends StatelessWidget {
       ),
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       slivers: [
+        if (prefixWidgets != null)
+          for (final w in prefixWidgets!)
+            SliverToBoxAdapter(child: w),
         if (showInternalHeader)
           SliverToBoxAdapter(
             child: Padding(
@@ -610,12 +616,14 @@ class DashboardMetricCard extends StatelessWidget {
                     trend!,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: (trendPositive ?? true)
-                          ? Colors.green.shade700
-                          : Colors.red.shade700,
-                      fontSize: 9,
-                      fontWeight: FontWeight.bold,
+                    style: AppDesignSystem.mergeWith(
+                      TextStyle(
+                        color: (trendPositive ?? true)
+                            ? AppDesignSystem.success
+                            : AppDesignSystem.danger,
+                        fontSize: 9,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
                   ),
                 ),

@@ -65,7 +65,7 @@ Customer
 Nguồn chuẩn: `lib/src/core/theme/app_design_system.dart` + `lib/src/features/auth/presentation/widgets/auth_theme.dart` (khớp web `Khoa_Luan_KS_Web/Views/Auth/`).
 
 #### Nguyên tắc
-- **Font**: Google **Outfit** — `AppDesignSystem.font` / `AuthTheme.displayFont`.
+- **Font**: Google **Outfit** — `AppDesignSystem.font` / `AppDesignSystem.typography()` / `AuthTheme.displayFont`. Toàn app: `ThemeData.fontFamily` + `DefaultTextStyle` trong `app.dart`; tránh `TextStyle(...)` không font — dùng `AppDesignSystem.body()` / `label()` / `mergeWith()`.
 - **Nền trang nội dung**: `#F9FAFB` (`AppDesignSystem.gray50`).
 - **Thẻ (Card)**: nền trắng, viền `#F3F4F6`, bo góc `16px`, shadow nhẹ — `AppDesignSystem.card()`.
 - **Input**: nền `#FAFAFA`, viền `1.5px #E5E7EB`, bo góc `12px`, focus theo accent role.
@@ -184,11 +184,14 @@ File hỗ trợ: `dashboard_format.dart` (`formatDashboardVnd`, `formatDashboard
 ### Manager
 
 #### UI báo cáo & module con (`manager_ui.dart`)
-- `ManagerPageIntro` — banner mô tả đầu mỗi màn báo cáo.
+- **Dashboard**: `ManagerWelcomeBanner`, `ManagerHeroKpiCard`, `ManagerOpsStrip` — chèn qua `RoleDashboardBody.prefixWidgets` trên `manager_home_page.dart`.
+- `ManagerChartCard` — card biểu đồ có header gradient (Thống kê, Thu chi).
+- `ManagerFinanceStrip` — Thu / Chi / Lợi nhuận (màn thu chi).
+- `ManagerPageIntro` — banner mô tả đầu mỗi màn báo cáo (card trắng, shadow nhẹ).
 - `ManagerTabBar` / `ManagerTabbedBody` — tab trong card trắng; KPI cố định phía trên.
 - `ManagerSectionHeader`, `ManagerDataRow`, `ManagerStatusBadge` — danh sách & trạng thái thống nhất.
 - `ManagerBarChart`, `ManagerStatTile`, `ManagerPeriodChips` — số liệu & biểu đồ.
-- `ManagerReportNavCard`, `ManagerPrimaryButton` — xuất báo cáo.
+- `ManagerReportNavCard`, `ManagerPrimaryButton` — xuất báo cáo (viền accent trái).
 - Màn con: `ManagerPageShell` + `AppDesignSystem` (không dùng `Colors.grey` / `Theme.of` rời).
 
 | Đầu mục Nghiệp vụ | Màn hình UI (.dart) | File Data Layer (.dart) | Endpoint API Backend | Trạng thái |
@@ -213,14 +216,18 @@ File hỗ trợ: `dashboard_format.dart` (`formatDashboardVnd`, `formatDashboard
 *(Không có mục Thực đơn tuần.)*
 
 #### UI giao hàng & module con (`shipper_ui.dart`)
-- `ShipperPageIntro` — banner mô tả đầu mỗi màn.
-- `ShipperSectionHeader`, `ShipperDataRow`, `ShipperStatusBadge`, `ShipperDetailField` — danh sách & chi tiết.
-- `ShipperStatTile`, `ShipperPeriodChips`, `ShipperInfoBanner` — KPI và lọc.
-- `ShipperPrimaryButton`, `ShipperOutlineButton`, `ShipperDeliveryTile` — hành động & tile đơn.
-- `ShipperOsmMap` / `ShipperRouteMapPanel` — bản đồ OSM (fit bounds, polyline tuyến, attribution).
-- `ShipperMapsLauncher` — mở Google Maps chỉ đường (app/web).
-- `ShipperProofImage` — xem ảnh PoD sau khi giao hoàn tất.
-- Phụ thuộc: `flutter_map`, `latlong2`, `url_launcher`.
+- **Dashboard** (`shipper_home_page.dart`): `ShipperWelcomeBanner`, `ShipperHeroKpiCard` (vòng % tiến độ — **ẩn khi hôm nay không có đơn**), `ShipperOpsStrip` — `RoleDashboardBody.prefixWidgets`.
+- **Danh sách đơn** (`delivery_list_page.dart`): `ShipperPageIntro`, `ShipperOpsStrip`, `ShipperShortcutRow` (tuyến / lịch), filter trong `ShipperContentCard`, `ShipperDeliveryTile`.
+- **Chi tiết đơn** (`delivery_detail_page.dart`): `ShipperPageIntro`, `ShipperOrderHeaderCard`, `ShipperDeliveryProgressBar`, `ShipperAddressHighlightCard`, `ShipperContentCard` (thông tin + bản đồ OSM + thao tác), `ShipperDetailField`; bản đồ `ShipperOsmMap` `showGoogleMapsButton: false` (tránh overflow); dialog `AppDesignSystem.inputDecoration`.
+- **Lịch giao** (`delivery_schedule_page.dart`): `ShipperDatePickerCard`, `ShipperOpsStrip`, `ShipperShortcutRow`, `ShipperDeliveryTile`.
+- **Lịch sử** (`delivery_history_page.dart`): `ShipperPeriodChips`, filter + tổng kết trong `ShipperContentCard`, `ShipperStatTile`.
+- **Bản đồ tuyến** (`route_map_page.dart`): `ShipperContentCard` (tối ưu tuyến), `ShipperSubTabBar`, `ShipperRouteMapPanel` / `ShipperOsmMap`.
+- **PoD** (`proof_of_delivery_page.dart`): `ShipperPhotoCaptureCard`, `ShipperPageIntro`, ghi chú `AppDesignSystem.inputDecoration`.
+- **Thông báo** (`shipper_notifications_page.dart`): `ShipperPlaceholderCard` (placeholder đồng bộ palette).
+- **Hồ sơ** (`shipper_profile_page.dart`): dùng chung `ProfilePage` (shell Shipper).
+- Widget dùng chung: `ShipperContentCard`, `ShipperPageIntro`, `ShipperSectionHeader`, `ShipperDataRow`, `ShipperPrimaryButton` / `ShipperOutlineButton`, `ShipperLoadingBody` / `ShipperErrorBody`.
+- `ShipperMapsLauncher` — mở Google Maps chỉ đường (app/web); `ShipperProofImage` — xem ảnh PoD sau giao.
+- Phụ thuộc: `flutter_map`, `latlong2`, `url_launcher`, `image_picker`.
 
 | Đầu mục Nghiệp vụ | Màn hình UI (.dart) | File Data Layer (.dart) | Endpoint API Backend | Trạng thái |
 | :--- | :--- | :--- | :--- | :--- |
@@ -259,14 +266,17 @@ File hỗ trợ: `dashboard_format.dart` (`formatDashboardVnd`, `formatDashboard
 | **Xem thực đơn theo loại món & Category** | [customer_home_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/presentation/pages/customer_home_page.dart)<br>[menu_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/presentation/pages/menu_page.dart)<br>[meal_detail_page.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/customer/presentation/pages/meal_detail_page.dart) | [org_repository.dart](file:///h:/EngineeringThesis/Khoa_Luan_KS_Mobile/lib/src/features/organization/data/org_repository.dart) | `GET /api/v1/organization/meal-order/dish-category`<br>`GET /api/v1/organization/meal-order/dish/category` | ✅ Hoàn thành (Gọi API thực) |
 
 ##### Giao diện Customer (đồng bộ module — `customer_shell.dart` + `customer_ui.dart`)
+- **Khách vãng lai**: xem thực đơn **không bắt buộc đăng nhập** — `CustomerWelcomeBanner`, `CustomerTrustStrip`, `CustomerGuestPromptBar` (ẩn khi đã có session); header có nút **Đăng nhập** khi chưa đăng nhập.
 - **Shell**: `CustomerTabShell` — `PremiumDrawer` + `BottomNavigationBar` + `RoleTabScope` cấu hình tại `CustomerShellConfig` (cùng mục Trang chủ / Thực đơn).
 - **Header chung**: `CustomerModuleHeader` — hero ảnh + gradient giống nhau mọi tab; chỉ đổi `title` / `subtitle`; panel trắng: `CustomerHeaderSearchPanel` (Trang chủ) hoặc `CustomerHeaderCategoryPanel` (Thực đơn) — chip danh mục dùng `RoleHeaderChip`, **không** giới hạn `height` cố định (tránh cắt chữ).
 
 #### UI module con Customer (`customer_ui.dart`)
+- `CustomerWelcomeBanner`, `CustomerTrustStrip`, `CustomerGuestPromptBar`, `CustomerSessionScope` — UX khách vãng lai.
 - `CustomerPageIntro`, `CustomerGlassCard`, `CustomerSectionHeader` — section rõ ràng.
+- `CustomerHomeSkeleton` / `CustomerDishGridSkeleton` — placeholder khi tải.
 - `CustomerLoadingBody` / `CustomerErrorBody` — trạng thái tải & lỗi chuẩn.
-- `CustomerQuickActions` — shortcut dùng `RoleHeaderQuickActionsPanel`.
-- `CustomerFeaturedCard`, `CustomerDishCard`, `CustomerCategoryCard` — thẻ món & danh mục.
+- `CustomerQuickActions` — shortcut dùng `RoleHeaderQuickActionsPanel` (3 nút: thực đơn, danh mục, gợi ý).
+- `CustomerFeaturedCard`, `CustomerDishCard`, `CustomerCategoryTile` — thẻ món & lưới danh mục 2 cột.
 - `CustomerDishDetailArgs` — truyền `id`, `name`, `imageUrl`, `categoryName` sang màn chi tiết.
 - `CustomerEmptyState` / `CustomerPrimaryButton` — empty & CTA đồng bộ Manager.
 - Màn con push: `CustomerPageShell` (chi tiết món, v.v.).

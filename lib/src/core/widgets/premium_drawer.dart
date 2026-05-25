@@ -2,8 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:smartlunch_mobile/src/app/app_routes.dart';
 
 import '../theme/app_design_system.dart';
+import '../../features/auth/data/auth_storage.dart';
 import '../../features/profile/data/models/user_profile_model.dart';
 import '../../features/profile/data/profile_repository.dart';
+
+/// Về màn đăng nhập và xóa stack (dùng sau khi đóng drawer).
+void navigateAppToLogin(BuildContext context) {
+  Navigator.of(context).pushNamedAndRemoveUntil(
+    AppRoutes.login,
+    (route) => false,
+  );
+}
 
 /// Drawer điều hướng chuẩn mọi module — gradient theo role, menu section, đăng xuất.
 class PremiumDrawer extends StatefulWidget {
@@ -39,25 +48,45 @@ class PremiumDrawer extends StatefulWidget {
 class _PremiumDrawerState extends State<PremiumDrawer> {
   UserProfileModel? _profile;
   bool _loadingProfile = true;
+  bool _hasSession = false;
 
   @override
   void initState() {
     super.initState();
-    _loadProfile();
+    _loadDrawerState();
   }
 
-  Future<void> _loadProfile() async {
+  Future<void> _loadDrawerState() async {
+    final session = await const AuthStorage().readSession();
+    UserProfileModel? profile;
     try {
-      final profile = await ProfileRepository.instance.getProfile();
-      if (mounted) {
-        setState(() {
-          _profile = profile;
-          _loadingProfile = false;
-        });
+      if (session != null) {
+        profile = await ProfileRepository.instance.getProfile();
       }
-    } catch (_) {
-      if (mounted) setState(() => _loadingProfile = false);
-    }
+    } catch (_) {}
+
+    if (!mounted) return;
+    setState(() {
+      _hasSession = session != null;
+      _profile = profile;
+      _loadingProfile = false;
+    });
+  }
+
+  void _handleAuthAction(BuildContext context) {
+    final isLoggedIn = _hasSession;
+    final navigator = Navigator.of(context);
+    navigator.pop();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (isLoggedIn) {
+        widget.onLogout();
+      } else {
+        navigator.pushNamedAndRemoveUntil(
+          AppRoutes.login,
+          (route) => false,
+        );
+      }
+    });
   }
 
   void _selectTab(BuildContext context, int index) {
@@ -81,7 +110,7 @@ class _PremiumDrawerState extends State<PremiumDrawer> {
         ? profile!.roles.first
         : widget.roleBadge;
     final displayBadge = formatDrawerRoleBadge(badgeRaw);
-    final isLoggedIn = profile != null;
+    final isLoggedIn = _hasSession;
 
     return Drawer(
       width: (MediaQuery.sizeOf(context).width * 0.86).clamp(280.0, 340.0),
@@ -128,14 +157,7 @@ class _PremiumDrawerState extends State<PremiumDrawer> {
               label: isLoggedIn ? 'Đăng xuất' : 'Đăng nhập',
               icon: isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
               color: isLoggedIn ? AppDesignSystem.danger : widget.accentColor,
-              onTap: () {
-                Navigator.of(context).pop();
-                if (isLoggedIn) {
-                  widget.onLogout();
-                } else {
-                  Navigator.of(context).pushNamed(AppRoutes.login);
-                }
-              },
+              onTap: () => _handleAuthAction(context),
             ),
             const SizedBox(height: 8),
           ],
