@@ -1,0 +1,138 @@
+@model Khoa_Luan_KS_Web.Models.OrganizationMealContractListVm
+@{
+    ViewData["Title"] = "Hợp đồng đặt suất theo kỳ";
+    Layout = "_LayoutCustomer";
+}
+
+<div class="min-h-screen bg-slate-100/90" style="background-image: radial-gradient(circle at 1px 1px, rgba(148,163,184,0.2) 1px, transparent 0); background-size: 24px 24px;">
+    <section class="relative h-[200px] overflow-hidden sm:h-[240px]">
+        <img src="https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=1920&auto=format&fit=crop"
+             alt="" class="absolute inset-0 h-full w-full object-cover brightness-[0.45]" />
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/60 to-slate-900/20"></div>
+        <div class="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-8 pt-24 sm:px-6">
+            <nav class="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-white/70">
+                <a href="/OrganizationMealContractOrder" class="hover:text-orange-300">Đặt suất theo kỳ</a>
+                <span class="text-white/30">/</span>
+                <span class="text-white/90">Hợp đồng của tôi</span>
+            </nav>
+            <h1 class="text-2xl font-black text-white sm:text-3xl">Hợp đồng theo kỳ</h1>
+            <p class="mt-2 text-sm text-slate-300">@Model.OrganizationName</p>
+        </div>
+    </section>
+
+    <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-10">
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <p class="text-sm text-slate-600">Quản lý hợp đồng Period-Based: thanh toán cọc và chọn món theo tuần.</p>
+            <a asp-action="Index"
+               class="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-2.5 text-sm font-black text-white shadow-lg hover:from-orange-600 hover:to-amber-600">
+                <i data-lucide="plus" class="h-4 w-4"></i> Đặt kỳ mới
+            </a>
+        </div>
+
+        @if (TempData["OrgPeriodError"] is string err && !string.IsNullOrEmpty(err))
+        {
+            <div class="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-900 shadow-sm">
+                <i data-lucide="alert-circle" class="mt-0.5 h-5 w-5 shrink-0"></i>
+                <span>@err</span>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.ApiError))
+        {
+            <div class="rounded-3xl border border-amber-200 bg-white p-10 text-center shadow-xl">
+                <i data-lucide="alert-triangle" class="mx-auto mb-3 h-10 w-10 text-amber-600"></i>
+                <p class="font-bold text-amber-900">@Model.ApiError</p>
+            </div>
+        }
+        else if (Model.Contracts.Count == 0)
+        {
+            <div class="rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center shadow-lg">
+                <i data-lucide="file-x" class="mx-auto mb-4 h-12 w-12 text-slate-300"></i>
+                <p class="text-lg font-black text-slate-700">Chưa có hợp đồng theo kỳ</p>
+                <p class="mt-2 text-sm text-slate-500">Tạo hợp đồng mới để bắt đầu đặt suất theo tháng.</p>
+                <a asp-action="Index" class="mt-6 inline-flex items-center gap-2 rounded-2xl bg-orange-500 px-6 py-3 text-sm font-black text-white hover:bg-orange-600">
+                    Thiết lập kỳ đầu tiên
+                </a>
+            </div>
+        }
+        else
+        {
+            <div class="space-y-4">
+                @foreach (var c in Model.Contracts)
+                {
+                    <article class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-lg ring-1 ring-slate-900/5">
+                        <div class="flex flex-col gap-4 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-orange-50/30 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Hợp đồng</p>
+                                <h2 class="text-lg font-black text-slate-900">@(c.ContractNumber ?? $"#{c.Id}")</h2>
+                                @if (!string.IsNullOrEmpty(c.Description))
+                                {
+                                    <p class="mt-1 text-sm text-slate-500">@c.Description</p>
+                                }
+                            </div>
+                            <span class="inline-flex w-fit items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-bold
+                                @(c.IsDigitallySigned ? "bg-emerald-100 text-emerald-800" : "bg-amber-100 text-amber-800")">
+                                <i data-lucide="@(c.IsDigitallySigned ? "badge-check" : "clock")" class="h-3.5 w-3.5"></i>
+                                @c.Status
+                            </span>
+                        </div>
+                        <div class="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-4">
+                            <div>
+                                <p class="text-[10px] font-black uppercase text-slate-400">Kỳ</p>
+                                <p class="mt-1 font-bold text-slate-900">
+                                    @c.StartDate.ToString("dd/MM/yyyy") – @(c.EndDate?.ToString("dd/MM/yyyy") ?? "—")
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black uppercase text-slate-400">Suất / ngày</p>
+                                <p class="mt-1 font-bold text-slate-900">@(c.MealsPerDay?.ToString("N0") ?? "—")</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black uppercase text-slate-400">Giá trị HĐ</p>
+                                <p class="mt-1 font-black text-orange-700">@(c.TotalValue?.ToString("N0") ?? "—") đ</p>
+                            </div>
+                            <div>
+                                <p class="text-[10px] font-black uppercase text-slate-400">Tiền cọc</p>
+                                <p class="mt-1 font-bold text-slate-800">@(c.DepositAmount?.ToString("N0") ?? "—") đ</p>
+                            </div>
+                        </div>
+                        <div class="flex flex-wrap gap-2 border-t border-slate-100 bg-slate-50/50 px-6 py-4">
+                            @if (c.CanPayDeposit && c.SourceOrderId is > 0)
+                            {
+                                <form asp-action="PayDeposit" method="post" class="inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="orderId" value="@c.SourceOrderId" />
+                                    <button type="submit"
+                                            class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 px-4 py-2.5 text-xs font-black text-white shadow-md hover:from-emerald-700 hover:to-teal-700">
+                                        <i data-lucide="credit-card" class="h-4 w-4"></i>
+                                        Thanh toán cọc
+                                    </button>
+                                </form>
+                            }
+                            @if (c.CanSelectWeeklyMeals)
+                            {
+                                <a asp-action="Weekly" asp-route-contractId="@c.Id"
+                                   class="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-white px-4 py-2.5 text-xs font-bold text-orange-700 hover:bg-orange-50">
+                                    <i data-lucide="calendar-days" class="h-4 w-4"></i>
+                                    Chọn món theo tuần
+                                </a>
+                            }
+                            @if (!string.IsNullOrEmpty(c.ContractFileUrl))
+                            {
+                                <a href="@c.ContractFileUrl" target="_blank" rel="noopener"
+                                   class="inline-flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:border-slate-300">
+                                    <i data-lucide="file-text" class="h-4 w-4"></i>
+                                    Xem PDF
+                                </a>
+                            }
+                        </div>
+                    </article>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+}

@@ -1,5 +1,7 @@
 @model Khoa_Luan_KS_Web.Models.OrganizationMealOrderIndexVm
 @using System.Text.Json
+@using Khoa_Luan_KS_Web.Models
+@using Khoa_Luan_KS_Web.Services
 @inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
 @{
     ViewData["Title"] = "Đặt suất theo đơn vị";
@@ -13,6 +15,9 @@
     var antiToken = Antiforgery.GetAndStoreTokens(Context).RequestToken ?? "";
     var antiTokenJson = JsonSerializer.Serialize(antiToken);
     var orgIdJson = Model.OrganizationId.ToString();
+    var cartImportJson = JsonSerializer.Serialize(Model.CartImportLines ?? new List<CartImportLineDto>(), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+    var deliveryDefaultsJson = JsonSerializer.Serialize(Model.DeliveryDefaults ?? new OrganizationMealDeliveryDefaultsVm(), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+    var fromCart = Model.FromCart;
 }
 
 <style>
@@ -26,13 +31,23 @@
     .org-day-tab { scroll-snap-align: start; }
     .org-slot-card { transition: box-shadow 0.2s ease, transform 0.2s ease; }
     .org-slot-card:hover { box-shadow: 0 12px 40px -12px rgba(15, 23, 42, 0.12); }
-    .org-picker-sheet { animation: orgSlideUp 0.35s cubic-bezier(0.16, 1, 0.3, 1); }
-    @@keyframes orgSlideUp {
-        from { opacity: 0; transform: translateY(16px); }
-        to { opacity: 1; transform: translateY(0); }
+    .org-picker-drawer-panel {
+        box-shadow: -12px 0 48px -12px rgba(15, 23, 42, 0.25);
+    }
+    .org-picker-dish-row.is-selected {
+        border-color: rgb(249 115 22);
+        background: linear-gradient(135deg, #fff7ed 0%, #fff 100%);
+        box-shadow: 0 0 0 2px rgba(249, 115, 22, 0.15);
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    /* Ẩn nút Zalo / Gọi / Chat khi mở drawer chọn món */
+    body.hm-picker-open .hm-contact-fab-stack,
+    body.hm-picker-open .hm-chat-panel {
+        visibility: hidden !important;
+        pointer-events: none !important;
+        opacity: 0 !important;
+    }
 </style>
 
 <div class="org-meal-page min-h-screen w-full font-sans text-slate-900" x-data="orgMealOrderApp" x-cloak>
@@ -75,6 +90,17 @@
     </section>
 
     <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+        <div x-show="cartImportNotice" x-cloak
+             class="mb-6 flex flex-col gap-3 rounded-2xl border border-orange-200 bg-orange-50 px-5 py-4 text-sm text-orange-950 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-start gap-3">
+                <i data-lucide="shopping-cart" class="mt-0.5 h-5 w-5 shrink-0 text-orange-600"></i>
+                <span x-text="cartImportNotice"></span>
+            </div>
+            <button type="button" @@click="goStep2FromCart()"
+                    class="shrink-0 rounded-xl bg-orange-600 px-4 py-2 text-xs font-bold text-white hover:bg-orange-700">
+                Đi tới chọn món
+            </button>
+        </div>
         @if (TempData["OrgMealError"] is string err && !string.IsNullOrEmpty(err))
         {
             <div class="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-900 shadow-sm">
@@ -259,6 +285,26 @@
 
             <!-- Step 2 -->
             <div x-show="step === 2" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
+                <div x-show="cartImportLines.length > 0" x-cloak
+                     class="mb-5 flex flex-col gap-3 rounded-2xl border border-orange-200/90 bg-gradient-to-r from-orange-50 to-amber-50/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div class="flex items-start gap-3 text-sm text-orange-950">
+                        <i data-lucide="shopping-bag" class="mt-0.5 h-5 w-5 shrink-0 text-orange-600"></i>
+                        <div>
+                            <p class="font-bold">Có <span x-text="cartImportLines.length"></span> món trong giỏ hàng</p>
+                            <p class="mt-0.5 text-xs text-orange-900/80">Chọn tab <strong>「Từ giỏ hàng」</strong> khi thêm món, hoặc áp dụng nhanh cho ngày đang chọn.</p>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 shrink-0">
+                        <button type="button" @@click="applyCartToDay(activeDay, false)"
+                                class="rounded-xl border border-orange-300 bg-white px-3 py-2 text-xs font-bold text-orange-800 hover:bg-orange-100">
+                            Áp dụng cho ngày này
+                        </button>
+                        <button type="button" @@click="applyCartToAllDays()"
+                                class="rounded-xl bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-700">
+                            Áp dụng mọi ngày
+                        </button>
+                    </div>
+                </div>
                 <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
                     <div>
                         <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600">Bước 2</p>
@@ -372,8 +418,18 @@
                                             <ul class="space-y-2">
                                                 <template x-for="(line, li) in getLines(day, slot.key)" :key="line.dishId">
                                                     <li class="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-100 bg-gradient-to-r from-white to-slate-50/80 p-4 transition hover:border-orange-100 hover:shadow-sm">
-                                                        <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
-                                                            <i data-lucide="chef-hat" class="h-5 w-5"></i>
+                                                        <div class="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 ring-1 ring-slate-100/90">
+                                                            <img x-show="lineThumbSrc(line) && !dishThumbFailed(line)"
+                                                                 :src="lineThumbSrc(line)"
+                                                                 :alt="line.dishName"
+                                                                 loading="lazy"
+                                                                 decoding="async"
+                                                                 @@error="onDishThumbError(line)"
+                                                                 class="absolute inset-0 h-full w-full object-cover" />
+                                                            <div x-show="!lineThumbSrc(line) || dishThumbFailed(line)"
+                                                                 class="absolute inset-0 flex items-center justify-center text-orange-500">
+                                                                <i data-lucide="utensils" class="h-5 w-5"></i>
+                                                            </div>
                                                         </div>
                                                         <div class="min-w-0 flex-1">
                                                             <p class="font-bold text-slate-900" x-text="line.dishName"></p>
@@ -542,6 +598,21 @@
                             <p class="mt-1 text-sm text-slate-500">Email xác nhận đơn và PDF hợp đồng sẽ được gửi tới địa chỉ email bạn nhập bên dưới.</p>
                         </div>
                         <div class="grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
+                            <div x-show="deliveryPrefilled" class="sm:col-span-2 flex flex-col gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/70 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="flex items-start gap-3 min-w-0">
+                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                                        <i data-lucide="user-check" class="h-4 w-4"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-bold text-emerald-900">Thông tin đã điền sẵn</p>
+                                        <p class="mt-0.5 text-xs leading-relaxed text-emerald-800/90" x-text="deliveryDefaultsHint"></p>
+                                    </div>
+                                </div>
+                                <button type="button" @@click="applyDeliveryDefaults(deliveryDefaults, true)"
+                                        class="shrink-0 rounded-xl border border-emerald-300 bg-white px-3.5 py-2 text-xs font-bold text-emerald-800 transition hover:bg-emerald-50">
+                                    Khôi phục mặc định
+                                </button>
+                            </div>
                             <div class="sm:col-span-2">
                                 <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Họ tên người nhận *</label>
                                 <input type="text" x-model.trim="delivery.recipientName" autocomplete="name" required
@@ -605,62 +676,283 @@
         }
     </section>
 
-    <!-- Dish picker modal -->
-    <div x-show="pickerOpen" x-transition.opacity
-         class="fixed inset-0 z-[100] flex items-end justify-center bg-slate-900/70 p-0 backdrop-blur-sm sm:items-center sm:p-4"
-         @@keydown.escape.window="pickerOpen = false">
-        <div @@click.outside="pickerOpen = false"
-             class="org-picker-sheet flex max-h-[92vh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl bg-white shadow-2xl sm:max-h-[85vh] sm:rounded-3xl">
-            <div class="relative border-b border-slate-100 bg-gradient-to-r from-slate-50 to-orange-50/40 px-5 py-5 sm:px-6">
-                <button type="button" @@click="pickerOpen = false"
-                        class="absolute right-4 top-4 rounded-full p-2 text-slate-400 transition hover:bg-white hover:text-slate-700 sm:right-5 sm:top-5">
-                    <i data-lucide="x" class="h-5 w-5"></i>
-                </button>
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600">Thư viện món</p>
-                <h3 class="mt-1 pr-10 text-lg font-black text-slate-900" x-text="pickerSlotLabel()"></h3>
-            </div>
-            <div class="border-b border-slate-100 bg-white px-4 py-3 sm:px-5">
-                <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
+    <!-- Dish picker drawer -->
+    <div x-show="pickerOpen" x-cloak class="fixed inset-0 z-[100]"
+         @@keydown.escape.window="closePicker()">
+        <div class="absolute inset-0 bg-slate-900/55 backdrop-blur-[2px] transition-opacity"
+             @@click="closePicker()" x-show="pickerOpen" x-transition.opacity></div>
+        <aside class="org-picker-drawer-panel absolute right-0 top-0 flex h-full w-full max-w-full flex-col bg-slate-50 sm:max-w-xl lg:max-w-3xl xl:max-w-4xl"
+               x-show="pickerOpen"
+               @@click.stop
+               x-transition:enter="transform transition ease-out duration-300"
+               x-transition:enter-start="translate-x-full"
+               x-transition:enter-end="translate-x-0"
+               x-transition:leave="transform transition ease-in duration-200"
+               x-transition:leave-start="translate-x-0"
+               x-transition:leave-end="translate-x-full">
+            <header class="shrink-0 border-b border-slate-200/80 bg-white px-4 py-4 sm:px-6">
+                <div class="flex items-start gap-3">
+                    <div class="min-w-0 flex-1">
+                        <p class="text-[10px] font-black uppercase tracking-[0.22em] text-orange-600">Thư viện món</p>
+                        <h3 class="mt-0.5 text-lg font-black leading-tight text-slate-900 sm:text-xl" x-text="pickerSlotLabel()"></h3>
+                        <p class="mt-1 text-xs text-slate-500">Chọn món trong danh sách, xem chi tiết bên dưới rồi xác nhận thêm vào ngày.</p>
+                    </div>
+                    <button type="button" @@click="closePicker()"
+                            class="shrink-0 rounded-xl border border-slate-200 bg-white p-2.5 text-slate-500 shadow-sm transition hover:border-slate-300 hover:text-slate-800">
+                        <i data-lucide="x" class="h-5 w-5"></i>
+                    </button>
+                </div>
+                <div class="mt-4 flex flex-wrap items-center gap-2">
+                    <button type="button"
+                            @@click="pickerSource = 'catalog'; pickerSelectedId = null; pickerPreview = null; pickerDetail = null; const cats = categoriesForPicker(); if (cats.length) loadDishes(cats[0].id);"
+                            class="rounded-full px-4 py-2 text-xs font-bold transition"
+                            :class="pickerSource === 'catalog' ? 'bg-slate-900 text-white shadow-md' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'">
+                        Danh mục
+                    </button>
+                    <button type="button"
+                            @@click="pickerSource = 'cart'; pickerSelectedId = null; pickerPreview = null; pickerDetail = null;"
+                            class="inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-bold transition"
+                            :class="pickerSource === 'cart' ? 'bg-orange-500 text-white shadow-md shadow-orange-500/30' : 'bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-50'">
+                        <i data-lucide="shopping-cart" class="h-3.5 w-3.5"></i>
+                        Từ giỏ hàng
+                        <span x-show="cartLinesForPicker().length > 0"
+                              class="rounded-full bg-white/25 px-1.5 py-0.5 text-[10px]" x-text="cartLinesForPicker().length"></span>
+                    </button>
+                    <div class="relative ml-auto min-w-[10rem] flex-1 sm:max-w-xs">
+                        <i data-lucide="search" class="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400"></i>
+                        <input type="search" x-model="pickerSearch" placeholder="Tìm tên món…"
+                               class="w-full rounded-full border-0 bg-white py-2 pl-9 pr-3 text-sm shadow-sm ring-1 ring-slate-200 placeholder:text-slate-400 focus:ring-2 focus:ring-orange-400" />
+                    </div>
+                </div>
+                <div x-show="pickerSource === 'catalog'" class="mt-3 flex gap-2 overflow-x-auto pb-0.5 no-scrollbar">
                     <template x-for="cat in categoriesForPicker()" :key="cat.id">
-                        <button type="button" @@click="loadDishes(cat.id)"
-                                class="shrink-0 rounded-full border px-4 py-2 text-xs font-bold transition"
+                        <button type="button" @@click="loadDishes(cat.id); pickerSelectedId = null; pickerPreview = null; pickerDetail = null;"
+                                class="shrink-0 rounded-full border px-3.5 py-1.5 text-xs font-bold transition"
                                 :class="pickerCategoryId === cat.id
-                                    ? 'border-orange-500 bg-orange-500 text-white shadow-md shadow-orange-500/25'
-                                    : 'border-slate-200 bg-slate-50 text-slate-600 hover:border-orange-200'">
+                                    ? 'border-orange-500 bg-orange-500 text-white shadow-sm'
+                                    : 'border-slate-200 bg-white text-slate-600 hover:border-orange-300'">
                             <span x-text="cat.name"></span>
                         </button>
                     </template>
                 </div>
-            </div>
-            <div class="flex-1 overflow-y-auto p-4 sm:p-5">
-                <div x-show="dishesLoading" class="flex flex-col items-center py-16 text-slate-500">
-                    <div class="mb-3 h-10 w-10 animate-spin rounded-full border-2 border-orange-200 border-t-orange-500"></div>
-                    <p class="text-sm font-medium">Đang tải món…</p>
-                </div>
-                <div x-show="!dishesLoading && pickerDishes.length === 0" class="py-16 text-center">
-                    <i data-lucide="utensils-crossed" class="mx-auto mb-3 h-10 w-10 text-slate-300"></i>
-                    <p class="text-sm text-slate-500">Không có món trong danh mục này.</p>
-                </div>
-                <ul class="grid gap-3 sm:grid-cols-2">
-                    <template x-for="d in pickerDishes" :key="d.id">
-                        <li>
-                            <button type="button" @@click="pickDish(d)"
-                                    class="group flex w-full items-start gap-3 rounded-2xl border border-slate-100 bg-white p-4 text-left shadow-sm transition hover:border-orange-300 hover:shadow-md hover:ring-2 hover:ring-orange-100">
-                                <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-100 to-amber-50 text-orange-600 transition group-hover:from-orange-500 group-hover:to-amber-500 group-hover:text-white">
-                                    <i data-lucide="utensils" class="h-6 w-6"></i>
+            </header>
+
+            <div class="flex min-h-0 flex-1 flex-col lg:flex-row">
+                <section class="flex min-h-0 flex-1 flex-col border-slate-200/80 lg:border-r lg:max-w-md xl:max-w-lg">
+                    <div class="shrink-0 border-b border-slate-200/60 bg-white/80 px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 sm:px-5">
+                        <span x-show="pickerSource === 'catalog'">Danh sách món</span>
+                        <span x-show="pickerSource === 'cart'">Món trong giỏ (cùng nhóm)</span>
+                    </div>
+                    <div class="min-h-0 flex-1 overflow-y-auto px-3 py-3 sm:px-4">
+                        <template x-if="pickerSource === 'catalog'">
+                            <div>
+                                <div x-show="dishesLoading" class="flex flex-col items-center py-20 text-slate-500">
+                                    <div class="mb-3 h-9 w-9 animate-spin rounded-full border-2 border-orange-200 border-t-orange-500"></div>
+                                    <p class="text-sm font-medium">Đang tải món…</p>
                                 </div>
-                                <div class="min-w-0 flex-1 pt-0.5">
-                                    <p class="line-clamp-2 text-sm font-bold text-slate-900 group-hover:text-orange-900" x-text="d.name"></p>
-                                    <p class="mt-1 flex items-center gap-1 text-[11px] font-semibold text-emerald-600">
-                                        <i data-lucide="plus" class="h-3 w-3"></i> Thêm vào thực đơn
-                                    </p>
+                                <div x-show="!dishesLoading && filteredPickerDishes().length === 0" class="py-16 text-center">
+                                    <i data-lucide="utensils-crossed" class="mx-auto mb-2 h-9 w-9 text-slate-300"></i>
+                                    <p class="text-sm text-slate-500">Không có món phù hợp.</p>
                                 </div>
+                                <ul class="space-y-2" x-show="!dishesLoading">
+                                    <template x-for="d in filteredPickerDishes()" :key="d.id">
+                                        <li>
+                                            <button type="button" @@click="selectPickerDish(d)"
+                                                    class="org-picker-dish-row flex w-full items-center gap-3 rounded-2xl border border-slate-200/90 bg-white p-2.5 text-left shadow-sm transition hover:border-orange-200"
+                                                    :class="pickerSelectedId === d.id ? 'is-selected' : ''">
+                                                <div class="relative h-[4.25rem] w-[4.25rem] shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 ring-1 ring-slate-100/90">
+                                                    <img x-show="dishThumbSrc(d) && !dishThumbFailed(d)"
+                                                         :src="dishThumbSrc(d)"
+                                                         :alt="d.name"
+                                                         loading="lazy"
+                                                         decoding="async"
+                                                         @@error="onDishThumbError(d)"
+                                                         class="absolute inset-0 h-full w-full object-cover" />
+                                                    <div x-show="!dishThumbSrc(d) || dishThumbFailed(d)"
+                                                         class="absolute inset-0 flex items-center justify-center text-orange-500">
+                                                        <i data-lucide="utensils" class="h-5 w-5"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="line-clamp-2 text-sm font-bold text-slate-900" x-text="d.name"></p>
+                                                    <p class="mt-0.5 text-[11px] text-slate-500">Xem chi tiết &amp; chọn</p>
+                                                </div>
+                                                <i data-lucide="chevron-right" class="h-4 w-4 shrink-0 text-slate-300"
+                                                   :class="pickerSelectedId === d.id ? 'text-orange-500' : ''"></i>
+                                            </button>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
+                        <template x-if="pickerSource === 'cart'">
+                            <div>
+                                <div x-show="filteredCartLines().length === 0" class="py-16 text-center">
+                                    <i data-lucide="shopping-cart" class="mx-auto mb-2 h-9 w-9 text-slate-300"></i>
+                                    <p class="text-sm font-semibold text-slate-600">Giỏ hàng chưa có món phù hợp nhóm này</p>
+                                    <a href="/Menu/Gallery" class="mt-2 inline-flex text-xs font-bold text-orange-600 hover:underline">Thêm món từ thư viện</a>
+                                </div>
+                                <ul class="space-y-2">
+                                    <template x-for="line in filteredCartLines()" :key="'cart-' + line.dishId">
+                                        <li>
+                                            <button type="button" @@click="selectPickerCart(line)"
+                                                    class="org-picker-dish-row flex w-full items-center gap-3 rounded-2xl border border-orange-100 bg-white p-2.5 text-left shadow-sm transition hover:border-orange-300"
+                                                    :class="pickerSelectedId === line.dishId ? 'is-selected' : ''">
+                                                <div class="relative h-[4.25rem] w-[4.25rem] shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-orange-100 to-amber-50 ring-1 ring-orange-100">
+                                                    <img x-show="dishThumbSrc(line) && !dishThumbFailed(line)"
+                                                         :src="dishThumbSrc(line)"
+                                                         :alt="line.name"
+                                                         loading="lazy"
+                                                         decoding="async"
+                                                         @@error="onDishThumbError(line)"
+                                                         class="absolute inset-0 h-full w-full object-cover" />
+                                                    <div x-show="!dishThumbSrc(line) || dishThumbFailed(line)"
+                                                         class="absolute inset-0 flex items-center justify-center bg-orange-500 text-white">
+                                                        <i data-lucide="utensils" class="h-5 w-5"></i>
+                                                    </div>
+                                                </div>
+                                                <div class="min-w-0 flex-1">
+                                                    <p class="line-clamp-2 text-sm font-bold text-slate-900" x-text="line.name"></p>
+                                                    <p class="mt-0.5 text-[10px] font-bold uppercase text-orange-700" x-text="line.categoryLabel"></p>
+                                                    <p class="text-[11px] text-slate-500">Giỏ: <span x-text="line.quantity"></span> suất</p>
+                                                </div>
+                                                <i data-lucide="chevron-right" class="h-4 w-4 shrink-0"
+                                                   :class="pickerSelectedId === line.dishId ? 'text-orange-500' : 'text-slate-300'"></i>
+                                            </button>
+                                        </li>
+                                    </template>
+                                </ul>
+                            </div>
+                        </template>
+                    </div>
+                </section>
+
+                <section class="flex min-h-0 flex-1 flex-col bg-white">
+                    <div class="shrink-0 border-b border-slate-100 px-4 py-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500 sm:px-6">
+                        Chi tiết món
+                    </div>
+                    <div class="min-h-0 flex-1 overflow-y-auto">
+                        <div x-show="!pickerPreview" class="flex h-full min-h-[12rem] flex-col items-center justify-center px-6 py-16 text-center lg:min-h-0">
+                            <div class="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 text-orange-500">
+                                <i data-lucide="mouse-pointer-click" class="h-8 w-8"></i>
+                            </div>
+                            <p class="text-sm font-bold text-slate-700">Chọn một món ở danh sách bên trái</p>
+                            <p class="mt-1 max-w-xs text-xs text-slate-500">Mô tả, dinh dưỡng và định mức nguyên liệu sẽ hiển thị tại đây trước khi bạn thêm vào thực đơn.</p>
+                        </div>
+
+                        <div x-show="pickerPreview" class="p-4 sm:p-6">
+                            <div x-show="pickerDetailLoading" class="flex flex-col items-center py-16">
+                                <div class="mb-3 h-9 w-9 animate-spin rounded-full border-2 border-orange-200 border-t-orange-500"></div>
+                                <p class="text-sm text-slate-500">Đang tải chi tiết…</p>
+                            </div>
+
+                            <div x-show="pickerPreview && !pickerDetailLoading && !pickerDetail" class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+                                <p class="text-sm font-semibold text-slate-600" x-text="pickerPreview.name"></p>
+                                <p class="mt-2 text-xs text-slate-500">Không tải được mô tả chi tiết. Bạn vẫn có thể thêm món vào thực đơn.</p>
+                            </div>
+
+                            <template x-if="pickerPreview && !pickerDetailLoading && pickerDetail">
+                                <div class="space-y-5">
+                                    <div class="flex flex-col gap-4 sm:flex-row">
+                                        <div class="shrink-0 sm:w-44 lg:w-52">
+                                            <div class="aspect-[4/3] overflow-hidden rounded-2xl bg-slate-100 ring-1 ring-slate-200/80">
+                                                <template x-if="pickerDetailImage()">
+                                                    <img :src="pickerDetailImage()" :alt="pickerPreview.name"
+                                                         class="h-full w-full object-cover" />
+                                                </template>
+                                                <template x-if="!pickerDetailImage()">
+                                                    <div class="flex h-full w-full items-center justify-center bg-gradient-to-br from-orange-100 to-amber-50 text-orange-500">
+                                                        <i data-lucide="utensils" class="h-12 w-12"></i>
+                                                    </div>
+                                                </template>
+                                            </div>
+                                            <p class="mt-2 text-[10px] leading-snug text-amber-800/90">
+                                                @MenuDishDisplayHelper.ServingNotice.ImageCaption
+                                            </p>
+                                        </div>
+                                        <div class="min-w-0 flex-1">
+                                            <h4 class="text-xl font-black leading-snug text-slate-900" x-text="pickerPreview.name"></h4>
+                                            <p x-show="pickerDetail.dish?.cookingMethod"
+                                               class="mt-1 inline-flex rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-600"
+                                               x-text="pickerDetail.dish.cookingMethod"></p>
+                                            <p x-show="pickerDetail.dish?.dietaryLabel"
+                                               class="mt-1 ml-1 inline-flex rounded-full bg-emerald-50 px-2.5 py-0.5 text-[11px] font-bold text-emerald-700"
+                                               x-text="pickerDetail.dish.dietaryLabel"></p>
+                                            <p x-show="pickerDetail.dish?.description && pickerDetail.dish.description !== pickerPreview.name"
+                                               class="mt-3 text-sm leading-relaxed text-slate-600 line-clamp-4"
+                                               x-text="pickerDetail.dish.description"></p>
+                                            <div x-show="pickerHasNutrition()" class="mt-4 grid grid-cols-4 gap-2">
+                                                <div class="rounded-xl bg-slate-50 px-2 py-2 text-center ring-1 ring-slate-100">
+                                                    <p class="text-[10px] font-bold uppercase text-slate-400">Calo</p>
+                                                    <p class="text-sm font-black text-slate-800" x-text="pickerNutrition('calories')"></p>
+                                                </div>
+                                                <div class="rounded-xl bg-slate-50 px-2 py-2 text-center ring-1 ring-slate-100">
+                                                    <p class="text-[10px] font-bold uppercase text-slate-400">Đạm</p>
+                                                    <p class="text-sm font-black text-slate-800" x-text="pickerNutrition('protein')"></p>
+                                                </div>
+                                                <div class="rounded-xl bg-slate-50 px-2 py-2 text-center ring-1 ring-slate-100">
+                                                    <p class="text-[10px] font-bold uppercase text-slate-400">Béo</p>
+                                                    <p class="text-sm font-black text-slate-800" x-text="pickerNutrition('fat')"></p>
+                                                </div>
+                                                <div class="rounded-xl bg-slate-50 px-2 py-2 text-center ring-1 ring-slate-100">
+                                                    <p class="text-[10px] font-bold uppercase text-slate-400">Đường</p>
+                                                    <p class="text-sm font-black text-slate-800" x-text="pickerNutrition('carbs')"></p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div x-show="pickerDetail.ingredientQuotas && pickerDetail.ingredientQuotas.length > 0"
+                                         class="rounded-2xl border border-slate-100 bg-slate-50/80 p-4">
+                                        <p class="text-xs font-black uppercase tracking-wide text-slate-500">Định mức tham chiếu (01 suất)</p>
+                                        <ul class="mt-2 max-h-36 space-y-1 overflow-y-auto text-sm text-slate-700">
+                                            <template x-for="(q, idx) in pickerDetail.ingredientQuotas.slice(0, 12)" :key="idx">
+                                                <li class="flex justify-between gap-2 border-b border-slate-100/80 py-1 last:border-0">
+                                                    <span class="truncate font-medium" x-text="q.ingredientName"></span>
+                                                    <span class="shrink-0 text-slate-500" x-text="formatPickerQuota(q)"></span>
+                                                </li>
+                                            </template>
+                                        </ul>
+                                        <p x-show="pickerDetail.ingredientQuotas.length > 12" class="mt-1 text-[11px] text-slate-400">
+                                            + <span x-text="pickerDetail.ingredientQuotas.length - 12"></span> nguyên liệu khác
+                                        </p>
+                                        <p class="mt-3 text-[11px] leading-relaxed text-amber-900/85 border-t border-amber-100/80 pt-3">
+                                            @MenuDishDisplayHelper.ServingNotice.DetailFooterNote
+                                        </p>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    </div>
+
+                    <footer x-show="pickerPreview"
+                            class="shrink-0 border-t border-slate-200 bg-gradient-to-r from-white to-orange-50/30 px-4 py-4 sm:px-6">
+                        <div class="flex flex-wrap items-center justify-between gap-4">
+                            <div class="flex items-center gap-3">
+                                <span class="text-xs font-bold uppercase tracking-wide text-slate-500">Số suất thêm</span>
+                                <div class="inline-flex items-center rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
+                                    <button type="button" @@click="pickerPickQty = Math.max(1, pickerPickQty - 1)"
+                                            class="rounded-l-xl px-3 py-2 text-slate-600 hover:bg-slate-50">
+                                        <i data-lucide="minus" class="h-4 w-4"></i>
+                                    </button>
+                                    <span class="min-w-[2.5rem] text-center text-sm font-black text-slate-900" x-text="pickerPickQty"></span>
+                                    <button type="button" @@click="pickerPickQty++"
+                                            class="rounded-r-xl px-3 py-2 text-slate-600 hover:bg-slate-50">
+                                        <i data-lucide="plus" class="h-4 w-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="button" @@click="confirmPickDish()"
+                                    :disabled="pickerDetailLoading"
+                                    class="inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3.5 text-sm font-black text-white shadow-lg transition hover:from-orange-600 hover:to-amber-600 disabled:opacity-50 sm:flex-none sm:min-w-[12rem]">
+                                <i data-lucide="check-circle-2" class="h-4 w-4"></i>
+                                Chọn món này
                             </button>
-                        </li>
-                    </template>
-                </ul>
+                        </div>
+                    </footer>
+                </section>
             </div>
-        </div>
+        </aside>
     </div>
 </div>
 
@@ -673,6 +965,7 @@
         const dateMax = @Json.Serialize(dateMax);
         const dateDefault = @Json.Serialize(dateDefault);
         const antiToken = @Html.Raw(antiTokenJson);
+        const deliveryDefaults = @Html.Raw(deliveryDefaultsJson);
         const DRAFT_CACHE_TTL_MS = 5 * 60 * 1000;
         const draftCacheKey = 'hm_org_meal_draft_v1_' + orgId;
 
@@ -692,6 +985,13 @@
             pickerCategoryId: null,
             pickerDishes: [],
             dishesLoading: false,
+            pickerSelectedId: null,
+            pickerPreview: null,
+            pickerDetail: null,
+            pickerDetailLoading: false,
+            pickerPickQty: 1,
+            pickerSearch: '',
+            dishImageCache: {},
             stepMeta: [
                 { key: 'setup', label: 'Thiết lập', hint: 'Giá & ngày giao' },
                 { key: 'menu', label: 'Thực đơn', hint: 'Chọn món từng ngày' },
@@ -707,6 +1007,8 @@
                 deliveryNotes: '',
                 preferredDeliveryTime: '11:30',
             },
+            deliveryPrefilled: false,
+            deliveryDefaultsHint: '',
             eligiblePromotions: [],
             selectedPromotionId: null,
             selectedPromotionName: '',
@@ -719,6 +1021,10 @@
             promoPreviewMessage: '',
             promoPreviewApplied: false,
             draftCacheNotice: '',
+            cartImportLines: @Html.Raw(cartImportJson),
+            fromCart: @(fromCart ? "true" : "false"),
+            cartImportNotice: '',
+            pickerSource: 'catalog',
             _cacheSaveTimer: null,
             slots: [
                 { key: 'main', label: 'Món chính', icon: 'beef', desc: 'Tính suất & thành tiền' },
@@ -795,7 +1101,7 @@
                     this.promoSubtotalAmount = data.promoSubtotalAmount || 0;
                     this.manualPromoCode = data.manualPromoCode || '';
                     if (data.delivery) {
-                        this.delivery = { ...this.delivery, ...data.delivery };
+                        this.mergeDeliveryFromCache(data.delivery);
                     }
 
                     const saved = new Date(data.savedAt);
@@ -808,6 +1114,38 @@
                 } catch {
                     return false;
                 }
+            },
+            mergeDeliveryFromCache(cached) {
+                if (!cached) return;
+                const d = this.delivery;
+                const keys = ['recipientName', 'recipientPhone', 'recipientEmail', 'deliveryAddress', 'deliveryWardDistrict', 'deliveryNotes'];
+                for (const key of keys) {
+                    const v = cached[key];
+                    if (v != null && String(v).trim()) d[key] = String(v).trim();
+                }
+                if (cached.preferredDeliveryTime && String(cached.preferredDeliveryTime).trim())
+                    d.preferredDeliveryTime = String(cached.preferredDeliveryTime).trim();
+            },
+            applyDeliveryDefaults(defaults, force = false) {
+                if (!defaults) return;
+                const d = this.delivery;
+                const fill = (key, val) => {
+                    if (val == null || !String(val).trim()) return;
+                    if (force || !d[key] || !String(d[key]).trim())
+                        d[key] = String(val).trim();
+                };
+                fill('recipientName', defaults.recipientName);
+                fill('recipientPhone', defaults.recipientPhone);
+                fill('recipientEmail', defaults.recipientEmail);
+                fill('deliveryAddress', defaults.deliveryAddress);
+                fill('deliveryWardDistrict', defaults.deliveryWardDistrict);
+                fill('deliveryNotes', defaults.deliveryNotes);
+                if (defaults.preferredDeliveryTime && (force || !d.preferredDeliveryTime))
+                    d.preferredDeliveryTime = defaults.preferredDeliveryTime;
+                this.deliveryDefaultsHint = defaults.sourceHint || '';
+                this.deliveryPrefilled = !!(
+                    d.recipientName && d.recipientPhone && d.recipientEmail && d.deliveryAddress
+                );
             },
             clearDraftCache(showNotice) {
                 try { localStorage.removeItem(this.cacheStorageKey()); } catch { /* ignore */ }
@@ -977,11 +1315,264 @@
                 this.pickerDay = serviceDate;
                 this.pickerSlot = slot;
                 this.pickerOpen = true;
+                this.pickerSelectedId = null;
+                this.pickerPreview = null;
+                this.pickerDetail = null;
+                this.pickerPickQty = 1;
+                this.pickerSearch = '';
+                const cartForSlot = this.cartLinesForPicker();
+                this.pickerSource = cartForSlot.length > 0 ? 'cart' : 'catalog';
                 const cats = this.categoriesForPicker();
-                if (cats.length) {
+                if (this.pickerSource === 'catalog' && cats.length) {
                     this.pickerCategoryId = cats[0].id;
                     this.loadDishes(cats[0].id);
                 }
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+            closePicker() {
+                this.pickerOpen = false;
+                this.pickerSelectedId = null;
+                this.pickerPreview = null;
+                this.pickerDetail = null;
+                this.pickerDetailLoading = false;
+                this.pickerSearch = '';
+            },
+            filteredPickerDishes() {
+                const q = (this.pickerSearch || '').trim().toLowerCase();
+                if (!q) return this.pickerDishes;
+                return this.pickerDishes.filter(d => (d.name || '').toLowerCase().includes(q));
+            },
+            filteredCartLines() {
+                const q = (this.pickerSearch || '').trim().toLowerCase();
+                const lines = this.cartLinesForPicker();
+                if (!q) return lines;
+                return lines.filter(l =>
+                    (l.name || '').toLowerCase().includes(q) ||
+                    (l.categoryLabel || '').toLowerCase().includes(q));
+            },
+            dishThumbSrc(item) {
+                const url = item?.imageUrl || (item?.dishId ? this.dishImageCache[item.dishId] : null);
+                return url && String(url).trim() ? url : null;
+            },
+            lineThumbSrc(line) {
+                return this.dishThumbSrc(line);
+            },
+            resolveDishImageUrl(d) {
+                const url = d?.imageUrl || this.pickerPreview?.imageUrl || this.dishImageCache[d?.id];
+                if (url && d?.id) this.dishImageCache[d.id] = url;
+                return url || null;
+            },
+            applyImageToMealLines(dishId, imageUrl) {
+                if (!imageUrl || !dishId) return;
+                this.dishImageCache[dishId] = imageUrl;
+                for (const day of this.mealDays) {
+                    for (const slot of ['main', 'side', 'soup']) {
+                        for (const line of day.mealPlan[slot] || []) {
+                            if (line.dishId === dishId) {
+                                line.imageUrl = imageUrl;
+                                line._thumbFailed = false;
+                            }
+                        }
+                    }
+                }
+            },
+            async hydrateMealLineImages() {
+                const missing = new Set();
+                for (const day of this.mealDays) {
+                    for (const slot of ['main', 'side', 'soup']) {
+                        for (const line of day.mealPlan[slot] || []) {
+                            if (line.dishId > 0 && !this.lineThumbSrc(line))
+                                missing.add(line.dishId);
+                        }
+                    }
+                }
+                if (missing.size === 0) return;
+                for (const id of missing) {
+                    try {
+                        const res = await fetch(`/OrganizationMealOrder/Dish/${id}`);
+                        if (!res.ok) continue;
+                        const data = await res.json();
+                        const url = data.dish?.imageUrl || this.pickerDetailImageFromData(data);
+                        if (url) this.applyImageToMealLines(id, url);
+                    } catch { /* ignore */ }
+                }
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+            pickerDetailImageFromData(data) {
+                const d = data?.dish;
+                if (!d) return null;
+                if (d.imageUrl) return d.imageUrl;
+                const imgs = d.images;
+                if (imgs && imgs.length > 0) {
+                    const cover = imgs.find(i => (i.role || '').toLowerCase() === 'cover') || imgs[0];
+                    return cover?.url || null;
+                }
+                return null;
+            },
+            dishThumbFailed(item) {
+                return !!item?._thumbFailed;
+            },
+            onDishThumbError(item) {
+                if (item) item._thumbFailed = true;
+            },
+            patchPickerDishImage(dishId, imageUrl) {
+                if (!imageUrl) return;
+                const row = this.pickerDishes.find(x => x.id === dishId);
+                if (row) {
+                    row.imageUrl = imageUrl;
+                    row._thumbFailed = false;
+                }
+                const cartLine = (this.cartImportLines || []).find(x => x.dishId === dishId);
+                if (cartLine) {
+                    cartLine.imageUrl = imageUrl;
+                    cartLine._thumbFailed = false;
+                }
+                this.applyImageToMealLines(dishId, imageUrl);
+            },
+            async selectPickerDish(d) {
+                this.pickerSelectedId = d.id;
+                this.pickerPreview = { id: d.id, name: d.name, imageUrl: d.imageUrl || null };
+                this.pickerPickQty = 1;
+                await this.loadPickerDetail(d.id);
+            },
+            async selectPickerCart(line) {
+                const id = line.dishId;
+                this.pickerSelectedId = id;
+                this.pickerPreview = { id, name: line.name, imageUrl: line.imageUrl || null };
+                this.pickerPickQty = Math.max(1, parseInt(line.quantity, 10) || 1);
+                await this.loadPickerDetail(id);
+            },
+            async loadPickerDetail(id) {
+                this.pickerDetailLoading = true;
+                this.pickerDetail = null;
+                try {
+                    const res = await fetch(`/OrganizationMealOrder/Dish/${id}`);
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) throw new Error(data.message || 'Không tải được chi tiết món.');
+                    this.pickerDetail = data;
+                    if (data.dish?.name) this.pickerPreview.name = data.dish.name;
+                    if (data.dish?.imageUrl) {
+                        this.pickerPreview.imageUrl = data.dish.imageUrl;
+                        this.patchPickerDishImage(id, data.dish.imageUrl);
+                    }
+                } catch (e) {
+                    this.formError = e.message || 'Không tải được chi tiết món.';
+                } finally {
+                    this.pickerDetailLoading = false;
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                }
+            },
+            pickerDetailImage() {
+                const d = this.pickerDetail?.dish;
+                if (d?.imageUrl) return d.imageUrl;
+                const imgs = d?.images;
+                if (imgs && imgs.length > 0) {
+                    const cover = imgs.find(i => (i.role || '').toLowerCase() === 'cover') || imgs[0];
+                    return cover?.url || cover?.imageUrl || null;
+                }
+                return this.pickerPreview?.imageUrl || null;
+            },
+            pickerHasNutrition() {
+                const d = this.pickerDetail?.dish;
+                return d && (d.calories != null || d.protein != null || d.fat != null || d.carbs != null);
+            },
+            pickerNutrition(field) {
+                const d = this.pickerDetail?.dish;
+                if (!d) return '—';
+                const v = d[field];
+                if (v == null || v === '') return '—';
+                const n = Number(v);
+                return isNaN(n) ? String(v) : (Number.isInteger(n) ? n : n.toFixed(1));
+            },
+            formatPickerQuota(q) {
+                const qty = Number(q.quantity);
+                const unit = (q.unit || '').trim();
+                if (isNaN(qty) || qty <= 0) return unit || '—';
+                const text = qty >= 1 ? qty.toFixed(qty % 1 === 0 ? 0 : 2) : qty.toFixed(3);
+                return unit ? text + ' ' + unit : text;
+            },
+            confirmPickDish() {
+                if (!this.pickerPreview) return;
+                this.pickDish(this.pickerPreview, this.pickerPickQty, true);
+            },
+            cartLinesForPicker() {
+                const slot = (this.pickerSlot || '').toLowerCase();
+                return (this.cartImportLines || []).filter(l =>
+                    (l.slotKey || '').toLowerCase() === slot);
+            },
+            pickFromCart(line) {
+                this.selectPickerCart(line);
+            },
+            mergeCartLineIntoDay(day, line) {
+                const slot = (line.slotKey || '').toLowerCase();
+                if (!['main', 'side', 'soup'].includes(slot)) return;
+                const lines = day.mealPlan[slot];
+                const addQty = Math.max(1, parseInt(line.quantity, 10) || 1);
+                const existing = lines.find(x => x.dishId === line.dishId);
+                if (existing) {
+                    if (slot !== 'main' && !this.canAddSideSoupQty(day, slot, addQty)) return false;
+                    existing.quantity += addQty;
+                    if (!existing.imageUrl) {
+                        const url = line.imageUrl || this.dishImageCache[line.dishId];
+                        if (url) existing.imageUrl = url;
+                    }
+                } else {
+                    if (slot !== 'main' && !this.canAddSideSoupQty(day, slot, addQty)) return false;
+                    lines.push({
+                        dishId: line.dishId,
+                        dishName: line.name,
+                        quantity: addQty,
+                        imageUrl: line.imageUrl || this.dishImageCache[line.dishId] || null,
+                        _thumbFailed: false,
+                    });
+                }
+                return true;
+            },
+            applyCartToDay(iso, silent) {
+                const day = this.getDay(iso);
+                if (!day) {
+                    if (!silent) this.formError = 'Chưa có ngày phục vụ. Thêm ngày ở bước 1.';
+                    return;
+                }
+                const eligible = (this.cartImportLines || []).filter(l =>
+                    ['main', 'side', 'soup'].includes((l.slotKey || '').toLowerCase()));
+                if (eligible.length === 0) {
+                    if (!silent) this.formError = 'Giỏ hàng không có món phù hợp (món chính / phụ / canh).';
+                    return;
+                }
+                let merged = 0;
+                for (const line of eligible) {
+                    if (this.mergeCartLineIntoDay(day, line)) merged++;
+                }
+                this.balanceSideSoupToMain(day);
+                if (!silent) {
+                    this.formError = '';
+                    this.cartImportNotice = 'Đã áp dụng ' + merged + ' món từ giỏ cho ngày ' + this.formatDate(day.serviceDate) + '.';
+                }
+                this.scheduleDraftCacheSave();
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+            applyCartToAllDays() {
+                if (this.mealDays.length === 0) {
+                    this.formError = 'Thêm ít nhất một ngày phục vụ ở bước 1.';
+                    return;
+                }
+                for (const day of this.mealDays) {
+                    this.applyCartToDay(day.serviceDate, true);
+                }
+                this.formError = '';
+                this.cartImportNotice = 'Đã áp dụng giỏ hàng cho ' + this.mealDays.length + ' ngày phục vụ.';
+                this.scheduleDraftCacheSave();
+            },
+            goStep2FromCart() {
+                if (this.mealDays.length === 0) {
+                    this.formError = 'Thêm ít nhất một ngày phục vụ ở bước 1 trước.';
+                    this.step = 1;
+                    return;
+                }
+                this.activeDay = this.mealDays[0].serviceDate;
+                this.step = 2;
+                this.formError = '';
                 this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
             },
             categoriesForPicker() {
@@ -1001,7 +1592,7 @@
                     const res = await fetch(`/OrganizationMealOrder/Dishes?categoryId=${categoryId}&pageSize=50`);
                     if (!res.ok) throw new Error((await res.json()).message || 'Lỗi tải món');
                     const data = await res.json();
-                    this.pickerDishes = data.dishes || [];
+                    this.pickerDishes = (data.dishes || []).map(d => ({ ...d, _thumbFailed: false }));
                 } catch (e) {
                     this.formError = e.message || 'Không tải được danh sách món.';
                 } finally {
@@ -1009,11 +1600,12 @@
                     this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
                 }
             },
-            pickDish(d) {
+            pickDish(d, qty = 1, closeAfter = true) {
                 const day = this.getDay(this.pickerDay);
                 if (!day) return;
                 const slot = this.pickerSlot;
-                if (slot !== 'main' && !this.canAddSideSoupQty(day, slot, 1)) {
+                const addQty = Math.max(1, parseInt(qty, 10) || 1);
+                if (slot !== 'main' && !this.canAddSideSoupQty(day, slot, addQty)) {
                     this.formError = 'Ngày ' + this.formatDate(day.serviceDate)
                         + ': tổng ' + (slot === 'side' ? 'món phụ' : 'canh')
                         + ' đã đạt ' + this.daySlotTotal(day, 'main') + ' suất. Chỉnh số lượng hoặc bỏ bớt món.';
@@ -1022,15 +1614,26 @@
                 const lines = day.mealPlan[slot];
                 const existing = lines.find(x => x.dishId === d.id);
                 if (existing) {
-                    if (!this.canAddSideSoupQty(day, slot, 1)) {
+                    if (slot !== 'main' && !this.canAddSideSoupQty(day, slot, addQty)) {
                         this.formError = 'Đã đạt giới hạn suất ' + (slot === 'side' ? 'món phụ' : 'canh') + ' cho ngày này.';
                         return;
                     }
-                    existing.quantity += 1;
+                    existing.quantity += addQty;
+                    if (!existing.imageUrl) {
+                        const url = this.resolveDishImageUrl(d);
+                        if (url) existing.imageUrl = url;
+                    }
                 } else {
-                    lines.push({ dishId: d.id, dishName: d.name, quantity: 1 });
+                    const imageUrl = this.resolveDishImageUrl(d);
+                    lines.push({
+                        dishId: d.id,
+                        dishName: d.name,
+                        quantity: addQty,
+                        imageUrl,
+                        _thumbFailed: false,
+                    });
                 }
-                this.pickerOpen = false;
+                if (closeAfter) this.closePicker();
                 this.formError = '';
                 this.scheduleDraftCacheSave();
                 this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
@@ -1207,6 +1810,7 @@
             goStep4() {
                 this.formError = this.validateMealPlan();
                 if (this.formError) return;
+                this.applyDeliveryDefaults(deliveryDefaults);
                 this.step = 4;
                 this.scheduleDraftCacheSave();
                 this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
@@ -1284,10 +1888,21 @@
                 }
             },
             init() {
+                this.applyDeliveryDefaults(deliveryDefaults);
                 const restored = this.restoreDraftCache();
+                this.applyDeliveryDefaults(deliveryDefaults);
+                if (this.fromCart && this.cartImportLines.length > 0 && !this.cartImportNotice) {
+                    this.cartImportNotice =
+                        'Đã chuyển từ giỏ hàng (' + this.cartImportLines.length + ' món). Hoàn tất bước 1, sau đó chọn món bằng tab 「Từ giỏ hàng」 hoặc nút áp dụng nhanh.';
+                }
+                if (this.fromCart && this.mealDays.length > 0 && !restored) {
+                    this.step = 2;
+                    this.activeDay = this.mealDays[0].serviceDate;
+                }
                 if (restored && this.step >= 3) {
                     this.$nextTick(() => this.loadEligiblePromotions());
                 }
+                this.$nextTick(() => this.hydrateMealLineImages());
                 this.$watch('step', () => this.scheduleDraftCacheSave());
                 this.$watch('pricePerPortion', () => this.scheduleDraftCacheSave());
                 this.$watch('mealDays', () => this.scheduleDraftCacheSave(), { deep: true });
@@ -1295,6 +1910,10 @@
                 this.$watch('newDate', () => this.scheduleDraftCacheSave());
                 window.addEventListener('beforeunload', () => {
                     if (this.hasMeaningfulDraft()) this.saveDraftCache();
+                });
+                document.body.classList.remove('hm-picker-open');
+                this.$watch('pickerOpen', (open) => {
+                    document.body.classList.toggle('hm-picker-open', !!open);
                 });
                 if (window.lucide) lucide.createIcons();
                 if (restored) {

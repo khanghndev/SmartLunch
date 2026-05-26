@@ -1,0 +1,313 @@
+@model Khoa_Luan_KS_Web.Models.OrganizationMealContractWeeklyVm
+@using System.Text.Json
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Chọn món theo tuần";
+    Layout = "_LayoutCustomer";
+    var contractStart = Model.ContractStart.ToString("yyyy-MM-dd");
+    var contractEnd = Model.ContractEnd.ToString("yyyy-MM-dd");
+    var weeksJson = JsonSerializer.Serialize(
+        Model.Weeks.Select(w => new {
+            weekMonday = w.WeekMonday.ToString("yyyy-MM-dd"),
+            weekEnd = w.WeekEnd.ToString("yyyy-MM-dd"),
+            label = w.Label,
+            isPast = w.IsPast,
+            isCurrent = w.IsCurrent,
+            isFuture = w.IsFuture,
+            hasServiceDays = w.HasServiceDays,
+        }),
+        new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+    var excludedJson = ViewBag.ExcludedDatesJson as string ?? "[]";
+    var antiToken = Antiforgery.GetAndStoreTokens(Context).RequestToken ?? "";
+    var antiTokenJson = JsonSerializer.Serialize(antiToken);
+}
+
+<style>
+    [x-cloak] { display: none !important; }
+</style>
+
+<div class="min-h-screen bg-slate-100/90" style="background-image: radial-gradient(circle at 1px 1px, rgba(148,163,184,0.2) 1px, transparent 0); background-size: 24px 24px;"
+     x-data="orgWeeklyMealApp" x-cloak>
+
+    <section class="relative h-[200px] overflow-hidden sm:h-[240px]">
+        <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=1920&auto=format&fit=crop"
+             alt="" class="absolute inset-0 h-full w-full object-cover brightness-[0.45]" />
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/65 to-slate-900/25"></div>
+        <div class="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-8 pt-24 sm:px-6">
+            <nav class="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-white/70">
+                <a asp-action="Contracts" class="hover:text-orange-300">Hợp đồng</a>
+                <span class="text-white/30">/</span>
+                <span class="text-white/90">Chọn món tuần</span>
+            </nav>
+            <h1 class="text-2xl font-black text-white sm:text-3xl">Chọn món chính theo tuần</h1>
+            <p class="mt-2 text-sm text-slate-300">
+                @(Model.ContractNumber ?? $"HĐ #{Model.ContractId}") · @Model.OrganizationName
+                · @Model.MealsPerDay suất/ngày
+            </p>
+        </div>
+    </section>
+
+    <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-10">
+        @if (!string.IsNullOrEmpty(Model.ApiError))
+        {
+            <div class="rounded-3xl border border-amber-200 bg-white p-10 text-center shadow-xl">
+                <i data-lucide="alert-triangle" class="mx-auto mb-3 h-10 w-10 text-amber-600"></i>
+                <p class="font-bold text-amber-900">@Model.ApiError</p>
+                <a asp-action="Contracts" class="mt-4 inline-block text-sm font-bold text-orange-600 hover:underline">Quay lại danh sách</a>
+            </div>
+        }
+        else
+        {
+            <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+                <p class="text-sm text-slate-600">
+                    Kỳ @Model.ContractStart.ToString("dd/MM/yyyy") – @Model.ContractEnd.ToString("dd/MM/yyyy")
+                </p>
+                <a asp-action="Contracts"
+                   class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 hover:border-orange-200 hover:text-orange-600">
+                    <i data-lucide="arrow-left" class="h-4 w-4"></i> Danh sách HĐ
+                </a>
+            </div>
+
+            <div class="mb-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                <template x-for="w in weeks" :key="w.weekMonday">
+                    <button type="button"
+                            @@click="selectWeek(w)"
+                            :disabled="w.isPast || !w.hasServiceDays"
+                            class="relative overflow-hidden rounded-2xl border-2 p-5 text-left transition disabled:cursor-not-allowed disabled:opacity-50"
+                            :class="selectedWeek?.weekMonday === w.weekMonday
+                                ? 'border-orange-500 bg-orange-50 shadow-lg shadow-orange-500/15'
+                                : (w.isCurrent ? 'border-emerald-300 bg-white hover:border-emerald-400' : 'border-slate-200 bg-white hover:border-orange-200')">
+                        <span x-show="w.isCurrent" class="absolute right-3 top-3 rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-black uppercase text-white">Tuần này</span>
+                        <span x-show="w.isPast" class="absolute right-3 top-3 rounded-full bg-slate-200 px-2 py-0.5 text-[10px] font-bold text-slate-500">Đã qua</span>
+                        <p class="text-sm font-black text-slate-900" x-text="w.label"></p>
+                        <p class="mt-1 text-xs text-slate-500" x-show="!w.hasServiceDays">Không có ngày phục vụ</p>
+                    </button>
+                </template>
+            </div>
+
+            <div x-show="selectedWeek" x-transition class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl ring-1 ring-slate-900/5">
+                <div class="border-b border-slate-100 bg-gradient-to-r from-orange-50 to-amber-50/40 px-6 py-4">
+                    <h2 class="flex items-center gap-2 text-lg font-black text-slate-900">
+                        <i data-lucide="utensils" class="h-5 w-5 text-orange-600"></i>
+                        <span x-text="'Tuần ' + formatDate(selectedWeek?.weekMonday) + ' – ' + formatDate(selectedWeek?.weekEnd)"></span>
+                    </h2>
+                    <p class="mt-1 text-sm text-slate-500">Chọn món chính cho từng ngày — <strong x-text="mealsPerDay"></strong> suất/ngày</p>
+                </div>
+
+                <div class="divide-y divide-slate-100">
+                    <template x-for="day in weekDays" :key="day.serviceDate">
+                        <div class="p-6">
+                            <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
+                                <p class="flex items-center gap-2 text-base font-black text-slate-900">
+                                    <i data-lucide="calendar" class="h-4 w-4 text-emerald-600"></i>
+                                    <span x-text="formatDateLong(day.serviceDate)"></span>
+                                </p>
+                                <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800"
+                                      x-text="mealsPerDay + ' suất'"></span>
+                            </div>
+                            <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
+                                <div class="relative min-w-0 flex-1">
+                                    <label class="mb-1 block text-[10px] font-black uppercase text-slate-400">Món chính</label>
+                                    <div class="flex gap-2">
+                                        <input type="search" x-model="day.search" @@input.debounce.400ms="searchDishes(day)"
+                                               placeholder="Tìm món chính…"
+                                               class="h-11 flex-1 rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200" />
+                                        <button type="button" @@click="searchDishes(day)"
+                                                class="shrink-0 rounded-xl border border-slate-200 px-3 hover:bg-slate-50">
+                                            <i data-lucide="search" class="h-4 w-4 text-slate-500"></i>
+                                        </button>
+                                    </div>
+                                    <div x-show="day.dishes?.length" class="absolute z-20 mt-1 max-h-48 w-full overflow-y-auto rounded-xl border border-slate-200 bg-white shadow-xl">
+                                        <template x-for="dish in day.dishes" :key="dish.id">
+                                            <button type="button" @@click="pickDish(day, dish)"
+                                                    class="flex w-full items-center gap-3 border-b border-slate-50 px-4 py-3 text-left text-sm hover:bg-orange-50 last:border-0">
+                                                <span class="font-bold text-slate-900" x-text="dish.name"></span>
+                                                <span class="ml-auto text-xs text-slate-400" x-text="formatMoney(dish.price) + ' đ'"></span>
+                                            </button>
+                                        </template>
+                                    </div>
+                                </div>
+                                <div x-show="day.selectedDish" class="rounded-2xl border border-orange-200 bg-orange-50/80 px-4 py-3 sm:min-w-[200px]">
+                                    <p class="text-[10px] font-black uppercase text-orange-600">Đã chọn</p>
+                                    <p class="font-bold text-slate-900" x-text="day.selectedDish?.name"></p>
+                                    <button type="button" @@click="clearDish(day)" class="mt-1 text-xs font-bold text-red-600 hover:underline">Bỏ chọn</button>
+                                </div>
+                            </div>
+                        </div>
+                    </template>
+                </div>
+
+                <div x-show="weekDays.length === 0" class="p-10 text-center text-sm text-slate-500">
+                    Tuần này không có ngày phục vụ trong kỳ hợp đồng.
+                </div>
+
+                <div class="border-t border-slate-100 bg-slate-50/80 px-6 py-5">
+                    <div x-show="formError" class="mb-4 flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        <i data-lucide="circle-alert" class="h-4 w-4 shrink-0"></i><span x-text="formError"></span>
+                    </div>
+                    <button type="button" @@click="submitWeekly()" :disabled="submitting || !selectedWeek || weekDays.length === 0"
+                            class="flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 py-4 text-sm font-black text-white shadow-lg hover:from-orange-600 hover:to-amber-600 disabled:opacity-50">
+                        <i data-lucide="send" class="h-5 w-5" x-show="!submitting"></i>
+                        <span x-text="submitting ? 'Đang gửi…' : 'Gửi thực đơn tuần'"></span>
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener('alpine:init', () => {
+        const contractId = @Model.ContractId;
+        const contractStart = @Json.Serialize(contractStart);
+        const contractEnd = @Json.Serialize(contractEnd);
+        const mealsPerDay = @Model.MealsPerDay;
+        const weeks = @Html.Raw(weeksJson);
+        const excludedDates = @Html.Raw(excludedJson);
+        const antiToken = @Html.Raw(antiTokenJson);
+
+        Alpine.data('orgWeeklyMealApp', () => ({
+            weeks,
+            mealsPerDay,
+            selectedWeek: null,
+            weekDays: [],
+            formError: '',
+            submitting: false,
+
+            init() {
+                const current = this.weeks.find(w => w.isCurrent && !w.isPast && w.hasServiceDays)
+                    || this.weeks.find(w => !w.isPast && w.hasServiceDays);
+                if (current) this.selectWeek(current);
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+
+            parseIso(iso) {
+                const p = iso.split('-').map(Number);
+                return { y: p[0], m: p[1] - 1, d: p[2] };
+            },
+            toIso(y, m, d) {
+                return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+            },
+            formatDate(iso) {
+                if (!iso) return '';
+                const p = iso.split('-');
+                return p[2] + '/' + p[1];
+            },
+            formatDateLong(iso) {
+                if (!iso) return '';
+                const p = this.parseIso(iso);
+                const dt = new Date(p.y, p.m, p.d);
+                return dt.toLocaleDateString('vi-VN', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' });
+            },
+            formatMoney(n) {
+                return new Intl.NumberFormat('vi-VN').format(Math.round(n || 0));
+            },
+            excludedSet() {
+                return new Set(excludedDates || []);
+            },
+            buildWeekServiceDates(weekMonday) {
+                const excluded = this.excludedSet();
+                const startP = this.parseIso(contractStart);
+                const endP = this.parseIso(contractEnd);
+                const monP = this.parseIso(weekMonday);
+                const days = [];
+                for (let i = 0; i < 7; i++) {
+                    const d = new Date(monP.y, monP.m, monP.d + i);
+                    const iso = this.toIso(d.getFullYear(), d.getMonth(), d.getDate());
+                    const t = Date.UTC(d.getFullYear(), d.getMonth(), d.getDate());
+                    const cs = Date.UTC(startP.y, startP.m, startP.d);
+                    const ce = Date.UTC(endP.y, endP.m, endP.d);
+                    if (t >= cs && t <= ce && !excluded.has(iso))
+                        days.push(iso);
+                }
+                return days;
+            },
+            selectWeek(w) {
+                if (w.isPast || !w.hasServiceDays) return;
+                this.selectedWeek = w;
+                this.formError = '';
+                const dates = this.buildWeekServiceDates(w.weekMonday);
+                this.weekDays = dates.map(serviceDate => ({
+                    serviceDate,
+                    search: '',
+                    dishes: [],
+                    selectedDish: null,
+                    loading: false,
+                }));
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+            async searchDishes(day) {
+                day.loading = true;
+                try {
+                    const q = (day.search || '').trim();
+                    const url = '/OrganizationMealContractOrder/MainDishes?page=1&pageSize=30'
+                        + (q ? '&search=' + encodeURIComponent(q) : '');
+                    const res = await fetch(url);
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Không tải được danh sách món.');
+                    day.dishes = data.dishes || data.Dishes || [];
+                } catch (e) {
+                    day.dishes = [];
+                    this.formError = e.message;
+                } finally {
+                    day.loading = false;
+                }
+            },
+            pickDish(day, dish) {
+                day.selectedDish = dish;
+                day.dishes = [];
+                day.search = dish.name;
+            },
+            clearDish(day) {
+                day.selectedDish = null;
+                day.search = '';
+                day.dishes = [];
+            },
+            validate() {
+                if (!this.selectedWeek) return 'Chọn tuần cần đặt món.';
+                for (const day of this.weekDays) {
+                    if (!day.selectedDish) return 'Chọn món chính cho ngày ' + this.formatDateLong(day.serviceDate) + '.';
+                }
+                return '';
+            },
+            buildPayload() {
+                const qty = Math.max(1, parseInt(this.mealsPerDay, 10) || 1);
+                return {
+                    weekStart: this.selectedWeek.weekMonday,
+                    mealDays: this.weekDays.map(day => ({
+                        serviceDate: day.serviceDate,
+                        mealPlan: {
+                            main: [{ dishId: day.selectedDish.id, quantity: qty }],
+                            side: [],
+                            soup: [],
+                        },
+                    })),
+                };
+            },
+            async submitWeekly() {
+                this.formError = this.validate();
+                if (this.formError) return;
+                this.submitting = true;
+                try {
+                    const res = await fetch('/OrganizationMealContractOrder/SubmitWeekly/' + contractId, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': antiToken,
+                        },
+                        body: JSON.stringify(this.buildPayload()),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Không gửi được thực đơn tuần.');
+                    window.location.href = data.redirectUrl || '/OrganizationMealContractOrder/Contracts';
+                } catch (e) {
+                    this.formError = e.message || 'Lỗi khi gửi.';
+                } finally {
+                    this.submitting = false;
+                }
+            },
+        }));
+    });
+</script>
+}

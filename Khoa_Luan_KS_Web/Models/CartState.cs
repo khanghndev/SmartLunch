@@ -1,3 +1,5 @@
+using Khoa_Luan_KS_Web.Services;
+
 namespace Khoa_Luan_KS_Web.Models;
 
 /// <summary>Giỏ phiên bản mới: các bộ menu tuần (số bộ chung + chọn suất theo ngày) và các dòng món lẻ.</summary>
@@ -31,9 +33,11 @@ public class WeekMenuSlotSelection
 public class CartIndexViewModel
 {
     public CartState State { get; set; } = new();
+    public List<CartLooseGroupVm> LooseGroups { get; set; } = new();
     public decimal TotalAmount { get; set; }
     public int TotalPortions { get; set; }
     public bool MeetsMinimumPortions { get; set; }
+    public int LooseDishCount => State.LooseLines.Select(l => l.DishId).Distinct().Count();
 
     public bool IsEmpty => State.MenuBundles.Count == 0 && State.LooseLines.Count == 0;
 

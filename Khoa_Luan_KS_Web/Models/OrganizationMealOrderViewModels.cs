@@ -12,6 +12,23 @@ public class OrganizationMealOrderIndexVm
     public DateOnly DateMax { get; set; }
     public DateOnly DateDefault { get; set; }
     public string DateRuleHint { get; set; } = string.Empty;
+    public bool FromCart { get; set; }
+    public List<CartImportLineDto> CartImportLines { get; set; } = new();
+    public OrganizationMealDeliveryDefaultsVm DeliveryDefaults { get; set; } = new();
+}
+
+/// <summary>Giá trị mặc định bước 4 — giao hàng (từ hồ sơ).</summary>
+public class OrganizationMealDeliveryDefaultsVm
+{
+    public string? RecipientName { get; set; }
+    public string? RecipientPhone { get; set; }
+    public string? RecipientEmail { get; set; }
+    public string? DeliveryAddress { get; set; }
+    public string? DeliveryWardDistrict { get; set; }
+    public string? DeliveryNotes { get; set; }
+    public string PreferredDeliveryTime { get; set; } = "11:30";
+    public string? SourceHint { get; set; }
+    public string? OrganizationName { get; set; }
 }
 
 public class OrganizationMealPreviewPromotionRequest

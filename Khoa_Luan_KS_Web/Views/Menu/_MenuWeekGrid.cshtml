@@ -133,6 +133,8 @@
                                                     <input type="hidden" name="name" value="@s.Dish.Name" />
                                                     <input type="hidden" name="price" value="@s.Dish.Price.ToString(System.Globalization.CultureInfo.InvariantCulture)" />
                                                     <input type="hidden" name="imageUrl" value="@(s.Dish.ImageUrl ?? "")" />
+                                                    <input type="hidden" name="slotKey" value="@(s.Dish.Category ?? "")" />
+                                                    <input type="hidden" name="categoryLabel" value="@MenuDishDisplayHelper.CategoryLabel(s.Dish.Category)" />
                                                     <input type="hidden" name="menuScheduleId" value="@s.Id" />
                                                     <input type="hidden" name="scheduleDateUtc" value="@s.Date.ToUniversalTime().ToString("o")" />
                                                     <input type="hidden" name="mealSlot" value="@s.MealSlot" />

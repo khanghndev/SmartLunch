@@ -11,7 +11,6 @@ namespace Khoa_Luan_KS_Web.Controllers;
 [Authorize(Policy = "CustomerArea")]
 public class CartController : Controller
 {
-    private const string CartSessionKey = "huit_cart_v1";
     private const string DeliverySessionKey = "huit_cart_checkout_delivery_v1";
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };
 
@@ -36,10 +35,26 @@ public class CartController : Controller
         user.IsInRole("Company") ||
         user.IsInRole("Khách hàng doanh nghiệp");
 
+  private static bool IsOrganizationMealOrderUser(ClaimsPrincipal user) =>
+        user.IsInRole("Organization") ||
+        user.IsInRole("Company") ||
+        user.IsInRole("Khách hàng doanh nghiệp");
+
     [HttpGet]
     public IActionResult Index()
     {
-        return View(CartIndexViewModel.Create(GetCartState()));
+        var state = GetCartState();
+        var vm = CartIndexViewModel.Create(state);
+        vm.LooseGroups = CartSessionHelper.GroupLooseLines(state.LooseLines);
+        ViewBag.IsOrgMealUser = IsOrganizationMealOrderUser(User);
+        return View(vm);
+    }
+
+    [HttpGet]
+    public IActionResult ImportJson()
+    {
+        var lines = CartSessionHelper.ToImportDtos(GetCartState().LooseLines);
+        return Json(new { lines, count = lines.Count });
     }
 
     [HttpPost]
@@ -49,6 +64,8 @@ public class CartController : Controller
         string name,
         decimal price,
         string? imageUrl,
+        string? slotKey,
+        string? categoryLabel,
         int? menuScheduleId,
         DateTime? scheduleDateUtc,
         string? mealSlot,
@@ -60,11 +77,22 @@ public class CartController : Controller
             return RedirectToReferer();
         }
 
+        var resolvedSlot = MenuDishDisplayHelper.ResolveOrganizationSlotKey(slotKey)
+            ?? (string.IsNullOrWhiteSpace(slotKey) ? null : slotKey.Trim().ToLowerInvariant());
+        var label = string.IsNullOrWhiteSpace(categoryLabel)
+            ? MenuDishDisplayHelper.CategoryLabel(resolvedSlot ?? slotKey)
+            : categoryLabel.Trim();
+
         var state = GetCartState();
         var loose = state.LooseLines;
-        var existing = loose.FirstOrDefault(c => c.DishId == dishId && c.MenuScheduleId == menuScheduleId);
+        var existing = loose.FirstOrDefault(c =>
+            c.DishId == dishId &&
+            c.MenuScheduleId == menuScheduleId &&
+            string.Equals(c.SlotKey, resolvedSlot, StringComparison.OrdinalIgnoreCase));
         if (existing != null)
+        {
             existing.Quantity += quantity;
+        }
         else
         {
             loose.Add(new CartLine
@@ -74,6 +102,8 @@ public class CartController : Controller
                 Price = price,
                 Quantity = quantity,
                 ImageUrl = imageUrl,
+                SlotKey = resolvedSlot ?? slotKey?.Trim().ToLowerInvariant(),
+                CategoryLabel = label,
                 MenuScheduleId = menuScheduleId,
                 ScheduleDateUtc = scheduleDateUtc,
                 MealSlot = mealSlot,
@@ -81,7 +111,7 @@ public class CartController : Controller
         }
 
         SaveCartState(state);
-        TempData["CartSuccess"] = "Đã thêm vào giỏ hàng.";
+        TempData["CartSuccess"] = $"Đã thêm \"{name.Trim()}\" vào giỏ hàng.";
         return RedirectToReferer();
     }
 
@@ -393,7 +423,7 @@ public class CartController : Controller
     [ValidateAntiForgeryToken]
     public IActionResult Clear()
     {
-        HttpContext.Session.Remove(CartSessionKey);
+        HttpContext.Session.Remove(CartSessionHelper.SessionKey);
         HttpContext.Session.Remove(DeliverySessionKey);
         return RedirectToAction(nameof(Index));
     }
@@ -462,7 +492,7 @@ public class CartController : Controller
         try
         {
             var res = await _masterDataClient.CreateCustomerMealOrderAsync(req, token, ct);
-            HttpContext.Session.Remove(CartSessionKey);
+            HttpContext.Session.Remove(CartSessionHelper.SessionKey);
             HttpContext.Session.Remove(DeliverySessionKey);
             var orderId = res.Order.Id;
 
@@ -528,41 +558,9 @@ public class CartController : Controller
         return RedirectToAction("Index", "Menu");
     }
 
-    private CartState GetCartState()
-    {
-        var raw = HttpContext.Session.GetString(CartSessionKey);
-        if (string.IsNullOrEmpty(raw))
-            return new CartState();
+    private CartState GetCartState() => CartSessionHelper.GetState(HttpContext.Session);
 
-        try
-        {
-            var st = JsonSerializer.Deserialize<CartState>(raw, JsonOpts);
-            if (st != null)
-                return st;
-        }
-        catch
-        {
-            // legacy JSON below
-        }
-
-        try
-        {
-            var legacy = JsonSerializer.Deserialize<List<CartLine>>(raw, JsonOpts);
-            if (legacy is { Count: > 0 })
-                return new CartState { LooseLines = legacy };
-        }
-        catch
-        {
-            // ignored
-        }
-
-        return new CartState();
-    }
-
-    private void SaveCartState(CartState state)
-    {
-        HttpContext.Session.SetString(CartSessionKey, JsonSerializer.Serialize(state));
-    }
+    private void SaveCartState(CartState state) => CartSessionHelper.SaveState(HttpContext.Session, state);
 
     private static List<CartDeliveryDayRowVm> BuildDeliveryDayRows(CartState state)
     {

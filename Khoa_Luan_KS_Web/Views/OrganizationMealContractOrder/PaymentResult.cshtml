@@ -1,0 +1,71 @@
+@model Khoa_Luan_KS_Web.Models.OrganizationMealContractOrderPaymentResultVm
+@{
+    ViewData["Title"] = "Kết quả thanh toán cọc";
+    Layout = "_LayoutCustomer";
+    var isSuccess = Model.OrderId > 0;
+}
+
+<div class="flex min-h-[calc(100vh-8rem)] items-center justify-center px-4 py-16 sm:px-6"
+     style="background-color: #f1f5f9; background-image: radial-gradient(circle at 1px 1px, rgba(148,163,184,0.22) 1px, transparent 0); background-size: 24px 24px;">
+    <div class="w-full max-w-md overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-2xl ring-1 ring-slate-900/5">
+        <div class="bg-gradient-to-br @(isSuccess ? "from-emerald-500 to-teal-600" : "from-amber-500 to-orange-600") px-8 py-10 text-center text-white">
+            <div class="mx-auto mb-4 flex h-20 w-20 items-center justify-center rounded-full bg-white/20 backdrop-blur">
+                <i data-lucide="@(isSuccess ? "check-circle" : "info")" class="h-11 w-11"></i>
+            </div>
+            <h1 class="text-2xl font-black">@(isSuccess ? "Thanh toán đặt cọc thành công" : "Đã ghi nhận yêu cầu")</h1>
+            @if (Model.ContractId > 0)
+            {
+                <p class="mt-2 text-sm text-white/90">Hợp đồng #@Model.ContractId</p>
+            }
+        </div>
+        <div class="space-y-4 p-8 text-center">
+            @if (Model.OrderId > 0)
+            {
+                <div class="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-3">
+                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Mã đơn hàng</p>
+                    <p class="mt-1 text-2xl font-black text-slate-900">#@Model.OrderId</p>
+                </div>
+            }
+            @if (Model.DepositPercent > 0)
+            {
+                <p class="text-sm text-slate-600">
+                    Đặt cọc <strong class="text-slate-900">@Model.DepositPercent%</strong>:
+                    <strong class="text-orange-700">@Model.DepositAmountVnd.ToString("N0") đ</strong>
+                </p>
+            }
+            @if (!string.IsNullOrEmpty(Model.PayOsMessage))
+            {
+                <div class="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-left text-xs leading-relaxed text-amber-900">
+                    <i data-lucide="alert-circle" class="mb-1 inline h-4 w-4"></i>
+                    @Model.PayOsMessage
+                </div>
+            }
+
+            <div class="flex flex-col gap-3 pt-2">
+                <a asp-action="Contracts"
+                   class="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-6 py-3.5 text-sm font-black text-white shadow-lg hover:from-orange-600 hover:to-amber-600">
+                    <i data-lucide="file-text" class="h-5 w-5"></i>
+                    Hợp đồng của tôi
+                </a>
+                @if (Model.OrderId > 0)
+                {
+                    <a asp-controller="Profile" asp-action="Orders"
+                       class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-700 hover:border-orange-200 hover:text-orange-600">
+                        <i data-lucide="list" class="h-5 w-5"></i>
+                        Lịch sử đơn hàng
+                    </a>
+                    <a asp-controller="Profile" asp-action="OrderDetail" asp-route-id="@Model.OrderId"
+                       class="inline-flex items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-6 py-3.5 text-sm font-bold text-slate-700 hover:border-orange-200 hover:text-orange-600">
+                        <i data-lucide="receipt" class="h-5 w-5"></i>
+                        Chi tiết đơn
+                    </a>
+                }
+                <a asp-action="Index" class="text-sm font-bold text-slate-400 hover:text-orange-500">Đặt kỳ mới</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+}

@@ -619,6 +619,75 @@ public class BackendMasterDataClient
         return await HandleResponse<InitiateOrganizationMealPaymentClientResponse>(res, ct);
     }
 
+    // --- Organization meal contract order (Period-Based) ---
+    public async Task<GetOrganizationDishesByCategoryClientResponse> GetOrganizationMealContractMainDishesAsync(
+        string accessToken,
+        int page = 1,
+        int pageSize = 50,
+        string? search = null,
+        CancellationToken ct = default)
+    {
+        var q = $"?page={page}&pageSize={pageSize}";
+        if (!string.IsNullOrWhiteSpace(search))
+            q += $"&search={Uri.EscapeDataString(search.Trim())}";
+        return await GetAsync<GetOrganizationDishesByCategoryClientResponse>(
+            $"/api/v1/organization/meal-contract-order/dish/main{q}",
+            accessToken,
+            ct);
+    }
+
+    public async Task<PrepareOrganizationMealPeriodContractClientResponse> PrepareOrganizationMealPeriodContractAsync(
+        PrepareOrganizationMealPeriodContractClientRequest request,
+        string accessToken,
+        CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(request, JsonPostOptions);
+        var client = CreateClient(accessToken);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PostAsync("/api/v1/organization/meal-contract-order/contract", content, ct);
+        return await HandleResponse<PrepareOrganizationMealPeriodContractClientResponse>(res, ct);
+    }
+
+    public async Task<CheckoutOrganizationMealPeriodContractClientResponse> CheckoutOrganizationMealPeriodContractAsync(
+        CheckoutOrganizationMealPeriodContractClientRequest request,
+        string accessToken,
+        CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(request, JsonPostOptions);
+        var client = CreateClient(accessToken);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PostAsync("/api/v1/organization/meal-contract-order/checkout", content, ct);
+        return await HandleResponse<CheckoutOrganizationMealPeriodContractClientResponse>(res, ct);
+    }
+
+    public async Task<InitiateOrganizationMealPaymentClientResponse> InitiateOrganizationMealPeriodPaymentAsync(
+        InitiateOrganizationMealPeriodPaymentClientRequest request,
+        string accessToken,
+        CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(request, JsonPostOptions);
+        var client = CreateClient(accessToken);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PostAsync("/api/v1/organization/meal-contract-order/pay", content, ct);
+        return await HandleResponse<InitiateOrganizationMealPaymentClientResponse>(res, ct);
+    }
+
+    public async Task<SubmitOrganizationMealWeeklySelectionClientResponse> SubmitOrganizationMealWeeklySelectionAsync(
+        int contractId,
+        SubmitOrganizationMealWeeklySelectionClientRequest request,
+        string accessToken,
+        CancellationToken ct = default)
+    {
+        var json = JsonSerializer.Serialize(request, JsonPostOptions);
+        var client = CreateClient(accessToken);
+        using var content = new StringContent(json, Encoding.UTF8, "application/json");
+        using var res = await client.PostAsync(
+            $"/api/v1/organization/meal-contract-order/{contractId}/weekly-meals",
+            content,
+            ct);
+        return await HandleResponse<SubmitOrganizationMealWeeklySelectionClientResponse>(res, ct);
+    }
+
     // --- Company public documents (hồ sơ công khai / Giới thiệu) ---
     public async Task<CompanyPublicDocumentListClientResponse> GetPublicCompanyDocumentsAsync(CancellationToken ct = default)
     {
@@ -1697,6 +1766,9 @@ public class CustomerContractDto
     public string? PartnerLegalName { get; set; }
     public int? OrganizationId { get; set; }
     public string? OrganizationName { get; set; }
+    public int? SourceOrderId { get; set; }
+    public string ContractType { get; set; } = "Framework";
+    public int? MealsPerDay { get; set; }
     public string? ContractNumber { get; set; }
     public string? Description { get; set; }
     public string? SupplySchedule { get; set; }
@@ -2038,4 +2110,77 @@ public class InitiateOrganizationMealPaymentClientResponse
     public string? PayOsStatus { get; set; }
     public string? PayOsMessage { get; set; }
     public bool AlreadyPaidSynced { get; set; }
+}
+
+// ─── Organization meal contract order (Period-Based) ────────────────────────
+public class PrepareOrganizationMealPeriodContractClientRequest
+{
+    public int OrganizationId { get; set; }
+    public string StartDate { get; set; } = string.Empty;
+    public string EndDate { get; set; } = string.Empty;
+    public List<string> ExcludedDates { get; set; } = new();
+    public int MealsPerDay { get; set; }
+    public decimal MealUnitPrice { get; set; }
+    public string? PromotionCode { get; set; }
+    public int? PromotionId { get; set; }
+    public OrganizationMealDeliveryClientRequest Delivery { get; set; } = new();
+}
+
+public class PrepareOrganizationMealPeriodContractClientResponse
+{
+    public string DraftId { get; set; } = string.Empty;
+    public int ContractId { get; set; }
+    public string? ContractNumber { get; set; }
+    public string? ContractFileUrl { get; set; }
+    public string StartDate { get; set; } = string.Empty;
+    public string EndDate { get; set; } = string.Empty;
+    public List<string> ExcludedDates { get; set; } = new();
+    public int ServiceDays { get; set; }
+    public int MealsPerDay { get; set; }
+    public decimal MealUnitPrice { get; set; }
+    public decimal? SubtotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
+    public decimal TotalAmount { get; set; }
+    public int? AppliedPromotionId { get; set; }
+    public string? AppliedPromotionName { get; set; }
+    public OrganizationMealDeliverySummaryClientDto? Delivery { get; set; }
+}
+
+public class CheckoutOrganizationMealPeriodContractClientRequest
+{
+    public string DraftId { get; set; } = string.Empty;
+    public int DepositPercent { get; set; } = 30;
+}
+
+public class CheckoutOrganizationMealPeriodContractClientResponse
+{
+    public int ContractId { get; set; }
+    public GetOrderClientResponse Order { get; set; } = new();
+    public int DepositPercent { get; set; }
+    public int DepositAmountVnd { get; set; }
+    public string? CheckoutUrl { get; set; }
+    public string? QrCode { get; set; }
+    public string? PayOsStatus { get; set; }
+    public string? PayOsMessage { get; set; }
+}
+
+public class InitiateOrganizationMealPeriodPaymentClientRequest
+{
+    public int OrderId { get; set; }
+    public string? ReturnUrl { get; set; }
+    public string? CancelUrl { get; set; }
+}
+
+public class SubmitOrganizationMealWeeklySelectionClientRequest
+{
+    public string WeekStart { get; set; } = string.Empty;
+    public List<OrganizationMealDayClientRequest> MealDays { get; set; } = new();
+}
+
+public class SubmitOrganizationMealWeeklySelectionClientResponse
+{
+    public int ContractId { get; set; }
+    public int OrderId { get; set; }
+    public string WeekStart { get; set; } = string.Empty;
+    public int ItemCount { get; set; }
 }

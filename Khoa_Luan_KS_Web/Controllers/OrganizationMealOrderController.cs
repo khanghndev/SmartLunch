@@ -16,11 +16,16 @@ public class OrganizationMealOrderController : Controller
 
     private readonly BackendMasterDataClient _masterDataClient;
     private readonly BackendAuthClient _authClient;
+    private readonly BackendCompanyProfileClient _companyProfileClient;
 
-    public OrganizationMealOrderController(BackendMasterDataClient masterDataClient, BackendAuthClient authClient)
+    public OrganizationMealOrderController(
+        BackendMasterDataClient masterDataClient,
+        BackendAuthClient authClient,
+        BackendCompanyProfileClient companyProfileClient)
     {
         _masterDataClient = masterDataClient;
         _authClient = authClient;
+        _companyProfileClient = companyProfileClient;
     }
 
     private static bool IsOrganizationMealOrderUser(ClaimsPrincipal user) =>
@@ -29,7 +34,7 @@ public class OrganizationMealOrderController : Controller
         user.IsInRole("Khách hàng doanh nghiệp");
 
     [HttpGet]
-    public async Task<IActionResult> Index(CancellationToken ct)
+    public async Task<IActionResult> Index(bool fromCart = false, CancellationToken ct = default)
     {
         if (!IsOrganizationMealOrderUser(User))
         {
@@ -66,6 +71,19 @@ public class OrganizationMealOrderController : Controller
                 : OrganizationMealOrderDateRules.GetMaximumServiceDate(today);
             vm.DateDefault = OrganizationMealOrderDateRules.GetDefaultServiceDate(today);
             vm.DateRuleHint = OrganizationMealOrderDateRules.GetRuleHint(today);
+            vm.CartImportLines = CartSessionHelper.ToImportDtos(
+                CartSessionHelper.GetState(HttpContext.Session).LooseLines);
+            vm.FromCart = fromCart;
+
+            try
+            {
+                var orgProfile = await _companyProfileClient.GetProfileAsync(accessToken, ct);
+                vm.DeliveryDefaults = OrganizationMealDeliveryDefaultsBuilder.Build(profile, orgProfile);
+            }
+            catch
+            {
+                vm.DeliveryDefaults = OrganizationMealDeliveryDefaultsBuilder.Build(profile, null);
+            }
         }
         catch (Exception ex)
         {
@@ -73,6 +91,27 @@ public class OrganizationMealOrderController : Controller
         }
 
         return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Dish(int id, CancellationToken ct = default)
+    {
+        if (!IsOrganizationMealOrderUser(User))
+            return Forbid();
+
+        try
+        {
+            var detail = await _masterDataClient.GetPublicDishDetailAsync(id, ct);
+            return Json(new
+            {
+                dish = detail.Dish,
+                ingredientQuotas = detail.IngredientQuotas,
+            });
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(new { message = ex.Message });
+        }
     }
 
     [HttpGet]

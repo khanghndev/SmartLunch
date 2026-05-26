@@ -1,0 +1,200 @@
+@model Khoa_Luan_KS_Web.Models.OrganizationMealContractOrderReviewVm
+@using System.Globalization
+@{
+    ViewData["Title"] = "Xác nhận hợp đồng theo kỳ";
+    Layout = "_LayoutCustomer";
+    var draft = Model.Draft;
+    DateOnly.TryParse(draft.StartDate, CultureInfo.InvariantCulture, out var startDate);
+    DateOnly.TryParse(draft.EndDate, CultureInfo.InvariantCulture, out var endDate);
+}
+
+<div class="min-h-screen bg-slate-100/90" style="background-image: radial-gradient(circle at 1px 1px, rgba(148,163,184,0.2) 1px, transparent 0); background-size: 24px 24px;">
+    <section class="relative h-[220px] overflow-hidden sm:h-[260px]">
+        <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?q=80&w=1920&auto=format&fit=crop"
+             alt="" class="absolute inset-0 h-full w-full object-cover brightness-[0.4]" />
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-900/95 via-slate-900/70 to-slate-900/30"></div>
+        <div class="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-8 pt-24 sm:px-6">
+            <nav class="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-white/70">
+                <a href="/OrganizationMealContractOrder" class="hover:text-orange-300">Đặt suất theo kỳ</a>
+                <span class="text-white/30">/</span>
+                <span class="text-white/90">Xác nhận nháp</span>
+            </nav>
+            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-300">Bước 2 — Xác nhận</p>
+            <h1 class="mt-1 text-2xl font-black text-white sm:text-3xl">Nháp hợp đồng theo kỳ</h1>
+            <p class="mt-2 text-sm text-slate-300">
+                @Model.OrganizationName
+                <span class="mx-2 text-white/30">·</span>
+                Mã nháp <span class="font-mono text-orange-200">@draft.DraftId[..Math.Min(12, draft.DraftId.Length)]…</span>
+            </p>
+        </div>
+    </section>
+
+    <div class="mx-auto w-full max-w-6xl flex-1 px-4 py-8 sm:px-6 lg:py-10">
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <p class="text-sm text-slate-600">Kiểm tra kỳ hợp đồng và chọn tỷ lệ đặt cọc trước khi tạo đơn.</p>
+            <a asp-action="Index"
+               class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 shadow-sm hover:border-orange-200 hover:text-orange-600">
+                <i data-lucide="pencil" class="h-4 w-4"></i> Sửa thiết lập
+            </a>
+        </div>
+
+        @if (TempData["OrgPeriodError"] is string ce && !string.IsNullOrEmpty(ce))
+        {
+            <div class="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-900 shadow-sm">
+                <i data-lucide="alert-circle" class="mt-0.5 h-5 w-5 shrink-0"></i>
+                <span>@ce</span>
+            </div>
+        }
+
+        @if (draft.ContractId > 0)
+        {
+            <div class="mb-6 flex flex-col gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm text-emerald-900 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex items-start gap-3">
+                    <i data-lucide="file-check" class="mt-0.5 h-5 w-5 shrink-0 text-emerald-600"></i>
+                    <div>
+                        <p class="font-bold">Hợp đồng đã lưu vào hệ thống</p>
+                        <p class="mt-0.5 text-emerald-800">
+                            Mã HĐ: <span class="font-mono font-bold">@(draft.ContractNumber ?? $"#{draft.ContractId}")</span>
+                        </p>
+                    </div>
+                </div>
+                @if (!string.IsNullOrEmpty(draft.ContractFileUrl))
+                {
+                    <a href="@draft.ContractFileUrl" target="_blank" rel="noopener"
+                       class="inline-flex shrink-0 items-center gap-2 rounded-xl border border-emerald-200 bg-white px-4 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100">
+                        <i data-lucide="file-text" class="h-4 w-4"></i> Xem PDF hợp đồng (nháp)
+                    </a>
+                }
+            </div>
+        }
+
+        @if (draft.Delivery != null)
+        {
+            <div class="mb-6 overflow-hidden rounded-3xl border border-emerald-200/80 bg-white shadow-lg ring-1 ring-emerald-500/10">
+                <div class="border-b border-emerald-100 bg-gradient-to-r from-emerald-50 to-white px-6 py-4">
+                    <p class="text-[10px] font-black uppercase tracking-wider text-emerald-700">Giao hàng &amp; người nhận</p>
+                </div>
+                <dl class="grid gap-4 p-6 text-sm sm:grid-cols-2">
+                    <div><dt class="text-xs font-bold uppercase text-slate-400">Người nhận</dt><dd class="mt-1 font-bold text-slate-900">@draft.Delivery.RecipientName</dd></div>
+                    <div><dt class="text-xs font-bold uppercase text-slate-400">Số điện thoại</dt><dd class="mt-1 font-bold text-slate-900">@draft.Delivery.RecipientPhone</dd></div>
+                    <div class="sm:col-span-2"><dt class="text-xs font-bold uppercase text-slate-400">Email thông báo</dt><dd class="mt-1 font-bold text-emerald-800">@draft.Delivery.RecipientEmail</dd></div>
+                    <div class="sm:col-span-2"><dt class="text-xs font-bold uppercase text-slate-400">Địa chỉ giao</dt><dd class="mt-1 font-semibold text-slate-800">@(draft.Delivery.FullAddress)</dd></div>
+                    @if (!string.IsNullOrEmpty(draft.Delivery.PreferredDeliveryTime))
+                    {
+                        <div><dt class="text-xs font-bold uppercase text-slate-400">Giờ giao</dt><dd class="mt-1 font-bold text-slate-900">@draft.Delivery.PreferredDeliveryTime</dd></div>
+                    }
+                    @if (!string.IsNullOrEmpty(draft.Delivery.DeliveryNotes))
+                    {
+                        <div><dt class="text-xs font-bold uppercase text-slate-400">Ghi chú</dt><dd class="mt-1 text-slate-700">@draft.Delivery.DeliveryNotes</dd></div>
+                    }
+                </dl>
+            </div>
+        }
+
+        <div class="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-5 shadow-lg ring-1 ring-slate-900/5">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-sky-100 text-sky-700">
+                        <i data-lucide="calendar-range" class="h-5 w-5"></i>
+                    </span>
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Kỳ hợp đồng</p>
+                        <p class="text-sm font-black text-slate-900">
+                            @(startDate != default ? startDate.ToString("dd/MM/yyyy") : draft.StartDate)
+                            – @(endDate != default ? endDate.ToString("dd/MM/yyyy") : draft.EndDate)
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-5 shadow-lg ring-1 ring-slate-900/5">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-emerald-100 text-emerald-700">
+                        <i data-lucide="calendar-check" class="h-5 w-5"></i>
+                    </span>
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Ngày phục vụ</p>
+                        <p class="text-2xl font-black text-emerald-700">@draft.ServiceDays.ToString("N0")</p>
+                        @if (draft.ExcludedDates?.Count > 0)
+                        {
+                            <p class="mt-0.5 text-xs text-slate-500">Loại trừ @draft.ExcludedDates.Count ngày</p>
+                        }
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-5 shadow-lg ring-1 ring-slate-900/5">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
+                        <i data-lucide="utensils" class="h-5 w-5"></i>
+                    </span>
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Suất / ngày × đơn giá</p>
+                        <p class="text-lg font-black text-slate-900">@draft.MealsPerDay × @draft.MealUnitPrice.ToString("N0") đ</p>
+                    </div>
+                </div>
+            </div>
+            <div class="overflow-hidden rounded-3xl border border-orange-200 bg-gradient-to-br from-orange-50 to-amber-50/80 p-5 shadow-lg ring-1 ring-orange-500/10 sm:col-span-2 lg:col-span-1">
+                <div class="flex items-center gap-3">
+                    <span class="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-500/30">
+                        <i data-lucide="receipt" class="h-5 w-5"></i>
+                    </span>
+                    <div>
+                        <p class="text-[10px] font-black uppercase tracking-wider text-orange-600">Tổng hợp đồng</p>
+                        <p class="text-2xl font-black text-orange-700">@draft.TotalAmount.ToString("N0") đ</p>
+                        @{
+                            var subtotal = draft.SubtotalAmount ?? draft.TotalAmount + draft.DiscountAmount;
+                        }
+                        @if (draft.DiscountAmount > 0)
+                        {
+                            <p class="mt-1 text-xs text-orange-800/80">
+                                Tạm tính @subtotal.ToString("N0") đ · giảm @draft.DiscountAmount.ToString("N0") đ
+                            </p>
+                            @if (!string.IsNullOrEmpty(draft.AppliedPromotionName))
+                            {
+                                <p class="mt-0.5 text-xs font-bold text-violet-700">@draft.AppliedPromotionName</p>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form asp-action="Checkout" method="post" class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl ring-1 ring-slate-900/5">
+            <div class="border-b border-slate-100 bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-5 sm:px-8">
+                <h2 class="flex items-center gap-2 text-lg font-black text-white">
+                    <i data-lucide="file-signature" class="h-5 w-5 text-orange-400"></i>
+                    Tỷ lệ đặt cọc (sau khi ký hợp đồng)
+                </h2>
+                <p class="mt-1 text-sm text-slate-300">Chọn tỷ lệ 20–50%. Sau khi đặt hàng bạn sẽ ký hợp đồng, rồi thanh toán cọc.</p>
+            </div>
+            <div class="p-6 sm:p-8">
+                @Html.AntiForgeryToken()
+                <div class="mb-8 grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+                    @foreach (var pct in Model.AllowedDepositPercents)
+                    {
+                        var deposit = (int)Math.Round(draft.TotalAmount * pct / 100m, 0, MidpointRounding.AwayFromZero);
+                        <label class="cursor-pointer">
+                            <input type="radio" name="depositPercent" value="@pct" class="peer sr-only" @(pct == 30 ? "checked" : null) required />
+                            <span class="flex flex-col items-center rounded-2xl border-2 border-slate-200 bg-slate-50/50 px-4 py-4 text-center transition peer-checked:border-orange-500 peer-checked:bg-orange-50 peer-checked:shadow-lg peer-checked:shadow-orange-500/15 hover:border-orange-300">
+                                <span class="text-2xl font-black text-slate-900">@pct%</span>
+                                <span class="mt-1 text-xs font-bold text-orange-700">@deposit.ToString("N0") đ</span>
+                            </span>
+                        </label>
+                    }
+                </div>
+                <button type="submit"
+                        class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/30 transition hover:from-orange-600 hover:to-amber-600">
+                    <i data-lucide="shopping-cart" class="h-5 w-5"></i>
+                    Tạo đơn đặt cọc
+                    <i data-lucide="arrow-right" class="h-4 w-4 transition group-hover:translate-x-0.5"></i>
+                </button>
+                <p class="mt-4 text-center text-xs text-slate-500">
+                    Món chính sẽ được chọn theo tuần sau khi hợp đồng có hiệu lực.
+                </p>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+}

@@ -57,6 +57,10 @@ public static class MenuDishDisplayHelper
 
         public const string NutritionNote =
             "Thông tin dinh dưỡng (nếu có) mang tính ước tính theo định mức tham chiếu, có thể thay đổi nhẹ khi điều chỉnh khẩu phần theo gói suất.";
+
+        /// <summary>Ghi chú cuối khối nguyên liệu (cột phải).</summary>
+        public const string DetailFooterNote =
+            "Hình ảnh chỉ mang tính minh họa. Định lượng nguyên liệu là mức tham chiếu cho 01 suất — khối lượng thực tế sẽ linh hoạt theo giá trị từng suất ăn mà doanh nghiệp chọn (gói suất / ngân sách bữa ăn), vẫn đảm bảo đúng công thức, dinh dưỡng và chất lượng.";
     }
 
     /// <summary>Chống cache trình duyệt khi ảnh món vừa đổi (dùng UpdatedAt hoặc CreatedAt).</summary>
@@ -124,6 +128,48 @@ public static class MenuDishDisplayHelper
             ? quantity.ToString("0.##")
             : $"{quantity:0.##} {unit}";
     }
+
+    /// <summary>Ánh xạ nhóm món sang slot đặt suất doanh nghiệp (main/side/soup). null = không dùng trong wizard 3 slot.</summary>
+    public static string? ResolveOrganizationSlotKey(string? categoryOrSlot)
+    {
+        var key = (categoryOrSlot ?? "").Trim().ToLowerInvariant();
+        if (string.IsNullOrEmpty(key))
+            return null;
+
+        if (key is "main" or "man" or "món chính")
+            return "main";
+        if (key is "side" or "món phụ" or "phụ")
+            return "side";
+        if (key is "soup" or "canh" or "canh / súp")
+            return "soup";
+        if (key is "vegetable" or "rau" or "rau / món xanh" or "món xanh")
+            return "side";
+        if (key is "noodle_soup" or "món nước")
+            return "main";
+        if (key.Contains("canh") || key.Contains("súp") || key.Contains("sup"))
+            return "soup";
+        if (key.Contains("phụ"))
+            return "side";
+        if (key.Contains("chính") || key.Contains("chinh"))
+            return "main";
+        if (key.Contains("rau") || key.Contains("xanh"))
+            return "side";
+        if (key is "dessert" or "trang_mieng" or "tráng miệng")
+            return null;
+
+        return null;
+    }
+
+    public static Dictionary<string, int> SlotSortOrder() => new(StringComparer.OrdinalIgnoreCase)
+    {
+        ["main"] = 0,
+        ["side"] = 1,
+        ["soup"] = 2,
+        ["vegetable"] = 3,
+        ["noodle_soup"] = 4,
+        ["dessert"] = 5,
+        ["other"] = 6,
+    };
 
     public static (List<DishIngredientQuotaDto> Main, List<DishIngredientQuotaDto> Spices) SplitIngredientQuotas(
         IEnumerable<DishIngredientQuotaDto>? quotas)

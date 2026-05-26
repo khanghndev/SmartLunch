@@ -1,0 +1,842 @@
+@model Khoa_Luan_KS_Web.Models.OrganizationMealContractOrderIndexVm
+@using System.Text.Json
+@using Khoa_Luan_KS_Web.Models
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+@{
+    ViewData["Title"] = "Đặt suất theo hợp đồng kỳ";
+    Layout = "_LayoutCustomer";
+    var periodStartDefault = Model.PeriodStartDefault.ToString("yyyy-MM-dd");
+    var periodEndDefault = Model.PeriodEndDefault.ToString("yyyy-MM-dd");
+    var periodStartMin = Model.PeriodStartMin.ToString("yyyy-MM-dd");
+    var periodEndMax = Model.PeriodEndMax.ToString("yyyy-MM-dd");
+    var dateRuleHint = Model.DateRuleHint;
+    var antiToken = Antiforgery.GetAndStoreTokens(Context).RequestToken ?? "";
+    var antiTokenJson = JsonSerializer.Serialize(antiToken);
+    var orgIdJson = Model.OrganizationId.ToString();
+    var deliveryDefaultsJson = JsonSerializer.Serialize(Model.DeliveryDefaults ?? new OrganizationMealDeliveryDefaultsVm(), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
+}
+
+<style>
+    [x-cloak] { display: none !important; }
+    .org-period-page {
+        background-color: #f1f5f9;
+        background-image: radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.22) 1px, transparent 0);
+        background-size: 24px 24px;
+    }
+    .org-step-line { flex: 1; height: 2px; min-width: 2rem; max-width: 5rem; border-radius: 999px; }
+    .cal-day-btn { min-height: 2.5rem; }
+</style>
+
+<div class="org-period-page min-h-screen w-full font-sans text-slate-900" x-data="orgMealPeriodApp" x-cloak>
+
+    <section class="relative h-[260px] overflow-hidden sm:h-[300px]">
+        <img src="https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=1920&auto=format&fit=crop"
+             alt="" class="absolute inset-0 h-full w-full object-cover brightness-[0.45]" />
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/55 to-slate-900/20"></div>
+        <div class="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-10 pt-24 sm:px-6">
+            <nav class="mb-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-white/70">
+                <a href="/Customer/Index" class="hover:text-orange-300">Trang chủ</a>
+                <span class="text-white/30">/</span>
+                <span class="text-white/90">Đặt suất theo hợp đồng</span>
+            </nav>
+            <span class="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-orange-400/40 bg-orange-500/20 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-orange-200">
+                <i data-lucide="calendar-range" class="h-3 w-3"></i>
+                Hợp đồng theo kỳ
+            </span>
+            <h1 class="max-w-3xl text-3xl font-black tracking-tight text-white sm:text-4xl">
+                Đặt suất <span class="text-orange-400">theo tháng</span>
+            </h1>
+            <p class="mt-3 max-w-2xl text-sm text-slate-300 sm:text-base">
+                Chọn kỳ hợp đồng, số suất/ngày và đơn giá. Món chính sẽ được chọn theo từng tuần sau khi ký HĐ.
+            </p>
+            @if (Model.OrganizationId > 0)
+            {
+                <div class="mt-4 inline-flex items-center gap-2 rounded-2xl border border-white/20 bg-white/10 px-4 py-2 text-sm font-bold text-white backdrop-blur-md">
+                    <span class="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-500/90 text-white">
+                        <i data-lucide="building-2" class="h-4 w-4"></i>
+                    </span>
+                    @Model.OrganizationName
+                </div>
+            }
+        </div>
+    </section>
+
+    <section class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-10">
+        @if (TempData["OrgPeriodError"] is string err && !string.IsNullOrEmpty(err))
+        {
+            <div class="mb-6 flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-sm text-red-900 shadow-sm">
+                <i data-lucide="alert-circle" class="mt-0.5 h-5 w-5 shrink-0"></i>
+                <span>@err</span>
+            </div>
+        }
+
+        @if (!string.IsNullOrEmpty(Model.ApiError))
+        {
+            <div class="rounded-3xl border border-amber-200 bg-white p-10 text-center shadow-xl ring-1 ring-slate-900/5">
+                <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-amber-100">
+                    <i data-lucide="alert-triangle" class="h-7 w-7 text-amber-600"></i>
+                </div>
+                <p class="text-lg font-black text-amber-900">@Model.ApiError</p>
+            </div>
+        }
+        else if (Model.OrganizationId > 0)
+        {
+            <div class="mb-8 overflow-hidden rounded-3xl border border-slate-200/80 bg-white px-4 py-5 shadow-sm ring-1 ring-slate-900/5 sm:px-8">
+                <div class="flex items-center justify-center gap-0 sm:gap-1">
+                    <template x-for="(s, idx) in stepMeta" :key="s.key">
+                        <div class="flex items-center gap-0 sm:gap-1">
+                            <div class="flex flex-col items-center gap-2 px-2 sm:px-4">
+                                <span class="relative flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black transition-all duration-300 sm:h-11 sm:w-11"
+                                      :class="step === idx + 1
+                                        ? 'bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/35 scale-105'
+                                        : (step > idx + 1
+                                            ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25'
+                                            : 'border-2 border-slate-200 bg-slate-50 text-slate-400')">
+                                    <template x-if="step > idx + 1">
+                                        <i data-lucide="check" class="h-5 w-5"></i>
+                                    </template>
+                                    <template x-if="step <= idx + 1">
+                                        <span x-text="idx + 1"></span>
+                                    </template>
+                                </span>
+                                <div class="text-center">
+                                    <p class="text-xs font-black sm:text-sm"
+                                       :class="step === idx + 1 ? 'text-orange-600' : (step > idx + 1 ? 'text-emerald-700' : 'text-slate-400')"
+                                       x-text="s.label"></p>
+                                    <p class="hidden text-[10px] text-slate-400 sm:block" x-text="s.hint"></p>
+                                </div>
+                            </div>
+                            <div x-show="idx < 3" class="org-step-line mb-6 hidden sm:block"
+                                 :class="step > idx + 1 ? 'bg-emerald-400' : 'bg-slate-200'"></div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <!-- Step 1: Period -->
+            <div x-show="step === 1" x-transition>
+                <div class="grid gap-8 lg:grid-cols-[1fr_320px]">
+                    <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl ring-1 ring-slate-900/5">
+                        <div class="border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-orange-50/30 px-6 py-5 sm:px-8">
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600">Bước 1</p>
+                            <h2 class="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Kỳ hợp đồng &amp; đơn giá</h2>
+                        </div>
+                        <div class="space-y-8 p-6 sm:p-8">
+                            <div class="grid gap-5 sm:grid-cols-2">
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Ngày bắt đầu *</label>
+                                    <input type="date" x-model="periodStart" :min="periodStartMin" @@change="onPeriodStartChange()"
+                                           class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                                </div>
+                                <div>
+                                    <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Ngày kết thúc *</label>
+                                    <input type="date" x-model="periodEnd" :min="periodStart" :max="maxPeriodEnd()"
+                                           class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                                </div>
+                            </div>
+
+                            <div class="grid gap-5 sm:grid-cols-2">
+                                <div class="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-5">
+                                    <label class="block text-[11px] font-black uppercase tracking-wider text-emerald-800">Suất ăn / ngày *</label>
+                                    <input type="number" x-model.number="mealsPerDay" min="1" step="1"
+                                           class="mt-2 w-full rounded-xl border border-emerald-200 bg-white py-3 pl-4 text-2xl font-black text-slate-900 focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                                </div>
+                                <div class="rounded-2xl border border-orange-100 bg-orange-50/50 p-5">
+                                    <label class="block text-[11px] font-black uppercase tracking-wider text-orange-800">Đơn giá / suất (VND) *</label>
+                                    <input type="number" x-model.number="mealUnitPrice" min="1000" step="1000"
+                                           class="mt-2 w-full rounded-xl border border-orange-200 bg-white py-3 pl-4 text-2xl font-black text-slate-900 focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200" />
+                                </div>
+                            </div>
+
+                            <div class="flex gap-3 rounded-2xl border border-blue-100 bg-blue-50/90 p-4">
+                                <i data-lucide="info" class="mt-0.5 h-5 w-5 shrink-0 text-blue-600"></i>
+                                <p class="text-xs leading-relaxed text-blue-900">@dateRuleHint</p>
+                            </div>
+
+                            <!-- Calendar -->
+                            <div>
+                                <div class="mb-3 flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-violet-100 text-violet-700">
+                                            <i data-lucide="calendar-off" class="h-4 w-4"></i>
+                                        </div>
+                                        <div>
+                                            <p class="text-[11px] font-black uppercase tracking-wider text-slate-500">Ngày nghỉ / loại trừ</p>
+                                            <p class="text-xs text-slate-400">Bấm ngày trong kỳ để bật/tắt loại trừ</p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <button type="button" @@click="prevCalMonth()" class="rounded-lg border border-slate-200 p-2 hover:bg-slate-50">
+                                            <i data-lucide="chevron-left" class="h-4 w-4"></i>
+                                        </button>
+                                        <span class="min-w-[8rem] text-center text-sm font-black text-slate-800" x-text="calMonthLabel()"></span>
+                                        <button type="button" @@click="nextCalMonth()" class="rounded-lg border border-slate-200 p-2 hover:bg-slate-50">
+                                            <i data-lucide="chevron-right" class="h-4 w-4"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="rounded-2xl border border-slate-200 bg-slate-50/50 p-4">
+                                    <div class="mb-2 grid grid-cols-7 gap-1 text-center text-[10px] font-black uppercase text-slate-400">
+                                        <span>T2</span><span>T3</span><span>T4</span><span>T5</span><span>T6</span><span>T7</span><span>CN</span>
+                                    </div>
+                                    <div class="grid grid-cols-7 gap-1">
+                                        <template x-for="(cell, i) in calendarCells()" :key="'c'+i">
+                                            <button type="button"
+                                                    @@click="cell.date && toggleExcluded(cell.date)"
+                                                    :disabled="!cell.inRange"
+                                                    class="cal-day-btn rounded-xl text-sm font-bold transition"
+                                                    :class="!cell.date ? 'invisible' : (
+                                                        !cell.inRange ? 'text-slate-300 cursor-default' :
+                                                        (cell.excluded ? 'bg-red-100 text-red-800 ring-2 ring-red-300' :
+                                                        'bg-white text-slate-800 hover:bg-orange-50 hover:ring-2 hover:ring-orange-200'))"
+                                                    x-text="cell.dayNum || ''"></button>
+                                        </template>
+                                    </div>
+                                    <p x-show="excludedDates.length > 0" class="mt-3 text-xs text-slate-600">
+                                        Đã loại trừ <strong x-text="excludedDates.length"></strong> ngày
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div x-show="formError" class="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                <i data-lucide="circle-alert" class="h-4 w-4 shrink-0"></i><span x-text="formError"></span>
+                            </div>
+                            <button type="button" @@click="goStep2()"
+                                    class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/30 hover:from-orange-600 hover:to-amber-600">
+                                Tiếp tục — giao hàng
+                                <i data-lucide="arrow-right" class="h-5 w-5 transition group-hover:translate-x-0.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <aside class="lg:sticky lg:top-28 lg:self-start">
+                        <div class="overflow-hidden rounded-3xl border border-orange-200/80 bg-white shadow-xl ring-1 ring-orange-500/10">
+                            <div class="bg-gradient-to-br from-orange-500 to-amber-500 px-6 py-5 text-white">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-orange-100">Tổng dự kiến</p>
+                                <p class="mt-1 text-3xl font-black"><span x-text="formatMoney(estimatedTotal())"></span><span class="text-lg opacity-80"> đ</span></p>
+                            </div>
+                            <div class="space-y-3 p-6 text-sm">
+                                <div class="flex justify-between"><span class="text-slate-500">Ngày phục vụ</span><span class="font-black" x-text="serviceDaysCount()"></span></div>
+                                <div class="flex justify-between"><span class="text-slate-500">Suất × ngày</span><span class="font-bold" x-text="mealsPerDay + ' × ' + serviceDaysCount()"></span></div>
+                                <div class="flex justify-between"><span class="text-slate-500">Đơn giá</span><span class="font-bold"><span x-text="formatMoney(mealUnitPrice)"></span> đ</span></div>
+                                <p class="border-t border-slate-100 pt-3 text-xs text-slate-500">Công thức: (kết thúc − bắt đầu − ngày loại trừ + 1) × suất/ngày × đơn giá</p>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <!-- Step 2: Delivery -->
+            <div x-show="step === 2" x-transition>
+                <div class="grid gap-8 lg:grid-cols-[1fr_340px]">
+                    <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl ring-1 ring-slate-900/5">
+                        <div class="border-b border-slate-100 bg-gradient-to-r from-emerald-50 via-white to-orange-50/40 px-6 py-5 sm:px-8">
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-emerald-600">Bước 2</p>
+                            <h2 class="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Địa điểm giao &amp; người nhận</h2>
+                            <p class="mt-1 text-sm text-slate-500">Email xác nhận và PDF hợp đồng sẽ gửi tới email bên dưới.</p>
+                        </div>
+                        <div class="grid gap-5 p-6 sm:grid-cols-2 sm:p-8">
+                            <div x-show="deliveryPrefilled" class="sm:col-span-2 flex flex-col gap-3 rounded-2xl border border-emerald-200/80 bg-emerald-50/70 px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
+                                <div class="flex items-start gap-3 min-w-0">
+                                    <div class="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
+                                        <i data-lucide="user-check" class="h-4 w-4"></i>
+                                    </div>
+                                    <div class="min-w-0">
+                                        <p class="text-sm font-bold text-emerald-900">Thông tin đã điền sẵn</p>
+                                        <p class="mt-0.5 text-xs leading-relaxed text-emerald-800/90" x-text="deliveryDefaultsHint"></p>
+                                    </div>
+                                </div>
+                                <button type="button" @@click="applyDeliveryDefaults(deliveryDefaults, true)"
+                                        class="shrink-0 rounded-xl border border-emerald-300 bg-white px-3.5 py-2 text-xs font-bold text-emerald-800 hover:bg-emerald-50">
+                                    Khôi phục mặc định
+                                </button>
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Họ tên người nhận *</label>
+                                <input type="text" x-model.trim="delivery.recipientName" required
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Số điện thoại *</label>
+                                <input type="tel" x-model.trim="delivery.recipientPhone" required
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Email nhận thông báo *</label>
+                                <input type="email" x-model.trim="delivery.recipientEmail" required
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Địa chỉ giao hàng *</label>
+                                <input type="text" x-model.trim="delivery.deliveryAddress" required
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                            </div>
+                            <div class="sm:col-span-2">
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Phường / quận / thành phố</label>
+                                <input type="text" x-model.trim="delivery.deliveryWardDistrict"
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Giờ giao mong muốn</label>
+                                <input type="time" x-model="delivery.preferredDeliveryTime"
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-bold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                            </div>
+                            <div>
+                                <label class="mb-1.5 block text-xs font-black uppercase tracking-wide text-slate-500">Ghi chú giao hàng</label>
+                                <input type="text" x-model.trim="delivery.deliveryNotes"
+                                       class="h-11 w-full rounded-xl border border-slate-200 px-4 text-sm font-semibold focus:border-emerald-400 focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                            </div>
+                            <div x-show="formError" class="sm:col-span-2 flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                <i data-lucide="circle-alert" class="h-4 w-4 shrink-0"></i><span x-text="formError"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <aside class="lg:sticky lg:top-28 lg:self-start">
+                        <div class="overflow-hidden rounded-3xl border border-emerald-200/80 bg-white shadow-xl ring-1 ring-emerald-500/10">
+                            <div class="bg-gradient-to-br from-emerald-600 to-teal-600 px-6 py-5 text-white">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-emerald-100">Tổng dự kiến</p>
+                                <p class="mt-1 text-2xl font-black"><span x-text="formatMoney(estimatedTotal())"></span> đ</p>
+                            </div>
+                            <div class="flex flex-col gap-2 p-6">
+                                <button type="button" @@click="step = 1" class="rounded-xl border border-slate-200 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">Quay lại kỳ HĐ</button>
+                                <button type="button" @@click="goStep3()" class="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 py-3.5 text-sm font-black text-white shadow-lg hover:from-violet-700 hover:to-purple-700">
+                                    <i data-lucide="arrow-right" class="h-4 w-4"></i> Khuyến mãi
+                                </button>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <!-- Step 3: Promotion -->
+            <div x-show="step === 3" x-transition>
+                <div class="grid gap-8 lg:grid-cols-[1fr_340px]">
+                    <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl ring-1 ring-slate-900/5">
+                        <div class="border-b border-slate-100 bg-gradient-to-r from-violet-50 via-white to-orange-50/40 px-6 py-5 sm:px-8">
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-violet-600">Bước 3</p>
+                            <h2 class="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Chọn mã khuyến mãi</h2>
+                            <p class="mt-1 text-sm text-slate-500">Chọn từ danh sách hoặc nhập mã thủ công. Có thể bỏ qua nếu không dùng KM.</p>
+                        </div>
+                        <div class="space-y-6 p-6 sm:p-8">
+                            <div x-show="promoLoading" class="flex flex-col items-center py-12 text-slate-500">
+                                <div class="mb-3 h-10 w-10 animate-spin rounded-full border-2 border-violet-200 border-t-violet-600"></div>
+                                <p class="text-sm font-medium">Đang tải mã khuyến mãi…</p>
+                            </div>
+                            <div x-show="!promoLoading && eligiblePromotions.length === 0" class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
+                                <i data-lucide="ticket" class="mx-auto mb-2 h-8 w-8 text-slate-300"></i>
+                                <p class="text-sm font-semibold text-slate-600">Không có mã khuyến mãi phù hợp</p>
+                                <p class="mt-1 text-xs text-slate-500" x-text="promoListMessage || 'Bạn vẫn có thể tiếp tục mà không áp dụng KM.'"></p>
+                            </div>
+                            <div x-show="!promoLoading && eligiblePromotions.length > 0" class="space-y-3">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Mã khuyến mãi khả dụng</p>
+                                <div class="grid gap-3 sm:grid-cols-2">
+                                    <template x-for="p in eligiblePromotions" :key="p.promotionId">
+                                        <button type="button" @@click="selectPromotion(p)"
+                                                class="relative rounded-2xl border p-4 text-left transition hover:shadow-md"
+                                                :class="selectedPromotionId === p.promotionId ? 'border-violet-500 bg-violet-50/80 ring-2 ring-violet-200' : 'border-slate-200 bg-white hover:border-violet-200'">
+                                            <span x-show="p.isRecommended" class="absolute -top-2 right-3 rounded-full bg-gradient-to-r from-amber-500 to-orange-500 px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wide text-white shadow">Đề xuất</span>
+                                            <p class="pr-16 text-sm font-black text-slate-900" x-text="p.promotionName"></p>
+                                            <p class="mt-0.5 font-mono text-xs font-bold uppercase text-violet-700" x-text="p.promotionCode || '—'"></p>
+                                            <p class="mt-3 text-base font-black text-emerald-700">−<span x-text="formatMoney(p.discountAmount)"></span> đ</p>
+                                            <p class="text-[11px] text-slate-500">Còn <span x-text="formatMoney(p.totalAfter)"></span> đ</p>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <div class="rounded-2xl border border-slate-200 bg-slate-50/80 p-5">
+                                <p class="mb-3 text-[10px] font-black uppercase tracking-wider text-slate-500">Hoặc nhập mã khuyến mãi</p>
+                                <div class="flex flex-col gap-2 sm:flex-row">
+                                    <input type="text" x-model.trim="manualPromoCode" placeholder="VD: DONVI10" @@keydown.enter.prevent="applyManualCode()"
+                                           class="h-11 flex-1 rounded-xl border border-slate-200 bg-white px-4 text-sm font-bold uppercase focus:border-violet-400 focus:outline-none focus:ring-2 focus:ring-violet-200" />
+                                    <button type="button" @@click="applyManualCode()" :disabled="promoApplying"
+                                            class="inline-flex h-11 items-center justify-center gap-2 rounded-xl bg-violet-600 px-5 text-sm font-black text-white hover:bg-violet-700 disabled:opacity-50">Áp dụng mã</button>
+                                </div>
+                                <p x-show="promoPreviewMessage" class="mt-2 text-xs font-medium" :class="promoPreviewApplied ? 'text-emerald-700' : 'text-red-600'" x-text="promoPreviewMessage"></p>
+                            </div>
+                            <label class="flex cursor-pointer items-center gap-3 rounded-2xl border border-slate-200 bg-white p-4 transition hover:border-slate-300">
+                                <input type="radio" name="periodPromoChoice" :checked="!promotionCode && !selectedPromotionId" @@change="clearPromotion()" class="h-4 w-4 border-slate-300 text-slate-600 focus:ring-slate-400" />
+                                <span class="text-sm font-bold text-slate-700">Không sử dụng khuyến mãi</span>
+                            </label>
+                            <div x-show="formError" class="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                <i data-lucide="circle-alert" class="h-4 w-4 shrink-0"></i><span x-text="formError"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <aside class="lg:sticky lg:top-28 lg:self-start">
+                        <div class="overflow-hidden rounded-3xl border border-violet-200/80 bg-white shadow-xl ring-1 ring-violet-500/10">
+                            <div class="bg-gradient-to-br from-violet-600 to-purple-700 px-6 py-5 text-white">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-violet-200">Tổng hợp đồng</p>
+                                <p class="mt-1 text-3xl font-black"><span x-text="formatMoney(promoTotalAfter())"></span><span class="text-lg font-bold opacity-80"> đ</span></p>
+                            </div>
+                            <div class="space-y-3 p-6 text-sm">
+                                <div class="flex justify-between"><span class="text-slate-500">Tạm tính</span><span class="font-black text-slate-900"><span x-text="formatMoney(promoSubtotal())"></span> đ</span></div>
+                                <div x-show="promoDiscount() > 0" class="flex justify-between"><span class="text-slate-500">Giảm giá</span><span class="font-black text-emerald-700">−<span x-text="formatMoney(promoDiscount())"></span> đ</span></div>
+                                <div class="flex flex-col gap-2 pt-3">
+                                    <button type="button" @@click="step = 2" class="rounded-xl border border-slate-200 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">Quay lại giao hàng</button>
+                                    <button type="button" @@click="goStep4()" class="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-violet-600 to-purple-600 py-3.5 text-sm font-black text-white shadow-lg hover:from-violet-700 hover:to-purple-700">
+                                        <i data-lucide="arrow-right" class="h-4 w-4"></i> Xem tóm tắt
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+
+            <!-- Step 4: Summary -->
+            <div x-show="step === 4" x-transition>
+                <div class="grid gap-8 lg:grid-cols-[1fr_340px]">
+                    <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl ring-1 ring-slate-900/5">
+                        <div class="border-b border-slate-100 bg-gradient-to-r from-slate-900 to-slate-800 px-6 py-5 sm:px-8">
+                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-300">Bước 4</p>
+                            <h2 class="mt-1 text-xl font-black text-white sm:text-2xl">Tóm tắt &amp; tạo nháp hợp đồng</h2>
+                        </div>
+                        <div class="space-y-6 p-6 sm:p-8">
+                            <dl class="grid gap-4 text-sm sm:grid-cols-2">
+                                <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                                    <dt class="text-[10px] font-black uppercase text-slate-400">Kỳ hợp đồng</dt>
+                                    <dd class="mt-1 font-black text-slate-900"><span x-text="formatDate(periodStart)"></span> – <span x-text="formatDate(periodEnd)"></span></dd>
+                                </div>
+                                <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                                    <dt class="text-[10px] font-black uppercase text-slate-400">Ngày phục vụ</dt>
+                                    <dd class="mt-1 text-2xl font-black text-emerald-700" x-text="serviceDaysCount()"></dd>
+                                </div>
+                                <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                                    <dt class="text-[10px] font-black uppercase text-slate-400">Suất / ngày</dt>
+                                    <dd class="mt-1 font-black text-slate-900" x-text="mealsPerDay"></dd>
+                                </div>
+                                <div class="rounded-2xl border border-slate-100 bg-slate-50 p-4">
+                                    <dt class="text-[10px] font-black uppercase text-slate-400">Đơn giá / suất</dt>
+                                    <dd class="mt-1 font-black text-slate-900"><span x-text="formatMoney(mealUnitPrice)"></span> đ</dd>
+                                </div>
+                            </dl>
+                            <div class="rounded-2xl border border-emerald-100 bg-emerald-50/50 p-5">
+                                <p class="text-[10px] font-black uppercase text-emerald-700">Giao hàng</p>
+                                <p class="mt-2 font-bold text-slate-900" x-text="delivery.recipientName"></p>
+                                <p class="text-sm text-slate-600" x-text="delivery.recipientPhone + ' · ' + delivery.recipientEmail"></p>
+                                <p class="mt-1 text-sm text-slate-700" x-text="fullDeliveryAddress()"></p>
+                            </div>
+                            <div class="rounded-2xl border border-violet-100 bg-violet-50/50 p-5" x-show="promoDiscount() > 0 || selectedPromotionName">
+                                <p class="text-[10px] font-black uppercase text-violet-700">Khuyến mãi</p>
+                                <p class="mt-2 text-sm font-bold text-slate-900" x-show="selectedPromotionName" x-text="selectedPromotionName"></p>
+                                <p class="mt-1 text-sm text-emerald-700" x-show="promoDiscount() > 0">Giảm <span x-text="formatMoney(promoDiscount())"></span> đ</p>
+                                <p class="mt-1 text-xs text-slate-500" x-show="!promoDiscount() && !selectedPromotionName">Không áp dụng khuyến mãi</p>
+                            </div>
+                            <div x-show="formError" class="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                                <i data-lucide="circle-alert" class="h-4 w-4 shrink-0"></i><span x-text="formError"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <aside class="lg:sticky lg:top-28 lg:self-start">
+                        <div class="overflow-hidden rounded-3xl border border-orange-200 bg-white shadow-xl ring-1 ring-orange-500/10">
+                            <div class="bg-gradient-to-br from-orange-500 to-amber-500 px-6 py-5 text-white">
+                                <p class="text-[10px] font-black uppercase tracking-wider text-orange-100">Tổng hợp đồng</p>
+                                <p class="mt-1 text-3xl font-black"><span x-text="formatMoney(promoTotalAfter())"></span> đ</p>
+                                <p class="mt-1 text-xs text-orange-100/90" x-show="promoDiscount() > 0">
+                                    Tạm tính <span x-text="formatMoney(promoSubtotal())"></span> đ · giảm <span x-text="formatMoney(promoDiscount())"></span> đ
+                                </p>
+                            </div>
+                            <div class="flex flex-col gap-2 p-6">
+                                <button type="button" @@click="step = 3" class="rounded-xl border border-slate-200 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">Quay lại khuyến mãi</button>
+                                <button type="button" @@click="submitContract()" :disabled="submitting"
+                                        class="flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 py-3.5 text-sm font-black text-white shadow-lg hover:from-orange-600 hover:to-amber-600 disabled:opacity-50">
+                                    <i data-lucide="file-check" class="h-4 w-4" x-show="!submitting"></i>
+                                    <span x-text="submitting ? 'Đang xử lý…' : 'Tạo nháp hợp đồng'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </div>
+        }
+    </section>
+</div>
+
+@section Scripts {
+<script>
+    document.addEventListener('alpine:init', () => {
+        const orgId = @orgIdJson;
+        const periodStartDefault = @Json.Serialize(periodStartDefault);
+        const periodEndDefault = @Json.Serialize(periodEndDefault);
+        const periodStartMin = @Json.Serialize(periodStartMin);
+        const antiToken = @Html.Raw(antiTokenJson);
+        const deliveryDefaults = @Html.Raw(deliveryDefaultsJson);
+
+        Alpine.data('orgMealPeriodApp', () => ({
+            step: 1,
+            periodStart: periodStartDefault,
+            periodEnd: periodEndDefault,
+            periodStartMin,
+            mealsPerDay: 50,
+            mealUnitPrice: 45000,
+            excludedDates: [],
+            calYear: 0,
+            calMonth: 0,
+            formError: '',
+            submitting: false,
+            delivery: {
+                recipientName: '',
+                recipientPhone: '',
+                recipientEmail: '',
+                deliveryAddress: '',
+                deliveryWardDistrict: '',
+                deliveryNotes: '',
+                preferredDeliveryTime: '11:30',
+            },
+            deliveryPrefilled: false,
+            deliveryDefaultsHint: '',
+            stepMeta: [
+                { key: 'period', label: 'Kỳ HĐ', hint: 'Ngày & đơn giá' },
+                { key: 'delivery', label: 'Giao hàng', hint: 'Người nhận' },
+                { key: 'promo', label: 'Khuyến mãi', hint: 'Mã giảm giá' },
+                { key: 'summary', label: 'Xác nhận', hint: 'Tạo nháp' },
+            ],
+            promoLoading: false,
+            promoApplying: false,
+            eligiblePromotions: [],
+            promoListMessage: '',
+            promoSubtotalAmount: 0,
+            promoDiscountAmount: 0,
+            promotionCode: '',
+            selectedPromotionId: null,
+            selectedPromotionName: '',
+            manualPromoCode: '',
+            promoPreviewMessage: '',
+            promoPreviewApplied: false,
+
+            init() {
+                const p = this.parseIso(this.periodStart);
+                if (p) { this.calYear = p.y; this.calMonth = p.m; }
+                this.applyDeliveryDefaults(deliveryDefaults);
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+
+            parseIso(iso) {
+                if (!iso) return null;
+                const p = iso.split('-').map(Number);
+                if (p.length < 3) return null;
+                return { y: p[0], m: p[1] - 1, d: p[2] };
+            },
+            toIso(y, m, d) {
+                return y + '-' + String(m + 1).padStart(2, '0') + '-' + String(d).padStart(2, '0');
+            },
+            dayNum(iso) {
+                const p = this.parseIso(iso);
+                return p ? p.d : 0;
+            },
+            formatDate(iso) {
+                if (!iso) return '';
+                const p = iso.split('-');
+                return p[2] + '/' + p[1] + '/' + p[0];
+            },
+            formatMoney(n) {
+                return new Intl.NumberFormat('vi-VN').format(Math.round(n || 0));
+            },
+            maxPeriodEnd() {
+                const s = this.parseIso(this.periodStart);
+                if (!s) return this.periodEnd;
+                const end = new Date(s.y, s.m, s.d);
+                end.setDate(end.getDate() + 61);
+                return this.toIso(end.getFullYear(), end.getMonth(), end.getDate());
+            },
+            onPeriodStartChange() {
+                const max = this.maxPeriodEnd();
+                if (this.periodEnd > max) this.periodEnd = max;
+                if (this.periodEnd < this.periodStart) this.periodEnd = this.periodStart;
+                this.pruneExcluded();
+            },
+            pruneExcluded() {
+                this.excludedDates = this.excludedDates.filter(d =>
+                    d >= this.periodStart && d <= this.periodEnd);
+            },
+            isInRange(iso) {
+                return iso && iso >= this.periodStart && iso <= this.periodEnd;
+            },
+            serviceDaysCount() {
+                if (!this.periodStart || !this.periodEnd || this.periodEnd < this.periodStart) return 0;
+                const start = this.parseIso(this.periodStart);
+                const end = this.parseIso(this.periodEnd);
+                if (!start || !end) return 0;
+                const inclusive = Math.floor((Date.UTC(end.y, end.m, end.d) - Date.UTC(start.y, start.m, start.d)) / 86400000) + 1;
+                const excl = this.excludedDates.filter(d => this.isInRange(d)).length;
+                return Math.max(0, inclusive - excl);
+            },
+            estimatedTotal() {
+                const days = this.serviceDaysCount();
+                const meals = Math.max(1, parseInt(this.mealsPerDay, 10) || 1);
+                const price = parseFloat(this.mealUnitPrice) || 0;
+                if (days < 1 || price <= 0) return 0;
+                return Math.round(days * meals * price);
+            },
+            promoSubtotal() {
+                return this.promoSubtotalAmount > 0 ? this.promoSubtotalAmount : this.estimatedTotal();
+            },
+            promoDiscount() {
+                return (this.selectedPromotionId || this.promotionCode)
+                    ? (this.promoDiscountAmount || 0) : 0;
+            },
+            promoTotalAfter() {
+                const sub = this.promoSubtotal();
+                const disc = this.promoDiscount();
+                return Math.max(0, sub - disc);
+            },
+            calMonthLabel() {
+                const names = ['Tháng 1','Tháng 2','Tháng 3','Tháng 4','Tháng 5','Tháng 6','Tháng 7','Tháng 8','Tháng 9','Tháng 10','Tháng 11','Tháng 12'];
+                return (names[this.calMonth] || '') + ' ' + this.calYear;
+            },
+            prevCalMonth() {
+                if (this.calMonth === 0) { this.calMonth = 11; this.calYear--; }
+                else this.calMonth--;
+            },
+            nextCalMonth() {
+                if (this.calMonth === 11) { this.calMonth = 0; this.calYear++; }
+                else this.calMonth++;
+            },
+            calendarCells() {
+                const first = new Date(this.calYear, this.calMonth, 1);
+                const offset = (first.getDay() + 6) % 7;
+                const daysInMonth = new Date(this.calYear, this.calMonth + 1, 0).getDate();
+                const cells = [];
+                for (let i = 0; i < offset; i++) cells.push({ date: null, inRange: false, excluded: false, dayNum: '' });
+                for (let d = 1; d <= daysInMonth; d++) {
+                    const iso = this.toIso(this.calYear, this.calMonth, d);
+                    cells.push({
+                        date: iso,
+                        inRange: this.isInRange(iso),
+                        excluded: this.excludedDates.includes(iso),
+                        dayNum: d,
+                    });
+                }
+                return cells;
+            },
+            toggleExcluded(iso) {
+                if (!this.isInRange(iso)) return;
+                const i = this.excludedDates.indexOf(iso);
+                if (i >= 0) this.excludedDates.splice(i, 1);
+                else this.excludedDates.push(iso);
+                this.excludedDates.sort();
+            },
+            applyDeliveryDefaults(defaults, force = false) {
+                if (!defaults) return;
+                const d = this.delivery;
+                const fill = (key, val) => {
+                    if (val == null || !String(val).trim()) return;
+                    if (force || !d[key] || !String(d[key]).trim()) d[key] = String(val).trim();
+                };
+                fill('recipientName', defaults.recipientName);
+                fill('recipientPhone', defaults.recipientPhone);
+                fill('recipientEmail', defaults.recipientEmail);
+                fill('deliveryAddress', defaults.deliveryAddress);
+                fill('deliveryWardDistrict', defaults.deliveryWardDistrict);
+                fill('deliveryNotes', defaults.deliveryNotes);
+                if (defaults.preferredDeliveryTime && (force || !d.preferredDeliveryTime))
+                    d.preferredDeliveryTime = defaults.preferredDeliveryTime;
+                this.deliveryDefaultsHint = defaults.sourceHint || '';
+                this.deliveryPrefilled = !!(d.recipientName && d.recipientPhone && d.recipientEmail && d.deliveryAddress);
+            },
+            fullDeliveryAddress() {
+                const w = (this.delivery.deliveryWardDistrict || '').trim();
+                const a = (this.delivery.deliveryAddress || '').trim();
+                return w ? a + ', ' + w : a;
+            },
+            validatePeriod() {
+                if (!this.periodStart || !this.periodEnd) return 'Chọn ngày bắt đầu và kết thúc.';
+                if (this.periodStart < this.periodStartMin) return 'Ngày bắt đầu phải từ tháng kế tiếp trở đi.';
+                if (this.periodEnd < this.periodStart) return 'Ngày kết thúc phải sau ngày bắt đầu.';
+                if (this.periodEnd > this.maxPeriodEnd()) return 'Thời hạn tối đa 62 ngày (khoảng 1 tháng).';
+                if (!this.mealsPerDay || this.mealsPerDay < 1) return 'Nhập số suất/ngày hợp lệ.';
+                if (!this.mealUnitPrice || this.mealUnitPrice <= 0) return 'Nhập đơn giá/suất hợp lệ.';
+                if (this.serviceDaysCount() < 1) return 'Phải có ít nhất 1 ngày phục vụ sau khi loại trừ.';
+                return '';
+            },
+            validateDelivery() {
+                const d = this.delivery;
+                if (!d.recipientName || d.recipientName.length < 2) return 'Nhập họ tên người nhận (ít nhất 2 ký tự).';
+                const phone = (d.recipientPhone || '').replace(/\s|-/g, '');
+                if (!/^(\+?84|0)[0-9]{8,10}$/.test(phone)) return 'Số điện thoại không hợp lệ.';
+                const email = (d.recipientEmail || '').trim();
+                if (!/^[^\s@@]+@@[^\s@@]+\.[^\s@@]+$/.test(email)) return 'Email không hợp lệ.';
+                if (!d.deliveryAddress || d.deliveryAddress.length < 10) return 'Địa chỉ giao hàng phải có ít nhất 10 ký tự.';
+                return '';
+            },
+            goStep2() {
+                this.formError = this.validatePeriod();
+                if (this.formError) return;
+                this.applyDeliveryDefaults(deliveryDefaults);
+                this.step = 2;
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+            async goStep3() {
+                this.formError = this.validatePeriod() || this.validateDelivery();
+                if (this.formError) return;
+                this.step = 3;
+                this.formError = '';
+                await this.loadEligiblePromotions();
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+            goStep4() {
+                this.formError = this.validatePeriod() || this.validateDelivery();
+                if (this.formError) return;
+                this.step = 4;
+                this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+            },
+            async loadEligiblePromotions() {
+                this.promoLoading = true;
+                this.eligiblePromotions = [];
+                this.promoListMessage = '';
+                try {
+                    const payload = this.buildPayload();
+                    delete payload.promotionCode;
+                    delete payload.promotionId;
+                    const res = await fetch('/OrganizationMealContractOrder/EligiblePromotions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': antiToken,
+                        },
+                        body: JSON.stringify(payload),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Không tải được mã khuyến mãi.');
+                    this.promoSubtotalAmount = data.subtotal || this.estimatedTotal();
+                    this.promoListMessage = data.message || '';
+                    this.eligiblePromotions = (data.items || []).map(p => ({
+                        promotionId: p.promotionId,
+                        promotionCode: p.promotionCode,
+                        promotionName: p.promotionName,
+                        description: p.description,
+                        discountAmount: p.discountAmount,
+                        totalAfter: p.totalAfter,
+                        isRecommended: p.isRecommended,
+                    }));
+                    const recommended = this.eligiblePromotions.find(p => p.isRecommended)
+                        || this.eligiblePromotions[0];
+                    if (recommended) {
+                        this.selectPromotion(recommended, false);
+                    } else {
+                        this.clearPromotion(false);
+                    }
+                } catch (e) {
+                    this.promoListMessage = e.message || '';
+                    this.promoSubtotalAmount = this.estimatedTotal();
+                    this.clearPromotion(false);
+                } finally {
+                    this.promoLoading = false;
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                }
+            },
+            selectPromotion(p, scrollMsg = true) {
+                this.selectedPromotionId = p.promotionId;
+                this.selectedPromotionName = p.promotionName;
+                this.promotionCode = (p.promotionCode || '').trim();
+                this.promoDiscountAmount = p.discountAmount || 0;
+                this.promoSubtotalAmount = this.promoSubtotalAmount || this.estimatedTotal();
+                this.manualPromoCode = this.promotionCode;
+                if (scrollMsg) {
+                    this.promoPreviewApplied = true;
+                    this.promoPreviewMessage = 'Đã chọn: ' + p.promotionName;
+                }
+            },
+            clearPromotion(clearMsg = true) {
+                this.selectedPromotionId = null;
+                this.selectedPromotionName = '';
+                this.promotionCode = '';
+                this.promoDiscountAmount = 0;
+                this.manualPromoCode = '';
+                if (clearMsg) {
+                    this.promoPreviewApplied = false;
+                    this.promoPreviewMessage = '';
+                }
+            },
+            async applyManualCode() {
+                const code = (this.manualPromoCode || '').trim();
+                if (!code) {
+                    this.promoPreviewApplied = false;
+                    this.promoPreviewMessage = 'Nhập mã khuyến mãi.';
+                    return;
+                }
+                this.promoApplying = true;
+                this.promoPreviewMessage = '';
+                try {
+                    const orderPayload = this.buildPayload();
+                    delete orderPayload.promotionCode;
+                    delete orderPayload.promotionId;
+                    const res = await fetch('/OrganizationMealContractOrder/PreviewPromotion', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': antiToken,
+                        },
+                        body: JSON.stringify({ order: orderPayload, promotionCode: code }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Mã không hợp lệ.');
+                    if (!data.applied) {
+                        this.promoPreviewApplied = false;
+                        this.promoPreviewMessage = data.message || 'Mã không áp dụng được.';
+                        return;
+                    }
+                    this.promotionCode = (data.promotionCode || code).trim();
+                    this.selectedPromotionId = data.promotionId;
+                    this.selectedPromotionName = data.promotionName || code;
+                    this.promoDiscountAmount = data.discountAmount || 0;
+                    this.promoSubtotalAmount = data.subtotal || this.estimatedTotal();
+                    this.promoPreviewApplied = true;
+                    this.promoPreviewMessage = 'Đã áp dụng: ' + (data.promotionName || code);
+                } catch (e) {
+                    this.promoPreviewApplied = false;
+                    this.promoPreviewMessage = e.message || 'Mã không hợp lệ.';
+                } finally {
+                    this.promoApplying = false;
+                }
+            },
+            buildPayload() {
+                const payload = {
+                    organizationId: orgId,
+                    startDate: this.periodStart,
+                    endDate: this.periodEnd,
+                    excludedDates: [...this.excludedDates],
+                    mealsPerDay: Math.max(1, parseInt(this.mealsPerDay, 10) || 1),
+                    mealUnitPrice: parseFloat(this.mealUnitPrice) || 0,
+                    delivery: {
+                        recipientName: (this.delivery.recipientName || '').trim(),
+                        recipientPhone: (this.delivery.recipientPhone || '').trim(),
+                        recipientEmail: (this.delivery.recipientEmail || '').trim(),
+                        deliveryAddress: (this.delivery.deliveryAddress || '').trim(),
+                        deliveryWardDistrict: (this.delivery.deliveryWardDistrict || '').trim() || null,
+                        deliveryNotes: (this.delivery.deliveryNotes || '').trim() || null,
+                        preferredDeliveryTime: this.delivery.preferredDeliveryTime || null,
+                    },
+                };
+                if (this.selectedPromotionId) {
+                    payload.promotionId = this.selectedPromotionId;
+                } else if (this.promotionCode) {
+                    payload.promotionCode = this.promotionCode;
+                }
+                return payload;
+            },
+            async submitContract() {
+                this.formError = this.validatePeriod() || this.validateDelivery();
+                if (this.formError) return;
+                this.submitting = true;
+                try {
+                    const res = await fetch('/OrganizationMealContractOrder/PrepareContract', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'RequestVerificationToken': antiToken,
+                        },
+                        body: JSON.stringify(this.buildPayload()),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) throw new Error(data.message || 'Không tạo được nháp hợp đồng.');
+                    window.location.href = data.redirectUrl;
+                } catch (e) {
+                    this.formError = e.message || 'Lỗi khi tạo nháp.';
+                } finally {
+                    this.submitting = false;
+                }
+            },
+        }));
+    });
+</script>
+}

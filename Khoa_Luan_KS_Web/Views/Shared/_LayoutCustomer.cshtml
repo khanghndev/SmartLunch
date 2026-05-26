@@ -1,5 +1,7 @@
+@using Khoa_Luan_KS_Web.Services
 @{
     var user = Context.User;
+    var cartBadgeCount = CartSessionHelper.GetBadgeCount(Context.Session);
 
     var userName =
         user?.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
@@ -238,8 +240,8 @@
 
             <!-- DỊCH VỤ -->
             <div class="group relative flex items-center h-full cursor-pointer">
-              <span class="text-[13px] font-semibold @(IsActivePrefix("/Service") || IsActivePrefix("/Menu") || IsActivePrefix("/OrganizationMealOrder") ? "text-orange-600" : "text-gray-800") group-hover:text-orange-600 transition-colors flex items-center gap-1 h-full">
-                <span class="h-full flex items-center @(IsActivePrefix("/Service") || IsActivePrefix("/Menu") || IsActivePrefix("/OrganizationMealOrder") ? "border-b-2 border-orange-600" : "")">DỊCH VỤ</span>
+              <span class="text-[13px] font-semibold @(IsActivePrefix("/Service") || IsActivePrefix("/Menu") || IsActivePrefix("/OrganizationMealOrder") || IsActivePrefix("/OrganizationMealContractOrder") ? "text-orange-600" : "text-gray-800") group-hover:text-orange-600 transition-colors flex items-center gap-1 h-full">
+                <span class="h-full flex items-center @(IsActivePrefix("/Service") || IsActivePrefix("/Menu") || IsActivePrefix("/OrganizationMealOrder") || IsActivePrefix("/OrganizationMealContractOrder") ? "border-b-2 border-orange-600" : "")">DỊCH VỤ</span>
                 <i data-lucide="chevron-down" class="w-4 h-4 transition-transform group-hover:-rotate-180"></i>
               </span>
               <div class="absolute top-[75px] left-0 w-60 bg-white shadow-xl rounded-xl py-3 border border-gray-100 opacity-0 invisible translate-y-2 group-hover:visible group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 z-50">
@@ -247,13 +249,14 @@
                 <a href="/Service/MenuSuggestions" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Service/MenuSuggestions") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Gợi ý thực đơn</a>
 
                 <div class="relative group/menu">
-                  <div class="flex items-center justify-between px-5 py-2.5 text-[13px] font-semibold text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all cursor-default @(IsActive("/Menu/Index") || IsActivePrefix("/OrganizationMealOrder") ? "text-orange-600 bg-orange-50/50" : "")">
+                  <div class="flex items-center justify-between px-5 py-2.5 text-[13px] font-semibold text-gray-600 hover:text-orange-600 hover:bg-orange-50/50 transition-all cursor-default @(IsActive("/Menu/Index") || IsActivePrefix("/OrganizationMealOrder") || IsActivePrefix("/OrganizationMealContractOrder") ? "text-orange-600 bg-orange-50/50" : "")">
                     <span>Thực đơn</span>
                     <i data-lucide="chevron-right" class="h-4 w-4 text-gray-400 group-hover/menu:text-orange-500"></i>
                   </div>
                   <div class="absolute left-full top-0 ml-0.5 w-60 bg-white shadow-xl rounded-xl py-3 border border-gray-100 opacity-0 invisible translate-x-1 group-hover/menu:visible group-hover/menu:opacity-100 group-hover/menu:translate-x-0 transition-all duration-200 z-[60]">
                     <a href="/Menu/Index" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActive("/Menu/Index") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Thực đơn cố định</a>
-                    <a href="/OrganizationMealOrder" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActivePrefix("/OrganizationMealOrder") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Thực đơn tự chọn</a>
+                    <a href="/OrganizationMealOrder" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActivePrefix("/OrganizationMealOrder") && !IsActivePrefix("/OrganizationMealContractOrder") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Thực đơn tự chọn</a>
+                    <a href="/OrganizationMealContractOrder" class="block px-5 py-2.5 text-[13px] font-semibold @(IsActivePrefix("/OrganizationMealContractOrder") ? "text-orange-600 bg-orange-50/50" : "text-gray-600") hover:text-orange-600 hover:bg-orange-50/50 transition-all">Đặt suất theo hợp đồng</a>
                   </div>
                 </div>
 
@@ -295,9 +298,13 @@
               }
               @if (isLoggedIn)
               {
-                  <a href="/Cart" class="hidden items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-orange-200 hover:text-orange-600 sm:inline-flex" title="Giỏ hàng">
+                  <a href="/Cart" class="relative hidden items-center gap-1.5 rounded-full border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-700 shadow-sm transition hover:border-orange-200 hover:text-orange-600 sm:inline-flex" title="Giỏ hàng">
                       <i data-lucide="shopping-cart" class="h-4 w-4"></i>
                       <span>Giỏ</span>
+                      @if (cartBadgeCount > 0)
+                      {
+                          <span class="absolute -right-1 -top-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-orange-500 px-1 text-[10px] font-black text-white shadow-sm">@(cartBadgeCount > 99 ? "99+" : cartBadgeCount)</span>
+                      }
                   </a>
                   <div x-data="{ profileOpen: false }" 
                        @@mouseenter="profileOpen = true" 
@@ -449,6 +456,7 @@
                         <div x-show="sub === 'menu'" class="pl-4 space-y-1">
                             <a href="/Menu/Index" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Thực đơn cố định</a>
                             <a href="/OrganizationMealOrder" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Thực đơn tự chọn</a>
+                            <a href="/OrganizationMealContractOrder" class="block p-3 text-sm font-medium text-gray-600 hover:text-orange-500">Đặt suất theo hợp đồng</a>
                         </div>
                         <button type="button" @@click="sub = sub === 'sector' ? '' : 'sector'"
                                 class="flex w-full items-center justify-between p-3 text-sm font-medium text-gray-600 hover:text-orange-500 text-left">

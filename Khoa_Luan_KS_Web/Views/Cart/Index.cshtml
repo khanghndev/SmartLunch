@@ -5,6 +5,9 @@
     Layout = "_LayoutCustomer";
     var canPlaceOrder = !Model.IsEmpty && Model.TotalPortions >= CartOrderRules.MinimumPortions;
     var showMinWarning = !Model.IsEmpty && !canPlaceOrder;
+    var isOrgMealUser = ViewBag.IsOrgMealUser as bool? == true;
+    var hasLooseForOrg = Model.State.LooseLines.Any(l =>
+        !string.IsNullOrEmpty(MenuDishDisplayHelper.ResolveOrganizationSlotKey(l.SlotKey)));
 }
 
 <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -147,32 +150,69 @@
                     </article>
                 }
 
-                @if (Model.State.LooseLines.Any())
+                @if (Model.LooseGroups.Count > 0)
                 {
-                    <div>
-                        <p class="mb-3 text-[10px] font-black uppercase tracking-widest text-slate-400">@CartViewText.LooseKicker</p>
-                        <div class="divide-y divide-slate-100 rounded-3xl border border-slate-200 bg-white shadow-sm">
-                            @foreach (var line in Model.State.LooseLines)
-                            {
-                                <div class="loose-row flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
-                                    <div class="min-w-0 flex-1">
-                                        <p class="font-bold text-slate-900">@line.Name</p>
-                                        <p class="loose-unit text-xs text-slate-500">@line.Price.ToString("N0") đ / suất</p>
-                                    </div>
-                                    <form asp-action="UpdateLoose" method="post" class="loose-sync flex items-center gap-2">
-                                        @Html.AntiForgeryToken()
-                                        <input type="hidden" name="dishId" value="@line.DishId" />
-                                        <input type="hidden" name="menuScheduleId" value="@line.MenuScheduleId" />
-                                        <label class="text-xs font-bold text-slate-500">@CartViewText.QtyShort</label>
-                                        <input type="number" name="quantity" value="@line.Quantity" min="0" max="999" data-loose-qty
-                                               class="h-10 w-24 rounded-xl border border-slate-200 px-3 text-sm font-bold" />
-                                    </form>
-                                    <p class="loose-line-total text-right text-sm font-black text-orange-600 sm:w-32">
-                                        @((line.Price * line.Quantity).ToString("N0")) đ
-                                    </p>
-                                </div>
-                            }
+                    <div class="space-y-5">
+                        <div class="flex flex-wrap items-end justify-between gap-3">
+                            <div>
+                                <p class="text-[10px] font-black uppercase tracking-widest text-slate-400">@CartViewText.LooseKicker</p>
+                                <p class="mt-1 text-sm text-slate-600">@Model.LooseDishCount món · @Model.State.LooseLines.Sum(l => l.Quantity) suất</p>
+                            </div>
                         </div>
+                        @foreach (var group in Model.LooseGroups)
+                        {
+                            var groupBadge = MenuDishDisplayHelper.CategoryBadgeClass(group.SlotKey);
+                            <section class="overflow-hidden rounded-3xl border border-slate-200/90 bg-white shadow-sm ring-1 ring-slate-900/5">
+                                <div class="flex items-center justify-between gap-3 border-b border-slate-100 bg-gradient-to-r from-slate-50 to-white px-5 py-4 sm:px-6">
+                                    <span class="text-xs font-black uppercase tracking-wide px-2.5 py-1 rounded-full border @groupBadge">@group.Label</span>
+                                    <span class="text-xs font-bold text-slate-500">@group.Lines.Sum(l => l.Quantity) suất</span>
+                                </div>
+                                <div class="divide-y divide-slate-100">
+                                    @foreach (var line in group.Lines)
+                                    {
+                                        <div class="loose-row flex flex-col gap-4 p-5 sm:flex-row sm:items-center">
+                                            <div class="flex min-w-0 flex-1 items-center gap-3">
+                                                @if (!string.IsNullOrWhiteSpace(line.ImageUrl))
+                                                {
+                                                    <img src="@line.ImageUrl" alt="" class="h-14 w-14 shrink-0 rounded-xl object-cover border border-slate-100" />
+                                                }
+                                                else
+                                                {
+                                                    <span class="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
+                                                        <i data-lucide="utensils" class="h-6 w-6"></i>
+                                                    </span>
+                                                }
+                                                <div class="min-w-0">
+                                                    <p class="font-bold text-slate-900">@line.Name</p>
+                                                    @if (line.Price > 0)
+                                                    {
+                                                        <p class="loose-unit text-xs text-slate-500">@line.Price.ToString("N0") đ / suất</p>
+                                                    }
+                                                    else
+                                                    {
+                                                        <p class="loose-unit text-xs text-slate-500">Giá theo hợp đồng đơn vị</p>
+                                                    }
+                                                </div>
+                                            </div>
+                                            <form asp-action="UpdateLoose" method="post" class="loose-sync flex items-center gap-2">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="dishId" value="@line.DishId" />
+                                                <input type="hidden" name="menuScheduleId" value="@line.MenuScheduleId" />
+                                                <label class="text-xs font-bold text-slate-500">@CartViewText.QtyShort</label>
+                                                <input type="number" name="quantity" value="@line.Quantity" min="0" max="999" data-loose-qty
+                                                       class="h-10 w-24 rounded-xl border border-slate-200 px-3 text-sm font-bold" />
+                                            </form>
+                                            @if (line.Price > 0)
+                                            {
+                                                <p class="loose-line-total text-right text-sm font-black text-orange-600 sm:w-32">
+                                                    @((line.Price * line.Quantity).ToString("N0")) đ
+                                                </p>
+                                            }
+                                        </div>
+                                    }
+                                </div>
+                            </section>
+                        }
                     </div>
                 }
             </div>
@@ -186,18 +226,30 @@
                         <p id="cart-total-aside" class="text-3xl font-black text-slate-900">@Model.TotalAmount.ToString("N0") đ</p>
                     </div>
                     <div class="mt-6 flex flex-col gap-2">
+                        @if (isOrgMealUser && hasLooseForOrg)
+                        {
+                            <a asp-controller="OrganizationMealOrder" asp-action="Index" asp-route-fromCart="true"
+                               class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 text-sm font-black text-white shadow-lg shadow-slate-900/20 hover:bg-orange-600 transition">
+                                <i data-lucide="building-2" class="h-4 w-4"></i>
+                                @CartViewText.BtnOrgMealOrder
+                            </a>
+                            <p class="text-[11px] leading-relaxed text-slate-500 px-1">@CartViewText.BtnOrgMealOrderHint</p>
+                        }
+                        @if (canPlaceOrder)
+                        {
+                            <a asp-action="Delivery" id="btn-checkout" class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-orange-500 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/30 hover:bg-orange-600">
+                                <i data-lucide="credit-card" class="h-4 w-4"></i>
+                                @CartViewText.BtnPersonalCheckout
+                            </a>
+                        }
+                        else if (!isOrgMealUser || !hasLooseForOrg)
+                        {
+                            <button type="button" disabled class="w-full cursor-not-allowed rounded-2xl bg-slate-200 py-3.5 text-sm font-black text-slate-500" title="@CartViewText.ErrorMinimumPortions">@CartViewText.BtnPersonalCheckout</button>
+                        }
                         <form asp-action="Clear" method="post" onsubmit="return confirm('Xóa toàn bộ giỏ?');">
                             @Html.AntiForgeryToken()
                             <button type="submit" class="w-full rounded-2xl border border-slate-200 bg-white py-3 text-sm font-bold text-slate-600 hover:bg-slate-50">@CartViewText.BtnClearCart</button>
                         </form>
-                        @if (canPlaceOrder)
-                        {
-                            <a asp-action="Delivery" id="btn-checkout" class="inline-flex w-full items-center justify-center rounded-2xl bg-orange-500 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/30 hover:bg-orange-600">@CartViewText.BtnCheckout</a>
-                        }
-                        else
-                        {
-                            <button type="button" disabled class="w-full cursor-not-allowed rounded-2xl bg-slate-200 py-3.5 text-sm font-black text-slate-500" title="@CartViewText.ErrorMinimumPortions">@CartViewText.BtnCheckout</button>
-                        }
                     </div>
                 </div>
             </aside>
@@ -206,6 +258,7 @@
 </div>
 
 @section Scripts {
+    <script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
     @{
         var checkoutLabelJson = System.Text.Json.JsonSerializer.Serialize(CartViewText.BtnCheckout);
         var minErrJson = System.Text.Json.JsonSerializer.Serialize(CartViewText.ErrorMinimumPortions);

@@ -20,7 +20,11 @@ public static class CartViewText
     public const string BundleDaySubHint = "M\u00f3n trong ng\u00e0y \u0111\u01b0\u1ee3c \u0111\u00f3ng g\u00f3i theo th\u1ef1c \u0111\u01a1n \u2014 kh\u00f4ng t\u00e1ch t\u1eebng m\u00f3n.";
     public const string BtnUpdateBundle = "C\u1eadp nh\u1eadt";
     public const string BtnRemoveBundle = "X\u00f3a g\u00f3i n\u00e0y";
-    public const string LooseKicker = "M\u00f3n th\u00eam l\u1ebb";
+    public const string LooseKicker = "M\u00f3n \u0111\u00e3 ch\u1ecdn";
+    public const string BtnOrgMealOrder = "Thi\u1ebft l\u1eadp \u0111\u1eb7t su\u1ea5t";
+    public const string BtnOrgMealOrderHint =
+        "Chuy\u1ec3n sang trang \u0111\u1eb7t su\u1ea5t doanh nghi\u1ec7p \u2014 ch\u1ecdn m\u00f3n t\u1eeb gi\u1ecf h\u00e0ng khi l\u1eadp th\u1ef1c \u0111\u01a1n.";
+    public const string BtnPersonalCheckout = "Thanh to\u00e1n c\u00e1 nh\u00e2n";
     public const string SubtotalLabel = "T\u1ea1m t\u00ednh";
     public const string BtnClearCart = "X\u00f3a gi\u1ecf";
     public const string BtnCheckout = "\u0110\u1eb7t h\u00e0ng";
