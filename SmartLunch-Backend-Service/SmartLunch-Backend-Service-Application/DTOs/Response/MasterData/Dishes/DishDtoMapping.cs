@@ -62,6 +62,9 @@ public static class DishDtoMapping
         Id = di.Id,
         IngredientId = di.IngredientId,
         IngredientName = di.Ingredient?.Name ?? string.Empty,
+        DishValueId = di.DishValueId,
+        DishValueAmount = di.DishValue?.Amount ?? 0,
+        DishValueLabel = di.DishValue?.Label,
         Quantity = di.Quantity,
         Unit = di.Unit
     };

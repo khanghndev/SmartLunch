@@ -111,6 +111,8 @@ public class DishRepository : IDishRepository
                 .ThenInclude(ddc => ddc.DishCategory)
             .Include(d => d.DishIngredients)
             .ThenInclude(di => di.Ingredient)
+            .Include(d => d.DishIngredients)
+            .ThenInclude(di => di.DishValue)
             .Include(d => d.DishImages)
             .ThenInclude(img => img.MediaFile)
             .FirstOrDefaultAsync(d => d.Id == id);

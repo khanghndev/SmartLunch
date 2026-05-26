@@ -3,6 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SmartLunch.Backend.Service.Application.Common.Caching;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Dishes;
+using SmartLunch.Backend.Service.Application.Helpers;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
@@ -51,13 +52,41 @@ public class GetDishQueryHandler : IRequestHandler<GetDishQuery, GetDishResponse
                 .Select(DishDtoMapping.ToQuotaDto)
                 .ToList();
 
+            var priceTiers = dish.DishIngredients
+                .GroupBy(di => di.DishValueId)
+                .Select(group =>
+                {
+                    var dishValue = group.First().DishValue;
+                    var tierQuotas = group
+                        .OrderBy(di => di.Ingredient?.Name)
+                        .Select(DishDtoMapping.ToQuotaDto)
+                        .ToList();
+
+                    return new DishPriceTierDto
+                    {
+                        DishValue = new DishValueDto
+                        {
+                            Id = dishValue?.Id ?? group.Key,
+                            Amount = dishValue?.Amount ?? group.First().DishValue?.Amount ?? 0,
+                            Label = dishValue?.Label,
+                            SortOrder = dishValue?.SortOrder ?? 0
+                        },
+                        PortionWeightGrams = DishPortionHelper.ComputePortionWeightGrams(tierQuotas),
+                        IngredientQuotas = tierQuotas
+                    };
+                })
+                .OrderBy(t => t.DishValue.SortOrder)
+                .ThenBy(t => t.DishValue.Amount)
+                .ToList();
+
             var dto = DishDtoMapping.ToDto(dish);
             dto = await WithDishImagesAsync(dto, dish.DishImages);
             dto = await WithSignedImageAsync(dto);
             return new GetDishResponse
             {
                 Dish = dto,
-                IngredientQuotas = quotas
+                IngredientQuotas = quotas,
+                PriceTiers = priceTiers
             };
         }
 
@@ -89,7 +118,8 @@ public class GetDishQueryHandler : IRequestHandler<GetDishQuery, GetDishResponse
         return new GetDishResponse
         {
             Dish = await WithSignedImageAsync(cached.Dish),
-            IngredientQuotas = cached.IngredientQuotas
+            IngredientQuotas = cached.IngredientQuotas,
+            PriceTiers = cached.PriceTiers
         };
     }
 
