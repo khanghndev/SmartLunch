@@ -17,5 +17,8 @@ public sealed class PrepareOrganizationMealPeriodContractRequest
     /// <summary>Giá một suất (VND).</summary>
     public decimal MealUnitPrice { get; set; }
 
+    public string? PromotionCode { get; set; }
+    public int? PromotionId { get; set; }
+
     public OrganizationMealDeliveryRequest Delivery { get; set; } = new();
 }

@@ -14,7 +14,12 @@ public sealed class OrganizationMealPeriodContractDraftPayload
     public int MealsPerDay { get; set; }
     public decimal MealUnitPrice { get; set; }
     public int ServiceDays { get; set; }
+    public decimal? SubtotalAmount { get; set; }
+    public decimal DiscountAmount { get; set; }
     public decimal TotalAmount { get; set; }
+    public string? PromotionCode { get; set; }
+    public int? AppliedPromotionId { get; set; }
+    public string? AppliedPromotionName { get; set; }
     public DateTime CreatedAtUtc { get; set; }
     public OrganizationMealOrderDraftDelivery? Delivery { get; set; }
 }

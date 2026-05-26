@@ -6,6 +6,7 @@ using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealContr
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
+using SmartLunch.Backend.Service.Application.Promotions;
 using SmartLunch.Backend.Service.Domain.Entities;
 
 namespace SmartLunch.Backend.Service.Application.Commands.OrganizationMealContractOrders.CheckoutOrganizationMealPeriodContract;
@@ -20,6 +21,8 @@ public sealed class CheckoutOrganizationMealPeriodContractCommandHandler
     private readonly IContractRepository _contractRepository;
     private readonly IOrderRepository _orderRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPromotionEngine _promotionEngine;
+    private readonly IPromotionRepository _promotionRepository;
     private readonly IOrganizationOrderEmailService _orderEmailService;
     private readonly ILogger<CheckoutOrganizationMealPeriodContractCommandHandler> _logger;
 
@@ -29,6 +32,8 @@ public sealed class CheckoutOrganizationMealPeriodContractCommandHandler
         IContractRepository contractRepository,
         IOrderRepository orderRepository,
         IUnitOfWork unitOfWork,
+        IPromotionEngine promotionEngine,
+        IPromotionRepository promotionRepository,
         IOrganizationOrderEmailService orderEmailService,
         ILogger<CheckoutOrganizationMealPeriodContractCommandHandler> logger)
     {
@@ -37,6 +42,8 @@ public sealed class CheckoutOrganizationMealPeriodContractCommandHandler
         _contractRepository = contractRepository;
         _orderRepository = orderRepository;
         _unitOfWork = unitOfWork;
+        _promotionEngine = promotionEngine;
+        _promotionRepository = promotionRepository;
         _orderEmailService = orderEmailService;
         _logger = logger;
     }
@@ -67,20 +74,43 @@ public sealed class CheckoutOrganizationMealPeriodContractCommandHandler
         if (membership == null || !membership.IsActive)
             throw new UnauthorizedAccessException("You do not have access to this organization.");
 
-        var recomputed = OrganizationMealPeriodContractCalculator.ComputeTotalValue(
+        var recomputedSubtotal = OrganizationMealPeriodContractCalculator.ComputeTotalValue(
             draft.StartDate,
             draft.EndDate,
             draft.ExcludedDates,
             draft.MealsPerDay,
             draft.MealUnitPrice);
-        if (recomputed != draft.TotalAmount)
-            throw new ArgumentException("Draft total is inconsistent. Call POST contract again.");
+        var draftSubtotal = draft.SubtotalAmount ?? recomputedSubtotal;
+        if (draftSubtotal != recomputedSubtotal)
+            throw new ArgumentException("Draft subtotal is inconsistent. Call POST contract again.");
 
         var contract = await _contractRepository.GetPeriodBasedWithExcludedDatesAsync(draft.ContractId, cancellationToken)
             ?? throw new ArgumentException("Contract not found. Call POST contract again.");
 
         if (contract.SourceOrderId.HasValue)
             throw new InvalidOperationException("This contract has already been checked out.");
+
+        var totalQuantity = draft.ServiceDays * draft.MealsPerDay;
+        var evaluation = await _promotionEngine.EvaluateAsync(new OrderPromotionEvaluateInput
+        {
+            Channel = PromotionConstants.ChannelB2BOrg,
+            UserId = command.UserId,
+            OrganizationId = draft.OrganizationId,
+            ContractId = contract.Id,
+            ContractType = contract.ContractType,
+            PromotionCode = draft.PromotionCode,
+            PromotionId = draft.AppliedPromotionId,
+            Subtotal = recomputedSubtotal,
+            TotalQuantity = totalQuantity,
+            Lines = new List<OrderPromotionLineInput>(),
+        }, cancellationToken);
+
+        if (evaluation.TotalAfter != draft.TotalAmount ||
+            evaluation.DiscountAmount != draft.DiscountAmount ||
+            evaluation.Subtotal != draftSubtotal)
+        {
+            throw new ArgumentException("Promotion on draft is no longer valid. Call POST contract again.");
+        }
 
         var total = draft.TotalAmount;
         var scheduledUtc = VietnamTime.CalendarDateMidnight(draft.StartDate);
@@ -95,10 +125,17 @@ public sealed class CheckoutOrganizationMealPeriodContractCommandHandler
             PaymentStatus = OrderPaymentStatus.Unpaid,
             CreatedAt = VietnamTime.Now,
             InvoiceCode = await AllocateInvoiceCodeAsync(draft.StartDate, cancellationToken),
-            SubtotalAmount = total,
-            DiscountAmount = 0,
+            SubtotalAmount = evaluation.Subtotal,
+            DiscountAmount = evaluation.DiscountAmount,
             TotalAmount = total,
         };
+
+        if (evaluation.Applied && evaluation.PromotionId is int promoId)
+        {
+            var promo = await _promotionRepository.GetByIdWithTargetsAsync(promoId, cancellationToken);
+            if (promo != null)
+                order.PromotionApplications.Add(_promotionEngine.BuildApplication(order, promo, evaluation));
+        }
 
         OrganizationMealDeliveryValidator.ApplyToOrder(order, draft.Delivery);
         order.Deliveries.Add(new Delivery

@@ -1,10 +1,12 @@
 using MediatR;
+using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Request.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
+using SmartLunch.Backend.Service.Application.Promotions;
 
 namespace SmartLunch.Backend.Service.Application.Commands.OrganizationMealContractOrders.PrepareOrganizationMealPeriodContract;
 
@@ -14,15 +16,21 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
     private readonly IUserOrganizationRepository _userOrganizationRepository;
     private readonly IOrganizationMealPeriodContractDraftCache _draftCache;
     private readonly OrganizationMealPeriodContractPersistence _persistence;
+    private readonly IPromotionEngine _promotionEngine;
+    private readonly IContractRepository _contractRepository;
 
     public PrepareOrganizationMealPeriodContractCommandHandler(
         IUserOrganizationRepository userOrganizationRepository,
         IOrganizationMealPeriodContractDraftCache draftCache,
-        OrganizationMealPeriodContractPersistence persistence)
+        OrganizationMealPeriodContractPersistence persistence,
+        IPromotionEngine promotionEngine,
+        IContractRepository contractRepository)
     {
         _userOrganizationRepository = userOrganizationRepository;
         _draftCache = draftCache;
         _persistence = persistence;
+        _promotionEngine = promotionEngine;
+        _contractRepository = contractRepository;
     }
 
     public async Task<PrepareOrganizationMealPeriodContractResponse> Handle(
@@ -43,8 +51,24 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
         var mealUnitPrice = decimal.Round(req.MealUnitPrice, 2, MidpointRounding.AwayFromZero);
         var serviceDays = OrganizationMealPeriodContractCalculator.CountServiceDays(
             req.StartDate, req.EndDate, excluded);
-        var total = OrganizationMealPeriodContractCalculator.ComputeTotalValue(
+        var subtotal = OrganizationMealPeriodContractCalculator.ComputeTotalValue(
             req.StartDate, req.EndDate, excluded, req.MealsPerDay, mealUnitPrice);
+        var totalQuantity = serviceDays * req.MealsPerDay;
+
+        var activeContract = await _contractRepository.GetActiveForOrganizationAsync(req.OrganizationId, cancellationToken);
+        var evaluation = await _promotionEngine.EvaluateAsync(new OrderPromotionEvaluateInput
+        {
+            Channel = PromotionConstants.ChannelB2BOrg,
+            UserId = command.UserId,
+            OrganizationId = req.OrganizationId,
+            ContractId = activeContract?.Id,
+            ContractType = activeContract?.ContractType,
+            PromotionCode = req.PromotionCode,
+            PromotionId = req.PromotionId,
+            Subtotal = subtotal,
+            TotalQuantity = totalQuantity,
+            Lines = new List<OrderPromotionLineInput>(),
+        }, cancellationToken);
 
         var draftId = Guid.NewGuid().ToString("N");
         var payload = new OrganizationMealPeriodContractDraftPayload
@@ -57,7 +81,12 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
             MealsPerDay = req.MealsPerDay,
             MealUnitPrice = mealUnitPrice,
             ServiceDays = serviceDays,
-            TotalAmount = total,
+            SubtotalAmount = evaluation.Subtotal,
+            DiscountAmount = evaluation.DiscountAmount,
+            TotalAmount = evaluation.TotalAfter,
+            PromotionCode = req.PromotionCode,
+            AppliedPromotionId = evaluation.PromotionId,
+            AppliedPromotionName = evaluation.PromotionName,
             CreatedAtUtc = VietnamTime.Now,
             Delivery = delivery,
         };
@@ -77,7 +106,11 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
             ServiceDays = serviceDays,
             MealsPerDay = req.MealsPerDay,
             MealUnitPrice = mealUnitPrice,
-            TotalAmount = total,
+            SubtotalAmount = evaluation.Subtotal,
+            DiscountAmount = evaluation.DiscountAmount,
+            TotalAmount = evaluation.TotalAfter,
+            AppliedPromotionId = evaluation.PromotionId,
+            AppliedPromotionName = evaluation.PromotionName,
             Delivery = ToDeliverySummary(delivery),
         };
     }
