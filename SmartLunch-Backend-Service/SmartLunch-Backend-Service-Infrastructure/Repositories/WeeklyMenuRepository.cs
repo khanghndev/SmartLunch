@@ -38,6 +38,10 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
                 .ThenInclude(img => img.MediaFile)
             .Include(wm => wm.MenuSchedules)
                 .ThenInclude(ms => ms.Dish)
+                    .ThenInclude(d => d.DishImages)
+                        .ThenInclude(di => di.MediaFile)
+            .Include(wm => wm.MenuSchedules)
+                .ThenInclude(ms => ms.Dish)
                     .ThenInclude(d => d.DishDishCategories)
                         .ThenInclude(ddc => ddc.DishCategory)
             .FirstOrDefaultAsync(e => e.Id == id, cancellationToken);

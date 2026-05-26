@@ -3,8 +3,10 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Dishes;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.WeeklyMenus;
+using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
+using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -15,15 +17,18 @@ public class GetWeeklyMenuDetailQueryHandler : IRequestHandler<GetWeeklyMenuDeta
     private readonly IWeeklyMenuRepository _weeklyMenuRepository;
     private readonly ILogger<GetWeeklyMenuDetailQueryHandler> _logger;
     private readonly IConfiguration _configuration;
+    private readonly IStorageService _storage;
 
     public GetWeeklyMenuDetailQueryHandler(
         IWeeklyMenuRepository weeklyMenuRepository,
         ILogger<GetWeeklyMenuDetailQueryHandler> logger,
-        IConfiguration configuration)
+        IConfiguration configuration,
+        IStorageService storage)
     {
         _weeklyMenuRepository = weeklyMenuRepository;
         _logger = logger;
         _configuration = configuration;
+        _storage = storage;
     }
 
     public async Task<GetWeeklyMenuDetailResponse> Handle(GetWeeklyMenuDetailQuery request, CancellationToken cancellationToken)
@@ -48,42 +53,85 @@ public class GetWeeklyMenuDetailQueryHandler : IRequestHandler<GetWeeklyMenuDeta
 
         header = WithMenuImages(header, weeklyMenu.WeeklyMenuImages);
 
-        var schedules = weeklyMenu.MenuSchedules
-            .OrderBy(ms => ms.Date)
-            .ThenBy(ms => ms.MealSlot)
-            .ThenBy(ms => ms.Id)
-            .Select(ms =>
+        var schedules = new List<WeeklyMenuScheduleDetailDto>();
+        foreach (var ms in weeklyMenu.MenuSchedules
+                     .OrderBy(ms => ms.Date)
+                     .ThenBy(ms => ms.MealSlot)
+                     .ThenBy(ms => ms.Id))
+        {
+            var dish = ms.Dish;
+            WeeklyMenuScheduleDishSummaryDto dishSummary;
+            if (dish == null)
             {
-                var dish = ms.Dish;
-                return new WeeklyMenuScheduleDetailDto
+                dishSummary = new WeeklyMenuScheduleDishSummaryDto();
+            }
+            else
+            {
+                var rawImageUrl = ResolveDishCoverObjectName(dish);
+                dishSummary = new WeeklyMenuScheduleDishSummaryDto
                 {
-                    Id = ms.Id,
-                    Code = ms.Code,
-                    MenuId = ms.MenuId,
-                    Date = ms.Date,
-                    MealSlot = ms.MealSlot,
-                    DishId = ms.DishId,
-                    CreatedAt = ms.CreatedAt,
-                    Dish = dish == null
-                        ? new WeeklyMenuScheduleDishSummaryDto()
-                        : new WeeklyMenuScheduleDishSummaryDto
-                        {
-                            Id = dish.Id,
-                            Code = dish.Code,
-                            Name = dish.Name,
-                            Category = DishDtoMapping.FormatMealSlotNamesDisplay(dish),
-                            Price = dish.Price,
-                            ImageUrl = dish.ImageUrl
-                        }
+                    Id = dish.Id,
+                    Code = dish.Code,
+                    Name = dish.Name,
+                    Category = DishDtoMapping.FormatMealSlotNamesDisplay(dish),
+                    Price = dish.Price,
+                    ImageUrl = await ResolveSignedImageUrlAsync(rawImageUrl, cancellationToken)
                 };
-            })
-            .ToList();
+            }
+
+            schedules.Add(new WeeklyMenuScheduleDetailDto
+            {
+                Id = ms.Id,
+                Code = ms.Code,
+                MenuId = ms.MenuId,
+                Date = ms.Date,
+                MealSlot = ms.MealSlot,
+                DishId = ms.DishId,
+                CreatedAt = ms.CreatedAt,
+                Dish = dishSummary
+            });
+        }
 
         return new GetWeeklyMenuDetailResponse
         {
             WeeklyMenu = header,
             Schedules = schedules
         };
+    }
+
+    private static string? ResolveDishCoverObjectName(Dish dish)
+    {
+        if (dish.DishImages != null && dish.DishImages.Count > 0)
+        {
+            var cover = dish.DishImages
+                .OrderByDescending(i => string.Equals(i.Role, "cover", StringComparison.OrdinalIgnoreCase))
+                .ThenBy(i => i.SortOrder)
+                .Select(i => i.MediaFile?.ObjectName)
+                .FirstOrDefault(x => !string.IsNullOrWhiteSpace(x));
+
+            if (!string.IsNullOrWhiteSpace(cover))
+                return cover.Trim();
+        }
+
+        return string.IsNullOrWhiteSpace(dish.ImageUrl) ? null : dish.ImageUrl.Trim();
+    }
+
+    private async Task<string?> ResolveSignedImageUrlAsync(string? raw, CancellationToken cancellationToken)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return null;
+
+        if (raw.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
+            raw.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            return raw;
+        }
+
+        var expiresMinutes = int.TryParse(_configuration["Media:DownloadUrlExpireMinutes"], out var m) ? m : 15;
+        var expiresIn = TimeSpan.FromMinutes(Math.Clamp(expiresMinutes, 1, 60));
+        var signed = await _storage.CreateSignedUrlAsync(raw.Trim(), HttpMethod.Get, contentType: null, expiresIn: expiresIn);
+
+        return string.IsNullOrWhiteSpace(signed.Url) ? raw : signed.Url;
     }
 
     private WeeklyMenuDto WithMenuImages(WeeklyMenuDto dto, ICollection<WeeklyMenuImage> images)
