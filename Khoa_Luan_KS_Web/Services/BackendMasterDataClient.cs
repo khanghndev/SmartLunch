@@ -1324,14 +1324,33 @@ public class DishIngredientQuotaDto
     public int Id { get; set; }
     public int IngredientId { get; set; }
     public string IngredientName { get; set; } = string.Empty;
+    public int DishValueId { get; set; }
+    public decimal DishValueAmount { get; set; }
+    public string? DishValueLabel { get; set; }
     public decimal Quantity { get; set; }
     public string? Unit { get; set; }
+}
+
+public class DishValueClientDto
+{
+    public int Id { get; set; }
+    public decimal Amount { get; set; }
+    public string? Label { get; set; }
+    public int SortOrder { get; set; }
+}
+
+public class DishPriceTierClientDto
+{
+    public DishValueClientDto DishValue { get; set; } = new();
+    public decimal PortionWeightGrams { get; set; }
+    public List<DishIngredientQuotaDto> IngredientQuotas { get; set; } = new();
 }
 
 public class DishDetailResponse
 {
     public DishDto Dish { get; set; } = new();
     public List<DishIngredientQuotaDto> IngredientQuotas { get; set; } = new();
+    public List<DishPriceTierClientDto> PriceTiers { get; set; } = new();
 }
 
 public class CreateDishRequest

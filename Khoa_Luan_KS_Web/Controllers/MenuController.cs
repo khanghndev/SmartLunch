@@ -265,7 +265,9 @@ namespace Khoa_Luan_KS_Web.Controllers
                         };
                     }
 
-                    var quotasEmpty = vm.Detail?.IngredientQuotas == null || vm.Detail.IngredientQuotas.Count == 0;
+                    var quotasEmpty = vm.Detail?.PriceTiers == null || vm.Detail.PriceTiers.Count == 0;
+                    if (quotasEmpty)
+                        quotasEmpty = vm.Detail?.IngredientQuotas == null || vm.Detail.IngredientQuotas.Count == 0;
                     if (quotasEmpty)
                     {
                         try
@@ -324,7 +326,7 @@ namespace Khoa_Luan_KS_Web.Controllers
             if (anchor == null)
                 return result;
 
-            var anchorIngredients = anchorDetail?.IngredientQuotas?
+            var anchorIngredients = MenuDishDisplayHelper.ResolveIngredientQuotas(anchorDetail)?
                 .Select(q => q.IngredientName)
                 .Where(n => !string.IsNullOrWhiteSpace(n))
                 .ToList() ?? [];

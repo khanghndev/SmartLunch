@@ -106,6 +106,7 @@ public class OrganizationMealOrderController : Controller
             {
                 dish = detail.Dish,
                 ingredientQuotas = detail.IngredientQuotas,
+                priceTiers = detail.PriceTiers,
             });
         }
         catch (Exception ex)

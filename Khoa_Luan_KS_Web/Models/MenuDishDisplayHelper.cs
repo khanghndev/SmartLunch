@@ -191,4 +191,79 @@ public static class MenuDishDisplayHelper
         spices.Sort(Compare);
         return (main, spices);
     }
+
+    public static List<DishIngredientQuotaDto> ResolveIngredientQuotas(DishDetailResponse? detail, int? dishValueId = null)
+    {
+        if (detail == null)
+            return new List<DishIngredientQuotaDto>();
+
+        var tiers = detail.PriceTiers ?? new List<DishPriceTierClientDto>();
+        if (tiers.Count > 0)
+        {
+            var tier = dishValueId.HasValue
+                ? tiers.FirstOrDefault(t => t.DishValue.Id == dishValueId.Value)
+                : tiers.OrderBy(t => t.DishValue.SortOrder).ThenBy(t => t.DishValue.Amount).FirstOrDefault();
+
+            if (tier?.IngredientQuotas?.Count > 0)
+                return tier.IngredientQuotas;
+        }
+
+        if (dishValueId.HasValue && detail.IngredientQuotas.Count > 0)
+        {
+            var filtered = detail.IngredientQuotas
+                .Where(q => q.DishValueId == dishValueId.Value)
+                .ToList();
+            if (filtered.Count > 0)
+                return filtered;
+        }
+
+        return detail.IngredientQuotas ?? new List<DishIngredientQuotaDto>();
+    }
+
+    public static DishPriceTierClientDto? ResolveDefaultPriceTier(DishDetailResponse? detail) =>
+        detail?.PriceTiers?
+            .OrderBy(t => t.DishValue.SortOrder)
+            .ThenBy(t => t.DishValue.Amount)
+            .FirstOrDefault();
+
+    public static string FormatPortionWeight(decimal grams)
+    {
+        if (grams <= 0)
+            return "—";
+
+        if (grams >= 1000)
+            return $"{grams / 1000m:0.##} kg/suất";
+
+        return $"{grams:0.#} g/suất";
+    }
+
+    public static string FormatPriceTierLabel(DishValueClientDto value) =>
+        !string.IsNullOrWhiteSpace(value.Label)
+            ? value.Label!
+            : $"{value.Amount:N0}đ/suất";
+
+    public static decimal ComputePortionWeightGrams(IEnumerable<DishIngredientQuotaDto>? quotas)
+    {
+        decimal grams = 0;
+        foreach (var q in quotas ?? Enumerable.Empty<DishIngredientQuotaDto>())
+        {
+            if (IsSpiceIngredient(q.IngredientName) || q.Quantity <= 0)
+                continue;
+
+            var unit = (q.Unit ?? "").Trim().ToLowerInvariant();
+            grams += unit switch
+            {
+                "kg" or "kilogram" => q.Quantity * 1000m,
+                "g" or "gram" => q.Quantity,
+                "quả" => q.Quantity * 55m,
+                "miếng" => q.Quantity * 40m,
+                _ => 0m
+            };
+        }
+
+        if (grams <= 0)
+            return 0;
+
+        return Math.Round(grams / 10m, MidpointRounding.AwayFromZero) * 10m;
+    }
 }

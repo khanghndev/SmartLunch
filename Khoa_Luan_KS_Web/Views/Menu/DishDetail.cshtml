@@ -1,3 +1,4 @@
+@using System.Text.Json
 @model Khoa_Luan_KS_Web.Models.DishDetailPageViewModel
 @using Khoa_Luan_KS_Web.Models
 @using Khoa_Luan_KS_Web.Services
@@ -17,11 +18,59 @@
     var img = !string.IsNullOrWhiteSpace(d?.ImageUrl) ? d!.ImageUrl : null;
     var gallery = d?.Images?.Where(i => !string.IsNullOrWhiteSpace(i.Url)).OrderByDescending(i => i.Role == "cover").ThenBy(i => i.SortOrder).ToList()
         ?? new List<DishImageDto>();
-    var quotas = Model.Detail?.IngredientQuotas ?? new List<DishIngredientQuotaDto>();
+    var priceTiers = (Model.Detail?.PriceTiers ?? new List<DishPriceTierClientDto>())
+        .OrderBy(t => t.DishValue.SortOrder)
+        .ThenBy(t => t.DishValue.Amount)
+        .ToList();
+    if (priceTiers.Count == 0 && (Model.Detail?.IngredientQuotas?.Count ?? 0) > 0)
+    {
+        var legacyQuotas = Model.Detail!.IngredientQuotas;
+        var legacyGroups = legacyQuotas
+            .GroupBy(q => q.DishValueId > 0 ? q.DishValueId : 0)
+            .Select(g =>
+            {
+                var sample = g.First();
+                var amount = sample.DishValueAmount > 0 ? sample.DishValueAmount : (d?.Price ?? 0);
+                return new DishPriceTierClientDto
+                {
+                    DishValue = new DishValueClientDto
+                    {
+                        Id = sample.DishValueId > 0 ? sample.DishValueId : 1,
+                        Amount = amount,
+                        Label = !string.IsNullOrWhiteSpace(sample.DishValueLabel)
+                            ? sample.DishValueLabel
+                            : (amount > 0 ? $"{amount:N0}đ/suất" : "Mức chuẩn"),
+                        SortOrder = 0
+                    },
+                    IngredientQuotas = g.ToList()
+                };
+            })
+            .OrderBy(t => t.DishValue.Amount)
+            .ToList();
+
+        foreach (var tier in legacyGroups)
+            tier.PortionWeightGrams = MenuDishDisplayHelper.ComputePortionWeightGrams(tier.IngredientQuotas);
+
+        priceTiers = legacyGroups;
+    }
+    var defaultTier = MenuDishDisplayHelper.ResolveDefaultPriceTier(Model.Detail);
+    var quotas = MenuDishDisplayHelper.ResolveIngredientQuotas(Model.Detail, defaultTier?.DishValue.Id);
     var (mainQuotas, spiceQuotas) = MenuDishDisplayHelper.SplitIngredientQuotas(quotas);
     var ingredientSummary = mainQuotas.Count > 0 && spiceQuotas.Count > 0
         ? $"{mainQuotas.Count} chính · {spiceQuotas.Count} gia vị"
         : $"{quotas.Count} loại";
+    var priceTierJson = JsonSerializer.Serialize(priceTiers.Select(t => new
+    {
+        id = t.DishValue.Id,
+        amount = t.DishValue.Amount,
+        label = MenuDishDisplayHelper.FormatPriceTierLabel(t.DishValue),
+        portionWeightGrams = t.PortionWeightGrams,
+        portionLabel = MenuDishDisplayHelper.FormatPortionWeight(t.PortionWeightGrams),
+        main = MenuDishDisplayHelper.SplitIngredientQuotas(t.IngredientQuotas).Main
+            .Select(q => new { name = q.IngredientName, qty = MenuDishDisplayHelper.FormatQuotaQuantity(q.Quantity, q.Unit) }),
+        spices = MenuDishDisplayHelper.SplitIngredientQuotas(t.IngredientQuotas).Spices
+            .Select(q => new { name = q.IngredientName, qty = MenuDishDisplayHelper.FormatQuotaQuantity(q.Quantity, q.Unit) })
+    }), new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     var cookingLabel = MenuDishDisplayHelper.CookingMethodLabel(d?.CookingMethod);
     var hasNutrition = d?.Calories is > 0 || d?.Protein is > 0 || d?.Fat is > 0 || d?.Carbs is > 0;
     var placeholder = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=1200&q=80";
@@ -79,6 +128,19 @@
         background: linear-gradient(135deg, #fffbeb 0%, #fff 100%);
         border-color: rgba(251, 191, 36, 0.35);
     }
+    .price-tier-btn {
+        border: 1px solid #e2e8f0;
+        background: #fff;
+        transition: border-color .15s ease, box-shadow .15s ease, background .15s ease;
+    }
+    .price-tier-btn:hover {
+        border-color: rgba(249, 115, 22, 0.35);
+    }
+    .price-tier-btn.active {
+        border-color: #f97316;
+        background: linear-gradient(135deg, #fff7ed 0%, #fff 100%);
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.15);
+    }
     .suggest-card {
         transition: transform .2s ease, box-shadow .2s ease, border-color .2s ease;
     }
@@ -94,7 +156,9 @@
     }
 </style>
 
-<div class="dish-detail-page min-h-screen" x-data="{ loaded: false, activeThumb: 0, showQuotaNote: false }" x-init="setTimeout(() => loaded = true, 30)">
+<div class="dish-detail-page min-h-screen"
+     x-data="dishPriceQuotaPicker(@Html.Raw(priceTierJson))"
+     x-init="setTimeout(() => loaded = true, 30)">
 
     @if (!string.IsNullOrEmpty(Model.LoadError) || d == null)
     {
@@ -324,7 +388,9 @@
                             <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 bg-slate-50/60 px-4 py-3 sm:px-5">
                                 <div>
                                     <h2 class="text-sm font-black text-slate-900">Thành phần nguyên liệu</h2>
-                                    <p class="text-[11px] text-slate-500 mt-0.5">Định lượng tham chiếu / 01 suất</p>
+                                    <p class="text-[11px] text-slate-500 mt-0.5">
+                                        Chọn mức giá suất để xem định lượng &amp; định mức nguyên liệu tương ứng
+                                    </p>
                                 </div>
                                 <button type="button" @@click="showQuotaNote = !showQuotaNote"
                                         class="inline-flex items-center gap-1 rounded-lg border border-amber-200 bg-amber-50 px-2.5 py-1.5 text-[11px] font-bold text-amber-800 hover:bg-amber-100 transition shrink-0">
@@ -334,54 +400,67 @@
                             </div>
 
                             <div class="p-4 sm:p-5 space-y-4">
+                                @if (priceTiers.Count > 0)
+                                {
+                                    <div class="rounded-xl border border-orange-100 bg-orange-50/40 p-3 sm:p-4 space-y-3">
+                                        <div class="flex flex-wrap items-center justify-between gap-2">
+                                            <p class="text-[10px] font-black uppercase tracking-wider text-orange-700">Mức giá suất ăn</p>
+                                            <p x-show="selectedTier" class="text-[11px] font-bold text-slate-600">
+                                                Định lượng: <span class="text-orange-700" x-text="selectedTier?.portionLabel || '—'"></span>
+                                            </p>
+                                        </div>
+                                        <div class="flex flex-wrap gap-2">
+                                            <template x-for="tier in tiers" :key="tier.id">
+                                                <button type="button"
+                                                        @@click="selectTier(tier.id)"
+                                                        :class="selectedTierId === tier.id ? 'price-tier-btn active' : 'price-tier-btn'"
+                                                        class="rounded-xl px-3 py-2 text-left min-w-[7.5rem]">
+                                                    <span class="block text-sm font-black text-slate-900 tabular-nums" x-text="formatAmount(tier.amount)"></span>
+                                                    <span class="block text-[10px] font-semibold text-slate-500 mt-0.5 line-clamp-1" x-text="tier.label"></span>
+                                                </button>
+                                            </template>
+                                        </div>
+                                    </div>
+                                }
+
                                 <div x-show="showQuotaNote" x-transition.opacity.duration.200ms
                                      class="rounded-xl border border-amber-200/80 bg-amber-50/80 px-3 py-2.5 text-[12px] leading-relaxed text-amber-950/85">
                                     <p class="font-bold text-amber-900 text-[11px] uppercase mb-0.5">@MenuDishDisplayHelper.ServingNotice.IngredientTitle</p>
                                     <p>@MenuDishDisplayHelper.ServingNotice.IngredientBody</p>
                                 </div>
 
-                                @if (quotas.Count > 0)
-                                {
-                                    @if (mainQuotas.Count > 0)
-                                    {
-                                        <div>
-                                            <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Nguyên liệu chính</p>
-                                            <div class="grid sm:grid-cols-2 gap-2">
-                                                @foreach (var q in mainQuotas)
-                                                {
-                                                    <div class="ingredient-chip rounded-lg px-3 py-2 flex items-center justify-between gap-2">
-                                                        <span class="text-sm font-semibold text-slate-800 truncate">@q.IngredientName</span>
-                                                        <span class="text-[11px] font-bold text-orange-700 bg-orange-50 border border-orange-100 rounded-md px-2 py-0.5 tabular-nums shrink-0">
-                                                            @MenuDishDisplayHelper.FormatQuotaQuantity(q.Quantity, q.Unit)
-                                                        </span>
-                                                    </div>
-                                                }
-                                            </div>
+                                <template x-if="selectedTier && selectedTier.main.length > 0">
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Nguyên liệu chính</p>
+                                        <div class="grid sm:grid-cols-2 gap-2">
+                                            <template x-for="(q, idx) in selectedTier.main" :key="'main-' + idx">
+                                                <div class="ingredient-chip rounded-lg px-3 py-2 flex items-center justify-between gap-2">
+                                                    <span class="text-sm font-semibold text-slate-800 truncate" x-text="q.name"></span>
+                                                    <span class="text-[11px] font-bold text-orange-700 bg-orange-50 border border-orange-100 rounded-md px-2 py-0.5 tabular-nums shrink-0" x-text="q.qty"></span>
+                                                </div>
+                                            </template>
                                         </div>
-                                    }
+                                    </div>
+                                </template>
 
-                                    @if (spiceQuotas.Count > 0)
-                                    {
-                                        <div>
-                                            <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Gia vị &amp; nước chấm</p>
-                                            <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5">
-                                                @foreach (var q in spiceQuotas)
-                                                {
-                                                    <div class="ingredient-chip ingredient-chip--spice rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-1.5 min-h-[2.25rem]">
-                                                        <span class="text-[12px] font-medium text-slate-700 truncate leading-tight">@q.IngredientName</span>
-                                                        <span class="text-[10px] font-bold text-amber-800 tabular-nums shrink-0">
-                                                            @MenuDishDisplayHelper.FormatQuotaQuantity(q.Quantity, q.Unit)
-                                                        </span>
-                                                    </div>
-                                                }
-                                            </div>
+                                <template x-if="selectedTier && selectedTier.spices.length > 0">
+                                    <div>
+                                        <p class="text-[10px] font-black uppercase tracking-wider text-slate-400 mb-2">Gia vị &amp; nước chấm</p>
+                                        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-1.5">
+                                            <template x-for="(q, idx) in selectedTier.spices" :key="'spice-' + idx">
+                                                <div class="ingredient-chip ingredient-chip--spice rounded-lg px-2.5 py-1.5 flex items-center justify-between gap-1.5 min-h-[2.25rem]">
+                                                    <span class="text-[12px] font-medium text-slate-700 truncate leading-tight" x-text="q.name"></span>
+                                                    <span class="text-[10px] font-bold text-amber-800 tabular-nums shrink-0" x-text="q.qty"></span>
+                                                </div>
+                                            </template>
                                         </div>
-                                    }
-                                }
-                                else
-                                {
-                                    <p class="text-sm text-slate-400 text-center py-6">Chưa khai báo nguyên liệu.</p>
-                                }
+                                    </div>
+                                </template>
+
+                                <p x-show="!selectedTier || (selectedTier.main.length === 0 && selectedTier.spices.length === 0)"
+                                   class="text-sm text-slate-400 text-center py-6">
+                                    Chưa khai báo nguyên liệu cho mức giá này.
+                                </p>
                             </div>
 
                             <div class="border-t border-slate-100 bg-gradient-to-r from-slate-50/90 to-amber-50/30 px-4 py-3.5 sm:px-5">
@@ -455,5 +534,30 @@
 </div>
 
 @section Scripts {
-    <script>document.addEventListener('DOMContentLoaded', () => lucide.createIcons());</script>
+    <script>
+        function dishPriceQuotaPicker(tiers) {
+            const list = Array.isArray(tiers) ? tiers : [];
+            const firstId = list.length > 0 ? list[0].id : null;
+            return {
+                loaded: false,
+                activeThumb: 0,
+                showQuotaNote: false,
+                tiers: list,
+                selectedTierId: firstId,
+                get selectedTier() {
+                    return this.tiers.find(t => t.id === this.selectedTierId) || this.tiers[0] || null;
+                },
+                selectTier(id) {
+                    this.selectedTierId = id;
+                },
+                formatAmount(amount) {
+                    const n = Number(amount);
+                    if (!Number.isFinite(n)) return '—';
+                    return n.toLocaleString('vi-VN') + 'đ';
+                }
+            };
+        }
+
+        document.addEventListener('DOMContentLoaded', () => lucide.createIcons());
+    </script>
 }
