@@ -15,8 +15,12 @@ CREATE TABLE contracts (
     StartDate DATE NOT NULL,
     EndDate DATE NULL,
     TotalValue DECIMAL(12,2) NULL,
+    DishValueId INT NULL COMMENT 'FK dish_values — mức giá suất ăn của hợp đồng',
     MealUnitPrice DECIMAL(12,2) NULL COMMENT 'Giá thỏa thuận / suất (đơn vị đặt) — không dùng giá catalog Dish',
+    MealsPerDay INT NULL COMMENT 'Số suất/ngày (HĐ Period-Based)',
     DepositAmount DECIMAL(12,2) NULL,
+    LastWeeklyReminderWeekStart DATE NULL COMMENT 'Tuần đã gửi mail nhắc đặt món',
+    WeeklyAutoFillWeekStart DATE NULL COMMENT 'Tuần đã auto random món chính',
     ContractFileUrl VARCHAR(500) NULL COMMENT 'Đường dẫn file hợp đồng',
     
     -- Digital Signature Info
@@ -34,7 +38,9 @@ CREATE TABLE contracts (
     INDEX IX_contracts_partner (PartnerId),
     INDEX IX_contracts_org (OrganizationId),
     INDEX IX_contracts_status (Status),
+    INDEX IX_contracts_dish_value (DishValueId),
 
     CONSTRAINT FK_contracts_partner FOREIGN KEY (PartnerId) REFERENCES partners (Id) ON DELETE RESTRICT ON UPDATE CASCADE,
-    CONSTRAINT FK_contracts_org FOREIGN KEY (OrganizationId) REFERENCES organizations (Id) ON DELETE RESTRICT ON UPDATE CASCADE
+    CONSTRAINT FK_contracts_org FOREIGN KEY (OrganizationId) REFERENCES organizations (Id) ON DELETE RESTRICT ON UPDATE CASCADE,
+    CONSTRAINT FK_contracts_dish_value FOREIGN KEY (DishValueId) REFERENCES dish_values (Id) ON DELETE RESTRICT ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'Hợp đồng và Chữ ký số';

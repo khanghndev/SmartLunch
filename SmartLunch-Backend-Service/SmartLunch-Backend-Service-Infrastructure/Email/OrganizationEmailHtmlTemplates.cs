@@ -94,6 +94,32 @@ internal static class OrganizationEmailHtmlTemplates
 })}");
     }
 
+    public static string WeeklyMealSelectionReminder(
+        string organizationName,
+        string? contractNumber,
+        DateOnly weekStart,
+        DateOnly weekEnd)
+    {
+        var org = WebUtility.HtmlEncode(organizationName);
+        var contractLabel = WebUtility.HtmlEncode(contractNumber ?? "—");
+        var from = weekStart.ToString("dd/MM/yyyy", Vi);
+        var to = weekEnd.ToString("dd/MM/yyyy", Vi);
+
+        return Wrap(
+            title: "Nhắc đặt món tuần tới",
+            accent: "#0d9488",
+            heroTitle: "Nhắc chọn suất ăn cho tuần tới",
+            heroSubtitle: $"{org} · HĐ <strong>{contractLabel}</strong>",
+            body: $@"
+<p style=""margin:0 0 16px;font-size:15px;line-height:1.6;color:#334155"">
+  Theo hợp đồng đặt suất theo kỳ, vui lòng đăng nhập cổng <strong>HuitMeal</strong> và chọn món cho tuần
+  <strong>{from} – {to}</strong> trước <strong>18:00 thứ Sáu</strong>.
+</p>
+<p style=""margin:0;font-size:13px;line-height:1.55;color:#64748b"">
+  Nếu không chọn món, hệ thống sẽ tự động gán khoảng 5–10 món chính ngẫu nhiên phân bổ theo các ngày trong tuần (cuối ngày thứ Sáu).
+</p>");
+    }
+
     private static string InfoCard(string title, (string label, string value)[] rows)
     {
         var trs = string.Join("", rows.Select(r => $@"

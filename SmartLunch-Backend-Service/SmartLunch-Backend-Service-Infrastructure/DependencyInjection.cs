@@ -25,6 +25,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
             services.AddScoped<ICacheService, RedisCacheService>();
             services.AddScoped<ICartCacheService, CartCacheService>();
             services.AddScoped<IOrganizationMealOrderDraftCache, OrganizationMealOrderDraftCacheService>();
+            services.AddScoped<IOrganizationMealPeriodContractDraftCache, OrganizationMealPeriodContractDraftCacheService>();
             services.AddScoped<IStorageService, AppwriteStorageService>();
             services.AddScoped<IContractPdfService, QuestPdfContractFileService>();
             services.AddScoped<IOrganizationMealDocumentPdfService, QuestPdfOrganizationMealDocumentService>();
@@ -47,6 +48,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
                         type.Name != "FirebaseStorageService" && // Use AppwriteStorageService for IFirebaseStorageService
                         type.Name != "CartCacheService" && // Registered explicitly as ICartCacheService
                         type.Name != "OrganizationMealOrderDraftCacheService" && // Registered explicitly as IOrganizationMealOrderDraftCache
+                        type.Name != "OrganizationMealPeriodContractDraftCacheService" &&
                         type.Name != "MailKitEmailSender" &&
                         type.Name != "OrganizationOrderEmailService" &&
                         !type.Name.EndsWith("Options") && // Exclude options classes

@@ -46,6 +46,8 @@ namespace SmartLunch.Backend.Service.Application.DependencyInjection
             // sealed classes are excluded by the scan above
             services.AddScoped<IPromotionEngine, PromotionEngine>();
             services.AddScoped<OrganizationMealContractDraftPersistence>();
+            services.AddScoped<OrganizationMealContractOrders.OrganizationMealPeriodContractPersistence>();
+            services.AddScoped<OrganizationMealContractOrders.OrganizationMealContractWeeklyJobService>();
         }
     }
 }

@@ -21,4 +21,10 @@ public interface IContractRepository
     Task<Contract> CreateAsync(Contract contract);
     Task<Contract> UpdateAsync(Contract contract);
     Task DeleteAsync(Contract contract);
+
+    Task<Contract?> GetPeriodBasedWithExcludedDatesAsync(int contractId, CancellationToken cancellationToken = default);
+
+    Task ReplaceExcludedDatesAsync(int contractId, IEnumerable<DateOnly> excludedDates, CancellationToken cancellationToken = default);
+
+    Task<List<Contract>> GetActivePeriodBasedContractsAsync(CancellationToken cancellationToken = default);
 }

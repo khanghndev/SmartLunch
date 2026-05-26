@@ -14,6 +14,7 @@ public sealed class OrganizationOrderEmailService : IOrganizationOrderEmailServi
     private readonly IOrganizationMealDocumentPdfService _documentPdfService;
     private readonly IContractPdfService _contractPdfService;
     private readonly IContractRepository _contractRepository;
+    private readonly IOrderRepository _orderRepository;
     private readonly ILogger<OrganizationOrderEmailService> _logger;
 
     public OrganizationOrderEmailService(
@@ -21,12 +22,14 @@ public sealed class OrganizationOrderEmailService : IOrganizationOrderEmailServi
         IOrganizationMealDocumentPdfService documentPdfService,
         IContractPdfService contractPdfService,
         IContractRepository contractRepository,
+        IOrderRepository orderRepository,
         ILogger<OrganizationOrderEmailService> logger)
     {
         _emailSender = emailSender;
         _documentPdfService = documentPdfService;
         _contractPdfService = contractPdfService;
         _contractRepository = contractRepository;
+        _orderRepository = orderRepository;
         _logger = logger;
     }
 
@@ -140,6 +143,33 @@ public sealed class OrganizationOrderEmailService : IOrganizationOrderEmailServi
             cancellationToken: cancellationToken);
 
         order.PaymentReminderSentAt = VietnamTime.Now;
+    }
+
+    public async Task SendWeeklyMealSelectionReminderAsync(
+        Contract contract,
+        DateOnly weekStart,
+        CancellationToken cancellationToken = default)
+    {
+        if (!contract.SourceOrderId.HasValue)
+            return;
+
+        var sourceOrder = await _orderRepository.GetByIdAsync(contract.SourceOrderId.Value);
+        if (string.IsNullOrWhiteSpace(sourceOrder?.RecipientEmail))
+            return;
+
+        var orgName = contract.Organization?.Name ?? "Đơn vị của bạn";
+        var weekEnd = weekStart.AddDays(6);
+        var html = OrganizationEmailHtmlTemplates.WeeklyMealSelectionReminder(
+            orgName,
+            contract.ContractNumber,
+            weekStart,
+            weekEnd);
+
+        await _emailSender.SendAsync(
+            sourceOrder.RecipientEmail,
+            $"[HuitMeal] Nhắc đặt món tuần {weekStart:dd/MM} – {weekEnd:dd/MM}",
+            html,
+            cancellationToken: cancellationToken);
     }
 
     private async Task RegenerateStoredContractPdfAsync(

@@ -33,14 +33,14 @@ public class CreateDishIngredientCommandHandler : IRequestHandler<CreateDishIngr
             throw new KeyNotFoundException($"Dish with ID {req.DishId} not found");
         if (await _ingredientRepository.GetByIdAsync(req.IngredientId) == null)
             throw new KeyNotFoundException($"Ingredient with ID {req.IngredientId} not found");
-        if (await _dishIngredientRepository.ExistsByDishAndIngredientAsync(req.DishId, req.IngredientId))
-            throw new InvalidOperationException("Dish already has this ingredient");
+        if (await _dishIngredientRepository.ExistsByDishAndIngredientAsync(req.DishId, req.IngredientId, req.DishValueId))
+            throw new InvalidOperationException("Dish already has this ingredient for this meal value tier");
 
         var entity = new DishIngredient
         {
-
             DishId = req.DishId,
             IngredientId = req.IngredientId,
+            DishValueId = req.DishValueId,
             Quantity = req.Quantity,
             Unit = req.Unit
         };

@@ -42,6 +42,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<CompanyPublicDocument> CompanyPublicDocuments { get; set; }
         public DbSet<OrganizationLegalDocument> OrganizationLegalDocuments { get; set; }
         public DbSet<Contract> Contracts { get; set; }
+        public DbSet<ContractExcludedDate> ContractExcludedDates { get; set; }
         public DbSet<PartnerPayment> PartnerPayments { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<IngredientSource> IngredientSources { get; set; }
@@ -53,6 +54,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<IngredientActualIntake> IngredientActualIntakes { get; set; }
         public DbSet<IngredientActualIntakeLine> IngredientActualIntakeLines { get; set; }
         public DbSet<CookingMethod> CookingMethods { get; set; }
+        public DbSet<DishValue> DishValues { get; set; }
         public DbSet<Dish> Dishes { get; set; }
         public DbSet<DishCategory> DishCategories { get; set; }
         public DbSet<DishDishCategory> DishDishCategories { get; set; }
@@ -584,6 +586,30 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.DepositAmount).HasPrecision(12, 2);
                 entity.HasOne(e => e.Partner).WithMany(p => p.Contracts).HasForeignKey(e => e.PartnerId).OnDelete(DeleteBehavior.Restrict);
                 entity.HasOne(e => e.Organization).WithMany(o => o.Contracts).HasForeignKey(e => e.OrganizationId).OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(e => e.DishValue).WithMany(dv => dv.Contracts).HasForeignKey(e => e.DishValueId).OnDelete(DeleteBehavior.Restrict);
+            });
+
+            modelBuilder.Entity<ContractExcludedDate>(entity =>
+            {
+                entity.ToTable("contract_excluded_dates");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.ContractId, e.ExcludedDate }).IsUnique();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.HasOne(e => e.Contract)
+                    .WithMany(c => c.ExcludedDates)
+                    .HasForeignKey(e => e.ContractId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // DishValue
+            modelBuilder.Entity<DishValue>(entity =>
+            {
+                entity.ToTable("dish_values");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.Amount).IsUnique();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Amount).HasPrecision(12, 2);
+                entity.Property(e => e.Label).HasMaxLength(100);
             });
 
             // PartnerPayment
@@ -860,14 +886,16 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
             {
                 entity.ToTable("dish_ingredients");
                 entity.HasKey(e => e.Id);
-                entity.HasIndex(e => new { e.DishId, e.IngredientId }).IsUnique();
+                entity.HasIndex(e => new { e.DishId, e.IngredientId, e.DishValueId }).IsUnique();
                 entity.HasIndex(e => e.DishId);
                 entity.HasIndex(e => e.IngredientId);
+                entity.HasIndex(e => e.DishValueId);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Quantity).HasPrecision(10, 2);
                 entity.Property(e => e.Unit).HasMaxLength(20);
                 entity.HasOne(e => e.Dish).WithMany(d => d.DishIngredients).HasForeignKey(e => e.DishId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Ingredient).WithMany(i => i.DishIngredients).HasForeignKey(e => e.IngredientId).OnDelete(DeleteBehavior.Restrict);
+                entity.HasOne(e => e.DishValue).WithMany(dv => dv.DishIngredients).HasForeignKey(e => e.DishValueId).OnDelete(DeleteBehavior.Restrict);
             });
 
             // WeeklyMenu

@@ -23,10 +23,22 @@ public class Contract
     public DateTime? EndDate { get; set; }
     public decimal? TotalValue { get; set; }
 
+    /// <summary>Mức giá suất ăn của hợp đồng (FK dish_values).</summary>
+    public int? DishValueId { get; set; }
+
     /// <summary>Giá / suất thỏa thuận với đơn vị (không lấy từ Dish.Price).</summary>
     public decimal? MealUnitPrice { get; set; }
 
+    /// <summary>Số suất ăn mỗi ngày phục vụ (HĐ Period-Based).</summary>
+    public int? MealsPerDay { get; set; }
+
     public decimal? DepositAmount { get; set; }
+
+    /// <summary>Tuần (Thứ 2) đã gửi email nhắc đặt món.</summary>
+    public DateOnly? LastWeeklyReminderWeekStart { get; set; }
+
+    /// <summary>Tuần (Thứ 2) đã chạy auto random món chính.</summary>
+    public DateOnly? WeeklyAutoFillWeekStart { get; set; }
     public string? ContractFileUrl { get; set; }
     
     // Digital Signature Info
@@ -41,6 +53,8 @@ public class Contract
 
     public virtual Partner Partner { get; set; } = null!;
     public virtual Organization? Organization { get; set; }
+    public virtual DishValue? DishValue { get; set; }
     public virtual ICollection<PartnerPayment> PartnerPayments { get; set; } = new List<PartnerPayment>();
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
+    public virtual ICollection<ContractExcludedDate> ExcludedDates { get; set; } = new List<ContractExcludedDate>();
 }

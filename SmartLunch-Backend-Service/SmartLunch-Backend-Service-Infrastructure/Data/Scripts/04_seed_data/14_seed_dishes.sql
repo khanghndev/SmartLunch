@@ -13,6 +13,7 @@
 --   dessert      : 2 món
 --   noodle_soup  : 2 món composite (+ covers main,soup,vegetable)
 --
+-- BOM chuẩn: dish_ingredients.DishValueId = suất 30.000đ (14b nhân sang 25k/45k/60k).
 -- Budget target: tổng 4 slot ≤ 60,000 VND/ngày
 --   main  ~20,000–28,000 | soup ~7,000–12,000
 --   veg   ~5,000–9,000   | side ~3,000–8,000
@@ -45,23 +46,23 @@ INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, Diet
 ('Thịt bò xào hành tây',  'Beef Stir-Fried with Onion',          'Thịt bò nạc xào hành tây và ớt chuông',            (SELECT Id FROM cooking_methods WHERE MethodKey = 'stir_fried' LIMIT 1), 28000, NULL,    1);
 
 -- BOM — main
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm sườn nướng'        AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm sườn nướng'        AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.25, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà chiên mắm'      AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà chiên mắm'      AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'lít'  FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà chiên mắm'      AND i.Name = 'Nước mắm';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên dương châu'   AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên dương châu'   AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.00, 'quả'  FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên dương châu'   AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên dương châu'   AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho trứng'    AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.00, 'quả'  FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho trứng'    AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'lít'  FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho trứng'    AND i.Name = 'Nước dừa tươi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà kho gừng'           AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà kho gừng'           AND i.Name = 'Gừng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc kho tộ'         AND i.Name = 'Cá lóc';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.14, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào hành tây'  AND i.Name = 'Thịt bò';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào hành tây'  AND i.Name = 'Hành tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm sườn nướng'        AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm sườn nướng'        AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.25, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà chiên mắm'      AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà chiên mắm'      AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'lít'  FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà chiên mắm'      AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên dương châu'   AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên dương châu'   AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.00, 'quả'  FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên dương châu'   AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên dương châu'   AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho trứng'    AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.00, 'quả'  FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho trứng'    AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'lít'  FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho trứng'    AND i.Name = 'Nước dừa tươi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà kho gừng'           AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà kho gừng'           AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc kho tộ'         AND i.Name = 'Cá lóc';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.14, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào hành tây'  AND i.Name = 'Thịt bò';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào hành tây'  AND i.Name = 'Hành tây';
 
 -- MAIN — bổ sung (9 món)
 INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, DietaryLabel, IsActive) VALUES
@@ -75,27 +76,27 @@ INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, Diet
 ('Thịt heo xào sả ớt',      'Lemongrass Chili Pork Stir-Fry',      'Thịt heo xào sả ớt đậm đà',                          (SELECT Id FROM cooking_methods WHERE MethodKey = 'stir_fried' LIMIT 1), 23000, NULL,    1),
 ('Gà hấp gừng',             'Ginger Steamed Chicken',              'Đùi gà hấp gừng mềm ngọt',                            (SELECT Id FROM cooking_methods WHERE MethodKey = 'steamed' LIMIT 1),      20000, NULL,    1);
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm cá basa kho tộ'      AND i.Name = 'Cá basa';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm cá basa kho tộ'      AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít'  FROM dishes d, ingredients i WHERE d.Name = 'Cơm cá basa kho tộ'      AND i.Name = 'Nước mắm';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.16, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo xào cà chua'    AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo xào cà chua'    AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà nướng sả'             AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà nướng sả'             AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà nướng sả'             AND i.Name = 'Gừng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Tôm rang me'             AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Tôm rang me'             AND i.Name = 'Đường cát trắng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cá basa chiên giòn'      AND i.Name = 'Cá basa';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít'  FROM dishes d, ingredients i WHERE d.Name = 'Cá basa chiên giòn'      AND i.Name = 'Dầu thực vật';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.13, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bò xào cà chua'          AND i.Name = 'Thịt bò';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bò xào cà chua'          AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm rang thịt gà'        AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm rang thịt gà'        AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.00, 'quả'  FROM dishes d, ingredients i WHERE d.Name = 'Cơm rang thịt gà'        AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.17, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo xào sả ớt'      AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo xào sả ớt'      AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà hấp gừng'             AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà hấp gừng'             AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm cá basa kho tộ'      AND i.Name = 'Cá basa';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm cá basa kho tộ'      AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít'  FROM dishes d, ingredients i WHERE d.Name = 'Cơm cá basa kho tộ'      AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.16, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo xào cà chua'    AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo xào cà chua'    AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà nướng sả'             AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà nướng sả'             AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà nướng sả'             AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Tôm rang me'             AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Tôm rang me'             AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cá basa chiên giòn'      AND i.Name = 'Cá basa';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít'  FROM dishes d, ingredients i WHERE d.Name = 'Cá basa chiên giòn'      AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.13, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bò xào cà chua'          AND i.Name = 'Thịt bò';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bò xào cà chua'          AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm rang thịt gà'        AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Cơm rang thịt gà'        AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.00, 'quả'  FROM dishes d, ingredients i WHERE d.Name = 'Cơm rang thịt gà'        AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.17, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo xào sả ớt'      AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo xào sả ớt'      AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà hấp gừng'             AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Gà hấp gừng'             AND i.Name = 'Gừng';
 
 -- ════════════════════════════════════════════════════
 --  SOUP — 5 + 6 món (chi phí thấp, phù hợp gộp vào budget)
@@ -108,16 +109,16 @@ INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, Diet
 ('Canh mồng tơi tôm',      'Malabar Spinach Shrimp Soup',     'Canh mồng tơi nấu tôm sú tươi',                    (SELECT Id FROM cooking_methods WHERE MethodKey = 'boiled' LIMIT 1),  9000, NULL,    1);
 
 -- BOM — soup
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh chua tôm'           AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh chua tôm'           AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh bí đỏ thịt bằm'    AND i.Name = 'Bí đỏ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh bí đỏ thịt bằm'    AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt thịt bằm' AND i.Name = 'Cải ngọt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt thịt bằm' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua nhồi thịt' AND i.Name = 'Khổ qua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua nhồi thịt' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi tôm'      AND i.Name = 'Mồng tơi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.06, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi tôm'      AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh chua tôm'           AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh chua tôm'           AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh bí đỏ thịt bằm'    AND i.Name = 'Bí đỏ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh bí đỏ thịt bằm'    AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt thịt bằm' AND i.Name = 'Cải ngọt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt thịt bằm' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua nhồi thịt' AND i.Name = 'Khổ qua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua nhồi thịt' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi tôm'      AND i.Name = 'Mồng tơi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.06, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi tôm'      AND i.Name = 'Tôm sú';
 
 -- SOUP — bổ sung (6 món)
 INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, DietaryLabel, IsActive) VALUES
@@ -128,19 +129,19 @@ INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, Diet
 ('Canh cải ngọt cà chua',   'Bok Choy Tomato Soup',                'Cải ngọt nấu cà chua tươi',                         (SELECT Id FROM cooking_methods WHERE MethodKey = 'boiled' LIMIT 1),  7000, 'vegan', 1),
 ('Canh khổ qua cà chua',    'Bitter Melon Tomato Soup',            'Khổ qua nấu cà chua giảm đắng',                    (SELECT Id FROM cooking_methods WHERE MethodKey = 'boiled' LIMIT 1),  9000, NULL,    1);
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh rau củ thịt bằm'    AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh rau củ thịt bằm'    AND i.Name = 'Khoai tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh rau củ thịt bằm'    AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh cà chua trứng'      AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Canh cà chua trứng'      AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Canh đậu hũ cà chua'     AND i.Name = 'Đậu hũ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh đậu hũ cà chua'     AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khoai tây thịt bằm' AND i.Name = 'Khoai tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khoai tây thịt bằm' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt cà chua'   AND i.Name = 'Cải ngọt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt cà chua'   AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua cà chua'    AND i.Name = 'Khổ qua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua cà chua'    AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh rau củ thịt bằm'    AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh rau củ thịt bằm'    AND i.Name = 'Khoai tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh rau củ thịt bằm'    AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh cà chua trứng'      AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Canh cà chua trứng'      AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Canh đậu hũ cà chua'     AND i.Name = 'Đậu hũ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh đậu hũ cà chua'     AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khoai tây thịt bằm' AND i.Name = 'Khoai tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khoai tây thịt bằm' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt cà chua'   AND i.Name = 'Cải ngọt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt cà chua'   AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua cà chua'    AND i.Name = 'Khổ qua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg'  FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua cà chua'    AND i.Name = 'Cà chua';
 
 -- ════════════════════════════════════════════════════
 --  VEGETABLE — 5 + 5 món
@@ -153,16 +154,16 @@ INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, Diet
 ('Bí đỏ xào tôm',      'Pumpkin Stir-Fried with Shrimp',      'Bí đỏ non xào tôm sú tươi',                   (SELECT Id FROM cooking_methods WHERE MethodKey = 'stir_fried' LIMIT 1), 7000, NULL,    1);
 
 -- BOM — vegetable
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.30, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào tỏi'  AND i.Name = 'Rau muống';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào tỏi'  AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ sốt cà chua' AND i.Name = 'Đậu hũ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ sốt cà chua' AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.25, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi'   AND i.Name = 'Cải ngọt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi'   AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào thịt'  AND i.Name = 'Đậu cove';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào thịt'  AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào tôm'      AND i.Name = 'Bí đỏ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào tôm'      AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.30, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào tỏi'  AND i.Name = 'Rau muống';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào tỏi'  AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ sốt cà chua' AND i.Name = 'Đậu hũ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ sốt cà chua' AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.25, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi'   AND i.Name = 'Cải ngọt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi'   AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào thịt'  AND i.Name = 'Đậu cove';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào thịt'  AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào tôm'      AND i.Name = 'Bí đỏ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào tôm'      AND i.Name = 'Tôm sú';
 
 -- VEGETABLE — bổ sung (5 món)
 INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, DietaryLabel, IsActive) VALUES
@@ -172,15 +173,15 @@ INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, Diet
 ('Cải ngọt luộc',      'Blanched Bok Choy',          'Cải ngọt luộc vừa chín giòn',       (SELECT Id FROM cooking_methods WHERE MethodKey = 'boiled' LIMIT 1),     4500, 'vegan', 1),
 ('Cà chua xào trứng',  'Tomato Egg Stir-Fry',        'Cà chua xào trứng đậm đà',           (SELECT Id FROM cooking_methods WHERE MethodKey = 'stir_fried' LIMIT 1), 6500, NULL,    1);
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt xào trứng'   AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 2.00, 'quả'   FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt xào trứng'   AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây xào thịt' AND i.Name = 'Khoai tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.06, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây xào thịt' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào tỏi'      AND i.Name = 'Bí đỏ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào tỏi'      AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.28, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt luộc'     AND i.Name = 'Cải ngọt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cà chua xào trứng' AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 2.00, 'quả'   FROM dishes d, ingredients i WHERE d.Name = 'Cà chua xào trứng' AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt xào trứng'   AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 2.00, 'quả'   FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt xào trứng'   AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây xào thịt' AND i.Name = 'Khoai tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.06, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây xào thịt' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào tỏi'      AND i.Name = 'Bí đỏ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào tỏi'      AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.28, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt luộc'     AND i.Name = 'Cải ngọt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cà chua xào trứng' AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 2.00, 'quả'   FROM dishes d, ingredients i WHERE d.Name = 'Cà chua xào trứng' AND i.Name = 'Trứng gà';
 
 -- ════════════════════════════════════════════════════
 --  SIDE — 5 + 4 món (giá thấp, đa dạng cooking method)
@@ -193,12 +194,12 @@ INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, Diet
 ('Dưa leo trộn',       'Cucumber Salad',     'Dưa leo Đà Lạt trộn tỏi ớt chua ngọt',     (SELECT Id FROM cooking_methods WHERE MethodKey = 'raw' LIMIT 1),    3000, 'vegan', 1);
 
 -- BOM — side
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 2.00, 'quả'   FROM dishes d, ingredients i WHERE d.Name = 'Trứng chiên'       AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây chiên'   AND i.Name = 'Khoai tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ chiên giòn' AND i.Name = 'Đậu hũ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.00, 'quả'   FROM dishes d, ingredients i WHERE d.Name = 'Trứng luộc'        AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Dưa leo trộn'      AND i.Name = 'Dưa leo';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Dưa leo trộn'      AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 2.00, 'quả'   FROM dishes d, ingredients i WHERE d.Name = 'Trứng chiên'       AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây chiên'   AND i.Name = 'Khoai tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ chiên giòn' AND i.Name = 'Đậu hũ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.00, 'quả'   FROM dishes d, ingredients i WHERE d.Name = 'Trứng luộc'        AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Dưa leo trộn'      AND i.Name = 'Dưa leo';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Dưa leo trộn'      AND i.Name = 'Tỏi';
 
 -- SIDE — bổ sung (4 món)
 INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, DietaryLabel, IsActive) VALUES
@@ -207,25 +208,25 @@ INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, Diet
 ('Khoai tây luộc',       'Boiled Potato',         'Khoai tây luộc chín mềm',           (SELECT Id FROM cooking_methods WHERE MethodKey = 'boiled' LIMIT 1), 5500, 'vegan', 1),
 ('Cà rốt muối chua',     'Pickled Carrot',        'Cà rốt ngâm chua ngọt giòn',         (SELECT Id FROM cooking_methods WHERE MethodKey = 'raw' LIMIT 1),    3500, 'vegan', 1);
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà rốt' AND i.Name = 'Dưa leo';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà rốt' AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Sốt cà chua chấm'     AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Sốt cà chua chấm'     AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây luộc'       AND i.Name = 'Khoai tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt muối chua'     AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt muối chua'     AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà rốt' AND i.Name = 'Dưa leo';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà rốt' AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Sốt cà chua chấm'     AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Sốt cà chua chấm'     AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây luộc'       AND i.Name = 'Khoai tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt muối chua'     AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt muối chua'     AND i.Name = 'Đường cát trắng';
 
 -- DESSERT — 2 món (nguyên liệu có sẵn trong seed ingredients)
 INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, DietaryLabel, IsActive) VALUES
 ('Chè bí đỏ',      'Sweet Pumpkin Dessert', 'Bí đỏ hầm nước dừa đường thanh mát', (SELECT Id FROM cooking_methods WHERE MethodKey = 'stewed' LIMIT 1), 8000, 'vegan', 1),
 ('Trái cây dầm',   'Fruit in Syrup',        'Dưa leo cà rốt dầm đường lạnh',       (SELECT Id FROM cooking_methods WHERE MethodKey = 'raw' LIMIT 1),    7000, 'vegan', 1);
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ'      AND i.Name = 'Bí đỏ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.04, 'lít'   FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ'      AND i.Name = 'Nước dừa tươi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ'      AND i.Name = 'Đường cát trắng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Trái cây dầm'  AND i.Name = 'Dưa leo';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Trái cây dầm'  AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Trái cây dầm'  AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ'      AND i.Name = 'Bí đỏ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.04, 'lít'   FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ'      AND i.Name = 'Nước dừa tươi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ'      AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Trái cây dầm'  AND i.Name = 'Dưa leo';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Trái cây dầm'  AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'kg'    FROM dishes d, ingredients i WHERE d.Name = 'Trái cây dầm'  AND i.Name = 'Đường cát trắng';
 
 -- ════════════════════════════════════════════════════
 --  NOODLE_SOUP — composite (1 phần = main + soup + vegetable trong meal_structure)
@@ -234,20 +235,20 @@ INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, Diet
 ('Phở bò', 'Beef Pho', 'Bánh phở, nước dùng hầm xương, thịt bò tái/chín, hành gừng; kèm rau thơm', (SELECT Id FROM cooking_methods WHERE MethodKey = 'boiled' LIMIT 1), 45000, NULL, 1),
 ('Bánh canh cua', 'Crab Banh Canh', 'Sợi bánh canh gạo, nước dùng hải sản, tôm/chả cua kiểu Nam Bộ, rau thơm', (SELECT Id FROM cooking_methods WHERE MethodKey = 'boiled' LIMIT 1), 42000, NULL, 1);
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.14, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Thịt bò';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Nước mắm';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.04, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Hành tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Hành tím';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Gừng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.06, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Rau muống';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.14, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Thịt bò';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.04, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Hành tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.06, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Phở bò'           AND i.Name = 'Rau muống';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Nước mắm';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Hành tím';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Mồng tơi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg'   FROM dishes d, ingredients i WHERE d.Name = 'Bánh canh cua'    AND i.Name = 'Mồng tơi';
 
 -- ════════════════════════════════════════════════════
 --  DISH_CATEGORIES + dish_dish_categories (slot AI)
@@ -395,290 +396,290 @@ INSERT INTO dishes (Name, NameEnglish, Description, CookingMethodId, Price, Diet
 -- ════════════════════════════════════════════════════
 
 -- 1. BOM — Main
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sườn xào chua ngọt' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sườn xào chua ngọt' AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sườn xào chua ngọt' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sườn xào chua ngọt' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sườn xào chua ngọt' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sườn xào chua ngọt' AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sườn xào chua ngọt' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sườn xào chua ngọt' AND i.Name = 'Đường cát trắng';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc hấp hành gừng' AND i.Name = 'Cá lóc';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc hấp hành gừng' AND i.Name = 'Gừng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc hấp hành gừng' AND i.Name = 'Hành tím';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc hấp hành gừng' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc hấp hành gừng' AND i.Name = 'Cá lóc';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc hấp hành gừng' AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc hấp hành gừng' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc hấp hành gừng' AND i.Name = 'Tỏi';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt kho tàu nước dừa' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Thịt kho tàu nước dừa' AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt kho tàu nước dừa' AND i.Name = 'Nước dừa tươi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt kho tàu nước dừa' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt kho tàu nước dừa' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Thịt kho tàu nước dừa' AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt kho tàu nước dừa' AND i.Name = 'Nước dừa tươi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt kho tàu nước dừa' AND i.Name = 'Nước mắm';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà chiên nước mắm' AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Gà chiên nước mắm' AND i.Name = 'Nước mắm';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà chiên nước mắm' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Gà chiên nước mắm' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà chiên nước mắm' AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Gà chiên nước mắm' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà chiên nước mắm' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Gà chiên nước mắm' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.14, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào đậu cove' AND i.Name = 'Thịt bò';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào đậu cove' AND i.Name = 'Đậu cove';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào đậu cove' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào đậu cove' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.14, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào đậu cove' AND i.Name = 'Thịt bò';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào đậu cove' AND i.Name = 'Đậu cove';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào đậu cove' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào đậu cove' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm ram mặn ngọt' AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm ram mặn ngọt' AND i.Name = 'Hành tím';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm ram mặn ngọt' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Tôm ram mặn ngọt' AND i.Name = 'Nước mắm';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm ram mặn ngọt' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm ram mặn ngọt' AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm ram mặn ngọt' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm ram mặn ngọt' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Tôm ram mặn ngọt' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm ram mặn ngọt' AND i.Name = 'Đường cát trắng';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên tỏi trứng' AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên tỏi trứng' AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên tỏi trứng' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên tỏi trứng' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên tỏi trứng' AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên tỏi trứng' AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên tỏi trứng' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên tỏi trứng' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ dồn thịt sốt cà chua' AND i.Name = 'Đậu hũ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ dồn thịt sốt cà chua' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ dồn thịt sốt cà chua' AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ dồn thịt sốt cà chua' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ dồn thịt sốt cà chua' AND i.Name = 'Đậu hũ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ dồn thịt sốt cà chua' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ dồn thịt sốt cà chua' AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ dồn thịt sốt cà chua' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc chiên giòn' AND i.Name = 'Cá lóc';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc chiên giòn' AND i.Name = 'Dầu thực vật';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc chiên giòn' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc chiên giòn' AND i.Name = 'Cá lóc';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc chiên giòn' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cá lóc chiên giòn' AND i.Name = 'Nước mắm';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà xào sả ớt' AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà xào sả ớt' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Gà xào sả ớt' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà xào sả ớt' AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà xào sả ớt' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Gà xào sả ớt' AND i.Name = 'Nước mắm';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo luộc' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo luộc' AND i.Name = 'Thịt heo nạc vai';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào tỏi' AND i.Name = 'Thịt bò';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào tỏi' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào tỏi' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào tỏi' AND i.Name = 'Thịt bò';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào tỏi' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào tỏi' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm nướng muối ớt' AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm nướng muối ớt' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Tôm nướng muối ớt' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm nướng muối ớt' AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm nướng muối ớt' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Tôm nướng muối ớt' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà hấp hành' AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà hấp hành' AND i.Name = 'Hành tím';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà hấp hành' AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà hấp hành' AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà hấp hành' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà hấp hành' AND i.Name = 'Gừng';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá basa kho gừng' AND i.Name = 'Cá basa';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá basa kho gừng' AND i.Name = 'Gừng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá basa kho gừng' AND i.Name = 'Đường cát trắng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cá basa kho gừng' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá basa kho gừng' AND i.Name = 'Cá basa';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá basa kho gừng' AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cá basa kho gừng' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cá basa kho gừng' AND i.Name = 'Nước mắm';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên hải sản' AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên hải sản' AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên hải sản' AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên hải sản' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên hải sản' AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên hải sản' AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên hải sản' AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cơm chiên hải sản' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt nướng sả' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt nướng sả' AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt nướng sả' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt nướng sả' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt nướng sả' AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt nướng sả' AND i.Name = 'Tỏi';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà kho sả ớt' AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà kho sả ớt' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà kho sả ớt' AND i.Name = 'Đường cát trắng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Gà kho sả ớt' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà kho sả ớt' AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà kho sả ớt' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Gà kho sả ớt' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Gà kho sả ớt' AND i.Name = 'Nước mắm';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho gừng' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho gừng' AND i.Name = 'Gừng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho gừng' AND i.Name = 'Đường cát trắng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho gừng' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho gừng' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho gừng' AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho gừng' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt heo kho gừng' AND i.Name = 'Nước mắm';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm chiên bột giòn' AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Tôm chiên bột giòn' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Tôm chiên bột giòn' AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Tôm chiên bột giòn' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.14, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào hành tây sả' AND i.Name = 'Thịt bò';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào hành tây sả' AND i.Name = 'Hành tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào hành tây sả' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.14, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào hành tây sả' AND i.Name = 'Thịt bò';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào hành tây sả' AND i.Name = 'Hành tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Thịt bò xào hành tây sả' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà luộc' AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà luộc' AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà luộc' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà luộc' AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà luộc' AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm gà luộc' AND i.Name = 'Hành tím';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 3.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ kho tộ mặn ngọt' AND i.Name = 'Đậu hũ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ kho tộ mặn ngọt' AND i.Name = 'Đường cát trắng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ kho tộ mặn ngọt' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 3.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ kho tộ mặn ngọt' AND i.Name = 'Đậu hũ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ kho tộ mặn ngọt' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ kho tộ mặn ngọt' AND i.Name = 'Nước mắm';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.16, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt xá xíu' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt xá xíu' AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt xá xíu' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.16, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt xá xíu' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt xá xíu' AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cơm thịt xá xíu' AND i.Name = 'Tỏi';
 
 -- 2. BOM — Soup
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh thịt bằm khoai tây cà rốt' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh thịt bằm khoai tây cà rốt' AND i.Name = 'Khoai tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh thịt bằm khoai tây cà rốt' AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh thịt bằm khoai tây cà rốt' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh thịt bằm khoai tây cà rốt' AND i.Name = 'Khoai tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh thịt bằm khoai tây cà rốt' AND i.Name = 'Cà rốt';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá lóc nấu chua' AND i.Name = 'Cá lóc';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá lóc nấu chua' AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá lóc nấu chua' AND i.Name = 'Nước mắm';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá lóc nấu chua' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá lóc nấu chua' AND i.Name = 'Cá lóc';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá lóc nấu chua' AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá lóc nấu chua' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá lóc nấu chua' AND i.Name = 'Đường cát trắng';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Canh trứng đậu hũ cà chua' AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Canh trứng đậu hũ cà chua' AND i.Name = 'Đậu hũ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh trứng đậu hũ cà chua' AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh trứng đậu hũ cà chua' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Canh trứng đậu hũ cà chua' AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Canh trứng đậu hũ cà chua' AND i.Name = 'Đậu hũ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh trứng đậu hũ cà chua' AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh trứng đậu hũ cà chua' AND i.Name = 'Hành tím';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh bí đỏ nấu tôm' AND i.Name = 'Bí đỏ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh bí đỏ nấu tôm' AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh bí đỏ nấu tôm' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh bí đỏ nấu tôm' AND i.Name = 'Bí đỏ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh bí đỏ nấu tôm' AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh bí đỏ nấu tôm' AND i.Name = 'Hành tím';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt nấu tôm' AND i.Name = 'Cải ngọt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt nấu tôm' AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt nấu tôm' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt nấu tôm' AND i.Name = 'Cải ngọt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt nấu tôm' AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cải ngọt nấu tôm' AND i.Name = 'Hành tím';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua thịt bằm' AND i.Name = 'Khổ qua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua thịt bằm' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua thịt bằm' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua thịt bằm' AND i.Name = 'Khổ qua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua thịt bằm' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Canh khổ qua thịt bằm' AND i.Name = 'Nước mắm';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi thịt bằm' AND i.Name = 'Mồng tơi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi thịt bằm' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi thịt bằm' AND i.Name = 'Mồng tơi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi thịt bằm' AND i.Name = 'Thịt heo nạc vai';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cà chua nấu tôm' AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cà chua nấu tôm' AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Canh cà chua nấu tôm' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cà chua nấu tôm' AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cà chua nấu tôm' AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Canh cà chua nấu tôm' AND i.Name = 'Nước mắm';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh gà nấu gừng' AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh gà nấu gừng' AND i.Name = 'Gừng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Canh gà nấu gừng' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh gà nấu gừng' AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh gà nấu gừng' AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Canh gà nấu gừng' AND i.Name = 'Nước mắm';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá basa nấu chua ngót' AND i.Name = 'Cá basa';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá basa nấu chua ngót' AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá basa nấu chua ngót' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá basa nấu chua ngót' AND i.Name = 'Cá basa';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá basa nấu chua ngót' AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Canh cá basa nấu chua ngót' AND i.Name = 'Nước mắm';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh gà hành tây' AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh gà hành tây' AND i.Name = 'Hành tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.12, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh gà hành tây' AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh gà hành tây' AND i.Name = 'Hành tây';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh rau muống nấu cà chua' AND i.Name = 'Rau muống';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh rau muống nấu cà chua' AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh rau muống nấu cà chua' AND i.Name = 'Rau muống';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh rau muống nấu cà chua' AND i.Name = 'Cà chua';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Canh đậu hũ cải ngọt' AND i.Name = 'Đậu hũ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh đậu hũ cải ngọt' AND i.Name = 'Cải ngọt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Canh đậu hũ cải ngọt' AND i.Name = 'Đậu hũ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh đậu hũ cải ngọt' AND i.Name = 'Cải ngọt';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi hành tím' AND i.Name = 'Mồng tơi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi hành tím' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi hành tím' AND i.Name = 'Mồng tơi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Canh mồng tơi hành tím' AND i.Name = 'Hành tím';
 
 -- 3. BOM — Vegetable
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.28, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Rau muống luộc' AND i.Name = 'Rau muống';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.28, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Rau muống luộc' AND i.Name = 'Rau muống';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào thịt bò' AND i.Name = 'Cải ngọt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào thịt bò' AND i.Name = 'Thịt bò';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào thịt bò' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào thịt bò' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào thịt bò' AND i.Name = 'Cải ngọt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào thịt bò' AND i.Name = 'Thịt bò';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào thịt bò' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào thịt bò' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tỏi' AND i.Name = 'Đậu cove';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tỏi' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tỏi' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tỏi' AND i.Name = 'Đậu cove';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tỏi' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tỏi' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào hành tím' AND i.Name = 'Bí đỏ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào hành tím' AND i.Name = 'Hành tím';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào hành tím' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào hành tím' AND i.Name = 'Bí đỏ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào hành tím' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ xào hành tím' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt xào tỏi' AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt xào tỏi' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt xào tỏi' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt xào tỏi' AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt xào tỏi' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt xào tỏi' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây xào tỏi' AND i.Name = 'Khoai tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây xào tỏi' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây xào tỏi' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây xào tỏi' AND i.Name = 'Khoai tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây xào tỏi' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây xào tỏi' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tôm' AND i.Name = 'Đậu cove';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tôm' AND i.Name = 'Tôm sú';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tôm' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tôm' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tôm' AND i.Name = 'Đậu cove';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tôm' AND i.Name = 'Tôm sú';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tôm' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove xào tôm' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 1.50, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ xào rau củ' AND i.Name = 'Đậu hũ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ xào rau củ' AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ xào rau củ' AND i.Name = 'Đậu cove';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ xào rau củ' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 1.50, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ xào rau củ' AND i.Name = 'Đậu hũ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ xào rau củ' AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.08, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ xào rau củ' AND i.Name = 'Đậu cove';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ xào rau củ' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào thịt bò' AND i.Name = 'Rau muống';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào thịt bò' AND i.Name = 'Thịt bò';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào thịt bò' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào thịt bò' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào thịt bò' AND i.Name = 'Rau muống';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.06, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào thịt bò' AND i.Name = 'Thịt bò';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào thịt bò' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Rau muống xào thịt bò' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi gừng' AND i.Name = 'Cải ngọt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi gừng' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi gừng' AND i.Name = 'Gừng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi gừng' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi gừng' AND i.Name = 'Cải ngọt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi gừng' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi gừng' AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Cải ngọt xào tỏi gừng' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ luộc' AND i.Name = 'Bí đỏ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt luộc' AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây luộc chín' AND i.Name = 'Khoai tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove luộc' AND i.Name = 'Đậu cove';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bí đỏ luộc' AND i.Name = 'Bí đỏ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt luộc' AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây luộc chín' AND i.Name = 'Khoai tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.22, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu cove luộc' AND i.Name = 'Đậu cove';
 
 -- 4. BOM — Side
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 2.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Trứng cuộn chiên hành' AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Trứng cuộn chiên hành' AND i.Name = 'Hành tím';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Trứng cuộn chiên hành' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 2.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Trứng cuộn chiên hành' AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Trứng cuộn chiên hành' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Trứng cuộn chiên hành' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây nghiền hành tím' AND i.Name = 'Khoai tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây nghiền hành tím' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây nghiền hành tím' AND i.Name = 'Khoai tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây nghiền hành tím' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ chiên sả ớt' AND i.Name = 'Đậu hũ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ chiên sả ớt' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ chiên sả ớt' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ chiên sả ớt' AND i.Name = 'Đậu hũ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ chiên sả ớt' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ chiên sả ớt' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Dưa leo muối chua' AND i.Name = 'Dưa leo';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Dưa leo muối chua' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Dưa leo muối chua' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Dưa leo muối chua' AND i.Name = 'Dưa leo';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Dưa leo muối chua' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Dưa leo muối chua' AND i.Name = 'Đường cát trắng';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt trộn chua ngọt' AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt trộn chua ngọt' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt trộn chua ngọt' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt trộn chua ngọt' AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt trộn chua ngọt' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt trộn chua ngọt' AND i.Name = 'Đường cát trắng';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà chua' AND i.Name = 'Dưa leo';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà chua' AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà chua' AND i.Name = 'Hành tím';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà chua' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà chua' AND i.Name = 'Dưa leo';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà chua' AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà chua' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo cà chua' AND i.Name = 'Đường cát trắng';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 2.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Trứng hấp thịt bằm' AND i.Name = 'Trứng gà';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Trứng hấp thịt bằm' AND i.Name = 'Thịt heo nạc vai';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Trứng hấp thịt bằm' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 2.00, 'quả' FROM dishes d, ingredients i WHERE d.Name = 'Trứng hấp thịt bằm' AND i.Name = 'Trứng gà';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Trứng hấp thịt bằm' AND i.Name = 'Thịt heo nạc vai';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Trứng hấp thịt bằm' AND i.Name = 'Hành tím';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ luộc chín' AND i.Name = 'Đậu hũ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 2.00, 'miếng' FROM dishes d, ingredients i WHERE d.Name = 'Đậu hũ luộc chín' AND i.Name = 'Đậu hũ';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây chiên lắc tỏi' AND i.Name = 'Khoai tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây chiên lắc tỏi' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây chiên lắc tỏi' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây chiên lắc tỏi' AND i.Name = 'Khoai tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây chiên lắc tỏi' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Khoai tây chiên lắc tỏi' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo hành tím' AND i.Name = 'Dưa leo';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo hành tím' AND i.Name = 'Hành tím';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo hành tím' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo hành tím' AND i.Name = 'Dưa leo';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo hành tím' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Salad dưa leo hành tím' AND i.Name = 'Đường cát trắng';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sốt cà chua hành tỏi' AND i.Name = 'Cà chua';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sốt cà chua hành tỏi' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Sốt cà chua hành tỏi' AND i.Name = 'Dầu thực vật';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sốt cà chua hành tỏi' AND i.Name = 'Cà chua';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Sốt cà chua hành tỏi' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Sốt cà chua hành tỏi' AND i.Name = 'Dầu thực vật';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt dưa leo muối' AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt dưa leo muối' AND i.Name = 'Dưa leo';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt dưa leo muối' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt dưa leo muối' AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt dưa leo muối' AND i.Name = 'Dưa leo';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt dưa leo muối' AND i.Name = 'Đường cát trắng';
 
 -- 5. BOM — Dessert
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Chè khoai tây đường cát' AND i.Name = 'Khoai tây';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Chè khoai tây đường cát' AND i.Name = 'Đường cát trắng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.04, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Chè khoai tây đường cát' AND i.Name = 'Nước dừa tươi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.20, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Chè khoai tây đường cát' AND i.Name = 'Khoai tây';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Chè khoai tây đường cát' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.04, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Chè khoai tây đường cát' AND i.Name = 'Nước dừa tươi';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.25, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Nước dừa tươi ngọt lành' AND i.Name = 'Nước dừa tươi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.25, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Nước dừa tươi ngọt lành' AND i.Name = 'Nước dừa tươi';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt ngào đường' AND i.Name = 'Cà rốt';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt ngào đường' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.15, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt ngào đường' AND i.Name = 'Cà rốt';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Cà rốt ngào đường' AND i.Name = 'Đường cát trắng';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ nước dừa ngọt' AND i.Name = 'Bí đỏ';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.05, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ nước dừa ngọt' AND i.Name = 'Nước dừa tươi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.03, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ nước dừa ngọt' AND i.Name = 'Đường cát trắng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.18, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ nước dừa ngọt' AND i.Name = 'Bí đỏ';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.05, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ nước dừa ngọt' AND i.Name = 'Nước dừa tươi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.03, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Chè bí đỏ nước dừa ngọt' AND i.Name = 'Đường cát trắng';
 
 -- 6. BOM — Noodle Soup
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.14, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Thịt bò';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Nước mắm';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Gừng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.14, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Thịt bò';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún bò nạm bò' AND i.Name = 'Hành tím';
 
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.14, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Thịt gà ta';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Gạo ST25';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Nước mắm';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Tỏi';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Gừng';
-INSERT INTO dish_ingredients (DishId, IngredientId, Quantity, Unit) SELECT d.Id, i.Id, 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Hành tím';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.14, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Thịt gà ta';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.10, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Gạo ST25';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.02, 'lít' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Nước mắm';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Tỏi';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Gừng';
+INSERT INTO dish_ingredients (DishId, IngredientId, DishValueId, Quantity, Unit) SELECT d.Id, i.Id, (SELECT Id FROM dish_values WHERE Amount = 30000 LIMIT 1), 0.01, 'kg' FROM dishes d, ingredients i WHERE d.Name = 'Bún gà xé phay' AND i.Name = 'Hành tím';
 
 -- ════════════════════════════════════════════════════
 --  GÁN SLOT BỮA ĂN CHO 70 MÓN MỚI (DISH_DISH_CATEGORIES)

@@ -23,6 +23,7 @@ INSERT INTO code_prefixes (TableName, Prefix, Description, LastSequence) VALUES
 ('organizations','ORG','Đơn vị',0),
 ('user_organizations','UOR','Thành viên đơn vị',0),
 ('partners','PTN','Nhà cung cấp',0),
+('dish_values','DVL','Mức giá suất ăn',0),
 ('contracts','CTR','Hợp đồng',0),
 ('partner_payments','PPM','Thanh toán NCC',0),
 ('ingredients','IGR','Nguyên liệu',0),

@@ -39,9 +39,12 @@ SOURCE migrations/56_contact_inquiries.sql;
 SOURCE migrations/57_warehousestaff_partner_payment_create.sql;
 SOURCE migrations/58_orders_recipient_delivery_email.sql;
 SOURCE migrations/59_organization_legal_documents.sql;
+SOURCE migrations/60_dish_values.sql;
+SOURCE migrations/61_period_based_contracts.sql;
 
 SOURCE 04_seed_data/11b_seed_spice_ingredients.sql;
 SOURCE 04_seed_data/20_seed_dish_seasonings.sql;
+SOURCE 04_seed_data/14b_clone_dish_ingredients_by_value.sql;
 SOURCE 04_seed_data/19_seed_dish_images.sql;
 
 -- ---------- Tối ưu thống kê (tùy chọn, an toàn) ----------

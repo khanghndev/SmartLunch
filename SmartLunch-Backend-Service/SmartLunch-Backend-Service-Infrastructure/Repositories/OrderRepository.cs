@@ -1,8 +1,10 @@
 using Microsoft.EntityFrameworkCore;
+using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Infrastructure.Data;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Orders;
+using SmartLunch.Backend.Service.Domain.Time;
 
 namespace SmartLunch.Backend.Service.Infrastructure.Repositories;
 
@@ -256,5 +258,36 @@ public class OrderRepository : IOrderRepository
             .OrderBy(o => o.AnnexSignedAt)
             .Take(maxCount)
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<Order?> GetContractWeekOrderAsync(
+        int contractId,
+        DateOnly weekMonday,
+        CancellationToken cancellationToken = default)
+    {
+        var scheduledUtc = VietnamTime.CalendarDateMidnight(weekMonday);
+        return await _context.Orders
+            .Include(o => o.OrderItems).ThenInclude(i => i.Dish).ThenInclude(d => d.DishDishCategories).ThenInclude(ddc => ddc.DishCategory)
+            .FirstOrDefaultAsync(
+                o => o.ContractId == contractId && o.ScheduledDate == scheduledUtc,
+                cancellationToken);
+    }
+
+    public async Task<bool> ContractWeekHasMainItemsAsync(
+        int contractId,
+        DateOnly weekMonday,
+        CancellationToken cancellationToken = default)
+    {
+        var scheduledUtc = VietnamTime.CalendarDateMidnight(weekMonday);
+        return await _context.OrderItems
+            .AnyAsync(
+                i => i.Order != null &&
+                     i.Order.ContractId == contractId &&
+                     i.Order.ScheduledDate == scheduledUtc &&
+                     i.ServiceDate != null &&
+                     i.Dish.DishDishCategories.Any(ddc =>
+                         ddc.DishCategory != null &&
+                         string.Equals(ddc.DishCategory.SlotKey, "main", StringComparison.OrdinalIgnoreCase)),
+                cancellationToken);
     }
 }

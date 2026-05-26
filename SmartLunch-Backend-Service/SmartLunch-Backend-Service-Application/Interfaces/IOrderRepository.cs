@@ -37,4 +37,15 @@ public interface IOrderRepository
         DateTime annexSignedBefore,
         int maxCount,
         CancellationToken cancellationToken = default);
+
+    /// <summary>Đơn tuần gắn HĐ (ScheduledDate = Thứ 2 tuần đó).</summary>
+    Task<Order?> GetContractWeekOrderAsync(
+        int contractId,
+        DateOnly weekMonday,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> ContractWeekHasMainItemsAsync(
+        int contractId,
+        DateOnly weekMonday,
+        CancellationToken cancellationToken = default);
 }

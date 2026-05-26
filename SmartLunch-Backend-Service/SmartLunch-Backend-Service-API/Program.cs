@@ -170,6 +170,7 @@ builder.Services.AddHostedService<SmartLunch.Backend.Service.API.Services.Rabbit
 // Scheduled DB backup service
 builder.Services.AddHostedService<SmartLunch.Backend.Service.API.Services.DatabaseBackupHostedService>();
 builder.Services.AddHostedService<SmartLunch.Backend.Service.API.Services.OrganizationPaymentReminderHostedService>();
+builder.Services.AddHostedService<SmartLunch.Backend.Service.API.Services.OrganizationMealContractWeeklyHostedService>();
 
 // SignalR (Real-time)
 builder.Services.AddSignalR();

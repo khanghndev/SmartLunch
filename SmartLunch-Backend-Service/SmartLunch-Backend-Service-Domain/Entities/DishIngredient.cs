@@ -9,9 +9,11 @@ public class DishIngredient
     public string? Code { get; set; }
     public int DishId { get; set; }
     public int IngredientId { get; set; }
+    public int DishValueId { get; set; }
     public decimal Quantity { get; set; }
     public string? Unit { get; set; }
 
     public virtual Dish Dish { get; set; } = null!;
     public virtual Ingredient Ingredient { get; set; } = null!;
+    public virtual DishValue DishValue { get; set; } = null!;
 }

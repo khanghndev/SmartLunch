@@ -22,12 +22,12 @@ public class DishIngredientRepository : IDishIngredientRepository
             .FirstOrDefaultAsync(di => di.Id == id);
     }
 
-    public async Task<DishIngredient?> GetByDishAndIngredientAsync(int dishId, int ingredientId)
+    public async Task<DishIngredient?> GetByDishAndIngredientAsync(int dishId, int ingredientId, int dishValueId)
     {
         return await _context.DishIngredients
             .Include(di => di.Dish)
             .Include(di => di.Ingredient)
-            .FirstOrDefaultAsync(di => di.DishId == dishId && di.IngredientId == ingredientId);
+            .FirstOrDefaultAsync(di => di.DishId == dishId && di.IngredientId == ingredientId && di.DishValueId == dishValueId);
     }
 
     public async Task<IEnumerable<DishIngredient>> GetByDishIdAsync(int dishId)
@@ -95,9 +95,9 @@ public class DishIngredientRepository : IDishIngredientRepository
         return true;
     }
 
-    public async Task<bool> DeleteByDishAndIngredientAsync(int dishId, int ingredientId)
+    public async Task<bool> DeleteByDishAndIngredientAsync(int dishId, int ingredientId, int dishValueId)
     {
-        var dishIngredient = await GetByDishAndIngredientAsync(dishId, ingredientId);
+        var dishIngredient = await GetByDishAndIngredientAsync(dishId, ingredientId, dishValueId);
         if (dishIngredient == null) return false;
 
         _context.DishIngredients.Remove(dishIngredient);
@@ -105,8 +105,9 @@ public class DishIngredientRepository : IDishIngredientRepository
         return true;
     }
 
-    public async Task<bool> ExistsByDishAndIngredientAsync(int dishId, int ingredientId)
+    public async Task<bool> ExistsByDishAndIngredientAsync(int dishId, int ingredientId, int dishValueId)
     {
-        return await _context.DishIngredients.AnyAsync(di => di.DishId == dishId && di.IngredientId == ingredientId);
+        return await _context.DishIngredients.AnyAsync(di =>
+            di.DishId == dishId && di.IngredientId == ingredientId && di.DishValueId == dishValueId);
     }
 }

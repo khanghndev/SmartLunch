@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Domain.Time;
@@ -124,5 +125,56 @@ public class ContractRepository : IContractRepository
     {
         _context.Contracts.Remove(contract);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<Contract?> GetPeriodBasedWithExcludedDatesAsync(int contractId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Contracts
+            .Include(c => c.Partner)
+            .Include(c => c.Organization)
+            .Include(c => c.ExcludedDates)
+            .FirstOrDefaultAsync(
+                c => c.Id == contractId &&
+                     c.ContractType == OrganizationMealContractTypes.PeriodBased,
+                cancellationToken);
+    }
+
+    public async Task ReplaceExcludedDatesAsync(
+        int contractId,
+        IEnumerable<DateOnly> excludedDates,
+        CancellationToken cancellationToken = default)
+    {
+        var existing = await _context.ContractExcludedDates
+            .Where(e => e.ContractId == contractId)
+            .ToListAsync(cancellationToken);
+        _context.ContractExcludedDates.RemoveRange(existing);
+
+        foreach (var d in excludedDates.Distinct())
+        {
+            _context.ContractExcludedDates.Add(new ContractExcludedDate
+            {
+                ContractId = contractId,
+                ExcludedDate = d,
+                CreatedAt = VietnamTime.Now,
+            });
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task<List<Contract>> GetActivePeriodBasedContractsAsync(CancellationToken cancellationToken = default)
+    {
+        var today = VietnamTime.Today.ToDateTime(TimeOnly.MinValue);
+        return await _context.Contracts
+            .Include(c => c.Organization)
+            .Include(c => c.ExcludedDates)
+            .Include(c => c.Orders)
+            .Where(c =>
+                c.ContractType == OrganizationMealContractTypes.PeriodBased &&
+                c.Status == ContractStatus.Active &&
+                c.StartDate.Date <= today &&
+                (c.EndDate == null || c.EndDate.Value.Date >= today) &&
+                c.SourceOrderId.HasValue)
+            .ToListAsync(cancellationToken);
     }
 }
