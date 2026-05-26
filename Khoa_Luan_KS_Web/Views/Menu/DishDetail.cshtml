@@ -157,7 +157,7 @@
 </style>
 
 <div class="dish-detail-page min-h-screen"
-     x-data="dishPriceQuotaPicker(@Html.Raw(priceTierJson))"
+     x-data='dishPriceQuotaPicker(@Html.Raw(priceTierJson))'
      x-init="setTimeout(() => loaded = true, 30)">
 
     @if (!string.IsNullOrEmpty(Model.LoadError) || d == null)
