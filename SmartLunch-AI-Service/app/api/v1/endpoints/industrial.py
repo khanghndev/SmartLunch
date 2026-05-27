@@ -2,6 +2,8 @@ from fastapi import APIRouter, HTTPException
 
 from app.core.rules_loader import RulesLoader
 from app.schemas.industrial import (
+    IndustrialIngredientPrepRequest,
+    IndustrialIngredientPrepResponse,
     IndustrialMenuPlansRequest,
     IndustrialMenuPlansResponse,
     IndustrialWeekPlanRequest,
@@ -9,9 +11,11 @@ from app.schemas.industrial import (
     PlanConstraints,
 )
 from app.services.industrial_planner_service import IndustrialPlannerService
+from app.services.ingredient_prep_planner_service import IngredientPrepPlannerService
 
 router = APIRouter()
 planner = IndustrialPlannerService()
+prep_planner = IngredientPrepPlannerService()
 
 def _merge_constraints(req_constraints: PlanConstraints | None, profile_constraints: dict) -> PlanConstraints:
     """
@@ -114,4 +118,24 @@ def recommend_industrial_menus(req: IndustrialMenuPlansRequest):
         raise HTTPException(
             status_code=500,
             detail=f"Industrial menus (top-k) failed: {e}",
+        )
+
+
+@router.post(
+    "/recommend/industrial/ingredients/prepare",
+    response_model=IndustrialIngredientPrepResponse,
+    summary="Gợi ý lượng nguyên liệu cần chuẩn bị từ đơn hàng sắp tới",
+    description=(
+        "Tính nhu cầu nguyên liệu theo BOM (định mức kg/suất) và upcoming orders theo ngày, "
+        "sau đó dùng Google OR-Tools CP-SAT để đề xuất kế hoạch mua/tồn kho theo từng ngày "
+        "(có safety stock, lead time, và làm mượt lượng mua)."
+    ),
+)
+def recommend_ingredient_preparation(req: IndustrialIngredientPrepRequest):
+    try:
+        return prep_planner.plan(req)
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Ingredient preparation planner failed: {e}",
         )

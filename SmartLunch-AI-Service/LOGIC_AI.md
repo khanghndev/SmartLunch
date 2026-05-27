@@ -1,10 +1,13 @@
-# LOGIC AI — Industrial Menu Planner (Top-K)
+# LOGIC AI — Industrial Planner (Menus + Ingredient Prep)
 
-Tài liệu mô tả **nghiệp vụ** và **cách hoạt động** của endpoint sinh nhiều phương án thực đơn bếp công nghiệp:
+Tài liệu mô tả **nghiệp vụ** và **cách hoạt động** của các endpoint CP-SAT trong `SmartLunch-AI-Service` cho bếp công nghiệp:
 
-- **Route:** `POST /api/v1/recommend/industrial/menus`
-- **Handler:** `app/api/v1/endpoints/industrial.py` → `recommend_industrial_menus`
-- **Engine:** `IndustrialPlannerService.plan_menus_top_k` (Google OR-Tools CP-SAT)
+- **Sinh top-K thực đơn:** `POST /api/v1/recommend/industrial/menus`
+  - **Handler:** `app/api/v1/endpoints/industrial.py` → `recommend_industrial_menus`
+  - **Engine:** `IndustrialPlannerService.plan_menus_top_k` (Google OR-Tools CP-SAT)
+- **Gợi ý chuẩn bị nguyên liệu theo đơn hàng:** `POST /api/v1/recommend/industrial/ingredients/prepare`
+  - **Handler:** `app/api/v1/endpoints/industrial.py` → `recommend_ingredient_preparation`
+  - **Engine:** `IngredientPrepPlannerService.plan` (Google OR-Tools CP-SAT)
 
 Chi tiết kỹ thuật mở rộng (schema JSON, ví dụ request/response) xem thêm `INDUSTRIAL_PLANNER.md`.
 
@@ -307,6 +310,7 @@ Backend: MenuSuggestion   (có thể dùng trực tiếp hoặc bước sau)
 | Endpoint | `app/api/v1/endpoints/industrial.py` |
 | Schema | `app/schemas/industrial.py` |
 | Planner | `app/services/industrial_planner_service.py` |
+| Ingredient prep planner | `app/services/ingredient_prep_planner_service.py` |
 | Rules | `app/core/rules_loader.py`, `app/core/rules.json` |
 | Backend gọi AI | `SmartLunch-Backend-Service-Application/Commands/MenuSuggestions/GenerateMenuSuggestionFromAi/` |
 | HTTP client | `SmartLunch-Backend-Service-Infrastructure/ExternalServices/AiMenuPlannerClient.cs` |
@@ -314,3 +318,82 @@ Backend: MenuSuggestion   (có thể dùng trực tiếp hoặc bước sau)
 ---
 
 *Tài liệu đồng bộ với code tại nhánh hiện tại. Khi đổi ràng buộc CP-SAT hoặc schema, cập nhật section 5 và `INDUSTRIAL_PLANNER.md`.*
+
+---
+
+## 11. Gợi ý lượng nguyên liệu cần chuẩn bị theo đơn hàng sắp tới (CP-SAT)
+
+### 11.1. Mục đích nghiệp vụ
+
+Khi hệ thống đã có **đơn hàng sắp tới** (bảng `orders`, `order_items`), bếp cần biết:
+
+- Tổng **nhu cầu nguyên liệu theo từng ngày** (dựa trên BOM/định mức `dish_ingredients`)
+- Kế hoạch **mua/chuẩn bị mỗi ngày** để vừa đủ dùng, có tồn an toàn, và tránh mua dồn một ngày (dao động lớn)
+
+Endpoint này giải bài toán “procurement planning” ở mức **nguyên liệu**, tách biệt với bài toán “menu planning”.
+
+### 11.2. Mapping DB → dữ liệu đầu vào AI
+
+Các bảng liên quan (BE):  
+`dish_values`, `contracts`, `contract_excluded_dates`, `ingredient_categories`, `ingredients`, `dishes`, `dish_dish_categories`, `dish_ingredients`, `orders`, `order_items`.
+
+Quy ước chính để tính demand:
+
+- **Đơn hàng theo ngày**: `orders.ScheduledDate` và/hoặc `order_items.ServiceDate` (đơn tuần/hợp đồng) quyết định `service_date`.
+- **Số suất**: `order_items.Quantity` là số suất món `DishId` trong ngày `service_date`.
+- **BOM/định mức**: `dish_ingredients.Quantity` theo `(DishId, IngredientId, DishValueId)` ⇒ cần chọn đúng `DishValueId` theo hợp đồng/đơn.
+  - `contracts.DishValueId`: mức giá suất ăn/định mức tương ứng hợp đồng.
+  - Nếu đơn lẻ không gắn hợp đồng, BE cần quy ước `DishValueId` mặc định.
+- **Tên nguyên liệu**: khuyến nghị dùng `ingredients.NameEnglish` (ổn định cho AI), fallback `ingredients.Name`.
+
+Vì `SmartLunch-AI-Service` không truy cập DB trực tiếp, **Backend** sẽ gom và gửi:
+
+- `order_items[]`: (service_date, dish_id, quantity_meals)
+- `dish_boms[]`: (dish_id, ingredients[] {ingredient_name, quantity_kg_per_meal, cost_per_kg?})
+- `available_ingredients[]`: tồn kho hiện có (kg)
+
+### 11.3. API
+
+- **Route:** `POST /api/v1/recommend/industrial/ingredients/prepare`
+- **Request:** `IndustrialIngredientPrepRequest` (`app/schemas/industrial.py`)
+  - `start_date` (YYYY-MM-DD)
+  - `days` (planning horizon, mặc định 7)
+  - `order_items[]` (đơn sắp tới)
+  - `dish_boms[]` (BOM theo kg/suất)
+  - `available_ingredients[]` (tồn kho)
+  - `constraints`:
+    - `lead_time_days`: lead time mua → dùng
+    - `safety_stock_kg`: tồn an toàn cuối ngày
+    - `max_inventory_kg`: giới hạn tồn kho (optional)
+    - `holding_weight`, `smooth_weight`: trọng số tối ưu
+
+- **Response:** `IndustrialIngredientPrepResponse`
+  - `summary_by_day[]`: tổng demand/mua/tồn cuối ngày cho toàn bộ nguyên liệu
+  - `ingredients[]`: chi tiết từng nguyên liệu theo ngày
+
+### 11.4. Luồng xử lý trong AI-Service
+
+File: `app/api/v1/endpoints/industrial.py` → `recommend_ingredient_preparation`
+
+1. Parse `start_date`, tạo list ngày trong horizon.
+2. Tính **ingredient demand** theo ngày:
+   - join `order_items` với `dish_boms[dish_id]`
+   - demand(ingredient, day) = Σ quantity_meals × quantity_kg_per_meal
+3. Chạy CP-SAT để đề xuất lượng mua và tồn kho:
+   - biến `buy[ingredient, day]` (grams), `inv[ingredient, day]` (grams)
+   - cân bằng tồn kho:
+     - \(inv_d = inv_{d-1} + buy_d - demand_{d + lead}\)
+   - ràng buộc:
+     - \(inv_d ≥ safety\_stock\)
+     - (optional) \(inv_d ≤ max\_inventory\)
+4. Objective (minimize):
+   - chi phí mua (nếu có `cost_per_kg`)
+   - + phạt giữ tồn kho (holding)
+   - + phạt dao động lượng mua giữa ngày (smoothness)
+5. Trả kết quả theo kg (làm tròn 3 chữ số thập phân).
+
+### 11.5. Ghi chú vận hành
+
+- Nếu solver infeasible (do safety stock/max inventory quá chặt), service fallback sang chiến lược đơn giản: “mua đủ bù demand thiếu so với tồn hiện tại”.
+- Đơn tuần/hợp đồng trong BE thường dùng `order_items.ServiceDate`; cần đảm bảo BE truyền đúng `service_date` cho AI.
+

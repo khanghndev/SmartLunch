@@ -228,6 +228,41 @@ public class OrderRepository : IOrderRepository
         return result;
     }
 
+    public async Task<List<(DateOnly ServiceDate, int DishId, int QuantityMeals, int? ContractId)>> GetUpcomingDishDemandAsync(
+        DateOnly startDate,
+        DateOnly endDateInclusive,
+        CancellationToken cancellationToken = default)
+    {
+        var start = startDate.ToDateTime(TimeOnly.MinValue);
+        var endExclusive = endDateInclusive.AddDays(1).ToDateTime(TimeOnly.MinValue);
+
+        // Pull order items within range; service date wins if present.
+        var rows = await _context.OrderItems
+            .AsNoTracking()
+            .Where(oi =>
+                oi.Order.Status != "cancelled" &&
+                (
+                    (oi.ServiceDate.HasValue && oi.ServiceDate.Value >= startDate && oi.ServiceDate.Value <= endDateInclusive)
+                    || (!oi.ServiceDate.HasValue && oi.Order.ScheduledDate >= start && oi.Order.ScheduledDate < endExclusive)
+                )
+            )
+            .Select(oi => new
+            {
+                ServiceDate = oi.ServiceDate ?? DateOnly.FromDateTime(oi.Order.ScheduledDate),
+                oi.DishId,
+                oi.Quantity,
+                oi.Order.ContractId
+            })
+            .ToListAsync(cancellationToken);
+
+        return rows
+            .GroupBy(x => new { x.ServiceDate, x.DishId, x.ContractId })
+            .Select(g => (g.Key.ServiceDate, g.Key.DishId, g.Sum(x => x.Quantity), g.Key.ContractId))
+            .OrderBy(x => x.ServiceDate)
+            .ThenBy(x => x.DishId)
+            .ToList();
+    }
+
     public Task<bool> InvoiceCodeExistsAsync(string invoiceCode, CancellationToken cancellationToken = default)
     {
         return _context.Orders.AnyAsync(o => o.InvoiceCode == invoiceCode, cancellationToken);

@@ -264,3 +264,99 @@ class IndustrialMenuPlansRequest(BaseModel):
     )
     top_k: int = Field(default=3, ge=1, le=10, description="Số lượng phương án menu muốn nhận")
     time_limit_seconds: float = Field(default=5.0, gt=0, le=3600.0, description="Giới hạn thời gian solve cho mỗi phương án (giây, tối đa 3600)")
+
+
+# ─── Ingredient preparation (procurement) models ─────────────────────
+
+class IngredientBomLine(BaseModel):
+    """Định mức 1 nguyên liệu cho 1 suất của 1 món."""
+
+    ingredient_name: str = Field(..., min_length=1, description="NameEnglish của nguyên liệu (khuyến nghị)")
+    quantity_kg_per_meal: float = Field(..., ge=0, description="Kg nguyên liệu cần cho 1 suất (định mức/BOM)")
+    cost_per_kg: float | None = Field(default=None, ge=0, description="Giá/kg (nếu có) để tối ưu chi phí mua")
+
+
+class DishBom(BaseModel):
+    """BOM (định mức) nguyên liệu cho 1 món."""
+
+    dish_id: int = Field(..., ge=1)
+    dish_name: str = Field(default="", description="Tên món (hiển thị)")
+    ingredients: list[IngredientBomLine] = Field(default_factory=list)
+
+
+class UpcomingOrderItem(BaseModel):
+    """1 dòng món trong đơn hàng sắp tới."""
+
+    service_date: str = Field(..., description="Ngày phục vụ (YYYY-MM-DD)")
+    dish_id: int = Field(..., ge=1)
+    quantity_meals: int = Field(..., ge=0, description="Số suất của món trong ngày")
+
+
+class IngredientPrepConstraints(BaseModel):
+    """Ràng buộc & trọng số tối ưu cho bài toán chuẩn bị nguyên liệu."""
+
+    lead_time_days: int = Field(default=0, ge=0, le=30, description="Thời gian lead time (ngày) từ lúc mua đến lúc dùng")
+    safety_stock_kg: float = Field(default=0.0, ge=0, description="Tồn an toàn tối thiểu (kg) cuối mỗi ngày")
+    max_inventory_kg: float | None = Field(default=None, ge=0, description="Giới hạn tồn kho tối đa (kg), nếu có")
+    holding_weight: float = Field(default=0.02, ge=0, description="Trọng số phạt giữ tồn kho (kg-day)")
+    smooth_weight: float = Field(default=0.05, ge=0, description="Trọng số phạt dao động lượng mua giữa các ngày")
+
+
+class IngredientPrepPlanDay(BaseModel):
+    date: str
+    total_demand_kg: float = Field(..., ge=0)
+    total_buy_kg: float = Field(..., ge=0)
+    total_end_inventory_kg: float = Field(..., ge=0)
+
+
+class IngredientPrepItem(BaseModel):
+    ingredient_name: str
+    unit: str = Field(default="kg")
+    total_demand_kg: float = Field(..., ge=0)
+    total_buy_kg: float = Field(..., ge=0)
+    start_inventory_kg: float = Field(..., ge=0)
+    end_inventory_kg: float = Field(..., ge=0)
+
+
+class IngredientPrepDailyRow(BaseModel):
+    date: str = Field(..., description="YYYY-MM-DD")
+    demand_kg: float = Field(..., ge=0)
+    buy_kg: float = Field(..., ge=0)
+    end_inventory_kg: float = Field(..., ge=0)
+
+
+class IngredientPrepItem(BaseModel):
+    ingredient_name: str
+    unit: str = Field(default="kg")
+    total_demand_kg: float = Field(..., ge=0)
+    total_buy_kg: float = Field(..., ge=0)
+    start_inventory_kg: float = Field(..., ge=0)
+    end_inventory_kg: float = Field(..., ge=0)
+    daily: list[IngredientPrepDailyRow] = Field(
+        default_factory=list,
+        description="Theo ngày trong horizon",
+    )
+
+
+class IndustrialIngredientPrepRequest(BaseModel):
+    """
+    Request gợi ý lượng nguyên liệu cần chuẩn bị dựa trên đơn hàng sắp tới.
+
+    Backend chịu trách nhiệm:
+    - cung cấp upcoming order_items theo ngày (service_date) và dish_id
+    - cung cấp dish BOM (định mức kg/suất) tương ứng dish_value/meal_unit_price
+    """
+
+    start_date: str = Field(..., description="YYYY-MM-DD")
+    days: int = Field(default=7, ge=1, le=60, description="Số ngày planning horizon")
+    order_items: list[UpcomingOrderItem] = Field(default_factory=list)
+    dish_boms: list[DishBom] = Field(default_factory=list)
+    available_ingredients: list[AvailableIngredient] = Field(default_factory=list, description="Tồn kho hiện có (kg)")
+    constraints: IngredientPrepConstraints = Field(default_factory=IngredientPrepConstraints)
+
+
+class IndustrialIngredientPrepResponse(BaseModel):
+    start_date: str
+    days: int
+    summary_by_day: list[IngredientPrepPlanDay] = Field(default_factory=list)
+    ingredients: list[IngredientPrepItem] = Field(default_factory=list)

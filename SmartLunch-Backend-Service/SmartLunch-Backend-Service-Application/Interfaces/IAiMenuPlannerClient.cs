@@ -7,5 +7,9 @@ public interface IAiMenuPlannerClient
     Task<AiIndustrialMenuPlansResponse> RecommendIndustrialMenusAsync(
         AiIndustrialMenuPlansRequest request,
         CancellationToken cancellationToken = default);
+
+    Task<AiIndustrialIngredientPrepResponse> RecommendIndustrialIngredientPreparationAsync(
+        AiIndustrialIngredientPrepRequest request,
+        CancellationToken cancellationToken = default);
 }
 

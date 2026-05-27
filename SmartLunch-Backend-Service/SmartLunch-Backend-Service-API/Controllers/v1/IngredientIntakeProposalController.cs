@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using SmartLunch.Backend.Service.Application.Commands.IngredientIntake.CreateActualIntakeFromProposal;
 using SmartLunch.Backend.Service.Application.Commands.IngredientIntake.CreateIngredientIntakeProposal;
+using SmartLunch.Backend.Service.Application.Commands.IngredientIntake.GenerateIngredientPrepFromAi;
 using SmartLunch.Backend.Service.Application.Commands.IngredientIntake.ReviewIngredientIntakeProposal;
 using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.IngredientIntake;
@@ -33,6 +34,42 @@ public class IngredientIntakeProposalController : ControllerBase
     {
         _logger = logger;
         _mediator = mediator;
+    }
+
+    /// <summary>
+    /// Gợi ý lượng nguyên liệu cần chuẩn bị theo đơn hàng sắp tới (AI/OR-Tools),
+    /// có thể (tuỳ chọn) lưu thành phiếu đề xuất nhập nguyên liệu.
+    /// </summary>
+    [HttpPost("ai-generate")]
+    [Authorize(Policy = "permission:ingredient_intake_proposals.create")]
+    public async Task<ActionResult<BaseApiResponse<GenerateIngredientPrepFromAiResponse>>> GenerateFromAi(
+        [FromBody] GenerateIngredientPrepFromAiRequest request)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var response = await _mediator.Send(new GenerateIngredientPrepFromAiCommand(request, userId));
+            return Ok(BaseApiResponse<GenerateIngredientPrepFromAiResponse>.SuccessResult(
+                response,
+                "Ingredient preparation plan generated successfully"));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GenerateIngredientPrepFromAiResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Unauthorized(BaseApiResponse<GenerateIngredientPrepFromAiResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating ingredient preparation plan from AI");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GenerateIngredientPrepFromAiResponse>.ErrorResult(
+                    "An error occurred while generating ingredient preparation plan",
+                    new[] { ex.Message }));
+        }
     }
 
     /// <summary>

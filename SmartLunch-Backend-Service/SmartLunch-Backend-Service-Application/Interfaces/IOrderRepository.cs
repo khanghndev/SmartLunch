@@ -48,4 +48,14 @@ public interface IOrderRepository
         int contractId,
         DateOnly weekMonday,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Upcoming dish demand aggregated by service date.
+    /// Uses OrderItem.ServiceDate if present; otherwise uses Order.ScheduledDate (date part).
+    /// Excludes cancelled orders.
+    /// </summary>
+    Task<List<(DateOnly ServiceDate, int DishId, int QuantityMeals, int? ContractId)>> GetUpcomingDishDemandAsync(
+        DateOnly startDate,
+        DateOnly endDateInclusive,
+        CancellationToken cancellationToken = default);
 }
