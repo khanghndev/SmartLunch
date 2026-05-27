@@ -41,6 +41,40 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
         public IActionResult Receipt(string? id) => RedirectToAction(nameof(Index));
 
         [HttpGet]
+        public IActionResult AiGenerate()
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token))
+                return RedirectToAction("Login", "Auth", new { area = "" });
+
+            var model = new GenerateIngredientPrepFromAiClientRequest
+            {
+                StartDate = DateOnly.FromDateTime(DateTime.Today),
+                Days = 7,
+                LeadTimeDays = 0,
+                SafetyStockKg = 0,
+                PersistAsProposal = true
+            };
+            return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> AiGenerateRun([FromBody] GenerateIngredientPrepFromAiClientRequest request, CancellationToken ct = default)
+        {
+            var token = RequireToken();
+            try
+            {
+                var result = await _warehouseClient.GenerateIngredientPrepFromAiAsync(request, token, ct);
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> Proposals(int page = 1, int pageSize = 100, CancellationToken ct = default)
         {
             var token = RequireToken();

@@ -134,6 +134,16 @@ public class BackendWarehouseClient
             accessToken,
             ct);
 
+    public Task<GenerateIngredientPrepFromAiClientResponse> GenerateIngredientPrepFromAiAsync(
+        GenerateIngredientPrepFromAiClientRequest payload,
+        string accessToken,
+        CancellationToken ct = default)
+        => PostAsync<GenerateIngredientPrepFromAiClientResponse>(
+            "/api/v1/ingredient-intake-proposals/ai-generate",
+            payload,
+            accessToken,
+            ct);
+
     // ───────────────────────────── Finance ──────────────────────────────────────────────
     public Task<SupplierPayablesClientResponse> GetSupplierPayablesAsync(string accessToken, bool onlyOutstanding = true, int? partnerId = null, CancellationToken ct = default)
     {
@@ -547,6 +557,94 @@ public sealed class CreateIntakeProposalClientResponse
 public sealed class ReviewIntakeProposalClientResponse
 {
     public IntakeProposalDetailClientDto Proposal { get; set; } = new();
+}
+
+public sealed class GenerateIngredientPrepFromAiClientRequest
+{
+    public DateOnly StartDate { get; set; }
+    public int Days { get; set; } = 7;
+    public int? ContractId { get; set; }
+    public int? DishValueIdOverride { get; set; }
+    public int LeadTimeDays { get; set; } = 0;
+    public decimal SafetyStockKg { get; set; } = 0;
+    public decimal? MaxInventoryKg { get; set; }
+    public bool PersistAsProposal { get; set; } = true;
+    public string? ProposalHeaderNote { get; set; }
+}
+
+public sealed class GenerateIngredientPrepFromAiClientResponse
+{
+    public AiIndustrialIngredientPrepClientResponse Plan { get; set; } = new();
+    public IntakeProposalDetailClientDto? Proposal { get; set; }
+}
+
+public sealed class AiIndustrialIngredientPrepClientResponse
+{
+    [JsonPropertyName("start_date")]
+    public string StartDate { get; set; } = string.Empty;
+
+    [JsonPropertyName("days")]
+    public int Days { get; set; }
+
+    [JsonPropertyName("summary_by_day")]
+    public List<AiIngredientPrepPlanDayClientDto> SummaryByDay { get; set; } = new();
+
+    [JsonPropertyName("ingredients")]
+    public List<AiIngredientPrepItemClientDto> Ingredients { get; set; } = new();
+}
+
+public sealed class AiIngredientPrepPlanDayClientDto
+{
+    [JsonPropertyName("date")]
+    public string Date { get; set; } = string.Empty;
+
+    [JsonPropertyName("total_demand_kg")]
+    public decimal TotalDemandKg { get; set; }
+
+    [JsonPropertyName("total_buy_kg")]
+    public decimal TotalBuyKg { get; set; }
+
+    [JsonPropertyName("total_end_inventory_kg")]
+    public decimal TotalEndInventoryKg { get; set; }
+}
+
+public sealed class AiIngredientPrepItemClientDto
+{
+    [JsonPropertyName("ingredient_name")]
+    public string IngredientName { get; set; } = string.Empty;
+
+    [JsonPropertyName("unit")]
+    public string Unit { get; set; } = "kg";
+
+    [JsonPropertyName("total_demand_kg")]
+    public decimal TotalDemandKg { get; set; }
+
+    [JsonPropertyName("total_buy_kg")]
+    public decimal TotalBuyKg { get; set; }
+
+    [JsonPropertyName("start_inventory_kg")]
+    public decimal StartInventoryKg { get; set; }
+
+    [JsonPropertyName("end_inventory_kg")]
+    public decimal EndInventoryKg { get; set; }
+
+    [JsonPropertyName("daily")]
+    public List<AiIngredientPrepDailyRowClientDto> Daily { get; set; } = new();
+}
+
+public sealed class AiIngredientPrepDailyRowClientDto
+{
+    [JsonPropertyName("date")]
+    public string Date { get; set; } = string.Empty;
+
+    [JsonPropertyName("demand_kg")]
+    public decimal DemandKg { get; set; }
+
+    [JsonPropertyName("buy_kg")]
+    public decimal BuyKg { get; set; }
+
+    [JsonPropertyName("end_inventory_kg")]
+    public decimal EndInventoryKg { get; set; }
 }
 
 public sealed class CreateActualReceiptClientRequest

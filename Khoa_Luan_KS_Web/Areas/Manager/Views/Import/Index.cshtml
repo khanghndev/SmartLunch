@@ -11,10 +11,17 @@
             <h1 class="text-3xl font-black text-slate-800 tracking-tight">Yêu cầu Nhập hàng</h1>
             <p class="text-slate-500 mt-1 font-medium text-sm">Duyệt phiếu đề xuất NVL từ kho/bếp, theo dõi hàng về và nhập kho thực tế.</p>
         </div>
-        <button type="button" @@click="openCreateModal()" class="px-5 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 hover:bg-blue-700 transition-all flex items-center gap-2 text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-            Tạo đề xuất nhập
-        </button>
+        <div class="flex items-center gap-2">
+            <a href="@Url.Action("AiGenerate", "Import", new { area = "Manager" })"
+               class="px-5 py-2 bg-green-600 text-white font-bold rounded-xl shadow-lg shadow-green-600/30 hover:bg-green-700 transition-all flex items-center gap-2 text-sm">
+                <i data-lucide="sparkles" class="w-4 h-4"></i>
+                Gợi ý AI
+            </a>
+            <button type="button" @@click="openCreateModal()" class="px-5 py-2 bg-blue-600 text-white font-bold rounded-xl shadow-lg shadow-blue-600/30 hover:bg-blue-700 transition-all flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                Tạo đề xuất nhập
+            </button>
+        </div>
     </div>
 
     <div x-show="loadError" class="text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl px-4 py-3" x-text="loadError"></div>
@@ -175,7 +182,7 @@ document.addEventListener('alpine:init', () => {
         reviewModal: { open: false, approve: true, proposal: null, note: '' },
         ingredients: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ingredients.Select(i => new { id = i.Id, name = i.Name, unit = i.Unit }))),
 
-        init() { this.load(); },
+        init() { if (window.lucide) lucide.createIcons(); this.load(); },
 
         csrf() { return document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''; },
 
