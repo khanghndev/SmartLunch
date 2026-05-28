@@ -113,6 +113,7 @@ SOURCE 04_seed_data/14b_clone_dish_ingredients_by_value.sql;
 SOURCE 04_seed_data/19_seed_dish_images.sql;
 SOURCE 04_seed_data/15_seed_menus.sql;
 SOURCE 04_seed_data/16_seed_orders.sql;
+SOURCE 04_seed_data/21_seed_bulk_upcoming_orders_for_ai.sql;
 SOURCE 04_seed_data/17_seed_remaining_tables.sql;
 
 -- Step 5: Incremental maintenance (gộp từ run_update.sql — idempotent)

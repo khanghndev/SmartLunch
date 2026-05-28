@@ -70,6 +70,7 @@ internal static class MealContractPdfSections
     {
         delivery ??= OrganizationMealDeliveryPdfContext.FromOrder(order);
         var tableLines = BuildAnnexTableLines(order);
+        var bomByDish = BuildAnnexDishBom(order);
         var dailyPortions = BuildDailyPortions(order);
         var (subtotal, discount, total, promos, pricePerPortion, totalPortions) = BuildAnnexTotals(order, dailyPortions);
 
@@ -108,6 +109,37 @@ internal static class MealContractPdfSections
                     stt++;
                 }
             });
+
+            if (bomByDish.Count > 0)
+            {
+                col.Item().PaddingTop(10).Text("II.1. ĐỊNH LƯỢNG NGUYÊN LIỆU THEO MÓN (THEO SUẤT)").Bold().FontSize(12);
+                foreach (var dish in bomByDish)
+                {
+                    col.Item().PaddingTop(4).Text($"- {dish.DishName} (SL: {dish.OrderQuantity:N0})").SemiBold();
+                    col.Item().Table(t =>
+                    {
+                        t.ColumnsDefinition(c =>
+                        {
+                            c.RelativeColumn(3.5f);
+                            c.RelativeColumn(1.6f);
+                            c.RelativeColumn(1.6f);
+                        });
+                        t.Header(h =>
+                        {
+                            h.Cell().Element(Th).Text("Nguyên liệu");
+                            h.Cell().Element(Th).AlignRight().Text("ĐL / suất");
+                            h.Cell().Element(Th).AlignRight().Text("Tổng");
+                        });
+
+                        foreach (var ln in dish.Ingredients)
+                        {
+                            t.Cell().Element(Td).Text(ln.IngredientName);
+                            t.Cell().Element(Td).AlignRight().Text($"{ln.QuantityPerPortion} {ln.Unit}");
+                            t.Cell().Element(Td).AlignRight().Text($"{ln.TotalQuantity} {ln.Unit}");
+                        }
+                    });
+                }
+            }
 
             col.Item().PaddingTop(8).Text("III. TỔNG HỢP GIÁ TRỊ ĐƠN HÀNG").Bold().FontSize(12);
             col.Item().PaddingTop(4).Table(sum =>
@@ -231,5 +263,71 @@ internal static class MealContractPdfSections
         var subtotal = order.SubtotalAmount ?? decimal.Round(pricePerPortion * totalPortions, 2, MidpointRounding.AwayFromZero);
         var total = order.TotalAmount > 0 ? order.TotalAmount : Math.Max(0, subtotal - discount);
         return (subtotal, discount, total, promos, pricePerPortion, totalPortions);
+    }
+
+    private sealed record AnnexDishBom(
+        string DishName,
+        int OrderQuantity,
+        List<(string IngredientName, string QuantityPerPortion, string TotalQuantity, string Unit)> Ingredients);
+
+    private static List<AnnexDishBom> BuildAnnexDishBom(Order order)
+    {
+        var targetDishValueId = order.Contract?.DishValueId;
+
+        // Aggregate order quantities by dish
+        var dishQty = order.OrderItems
+            .GroupBy(i => i.DishId)
+            .ToDictionary(g => g.Key, g => g.Sum(x => x.Quantity));
+
+        var outList = new List<AnnexDishBom>();
+        foreach (var (dishId, qty) in dishQty.OrderBy(kv => kv.Key))
+        {
+            var dish = order.OrderItems.FirstOrDefault(i => i.DishId == dishId)?.Dish;
+            if (dish == null)
+                continue;
+
+            var lines = dish.DishIngredients?.ToList() ?? new List<DishIngredient>();
+            if (lines.Count == 0)
+                continue;
+
+            // Choose BOM lines by contract tier if available; otherwise take the first tier present.
+            List<DishIngredient> picked;
+            if (targetDishValueId.HasValue)
+            {
+                picked = lines.Where(di => di.DishValueId == targetDishValueId.Value).ToList();
+            }
+            else
+            {
+                var firstTier = lines.Select(di => di.DishValueId).OrderBy(x => x).FirstOrDefault();
+                picked = lines.Where(di => di.DishValueId == firstTier).ToList();
+            }
+
+            if (picked.Count == 0)
+                continue;
+
+            var ingLines = picked
+                .Where(di => di.Ingredient != null && di.Quantity > 0)
+                .OrderBy(di => di.Ingredient.Name)
+                .Select(di =>
+                {
+                    var unit = string.IsNullOrWhiteSpace(di.Unit) ? (di.Ingredient.Unit ?? "kg") : di.Unit!;
+                    var per = di.Quantity.ToString("N2", Vi);
+                    var total = (di.Quantity * qty).ToString("N2", Vi);
+                    return (
+                        IngredientName: di.Ingredient.Name,
+                        QuantityPerPortion: per,
+                        TotalQuantity: total,
+                        Unit: unit
+                    );
+                })
+                .ToList();
+
+            if (ingLines.Count == 0)
+                continue;
+
+            outList.Add(new AnnexDishBom(dish.Name, qty, ingLines));
+        }
+
+        return outList;
     }
 }
