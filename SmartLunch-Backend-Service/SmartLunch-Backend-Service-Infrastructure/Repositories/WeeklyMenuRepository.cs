@@ -90,7 +90,8 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
         var totalCount = await query.CountAsync();
 
         var weeklyMenus = await query
-            .OrderBy(e => e.StartDate)
+            .OrderByDescending(e => e.StartDate)
+            .ThenByDescending(e => e.Id)
             .Include(m => m.WeeklyMenuImages)
             .ThenInclude(img => img.MediaFile)
             .Skip((page - 1) * pageSize)
