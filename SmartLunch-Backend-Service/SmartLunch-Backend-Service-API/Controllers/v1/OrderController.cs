@@ -3,6 +3,7 @@ using System.Security.Claims;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.CancelCustomerOrder;
 using SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.CreateCustomerMealOrder;
 using SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.SignOrderAnnex;
 using SmartLunch.Backend.Service.Application.Commands.MasterData.Orders.UpdateOrderStatus;
@@ -196,6 +197,43 @@ public class OrderController : ControllerBase
             return StatusCode(
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetOrderResponse>.ErrorResult("An error occurred while signing the order annex", new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Khách hủy đơn của mình khi còn chờ xác nhận và chưa thanh toán cọc/đủ.</summary>
+    [HttpPost("{id:int}/cancel")]
+    [Authorize(Policy = "roles:Organization,Company,Customer,Khách hàng cá nhân,Khách hàng doanh nghiệp")]
+    [Authorize(Policy = "permission:orders.create")]
+    public async Task<ActionResult<BaseApiResponse<GetOrderResponse>>> CancelCustomerOrder(int id)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var response = await _mediator.Send(new CancelCustomerOrderCommand(id, userId));
+            return Ok(BaseApiResponse<GetOrderResponse>.SuccessResult(response, "Đã hủy đơn hàng thành công."));
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid();
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetOrderResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (InvalidOperationException ex)
+        {
+            return BadRequest(BaseApiResponse<GetOrderResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(BaseApiResponse<GetOrderResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error cancelling order {OrderId}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetOrderResponse>.ErrorResult("Không thể hủy đơn hàng", new[] { ex.Message }));
         }
     }
 
