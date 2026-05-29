@@ -21,4 +21,16 @@ public interface IWeeklyMenuRepository
         DateTime? notEndedBefore = null);
 
     Task<WeeklyMenu?> GetWeeklyMenuWithSchedulesByDateAsync(DateTime date, int? customerTypeId = null);
+
+    Task<bool> ExistsByPeriodAsync(
+        DateTime startDate,
+        DateTime endDate,
+        string menuType,
+        int? customerTypeId,
+        CancellationToken cancellationToken = default);
+
+    Task<WeeklyMenu> CreateWithSchedulesAsync(
+        WeeklyMenu menu,
+        IReadOnlyList<MenuSchedule> schedules,
+        CancellationToken cancellationToken = default);
 }

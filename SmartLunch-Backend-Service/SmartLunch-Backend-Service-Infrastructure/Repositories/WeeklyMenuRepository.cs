@@ -117,4 +117,53 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
             .OrderByDescending(wm => wm.CreatedAt)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<bool> ExistsByPeriodAsync(
+        DateTime startDate,
+        DateTime endDate,
+        string menuType,
+        int? customerTypeId,
+        CancellationToken cancellationToken = default)
+    {
+        var start = startDate.Date;
+        var end = endDate.Date;
+        var type = menuType.Trim();
+
+        return await _context.WeeklyMenus.AnyAsync(
+            wm => wm.StartDate.Date == start
+                  && wm.EndDate.Date == end
+                  && wm.MenuType == type
+                  && wm.CustomerTypeId == customerTypeId,
+            cancellationToken);
+    }
+
+    public async Task<WeeklyMenu> CreateWithSchedulesAsync(
+        WeeklyMenu menu,
+        IReadOnlyList<MenuSchedule> schedules,
+        CancellationToken cancellationToken = default)
+    {
+        await using var tx = await _context.Database.BeginTransactionAsync(cancellationToken);
+        try
+        {
+            _context.WeeklyMenus.Add(menu);
+            await _context.SaveChangesAsync(cancellationToken);
+
+            foreach (var schedule in schedules)
+                schedule.MenuId = menu.Id;
+
+            if (schedules.Count > 0)
+            {
+                _context.MenuSchedules.AddRange(schedules);
+                await _context.SaveChangesAsync(cancellationToken);
+            }
+
+            await tx.CommitAsync(cancellationToken);
+            return menu;
+        }
+        catch
+        {
+            await tx.RollbackAsync(cancellationToken);
+            throw;
+        }
+    }
 }
