@@ -470,6 +470,9 @@ public class BackendMasterDataClient
         return await HandleResponse<GetOrderClientResponse>(res, ct);
     }
 
+    public async Task<GetOrderClientResponse> CancelCustomerOrderAsync(int orderId, string accessToken, CancellationToken ct = default)
+        => await PostAsync<GetOrderClientResponse>($"/api/v1/master-data/Order/{orderId}/cancel", new { }, accessToken, ct);
+
     public async Task<GetWeeklyMenuClientResponse> GetWeeklyMenuAsync(int id, string accessToken, CancellationToken ct = default)
     {
         return await GetAsync<GetWeeklyMenuClientResponse>($"/api/v1/master-data/WeeklyMenu/{id}", accessToken, ct);

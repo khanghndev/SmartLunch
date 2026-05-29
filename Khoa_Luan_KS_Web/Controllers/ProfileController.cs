@@ -257,6 +257,27 @@ namespace Khoa_Luan_KS_Web.Controllers
             }
         }
 
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CancelOrder(int orderId, int page = 1, CancellationToken ct = default)
+        {
+            var accessToken = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(accessToken))
+                return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Orders)) });
+
+            try
+            {
+                await _masterDataClient.CancelCustomerOrderAsync(orderId, accessToken, ct);
+                TempData["OrderSuccess"] = "Đã hủy đơn hàng thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
+            return RedirectToAction(nameof(Orders), new { page });
+        }
+
         public async Task<IActionResult> OrderDetail(int id, CancellationToken ct = default)
         {
             var accessToken = HttpContext.Session.GetString("access_token");

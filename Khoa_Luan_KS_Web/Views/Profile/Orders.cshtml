@@ -94,7 +94,9 @@
                                 <td class="px-6 py-4 text-gray-600">@o.ScheduledDate.ToString("dd/MM/yyyy")</td>
                                 <td class="px-6 py-4 text-right font-bold text-orange-600">@o.TotalAmount.ToString("N0")</td>
                                 <td class="px-6 py-4">
-                                    <span class="inline-flex rounded-md bg-slate-100 px-2.5 py-1 text-xs font-bold uppercase tracking-wide text-slate-700">@o.Status</span>
+                                    <span class="inline-flex rounded-md border px-2.5 py-1 text-xs font-bold @OrderStatusHelper.BadgeClass(o.Status)">
+                                        @OrderStatusHelper.ToDisplay(o.Status)
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4">
                                     <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold @OrderPaymentStatusDisplay.BadgeClass(o.PaymentStatus)">
@@ -116,6 +118,19 @@
                                     else if (isOrg && string.Equals(o.PaymentStatus, "unpaid", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(o.AnnexPdfUrl))
                                     {
                                         <a asp-action="Contracts" asp-route-orderId="@o.Id" class="mb-1 inline-block text-xs font-bold text-violet-700 hover:underline">Ký phụ lục</a>
+                                        <br />
+                                    }
+                                    @if (OrderCustomerCancelDisplay.CanCancel(o.Status, o.PaymentStatus, o.ScheduledDate))
+                                    {
+                                        <form asp-action="CancelOrder" method="post" class="mb-1 inline"
+                                              onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn @(string.IsNullOrEmpty(o.InvoiceCode) ? "#" + o.Id : o.InvoiceCode)? Hành động này không thể hoàn tác.');">
+                                            @Html.AntiForgeryToken()
+                                            <input type="hidden" name="orderId" value="@o.Id" />
+                                            <input type="hidden" name="page" value="@(Model?.Page ?? 1)" />
+                                            <button type="submit" class="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100">
+                                                <i data-lucide="x-circle" class="h-3.5 w-3.5"></i> Hủy đơn
+                                            </button>
+                                        </form>
                                         <br />
                                     }
                                     <a asp-action="OrderDetail" asp-route-id="@o.Id" class="font-bold text-orange-600 hover:text-orange-800">Chi tiết</a>
