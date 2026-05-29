@@ -7,8 +7,12 @@ public class GetWeeklyMenuDetailQuery : IRequest<GetWeeklyMenuDetailResponse>
 {
     public int WeeklyMenuId { get; set; }
 
-    public GetWeeklyMenuDetailQuery(int weeklyMenuId)
+    /// <summary>Chỉ trả lịch từ ngày này trở đi (date-only). Null = trả tất cả.</summary>
+    public DateTime? ScheduleFrom { get; set; }
+
+    public GetWeeklyMenuDetailQuery(int weeklyMenuId, DateTime? scheduleFrom = null)
     {
         WeeklyMenuId = weeklyMenuId;
+        ScheduleFrom = scheduleFrom;
     }
 }

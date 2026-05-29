@@ -42,7 +42,8 @@ public class WeeklyMenuController : ControllerBase
                 request.SearchTerm,
                 request.CustomerTypeId,
                 request.CustomerProfileKey,
-                request.EffectiveDate);
+                request.EffectiveDate,
+                request.NotEndedBefore);
             var response = await _mediator.Send(query);
             return Ok(BaseApiResponse<GetWeeklyMenusResponse>.SuccessResult(response, "WeeklyMenus retrieved successfully"));
         }
@@ -87,11 +88,13 @@ public class WeeklyMenuController : ControllerBase
     /// Chi tiết weekly menu: header + toàn bộ <c>MenuSchedule</c> (theo Dish), sắp xếp theo ngày và meal slot (app Customer).
     /// </summary>
     [HttpGet("{id:int}/detail")]
-    public async Task<ActionResult<BaseApiResponse<GetWeeklyMenuDetailResponse>>> GetWeeklyMenuDetail(int id)
+    public async Task<ActionResult<BaseApiResponse<GetWeeklyMenuDetailResponse>>> GetWeeklyMenuDetail(
+        int id,
+        [FromQuery] DateTime? scheduleFrom = null)
     {
         try
         {
-            var response = await _mediator.Send(new GetWeeklyMenuDetailQuery(id));
+            var response = await _mediator.Send(new GetWeeklyMenuDetailQuery(id, scheduleFrom));
 
             return Ok(BaseApiResponse<GetWeeklyMenuDetailResponse>.SuccessResult(
                 response,

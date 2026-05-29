@@ -52,7 +52,8 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
         int pageSize,
         string? searchTerm = null,
         int? customerTypeId = null,
-        DateTime? effectiveDate = null)
+        DateTime? effectiveDate = null,
+        DateTime? notEndedBefore = null)
     {
         var query = _context.WeeklyMenus.AsQueryable();
         if (!string.IsNullOrWhiteSpace(searchTerm))
@@ -78,6 +79,12 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
         {
             var d = effectiveDate.Value;
             query = query.Where(wm => wm.StartDate <= d && wm.EndDate >= d);
+        }
+
+        if (notEndedBefore.HasValue)
+        {
+            var d = notEndedBefore.Value.Date;
+            query = query.Where(wm => wm.EndDate.Date >= d);
         }
 
         var totalCount = await query.CountAsync();

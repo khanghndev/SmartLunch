@@ -46,7 +46,8 @@ public class GetWeeklyMenusQueryHandler : IRequestHandler<GetWeeklyMenusQuery, G
             request.PageSize,
             request.SearchTerm,
             customerTypeId,
-            request.EffectiveDate);
+            request.EffectiveDate,
+            request.NotEndedBefore);
 
         var weeklyMenuDtos = weeklyMenus.Select(weeklyMenu =>
         {

@@ -17,7 +17,8 @@ public interface IWeeklyMenuRepository
         int pageSize,
         string? searchTerm = null,
         int? customerTypeId = null,
-        DateTime? effectiveDate = null);
+        DateTime? effectiveDate = null,
+        DateTime? notEndedBefore = null);
 
     Task<WeeklyMenu?> GetWeeklyMenuWithSchedulesByDateAsync(DateTime date, int? customerTypeId = null);
 }

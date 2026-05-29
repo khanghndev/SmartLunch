@@ -53,8 +53,13 @@ public class GetWeeklyMenuDetailQueryHandler : IRequestHandler<GetWeeklyMenuDeta
 
         header = WithMenuImages(header, weeklyMenu.WeeklyMenuImages);
 
+        var scheduleFromDate = request.ScheduleFrom?.Date;
+        var scheduleQuery = weeklyMenu.MenuSchedules.AsEnumerable();
+        if (scheduleFromDate.HasValue)
+            scheduleQuery = scheduleQuery.Where(ms => ms.Date.Date >= scheduleFromDate.Value);
+
         var schedules = new List<WeeklyMenuScheduleDetailDto>();
-        foreach (var ms in weeklyMenu.MenuSchedules
+        foreach (var ms in scheduleQuery
                      .OrderBy(ms => ms.Date)
                      .ThenBy(ms => ms.MealSlot)
                      .ThenBy(ms => ms.Id))

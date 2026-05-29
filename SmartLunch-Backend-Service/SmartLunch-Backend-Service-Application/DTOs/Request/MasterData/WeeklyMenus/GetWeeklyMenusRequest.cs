@@ -12,4 +12,10 @@ public class GetWeeklyMenusRequest
 
     /// <summary>Ngày tham chiếu (date-only): chỉ trả weekly menu có StartDate–EndDate bao ngày này.</summary>
     public DateTime? EffectiveDate { get; set; }
+
+    /// <summary>
+    /// Chỉ trả menu còn ít nhất một ngày phục vụ từ ngày này trở đi (EndDate &gt;= NotEndedBefore).
+    /// Dùng cho khách hàng: ẩn các tuần đã kết thúc hoàn toàn.
+    /// </summary>
+    public DateTime? NotEndedBefore { get; set; }
 }

@@ -13,13 +13,16 @@ public class GetWeeklyMenusQuery : IRequest<GetWeeklyMenusResponse>
 
     public DateTime? EffectiveDate { get; set; }
 
+    public DateTime? NotEndedBefore { get; set; }
+
     public GetWeeklyMenusQuery(
         int page = 1,
         int pageSize = 10,
         string? searchTerm = null,
         int? customerTypeId = null,
         string? customerProfileKey = null,
-        DateTime? effectiveDate = null)
+        DateTime? effectiveDate = null,
+        DateTime? notEndedBefore = null)
     {
         Page = page;
         PageSize = pageSize;
@@ -27,5 +30,6 @@ public class GetWeeklyMenusQuery : IRequest<GetWeeklyMenusResponse>
         CustomerTypeId = customerTypeId;
         CustomerProfileKey = customerProfileKey;
         EffectiveDate = effectiveDate;
+        NotEndedBefore = notEndedBefore;
     }
 }
