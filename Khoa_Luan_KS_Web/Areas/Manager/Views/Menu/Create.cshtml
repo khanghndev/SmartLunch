@@ -1,0 +1,674 @@
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@using Khoa_Luan_KS_Web.Services
+@{
+    ViewData["Title"] = "Tạo Thực Đơn Tuần";
+    Layout = "_LayoutManager";
+
+    var dishes = ViewBag.Dishes as List<DishDto> ?? new List<DishDto>();
+    var customerTypes = ViewBag.CustomerTypes as List<CustomerTypeClientDto> ?? new List<CustomerTypeClientDto>();
+    var defaultStart = ViewBag.DefaultStart as string ?? DateTime.Today.ToString("yyyy-MM-dd");
+    var defaultEnd = ViewBag.DefaultEnd as string ?? DateTime.Today.AddDays(4).ToString("yyyy-MM-dd");
+    var draftCustomerTypeId = ViewBag.DraftCustomerTypeId as int?;
+    var draftDescription = ViewBag.DraftDescription as string ?? "";
+    var draftMenuType = ViewBag.DraftMenuType as string ?? "General";
+    var draftDaySelectionsJson = ViewBag.DraftDaySelectionsJson as string ?? "{}";
+    var pageError = ViewData["Error"] as string ?? TempData["Error"] as string;
+    var draftHasSelections = ViewBag.DraftHasSelections as bool? == true;
+
+    var jsonOpts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
+    var dishesJson = JsonSerializer.Serialize(dishes.Select(d => new
+    {
+        id = d.Id,
+        name = d.Name,
+        price = d.Price,
+        imageUrl = d.ImageUrl ?? d.Images?.FirstOrDefault(i => i.Role == "cover")?.Url ?? d.Images?.FirstOrDefault()?.Url,
+        category = d.PrimarySlotKey ?? d.Category ?? ""
+    }), jsonOpts);
+}
+
+<style>
+    .menu-create-day-tab {
+        flex-shrink: 0;
+        min-width: 4.5rem;
+        padding: 0.65rem 0.85rem;
+        border-radius: 14px;
+        font-size: 11px;
+        font-weight: 800;
+        text-align: center;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+        cursor: pointer;
+        background: #f8fafc;
+        color: #64748b;
+    }
+    .menu-create-day-tab.active {
+        background: #16a34a;
+        color: #fff;
+        border-color: #15803d;
+        box-shadow: 0 4px 14px rgba(22, 163, 74, 0.35);
+    }
+    .menu-create-day-tab.has-items:not(.active) {
+        background: #f0fdf4;
+        border-color: #bbf7d0;
+        color: #15803d;
+    }
+    .dish-pick-card {
+        transition: transform 0.15s, box-shadow 0.15s, border-color 0.15s;
+    }
+    .dish-pick-card:hover { transform: translateY(-1px); }
+    .dish-pick-card.selected {
+        border-color: #16a34a;
+        background: #f0fdf4;
+        box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.2);
+    }
+</style>
+
+<div class="p-4 md:p-6 max-w-7xl mx-auto min-h-screen font-sans pb-24"
+     x-data="weeklyMenuCreateForm()"
+     x-init="init()">
+
+    @if (!string.IsNullOrEmpty(pageError))
+    {
+        <div class="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl text-sm font-medium flex items-center gap-2">
+            <i data-lucide="alert-circle" class="w-5 h-5 shrink-0"></i>
+            <span>@pageError</span>
+            @if (draftHasSelections)
+            {
+                <span class="text-red-500/80 text-xs font-semibold ml-1">— Các lựa chọn của bạn đã được giữ lại.</span>
+            }
+        </div>
+    }
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <div>
+            <nav class="flex text-xs font-bold text-slate-400 gap-1.5 items-center mb-2">
+                <a href="@Url.Action("Weekly", "Menu", new { area = "Manager" })" class="hover:text-green-600">Thực đơn tuần</a>
+                <i data-lucide="chevron-right" class="w-3 h-3"></i>
+                <span class="text-slate-600">Tạo thủ công</span>
+            </nav>
+            <h1 class="text-2xl md:text-3xl font-black text-slate-900 tracking-tight">Tạo thực đơn cố định</h1>
+            <p class="text-slate-500 text-sm mt-1">Chọn từng ngày, thêm món — giao diện một cột lịch, một cột kho món.</p>
+        </div>
+        <div class="flex items-center gap-2 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl px-4 py-2.5 shadow-sm">
+            <i data-lucide="layers" class="w-4 h-4 text-green-600"></i>
+            <span x-text="totalSelectedCount"></span> món đã chọn
+        </div>
+    </div>
+
+    <form method="post" asp-area="Manager" asp-controller="Menu" asp-action="Create"
+          enctype="multipart/form-data"
+          @@submit="onSubmit($event)">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="schedulesJson" x-ref="schedulesInput"
+               :value="serializedSchedules" />
+        <input type="hidden" name="daySelectionsJson" x-ref="daySelectionsInput"
+               :value="serializedDaySelections" />
+
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+
+            <!-- Cột trái: thông tin tuần -->
+            <div class="lg:col-span-4 space-y-4 lg:sticky lg:top-4">
+                <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 space-y-4">
+                    <h2 class="text-xs font-black text-slate-500 uppercase tracking-wider flex items-center gap-2">
+                        <i data-lucide="calendar-range" class="w-4 h-4 text-green-600"></i>
+                        Thông tin tuần
+                    </h2>
+
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Từ ngày</label>
+                            <input type="date" name="startDate" x-model="startDate" @@change="rebuildDays()"
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none" required />
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Đến ngày</label>
+                            <input type="date" name="endDate" x-model="endDate" @@change="rebuildDays()"
+                                   class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold focus:border-green-500 focus:ring-2 focus:ring-green-500/20 outline-none" required />
+                        </div>
+                    </div>
+
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" @@click="setNextMonday()"
+                                class="flex-1 min-w-[120px] text-xs font-bold px-3 py-2 rounded-xl bg-green-600 text-white hover:bg-green-700">
+                            Tuần tới (T2–T6)
+                        </button>
+                        <button type="button" @@click="setWeekdaysMonFri()"
+                                class="flex-1 min-w-[120px] text-xs font-bold px-3 py-2 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200">
+                            Chuẩn T2–T6
+                        </button>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Loại khách</label>
+                        <select name="customerTypeId" x-model="customerTypeId" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none focus:border-green-500">
+                            <option value="">Mặc định (tất cả)</option>
+                            @foreach (var ct in customerTypes)
+                            {
+                                <option value="@ct.Id">@ct.Name</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Loại menu</label>
+                        <select name="menuType" x-model="menuType" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none focus:border-green-500">
+                            <option value="General">General</option>
+                            <option value="School">School</option>
+                            <option value="Worker">Worker</option>
+                            <option value="Office">Office</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Mô tả</label>
+                        <textarea name="description" x-model="description" rows="2" placeholder="VD: Thực đơn tuần 1/6/2026 - Công nghiệp"
+                                  class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm resize-none outline-none focus:border-green-500"></textarea>
+                    </div>
+                </div>
+
+                <!-- Tóm tắt theo ngày -->
+                <div class="bg-gradient-to-br from-slate-800 to-slate-900 rounded-2xl p-5 text-white shadow-lg" x-show="days.length > 0">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-slate-400 mb-3">Tóm tắt nhanh</p>
+                    <ul class="space-y-2 max-h-48 overflow-y-auto text-sm">
+                        <template x-for="day in days" :key="'sum-' + day.iso">
+                            <li class="flex justify-between gap-2 border-b border-white/10 pb-2 last:border-0">
+                                <span class="font-semibold text-slate-300" x-text="day.short"></span>
+                                <span class="font-bold" :class="dayCount(day.iso) > 0 ? 'text-green-400' : 'text-slate-500'"
+                                      x-text="dayCount(day.iso) + ' món'"></span>
+                            </li>
+                        </template>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Cột phải: lịch + chọn món -->
+            <div class="lg:col-span-8 space-y-4">
+
+                <template x-if="days.length === 0">
+                    <div class="bg-white rounded-2xl border border-dashed border-slate-200 p-12 text-center">
+                        <i data-lucide="calendar-off" class="w-12 h-12 mx-auto text-slate-200 mb-3"></i>
+                        <p class="font-bold text-slate-600">Chọn khoảng ngày hợp lệ</p>
+                        <p class="text-sm text-slate-400 mt-1">Ngày kết thúc phải ≥ ngày bắt đầu.</p>
+                    </div>
+                </template>
+
+                <template x-if="days.length > 0">
+                    <div class="space-y-4">
+                        <!-- Tabs ngày -->
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+                            <p class="text-[11px] font-bold text-slate-400 uppercase mb-3">Chọn ngày để gán món</p>
+                            <div class="flex gap-2 overflow-x-auto pb-1 scrollbar-thin">
+                                <template x-for="day in days" :key="day.iso">
+                                    <button type="button"
+                                            @@click="activeDay = day.iso"
+                                            class="menu-create-day-tab"
+                                            :class="{
+                                                'active': activeDay === day.iso,
+                                                'has-items': dayCount(day.iso) > 0
+                                            }">
+                                        <div x-text="day.short"></div>
+                                        <div class="text-[10px] opacity-80 mt-0.5" x-text="dayCount(day.iso) + ' món'"></div>
+                                    </button>
+                                </template>
+                            </div>
+
+                            <div class="flex flex-wrap gap-2 mt-4 pt-4 border-t border-slate-100">
+                                <button type="button" @@click="copyFromPreviousDay()"
+                                        class="text-xs font-bold px-3 py-1.5 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 flex items-center gap-1">
+                                    <i data-lucide="copy" class="w-3.5 h-3.5"></i> Sao chép ngày trước
+                                </button>
+                                <button type="button" @@click="applyActiveToAllDays()"
+                                        class="text-xs font-bold px-3 py-1.5 rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 flex items-center gap-1">
+                                    <i data-lucide="calendar-plus" class="w-3.5 h-3.5"></i> Áp dụng cho cả tuần
+                                </button>
+                                <button type="button" @@click="clearActiveDay()"
+                                        class="text-xs font-bold px-3 py-1.5 rounded-lg text-red-600 hover:bg-red-50 flex items-center gap-1 ml-auto">
+                                    <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Xóa ngày này
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Món đã chọn (ngày hiện tại) -->
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                            <div class="px-5 py-4 border-b border-slate-100 bg-slate-50/80 flex items-center justify-between">
+                                <div>
+                                    <h3 class="font-black text-slate-800 text-sm" x-text="activeDayLabel"></h3>
+                                    <p class="text-xs text-slate-500 mt-0.5">Buổi trưa · các món đã thêm</p>
+                                </div>
+                                <span class="text-xs font-black px-2.5 py-1 rounded-full"
+                                      :class="activeDayCount > 0 ? 'bg-green-100 text-green-700' : 'bg-slate-100 text-slate-500'"
+                                      x-text="activeDayCount + ' món'"></span>
+                            </div>
+
+                            <div class="p-4 min-h-[100px]">
+                                <template x-if="activeDayCount === 0">
+                                    <p class="text-center text-sm text-slate-400 py-6">
+                                        Chưa có món. Bấm vào món ở danh sách bên dưới để thêm.
+                                    </p>
+                                </template>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <template x-for="dishId in activeDayIds" :key="'sel-' + activeDay + '-' + dishId">
+                                        <div class="flex items-center gap-3 p-3 rounded-xl border border-green-200 bg-green-50/50">
+                                            <div class="w-12 h-12 rounded-lg overflow-hidden bg-slate-200 shrink-0">
+                                                <img :src="dishImage(dishId)" :alt="dishName(dishId)" class="w-full h-full object-cover"
+                                                     @@error="$event.target.src = defaultImg" />
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-bold text-slate-800 truncate" x-text="dishName(dishId)"></p>
+                                                <p class="text-xs text-green-700 font-semibold" x-text="formatPrice(dishPrice(dishId))"></p>
+                                            </div>
+                                            <button type="button" @@click="removeDish(activeDay, dishId)"
+                                                    class="w-8 h-8 rounded-lg bg-white border border-red-200 text-red-500 hover:bg-red-50 flex items-center justify-center shrink-0">
+                                                <i data-lucide="x" class="w-4 h-4"></i>
+                                            </button>
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Kho món -->
+                        <div class="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+                            <div class="p-4 border-b border-slate-100 flex flex-col sm:flex-row gap-3 sm:items-center">
+                                <div class="flex-1 relative">
+                                    <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                                    <input type="text" x-model="dishSearch" placeholder="Tìm tên món..."
+                                           class="w-full pl-9 pr-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium outline-none focus:border-green-500" />
+                                </div>
+                                <select x-model="categoryFilter" class="sm:w-40 bg-slate-50 border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-semibold outline-none">
+                                    <option value="">Tất cả nhóm</option>
+                                    <template x-for="cat in categories" :key="cat">
+                                        <option :value="cat" x-text="categoryLabel(cat)"></option>
+                                    </template>
+                                </select>
+                            </div>
+
+                            <div class="p-4 max-h-[420px] overflow-y-auto">
+                                <template x-if="filteredDishes.length === 0">
+                                    <p class="text-center text-sm text-slate-400 py-8">Không tìm thấy món phù hợp.</p>
+                                </template>
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                    <template x-for="dish in filteredDishes" :key="dish.id">
+                                        <button type="button"
+                                                @@click="toggleDish(activeDay, dish.id)"
+                                                class="dish-pick-card flex items-center gap-3 p-3 rounded-xl border border-slate-200 bg-white text-left w-full"
+                                                :class="{ 'selected': isSelected(activeDay, dish.id) }">
+                                            <div class="w-14 h-14 rounded-xl overflow-hidden bg-slate-100 shrink-0 relative">
+                                                <img :src="dish.imageUrl || defaultImg" :alt="dish.name" class="w-full h-full object-cover"
+                                                     @@error="$event.target.src = defaultImg" />
+                                                <span x-show="isSelected(activeDay, dish.id)"
+                                                      class="absolute inset-0 bg-green-600/80 flex items-center justify-center">
+                                                    <i data-lucide="check" class="w-6 h-6 text-white"></i>
+                                                </span>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-bold text-slate-800 line-clamp-2 leading-snug" x-text="dish.name"></p>
+                                                <p class="text-xs text-slate-500 mt-0.5" x-text="categoryLabel(dish.category)"></p>
+                                                <p class="text-sm font-black text-green-600 mt-1" x-text="formatPrice(dish.price)"></p>
+                                            </div>
+                                        </button>
+                                    </template>
+                                </div>
+                            </div>
+                            <p class="px-4 py-2 text-[11px] text-slate-400 border-t border-slate-50"
+                               x-text="'Hiển thị ' + filteredDishes.length + ' / ' + dishes.length + ' món'"></p>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <!-- Sticky footer -->
+        <div class="fixed bottom-0 left-0 right-0 z-30 bg-white/95 backdrop-blur border-t border-slate-200 px-4 py-3 md:pl-64">
+            <div class="max-w-7xl mx-auto flex flex-col sm:flex-row gap-3 justify-end items-center">
+                <p class="text-sm text-slate-500 font-medium sm:mr-auto hidden sm:block">
+                    <span class="font-bold text-slate-700" x-text="totalSelectedCount"></span> món ·
+                    <span x-text="daysWithMenu + '/' + days.length"></span> ngày đã có món
+                </p>
+                <a href="@Url.Action("Weekly", "Menu", new { area = "Manager" })"
+                   class="w-full sm:w-auto px-6 py-2.5 text-center text-sm font-bold text-slate-600 bg-slate-100 rounded-xl hover:bg-slate-200">
+                    Hủy
+                </a>
+                <button type="submit"
+                        class="w-full sm:w-auto px-8 py-2.5 bg-green-600 text-white text-sm font-bold rounded-xl shadow-lg shadow-green-600/25 hover:bg-green-700 flex items-center justify-center gap-2">
+                    <i data-lucide="save" class="w-4 h-4"></i>
+                    Lưu thực đơn
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+<script>
+    const DISH_CATALOG = @Html.Raw(dishesJson);
+    const DRAFT_DAY_SELECTIONS = @Html.Raw(draftDaySelectionsJson);
+
+    function weeklyMenuCreateForm() {
+        return {
+            dishes: [],
+            defaultImg: 'https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=120&h=120&fit=crop',
+            dishSearch: '',
+            categoryFilter: '',
+            startDate: '@defaultStart',
+            endDate: '@defaultEnd',
+            customerTypeId: '@(draftCustomerTypeId?.ToString() ?? "")',
+            menuType: '@draftMenuType',
+            description: @Html.Raw(JsonSerializer.Serialize(draftDescription, jsonOpts)),
+            days: [],
+            daySelections: {},
+            activeDay: '',
+            schedulesJson: '[]',
+
+            init() {
+                this.dishes = (DISH_CATALOG || []).map(d => ({
+                    id: Number(d.id ?? d.Id),
+                    name: d.name ?? d.Name ?? '',
+                    price: Number(d.price ?? d.Price ?? 0),
+                    imageUrl: d.imageUrl ?? d.ImageUrl ?? '',
+                    category: (d.category ?? d.Category ?? '').toLowerCase()
+                })).filter(d => d.id > 0 && d.name);
+
+                this.rebuildDays();
+                this.restoreDraftSelections();
+                this.$nextTick(() => {
+                    if (typeof lucide !== 'undefined') lucide.createIcons();
+                });
+            },
+
+            restoreDraftSelections() {
+                const draft = DRAFT_DAY_SELECTIONS || {};
+                if (typeof draft !== 'object') return;
+
+                for (const day of this.days) {
+                    const ids = draft[day.iso];
+                    if (Array.isArray(ids) && ids.length > 0) {
+                        this.daySelections[day.iso] = ids.map(id => Number(id)).filter(id => id > 0);
+                    }
+                }
+
+                const firstWithMenu = this.days.find(d => this.dayCount(d.iso) > 0);
+                if (firstWithMenu) {
+                    this.activeDay = firstWithMenu.iso;
+                } else if (this.days.length > 0) {
+                    this.activeDay = this.days[0].iso;
+                }
+            },
+
+            get categories() {
+                const set = new Set(this.dishes.map(d => d.category).filter(Boolean));
+                return [...set].sort();
+            },
+
+            get filteredDishes() {
+                const q = (this.dishSearch || '').toLowerCase().trim();
+                const cat = (this.categoryFilter || '').toLowerCase();
+                return this.dishes.filter(d => {
+                    if (cat && d.category !== cat) return false;
+                    if (!q) return true;
+                    return (d.name || '').toLowerCase().includes(q);
+                });
+            },
+
+            get activeDayIds() {
+                return this.daySelections[this.activeDay] || [];
+            },
+
+            get activeDayCount() {
+                return this.activeDayIds.length;
+            },
+
+            get activeDayLabel() {
+                const day = this.days.find(d => d.iso === this.activeDay);
+                return day ? `${day.weekday}, ${day.label}` : '';
+            },
+
+            get totalSelectedCount() {
+                let n = 0;
+                for (const iso of Object.keys(this.daySelections)) {
+                    n += (this.daySelections[iso] || []).length;
+                }
+                return n;
+            },
+
+            get daysWithMenu() {
+                return this.days.filter(d => this.dayCount(d.iso) > 0).length;
+            },
+
+            get serializedSchedules() {
+                return JSON.stringify(this.buildSchedules());
+            },
+
+            get serializedDaySelections() {
+                return this.buildDaySelectionsPayload();
+            },
+
+            dayCount(iso) {
+                return (this.daySelections[iso] || []).length;
+            },
+
+            dishById(id) {
+                return this.dishes.find(x => x.id === id);
+            },
+
+            dishName(id) {
+                return this.dishById(id)?.name || ('Món #' + id);
+            },
+
+            dishPrice(id) {
+                return this.dishById(id)?.price ?? 0;
+            },
+
+            dishImage(id) {
+                return this.dishById(id)?.imageUrl || this.defaultImg;
+            },
+
+            formatPrice(p) {
+                return new Intl.NumberFormat('vi-VN').format(p || 0) + ' ₫';
+            },
+
+            categoryLabel(cat) {
+                const m = {
+                    main: 'Món chính', soup: 'Canh', vegetable: 'Rau',
+                    side: 'Món phụ', dessert: 'Tráng miệng', noodle_soup: 'Món nước'
+                };
+                return m[cat] || cat || 'Khác';
+            },
+
+            parseDate(iso) {
+                const [y, m, d] = iso.split('-').map(Number);
+                return new Date(y, m - 1, d);
+            },
+
+            toIso(date) {
+                const y = date.getFullYear();
+                const m = String(date.getMonth() + 1).padStart(2, '0');
+                const d = String(date.getDate()).padStart(2, '0');
+                return `${y}-${m}-${d}`;
+            },
+
+            weekdayShort(date) {
+                return ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'][date.getDay()];
+            },
+
+            weekdayFull(date) {
+                return ['Chủ nhật', 'Thứ 2', 'Thứ 3', 'Thứ 4', 'Thứ 5', 'Thứ 6', 'Thứ 7'][date.getDay()];
+            },
+
+            rebuildDays() {
+                const start = this.parseDate(this.startDate);
+                const end = this.parseDate(this.endDate);
+                if (isNaN(start) || isNaN(end) || end < start) {
+                    this.days = [];
+                    this.activeDay = '';
+                    return;
+                }
+                const newSelections = {};
+                const list = [];
+                for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                    const iso = this.toIso(d);
+                    list.push({
+                        iso,
+                        short: this.weekdayShort(d),
+                        label: d.toLocaleDateString('vi-VN'),
+                        weekday: this.weekdayFull(d)
+                    });
+                    newSelections[iso] = this.daySelections[iso] ? [...this.daySelections[iso]] : [];
+                }
+                const previous = this.daySelections;
+                this.days = list;
+                this.daySelections = newSelections;
+
+                for (const day of list) {
+                    const kept = previous[day.iso];
+                    if (kept?.length) {
+                        this.daySelections[day.iso] = [...kept];
+                    }
+                }
+
+                if (!this.activeDay || !list.some(x => x.iso === this.activeDay)) {
+                    this.activeDay = list[0]?.iso || '';
+                }
+                this.$nextTick(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); });
+            },
+
+            setWeekdaysMonFri() {
+                const start = this.parseDate(this.startDate);
+                if (isNaN(start)) return;
+                while (start.getDay() !== 1) start.setDate(start.getDate() - 1);
+                const end = new Date(start);
+                end.setDate(end.getDate() + 4);
+                this.startDate = this.toIso(start);
+                this.endDate = this.toIso(end);
+                this.rebuildDays();
+            },
+
+            setNextMonday() {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                let add = ((1 - today.getDay()) + 7) % 7;
+                if (add === 0) add = 7;
+                const mon = new Date(today);
+                mon.setDate(mon.getDate() + add);
+                const fri = new Date(mon);
+                fri.setDate(fri.getDate() + 4);
+                this.startDate = this.toIso(mon);
+                this.endDate = this.toIso(fri);
+                this.rebuildDays();
+            },
+
+            isSelected(iso, dishId) {
+                return (this.daySelections[iso] || []).includes(dishId);
+            },
+
+            toggleDish(iso, dishId) {
+                if (!iso) return;
+                const arr = [...(this.daySelections[iso] || [])];
+                const i = arr.indexOf(dishId);
+                if (i >= 0) arr.splice(i, 1);
+                else arr.push(dishId);
+                this.daySelections[iso] = arr;
+                this.$nextTick(() => { if (typeof lucide !== 'undefined') lucide.createIcons(); });
+            },
+
+            removeDish(iso, dishId) {
+                this.daySelections[iso] = (this.daySelections[iso] || []).filter(id => id !== dishId);
+            },
+
+            clearActiveDay() {
+                if (!this.activeDay) return;
+                if (!confirm('Xóa tất cả món của ngày này?')) return;
+                this.daySelections[this.activeDay] = [];
+            },
+
+            copyFromPreviousDay() {
+                const idx = this.days.findIndex(d => d.iso === this.activeDay);
+                if (idx <= 0) {
+                    alert('Đây là ngày đầu tiên, không có ngày trước để sao chép.');
+                    return;
+                }
+                const prev = this.days[idx - 1].iso;
+                this.daySelections[this.activeDay] = [...(this.daySelections[prev] || [])];
+            },
+
+            applyActiveToAllDays() {
+                if (this.activeDayCount === 0) {
+                    alert('Hãy chọn món cho ngày hiện tại trước.');
+                    return;
+                }
+                if (!confirm('Áp dụng danh sách món này cho tất cả các ngày trong tuần?')) return;
+                const copy = [...this.activeDayIds];
+                for (const day of this.days) {
+                    this.daySelections[day.iso] = [...copy];
+                }
+            },
+
+            buildSchedules() {
+                const items = [];
+                for (const day of this.days) {
+                    const ids = this.daySelections[day.iso] || [];
+                    for (let i = 0; i < ids.length; i++) {
+                        const dishId = Number(ids[i]);
+                        if (dishId > 0) {
+                            items.push({ date: day.iso, mealSlot: 'lunch', dishId });
+                        }
+                    }
+                }
+                return items;
+            },
+
+            buildDaySelectionsPayload() {
+                const out = {};
+                for (const day of this.days) {
+                    const ids = (this.daySelections[day.iso] || [])
+                        .map(id => Number(id))
+                        .filter(id => id > 0);
+                    if (ids.length > 0) {
+                        out[day.iso] = ids;
+                    }
+                }
+                return JSON.stringify(out);
+            },
+
+            onSubmit(e) {
+                if (this.days.length === 0) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn khoảng ngày hợp lệ (từ ngày — đến ngày).');
+                    return;
+                }
+
+                const schedules = this.buildSchedules();
+                const daysOk = this.days.every(d => (this.daySelections[d.iso] || []).length > 0);
+
+                if (schedules.length === 0) {
+                    e.preventDefault();
+                    alert('Vui lòng chọn ít nhất một món.');
+                    return;
+                }
+                if (!daysOk) {
+                    e.preventDefault();
+                    alert('Mỗi ngày trong tuần cần có ít nhất một món. Kiểm tra các tab ngày còn trống.');
+                    return;
+                }
+
+                // Input ẩn đã bind :value — cho phép POST chuẩn của trình duyệt (không gọi form.submit()).
+                const form = e.target;
+                if (this.$refs.schedulesInput) {
+                    this.$refs.schedulesInput.value = this.serializedSchedules;
+                }
+                if (this.$refs.daySelectionsInput) {
+                    this.$refs.daySelectionsInput.value = this.serializedDaySelections;
+                }
+
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.classList.add('opacity-60', 'cursor-wait');
+                }
+            }
+        };
+    }
+</script>
+}

@@ -59,17 +59,22 @@ public sealed class CustomerHomeFeaturedMenuService
         CancellationToken ct)
     {
         var result = new List<CustomerFeaturedDishVm>();
-        var menus = await _masterDataClient.GetWeeklyMenusAsync(
-            accessToken, page: 1, pageSize: 10, customerProfileKey: segment.ProfileKey, ct: ct);
-
         var today = DateTime.Today;
-        var menu = menus.Items.FirstOrDefault(m => m.StartDate.Date <= today && m.EndDate.Date >= today)
-                   ?? menus.Items.OrderByDescending(m => m.StartDate).FirstOrDefault();
+        var menus = await _masterDataClient.GetWeeklyMenusAsync(
+            accessToken,
+            page: 1,
+            pageSize: 10,
+            customerProfileKey: segment.ProfileKey,
+            notEndedBefore: today,
+            ct: ct);
+
+        var menu = WeeklyMenuCustomerVisibility.PickDefaultWeek(menus.Items);
 
         if (menu == null)
             return result;
 
-        var detail = await _masterDataClient.GetWeeklyMenuDetailAsync(menu.Id, accessToken, ct);
+        var detail = await _masterDataClient.GetWeeklyMenuDetailAsync(menu.Id, accessToken, scheduleFrom: today, ct);
+        WeeklyMenuCustomerVisibility.ApplyFutureSchedulesOnly(detail);
         var seen = new HashSet<int>();
 
         foreach (var schedule in detail.Schedules.OrderBy(s => s.Date).ThenBy(s => s.MealSlot))

@@ -137,7 +137,8 @@ public class CartController : Controller
         GetWeeklyMenuDetailClientResponse detail;
         try
         {
-            detail = await _masterDataClient.GetWeeklyMenuDetailAsync(weeklyMenuId, token, ct);
+            detail = await _masterDataClient.GetWeeklyMenuDetailAsync(weeklyMenuId, token, scheduleFrom: DateTime.Today, ct);
+            WeeklyMenuCustomerVisibility.ApplyFutureSchedulesOnly(detail);
         }
         catch (Exception ex)
         {

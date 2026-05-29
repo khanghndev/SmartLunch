@@ -71,8 +71,14 @@ namespace Khoa_Luan_KS_Web.Controllers
 
             try
             {
-                var res = await _masterDataClient.GetWeeklyMenusAsync(token, 1, 8, customerProfileKey: profileKey, ct: ct);
-                ViewBag.SegmentMenus = res.Items;
+                var res = await _masterDataClient.GetWeeklyMenusAsync(
+                    token,
+                    1,
+                    8,
+                    customerProfileKey: profileKey,
+                    notEndedBefore: DateTime.Today,
+                    ct: ct);
+                ViewBag.SegmentMenus = WeeklyMenuCustomerVisibility.FilterOrderableWeeks(res.Items).ToList();
             }
             catch (Exception ex)
             {

@@ -386,12 +386,21 @@ public class BackendMasterDataClient
     }
 
     // --- WeeklyMenu ---
-    public async Task<GetWeeklyMenusClientResponse> GetWeeklyMenusAsync(string accessToken, int page = 1, int pageSize = 10, string? searchTerm = null, int? customerTypeId = null, string? customerProfileKey = null, CancellationToken ct = default)
+    public async Task<GetWeeklyMenusClientResponse> GetWeeklyMenusAsync(
+        string accessToken,
+        int page = 1,
+        int pageSize = 10,
+        string? searchTerm = null,
+        int? customerTypeId = null,
+        string? customerProfileKey = null,
+        DateTime? notEndedBefore = null,
+        CancellationToken ct = default)
     {
         var query = $"?Page={page}&PageSize={pageSize}";
         if (!string.IsNullOrEmpty(searchTerm)) query += $"&SearchTerm={Uri.EscapeDataString(searchTerm)}";
         if (customerTypeId.HasValue) query += $"&CustomerTypeId={customerTypeId.Value}";
         if (!string.IsNullOrWhiteSpace(customerProfileKey)) query += $"&CustomerProfileKey={Uri.EscapeDataString(customerProfileKey)}";
+        if (notEndedBefore.HasValue) query += $"&NotEndedBefore={notEndedBefore.Value:yyyy-MM-dd}";
         return await GetAsync<GetWeeklyMenusClientResponse>($"/api/v1/master-data/WeeklyMenu{query}", accessToken, ct);
     }
 
@@ -466,10 +475,21 @@ public class BackendMasterDataClient
         return await GetAsync<GetWeeklyMenuClientResponse>($"/api/v1/master-data/WeeklyMenu/{id}", accessToken, ct);
     }
 
-    public async Task<GetWeeklyMenuDetailClientResponse> GetWeeklyMenuDetailAsync(int id, string accessToken, CancellationToken ct = default)
+    public async Task<GetWeeklyMenuDetailClientResponse> GetWeeklyMenuDetailAsync(
+        int id,
+        string accessToken,
+        DateTime? scheduleFrom = null,
+        CancellationToken ct = default)
     {
-        return await GetAsync<GetWeeklyMenuDetailClientResponse>($"/api/v1/master-data/WeeklyMenu/{id}/detail", accessToken, ct);
+        var query = scheduleFrom.HasValue ? $"?scheduleFrom={scheduleFrom.Value:yyyy-MM-dd}" : "";
+        return await GetAsync<GetWeeklyMenuDetailClientResponse>($"/api/v1/master-data/WeeklyMenu/{id}/detail{query}", accessToken, ct);
     }
+
+    public async Task<GetWeeklyMenuDetailClientResponse> CreateWeeklyMenuAsync(
+        CreateWeeklyMenuClientRequest request,
+        string accessToken,
+        CancellationToken ct = default)
+        => await PostAsync<GetWeeklyMenuDetailClientResponse>("/api/v1/master-data/WeeklyMenu", request, accessToken, ct);
 
     /// <summary>Danh sách hợp đồng theo tổ chức (role Company / Organization).</summary>
     public async Task<GetMyOrganizationContractsClientResponse> GetMyOrganizationContractsAsync(string accessToken, CancellationToken ct = default)
@@ -1494,6 +1514,28 @@ public class WeeklyMenuImageClientDto
 }
 
 public class GetWeeklyMenusClientResponse : PaginationResponse<WeeklyMenuClientDto> { }
+
+public class CreateWeeklyMenuClientRequest
+{
+    public DateTime StartDate { get; set; }
+    public DateTime EndDate { get; set; }
+    public string MenuType { get; set; } = "General";
+    public int? CustomerTypeId { get; set; }
+    public string? Description { get; set; }
+    public List<CreateMenuScheduleItemClientRequest> Schedules { get; set; } = new();
+}
+
+public class CreateMenuScheduleItemClientRequest
+{
+    [JsonPropertyName("date")]
+    public DateTime Date { get; set; }
+
+    [JsonPropertyName("mealSlot")]
+    public string MealSlot { get; set; } = "lunch";
+
+    [JsonPropertyName("dishId")]
+    public int DishId { get; set; }
+}
 
 public class GetWeeklyMenuClientResponse
 {

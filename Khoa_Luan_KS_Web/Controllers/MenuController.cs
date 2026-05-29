@@ -1,5 +1,6 @@
 using System.Linq;
 using Khoa_Luan_KS_Web.Models;
+using Khoa_Luan_KS_Web.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -52,33 +53,36 @@ namespace Khoa_Luan_KS_Web.Controllers
             {
                 try
                 {
-                    // Lấy danh sách thực đơn tuần (tối đa 20 mục gần nhất), có thể lọc theo phân khúc (profile key)
+                    var today = DateTime.Today;
+
+                    // Chỉ lấy tuần còn ngày phục vụ (EndDate >= hôm nay)
                     menuList = await _masterDataClient.GetWeeklyMenusAsync(
                         token,
                         page: 1,
                         pageSize: 20,
                         customerProfileKey: profileKey,
+                        notEndedBefore: today,
                         ct: ct);
+
+                    var orderableWeeks = menuList?.Items != null
+                        ? WeeklyMenuCustomerVisibility.FilterOrderableWeeks(menuList.Items).ToList()
+                        : new List<Services.WeeklyMenuClientDto>();
 
                     // Xác định thực đơn sẽ hiển thị chi tiết
                     int targetId;
-                    if (menuId.HasValue)
+                    if (menuId.HasValue && orderableWeeks.Any(m => m.Id == menuId.Value))
                     {
                         targetId = menuId.Value;
                     }
                     else
                     {
-                        // Ưu tiên thực đơn đang áp dụng, nếu không thì lấy thực đơn mới nhất
-                        var today = DateTime.Today;
-                        var current = menuList?.Items.FirstOrDefault(m =>
-                            m.StartDate.Date <= today && m.EndDate.Date >= today);
-                        var target = current ?? menuList?.Items.OrderByDescending(m => m.StartDate).FirstOrDefault();
-                        targetId = target?.Id ?? 0;
+                        targetId = WeeklyMenuCustomerVisibility.PickDefaultWeek(orderableWeeks)?.Id ?? 0;
                     }
 
                     if (targetId > 0)
                     {
-                        menuDetail = await _masterDataClient.GetWeeklyMenuDetailAsync(targetId, token, ct);
+                        menuDetail = await _masterDataClient.GetWeeklyMenuDetailAsync(targetId, token, scheduleFrom: today, ct);
+                        WeeklyMenuCustomerVisibility.ApplyFutureSchedulesOnly(menuDetail);
                     }
                 }
                 catch (Exception ex)
@@ -111,7 +115,7 @@ namespace Khoa_Luan_KS_Web.Controllers
 
                 try
                 {
-                    var detail = await _masterDataClient.GetWeeklyMenuDetailAsync(menuId!.Value, token, ct);
+                    var detail = await _masterDataClient.GetWeeklyMenuDetailAsync(menuId!.Value, token, ct: ct);
                     var schedule = detail.Schedules.FirstOrDefault(s => s.Id == scheduleId!.Value);
                     if (schedule == null || schedule.DishId <= 0)
                         return NotFound();
@@ -185,7 +189,7 @@ namespace Khoa_Luan_KS_Web.Controllers
                 {
                     try
                     {
-                        var menuDetail = await _masterDataClient.GetWeeklyMenuDetailAsync(menuId.Value, tokenForResolve, ct);
+                        var menuDetail = await _masterDataClient.GetWeeklyMenuDetailAsync(menuId.Value, tokenForResolve, ct: ct);
                         var schedule = menuDetail.Schedules.FirstOrDefault(s => s.Id == scheduleId.Value);
                         if (schedule?.DishId is > 0)
                             return RedirectToAction(nameof(DishDetail), new { id = schedule.DishId, menuId, scheduleId });
@@ -250,7 +254,7 @@ namespace Khoa_Luan_KS_Web.Controllers
             {
                 try
                 {
-                    var menuDetail = await _masterDataClient.GetWeeklyMenuDetailAsync(menuId.Value, token, ct);
+                    var menuDetail = await _masterDataClient.GetWeeklyMenuDetailAsync(menuId.Value, token, ct: ct);
                     var schedule = menuDetail.Schedules.FirstOrDefault(s => s.Id == scheduleId.Value);
                     if (schedule != null && schedule.DishId == id)
                     {

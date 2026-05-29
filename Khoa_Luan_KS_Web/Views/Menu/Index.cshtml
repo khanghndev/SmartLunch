@@ -9,8 +9,12 @@
     var apiError = ViewData["ApiError"] as string;
     var customerProfileKey = ViewData["CustomerProfileKey"] as string;
 
-    var schedules = menuDetail?.Schedules ?? new List<WeeklyMenuScheduleDetailClientDto>();
+    var today = DateTime.Today;
+    var schedules = WeeklyMenuCustomerVisibility.FilterFutureSchedules(menuDetail?.Schedules ?? new List<WeeklyMenuScheduleDetailClientDto>());
     var menu = menuDetail?.WeeklyMenu;
+    var weekPickerMenus = menuList?.Items != null
+        ? WeeklyMenuCustomerVisibility.FilterOrderableWeeks(menuList.Items).Take(12).ToList()
+        : new List<WeeklyMenuClientDto>();
     var allSlots = schedules.Select(s => s.MealSlot).Distinct().OrderBy(s => s).ToList();
     var byDate = schedules.GroupBy(s => s.Date.Date).OrderBy(g => g.Key).ToList();
 
@@ -166,7 +170,7 @@
                 </div>
             }
 
-            @if (menuList != null && menuList.Items.Any())
+            @if (weekPickerMenus.Any())
             {
                 <div class="no-print mb-8 overflow-x-auto pb-1">
                     <div class="flex min-w-min flex-wrap items-center gap-2">
@@ -174,10 +178,10 @@
                             <i data-lucide="calendar-range" class="h-4 w-4 text-orange-500"></i>
                             @MenuViewText.WeekPickerLabel
                         </span>
-                        @foreach (var m in menuList.Items.OrderByDescending(x => x.StartDate).Take(12))
+                        @foreach (var m in weekPickerMenus)
                         {
                             var isSel = menu?.Id == m.Id;
-                            var isCur = m.StartDate.Date <= DateTime.Today && m.EndDate.Date >= DateTime.Today;
+                            var isCur = m.StartDate.Date <= today && m.EndDate.Date >= today;
                             <a href="/Menu/Index?menuId=@m.Id@(ProfileQuerySuffix())#menu-section"
                                class="shrink-0 rounded-full border px-3 py-2 text-xs font-bold transition-all sm:px-4 sm:text-sm @(isSel ? "border-emerald-700 bg-emerald-600 text-white shadow-md shadow-emerald-600/25" : "border-slate-200 bg-white text-slate-700 hover:border-emerald-300 hover:text-emerald-700")">
                                 @m.StartDate.ToString("dd/MM") &ndash; @m.EndDate.ToString("dd/MM")
@@ -226,19 +230,22 @@
                             </div>
                         }
                     </div>
-                    <form asp-controller="Cart" asp-action="AddWeekMenu" method="post" class="no-print flex w-full flex-col gap-2 sm:max-w-md lg:w-auto lg:min-w-[280px] lg:max-w-none lg:items-end">
-                        @Html.AntiForgeryToken()
-                        <input type="hidden" name="weeklyMenuId" value="@menu.Id" />
-                        <input type="hidden" name="replaceExisting" value="true" />
-                        <button type="submit"
-                                class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/30 transition hover:from-orange-600 hover:to-amber-600 sm:w-auto">
-                            <i data-lucide="shopping-basket" class="h-5 w-5"></i>
-                            @MenuViewText.BtnAddWholeWeek
-                        </button>
-                        <p class="text-center text-[11px] leading-snug text-slate-500 lg:text-right">
-                            @MenuViewText.BtnAddWholeWeekHint
-                        </p>
-                    </form>
+                    @if (schedules.Any())
+                    {
+                        <form asp-controller="Cart" asp-action="AddWeekMenu" method="post" class="no-print flex w-full flex-col gap-2 sm:max-w-md lg:w-auto lg:min-w-[280px] lg:max-w-none lg:items-end">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="weeklyMenuId" value="@menu.Id" />
+                            <input type="hidden" name="replaceExisting" value="true" />
+                            <button type="submit"
+                                    class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 px-5 py-3.5 text-sm font-black text-white shadow-lg shadow-orange-500/30 transition hover:from-orange-600 hover:to-amber-600 sm:w-auto">
+                                <i data-lucide="shopping-basket" class="h-5 w-5"></i>
+                                @MenuViewText.BtnAddWholeWeek
+                            </button>
+                            <p class="text-center text-[11px] leading-snug text-slate-500 lg:text-right">
+                                @MenuViewText.BtnAddWholeWeekHint
+                            </p>
+                        </form>
+                    }
                 </div>
 
                 @await Html.PartialAsync("_MenuWeekGrid", new MenuWeekGridViewModel
