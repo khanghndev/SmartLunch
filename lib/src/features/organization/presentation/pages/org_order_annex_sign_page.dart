@@ -5,6 +5,7 @@ import '../../../../core/theme/app_design_system.dart';
 import '../../data/models/org_order_annex_sign_args.dart';
 import '../../data/org_repository.dart';
 import '../../utils/org_meal_pay_deposit.dart';
+import '../../utils/org_meal_period_pay_deposit.dart';
 import 'org_annex_pdf_page.dart';
 import '../widgets/org_signature_pad.dart';
 import '../widgets/organization_ui.dart';
@@ -109,11 +110,19 @@ class _OrgOrderAnnexSignPageState extends State<OrgOrderAnnexSignPage> {
       _error = null;
     });
     try {
-      await OrgMealPayDeposit.launch(
-        context: context,
-        orderId: a.orderId,
-        depositAmountHint: a.depositAmountVnd.toDouble(),
-      );
+      if (a.usePeriodContractPay) {
+        await OrgMealPeriodPayDeposit.launch(
+          context: context,
+          orderId: a.orderId,
+          depositAmountHint: a.depositAmountVnd.toDouble(),
+        );
+      } else {
+        await OrgMealPayDeposit.launch(
+          context: context,
+          orderId: a.orderId,
+          depositAmountHint: a.depositAmountVnd.toDouble(),
+        );
+      }
     } finally {
       if (mounted) setState(() => _submitting = false);
     }

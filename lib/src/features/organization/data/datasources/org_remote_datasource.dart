@@ -7,6 +7,7 @@ import '../../utils/org_meal_order_request_builder.dart';
 import '../models/bulk_order_models.dart';
 import '../models/contract_models.dart';
 import '../models/customer_review_models.dart';
+import '../models/org_meal_contract_models.dart';
 
 /// Remote datasource Organization — meal-order + contracts.
 class OrgRemoteDataSource {
@@ -313,6 +314,124 @@ class OrgRemoteDataSource {
       rethrow;
     } catch (e) {
       throw ApiException('Lỗi gửi đánh giá: $e', statusCode: 500);
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Period-Based meal contract order (meal-contract-order)
+  // ────────────────────────────────────────────────────────────────────────────
+
+  Future<DishesByCategoryResponseModel> getMealContractMainDishes({
+    int page = 1,
+    int pageSize = 50,
+    String? search,
+  }) async {
+    try {
+      final response = await _client.get(
+        '$_prefix/organization/meal-contract-order/dish/main',
+        queryParameters: {
+          'page': page,
+          'pageSize': pageSize,
+          if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
+        },
+      );
+      return DishesByCategoryResponseModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải món chính: $e', statusCode: 500);
+    }
+  }
+
+  Future<PrepareMealPeriodDraftModel> prepareMealPeriodContract({
+    required int organizationId,
+    required String startDate,
+    required String endDate,
+    required List<String> excludedDates,
+    required int mealsPerDay,
+    required double mealUnitPrice,
+    required OrganizationMealDeliveryModel delivery,
+  }) async {
+    try {
+      final response = await _client.post(
+        '$_prefix/organization/meal-contract-order/contract',
+        body: {
+          'organizationId': organizationId,
+          'startDate': startDate,
+          'endDate': endDate,
+          'excludedDates': excludedDates,
+          'mealsPerDay': mealsPerDay,
+          'mealUnitPrice': mealUnitPrice,
+          'delivery': delivery.toJson(),
+        },
+      );
+      return PrepareMealPeriodDraftModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tạo nháp hợp đồng theo kỳ: $e', statusCode: 500);
+    }
+  }
+
+  Future<CheckoutMealResultModel> checkoutMealPeriodContract({
+    required String draftId,
+    required int depositPercent,
+  }) async {
+    try {
+      final response = await _client.post(
+        '$_prefix/organization/meal-contract-order/checkout',
+        body: {
+          'draftId': draftId,
+          'depositPercent': depositPercent,
+        },
+      );
+      return CheckoutMealResultModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi xác nhận hợp đồng theo kỳ: $e', statusCode: 500);
+    }
+  }
+
+  Future<InitiateMealPaymentModel> initiateMealPeriodPayment({
+    required int orderId,
+    required String returnUrl,
+    required String cancelUrl,
+  }) async {
+    try {
+      final response = await _client.post(
+        '$_prefix/organization/meal-contract-order/pay',
+        body: {
+          'orderId': orderId,
+          'returnUrl': returnUrl,
+          'cancelUrl': cancelUrl,
+        },
+      );
+      return InitiateMealPaymentModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tạo link thanh toán (HĐ theo kỳ): $e', statusCode: 500);
+    }
+  }
+
+  Future<Map<String, dynamic>> submitMealPeriodWeeklyMeals({
+    required int contractId,
+    required String weekStart,
+    required List<Map<String, dynamic>> mealDays,
+  }) async {
+    try {
+      return await _client.post(
+        '$_prefix/organization/meal-contract-order/$contractId/weekly-meals',
+        body: {
+          'weekStart': weekStart,
+          'mealDays': mealDays,
+        },
+      );
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi gửi chọn món theo tuần: $e', statusCode: 500);
     }
   }
 }

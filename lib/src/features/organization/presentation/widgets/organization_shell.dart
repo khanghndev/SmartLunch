@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../app/app_routes.dart';
 import '../../../../core/theme/app_design_system.dart';
 import '../../../../core/widgets/premium_drawer.dart';
-import '../../../../core/widgets/role_module_shell.dart';
 
 const RolePalette kOrgRoleShell = RolePalette.organization;
 
@@ -38,7 +37,7 @@ abstract final class OrganizationShellConfig {
           icon: Icons.restaurant_menu_rounded,
           label: 'bulk_order',
           labelVi: 'Đặt suất ăn tập trung',
-          route: AppRoutes.orgBulkOrder,
+          route: AppRoutes.orgBulkOrderMode,
         ),
         DrawerItem(
           icon: Icons.request_quote_rounded,

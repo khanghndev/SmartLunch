@@ -30,8 +30,12 @@ class AppRoutes {
   static const orgHome = '/org';
   static const orgStaff = '/org/staff';
   static const orgBulkOrder = '/org/bulk-order';
+  static const orgBulkOrderMode = '/org/bulk-order/mode';
   static const orgMealOrderReview = '/org/meal-order/review';
   static const orgOrderAnnexSign = '/org/meal-order/sign';
+  static const orgMealPeriodContractIndex = '/org/meal-contract-order';
+  static const orgMealPeriodContractReview = '/org/meal-contract-order/review';
+  static const orgMealPeriodWeekly = '/org/meal-contract-order/weekly';
   static const orgStatistics = '/org/statistics';
   static const orgReports = '/org/reports';
   static const orgReconciliation = '/org/reconciliation';

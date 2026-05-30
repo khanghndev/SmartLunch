@@ -147,7 +147,8 @@ class _OrganizationHomePageState extends State<OrganizationHomePage> {
             label: 'Đặt suất ăn',
             icon: Icons.restaurant_menu_rounded,
             color: org.primary,
-            onTap: () => Navigator.of(context).pushNamed(AppRoutes.orgBulkOrder),
+            onTap: () =>
+                Navigator.of(context).pushNamed(AppRoutes.orgBulkOrderMode),
           ),
           RoleHeaderQuickAction(
             label: 'Hợp đồng',
@@ -221,7 +222,7 @@ class _OrganizationHomePageState extends State<OrganizationHomePage> {
             subtitle: 'Dịch vụ suất ăn tập trung',
             icon: Icons.restaurant_rounded,
             color: AppDesignSystem.info,
-            route: AppRoutes.orgBulkOrder,
+            route: AppRoutes.orgBulkOrderMode,
             preview: _isLoading ? null : '$_categoryCount danh mục món',
           ),
           DashboardFeature(

@@ -185,6 +185,30 @@ class _ContractSettlementPageState extends State<ContractSettlementPage> {
     }
   }
 
+  Future<void> _openWeeklyMeals(ContractModel c) async {
+    try {
+      final detail = await OrgRepository.instance.getContractDetail(c.id);
+      final type = detail?.contractType.toLowerCase() ?? '';
+      if (!type.contains('period')) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Hợp đồng này không phải loại theo kỳ (Period-Based).')),
+        );
+        return;
+      }
+      if (!mounted) return;
+      Navigator.of(context).pushNamed(AppRoutes.orgMealPeriodWeekly, arguments: c.id);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Không mở được chọn món tuần: ${orgApiError(e)}'),
+          backgroundColor: AppDesignSystem.danger,
+        ),
+      );
+    }
+  }
+
   void _openAnnexSign(ContractPaymentModel p) {
     final orderId = p.orderId;
     if (orderId == null || orderId <= 0) return;
@@ -342,6 +366,21 @@ class _ContractSettlementPageState extends State<ContractSettlementPage> {
                   formatOrgVnd(c.value),
                   style: AppDesignSystem.label(color: orgAccent),
                 ),
+                if ((c.contractType).toLowerCase().contains('period')) ...[
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: () => _openWeeklyMeals(c),
+                      icon: const Icon(Icons.calendar_month_outlined, size: 18),
+                      label: const Text('Chọn món theo tuần'),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: orgAccent,
+                        padding: const EdgeInsets.symmetric(vertical: 10),
+                      ),
+                    ),
+                  ),
+                ],
                 if (c.status == ContractStatus.draft ||
                     c.status == ContractStatus.active) ...[
                   const SizedBox(height: 10),

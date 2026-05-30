@@ -6,6 +6,8 @@ import 'datasources/org_remote_datasource.dart';
 import 'models/bulk_order_models.dart';
 import 'models/contract_models.dart';
 import 'models/customer_review_models.dart';
+import 'models/org_meal_contract_models.dart';
+import 'models/org_meal_period_weekly_models.dart';
 import '../utils/org_meal_promotion_builder.dart';
 
 class OrgRepository {
@@ -124,6 +126,69 @@ class OrgRepository {
 
   Future<ContractPaymentListModel> getContractPayments(int contractId) =>
       _remote.getContractPayments(contractId);
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Period-Based meal contract order
+  // ────────────────────────────────────────────────────────────────────────────
+
+  Future<DishesByCategoryResponseModel> getMealContractMainDishes({
+    int page = 1,
+    int pageSize = 50,
+    String? search,
+  }) =>
+      _remote.getMealContractMainDishes(page: page, pageSize: pageSize, search: search);
+
+  Future<PrepareMealPeriodDraftModel> prepareMealPeriodContract({
+    required int organizationId,
+    required String startDate,
+    required String endDate,
+    required List<String> excludedDates,
+    required int mealsPerDay,
+    required double mealUnitPrice,
+    required OrganizationMealDeliveryModel delivery,
+  }) =>
+      _remote.prepareMealPeriodContract(
+        organizationId: organizationId,
+        startDate: startDate,
+        endDate: endDate,
+        excludedDates: excludedDates,
+        mealsPerDay: mealsPerDay,
+        mealUnitPrice: mealUnitPrice,
+        delivery: delivery,
+      );
+
+  Future<CheckoutMealResultModel> checkoutMealPeriodContract({
+    required String draftId,
+    required int depositPercent,
+  }) =>
+      _remote.checkoutMealPeriodContract(
+        draftId: draftId,
+        depositPercent: depositPercent,
+      );
+
+  Future<InitiateMealPaymentModel> initiateMealPeriodPayment({
+    required int orderId,
+    required String returnUrl,
+    required String cancelUrl,
+  }) =>
+      _remote.initiateMealPeriodPayment(
+        orderId: orderId,
+        returnUrl: returnUrl,
+        cancelUrl: cancelUrl,
+      );
+
+  Future<SubmitWeeklyMealsResultModel> submitMealPeriodWeeklyMeals({
+    required int contractId,
+    required String weekStart,
+    required List<Map<String, dynamic>> mealDays,
+  }) async {
+    final res = await _remote.submitMealPeriodWeeklyMeals(
+      contractId: contractId,
+      weekStart: weekStart,
+      mealDays: mealDays,
+    );
+    return SubmitWeeklyMealsResultModel.fromJson(res);
+  }
 
   Future<PublicReviewsPageModel> getPublicReviews({
     int page = 1,

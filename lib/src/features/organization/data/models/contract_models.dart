@@ -34,7 +34,12 @@ class ContractModel {
   final String startDate;
   final String endDate;
   final double value;
-  final String type;          // loại hợp đồng (văn phòng, trường học, ...)
+  /// Mô tả / loại hợp đồng hiển thị (có thể là description).
+  final String type;
+  /// ContractType raw từ BE (vd: Framework | Order-Based | Period-Based).
+  final String contractType;
+  final int? mealsPerDay;
+  final double? mealUnitPrice;
   final ContractStatus status;
 
   const ContractModel({
@@ -45,6 +50,9 @@ class ContractModel {
     required this.endDate,
     required this.value,
     required this.type,
+    this.contractType = '',
+    this.mealsPerDay,
+    this.mealUnitPrice,
     required this.status,
   });
 
@@ -64,6 +72,9 @@ class ContractModel {
             (json['value'] as num?)?.toDouble() ??
             (json['contractValue'] as num?)?.toDouble() ??
             0,
+        contractType: json['contractType']?.toString() ?? '',
+        mealsPerDay: json['mealsPerDay'] as int?,
+        mealUnitPrice: (json['mealUnitPrice'] as num?)?.toDouble(),
         type: json['description']?.toString() ??
             json['type']?.toString() ??
             json['contractType']?.toString() ??

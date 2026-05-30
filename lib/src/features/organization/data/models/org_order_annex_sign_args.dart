@@ -6,6 +6,8 @@ class OrgOrderAnnexSignArgs {
   final double totalAmount;
   final String organizationName;
   final int totalMainQuantity;
+  /// Nếu true: thanh toán cọc qua API meal-contract-order (Period-Based).
+  final bool usePeriodContractPay;
   /// Banner sau checkout — khớp web `TempData["OrderSuccess"]` trên `Profile/Contracts`.
   final bool fromCheckout;
 
@@ -16,6 +18,7 @@ class OrgOrderAnnexSignArgs {
     required this.totalAmount,
     this.organizationName = '',
     this.totalMainQuantity = 0,
+    this.usePeriodContractPay = false,
     this.fromCheckout = true,
   });
 }

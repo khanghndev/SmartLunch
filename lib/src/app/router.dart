@@ -37,8 +37,13 @@ import '../features/organization/presentation/pages/staff_page.dart';
 import '../features/organization/presentation/pages/bulk_order_page.dart';
 import '../features/organization/presentation/pages/org_meal_order_review_page.dart';
 import '../features/organization/presentation/pages/org_order_annex_sign_page.dart';
+import '../features/organization/presentation/pages/org_bulk_order_mode_page.dart';
+import '../features/organization/presentation/pages/org_meal_period_contract_index_page.dart';
+import '../features/organization/presentation/pages/org_meal_period_contract_review_page.dart';
+import '../features/organization/presentation/pages/org_meal_period_weekly_page.dart';
 import '../features/organization/data/models/org_order_annex_sign_args.dart';
 import '../features/organization/data/models/bulk_order_models.dart';
+import '../features/organization/data/models/org_meal_contract_models.dart';
 import '../features/organization/presentation/pages/org_statistics_page.dart';
 import '../features/organization/presentation/pages/org_reports_page.dart';
 import '../features/organization/presentation/pages/org_reconciliation_page.dart';
@@ -137,6 +142,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const StaffPage(), settings: settings);
       case AppRoutes.orgBulkOrder:
         return MaterialPageRoute(builder: (_) => const BulkOrderPage(), settings: settings);
+      case AppRoutes.orgBulkOrderMode:
+        return MaterialPageRoute(builder: (_) => const OrgBulkOrderModePage(), settings: settings);
       case AppRoutes.orgMealOrderReview:
         final draft = settings.arguments;
         if (draft is! PrepareMealDraftModel) {
@@ -165,6 +172,30 @@ class AppRouter {
           builder: (_) => OrgOrderAnnexSignPage(args: args),
           settings: settings,
         );
+      case AppRoutes.orgMealPeriodContractIndex:
+        return MaterialPageRoute(builder: (_) => const OrgMealPeriodContractIndexPage(), settings: settings);
+      case AppRoutes.orgMealPeriodContractReview: {
+        final draft = settings.arguments;
+        if (draft is! PrepareMealPeriodDraftModel) {
+          return MaterialPageRoute(
+            builder: (_) => const Scaffold(
+              body: Center(child: Text('Thiếu dữ liệu nháp hợp đồng theo kỳ.')),
+            ),
+            settings: settings,
+          );
+        }
+        return MaterialPageRoute(
+          builder: (_) => OrgMealPeriodContractReviewPage(draft: draft),
+          settings: settings,
+        );
+      }
+      case AppRoutes.orgMealPeriodWeekly: {
+        final contractId = settings.arguments is int ? settings.arguments as int : 0;
+        return MaterialPageRoute(
+          builder: (_) => OrgMealPeriodWeeklyPage(contractId: contractId),
+          settings: settings,
+        );
+      }
       case AppRoutes.orgStatistics:
         return MaterialPageRoute(builder: (_) => const OrgStatisticsPage(), settings: settings);
       case AppRoutes.orgReports:
