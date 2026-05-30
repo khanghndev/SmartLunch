@@ -48,6 +48,11 @@ namespace SmartLunch.Backend.Service.Application.DependencyInjection
             services.AddScoped<OrganizationMealContractDraftPersistence>();
             services.AddScoped<OrganizationMealContractOrders.OrganizationMealPeriodContractPersistence>();
             services.AddScoped<OrganizationMealContractOrders.OrganizationMealContractWeeklyJobService>();
+            services.AddScoped<OrganizationComplaints.ComplaintRefundRecorder>();
+            services.AddScoped<OrganizationComplaints.ComplaintNotificationService>();
+            services.AddScoped<Deliveries.DeliveryNotificationService>();
+            services.AddScoped<Integration.Email.ComplaintEmailService>();
+            services.AddScoped<Integration.Email.DeliveryEmailService>();
         }
     }
 }

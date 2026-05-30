@@ -1,5 +1,6 @@
 using MediatR;
 using SmartLunch.Backend.Service.Application.Constants;
+using SmartLunch.Backend.Service.Application.Deliveries;
 using SmartLunch.Backend.Service.Application.DTOs.Response.Shipper.Deliveries;
 using SmartLunch.Backend.Service.Application.Interfaces;
 
@@ -18,11 +19,14 @@ public class UpdateShipperDeliveryStatusCommandHandler
     };
 
     private readonly IDeliveryRepository _deliveryRepository;
+    private readonly DeliveryNotificationService _deliveryNotifications;
 
     public UpdateShipperDeliveryStatusCommandHandler(
-        IDeliveryRepository deliveryRepository)
+        IDeliveryRepository deliveryRepository,
+        DeliveryNotificationService deliveryNotifications)
     {
         _deliveryRepository = deliveryRepository;
+        _deliveryNotifications = deliveryNotifications;
     }
 
     public async Task<GetShipperDeliveryResponse> Handle(UpdateShipperDeliveryStatusCommand request, CancellationToken cancellationToken)
@@ -60,33 +64,26 @@ public class UpdateShipperDeliveryStatusCommandHandler
         if (!IsAllowedTransition(current, target))
             throw new InvalidOperationException($"Cannot change delivery status from '{current}' to '{target}'.");
 
+        if (target == "completed")
+            throw new InvalidOperationException(
+                "Không thể đánh dấu hoàn tất qua API trạng thái. Hãy dùng POST /proof (ảnh + OTP người nhận).");
+
         if (current != target)
         {
             delivery.DeliveryStatus = target;
-            if (target is "completed")
-            {
-                delivery.DeliveredAt ??= VietnamTime.Now;
-            }
 
             if (target is "failed" or "rejected")
                 delivery.Notes = request.Request.Notes?.Trim();
-        }
 
-        // If delivery completed, mark order delivered (follow existing lifecycle constants)
-        if (target == "completed" && delivery.Order != null)
-        {
-            var order = delivery.Order;
-            var orderStatus = (order.Status ?? string.Empty).Trim().ToLowerInvariant();
-
-            if (orderStatus is not (OrderLifecycleStatus.Delivered or OrderLifecycleStatus.Cancelled))
-            {
-                order.Status = OrderLifecycleStatus.Delivered;
-                order.UpdatedAt = VietnamTime.Now;
-            }
+            if (target == "in_transit")
+                DeliveryOtpService.GenerateAndAssign(delivery);
         }
 
         await _deliveryRepository.UpdateAsync(delivery, cancellationToken);
         await _deliveryRepository.CommitAsync(cancellationToken);
+
+        if (target == "in_transit" && delivery.Order?.UserId is int orderUserId)
+            await _deliveryNotifications.NotifyOrderOwnerDeliveryOtpAsync(delivery, orderUserId, cancellationToken);
 
         var reloaded = await _deliveryRepository.GetByIdWithOrderAsync(request.DeliveryId, cancellationToken)
             ?? throw new InvalidOperationException("Delivery updated but failed to reload.");
@@ -105,7 +102,11 @@ public class UpdateShipperDeliveryStatusCommandHandler
                 DeliveredAtUtc = reloaded.DeliveredAt,
                 ProofImageUrl = reloaded.ProofImageUrl,
                 ProofCapturedAtUtc = reloaded.ProofCapturedAt,
-                Notes = reloaded.Notes
+                Notes = reloaded.Notes,
+                RecipientConfirmedName = reloaded.RecipientConfirmedName,
+                RecipientConfirmedAtUtc = reloaded.RecipientConfirmedAt,
+                RequiresDeliveryOtp = string.Equals(reloaded.DeliveryStatus, "in_transit", StringComparison.OrdinalIgnoreCase)
+                    && DeliveryOtpService.IsOtpActive(reloaded),
             }
         };
     }

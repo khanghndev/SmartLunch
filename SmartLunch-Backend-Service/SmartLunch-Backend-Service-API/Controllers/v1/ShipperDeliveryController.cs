@@ -12,6 +12,7 @@ using SmartLunch.Backend.Service.Application.Queries.ShipperFeatures.Deliveries.
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.Constants;
+using SmartLunch.Backend.Service.Application.Deliveries;
 
 namespace SmartLunch.Backend.Service.API.Controllers.v1;
 
@@ -158,6 +159,12 @@ public class ShipperDeliveryController : ControllerBase
             if (file == null || file.Length <= 0)
                 return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("File is required", new[] { "Missing file." }));
 
+            if (string.IsNullOrWhiteSpace(request?.RecipientConfirmedName))
+                return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("RecipientConfirmedName is required", new[] { "Missing recipient name." }));
+
+            if (string.IsNullOrWhiteSpace(request?.RecipientConfirmationCode))
+                return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("RecipientConfirmationCode is required", new[] { "Missing confirmation code." }));
+
             var contentType = file.ContentType ?? string.Empty;
             var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "image/jpeg", "image/png", "image/webp" };
             if (!allowed.Contains(contentType))
@@ -172,6 +179,19 @@ public class ShipperDeliveryController : ControllerBase
 
             if (!delivery.AssignedStaffId.HasValue)
                 return Conflict(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("Delivery is not assigned to you yet.", new[] { "Receive the delivery first." }));
+
+            try
+            {
+                DeliveryOtpService.ValidateForProof(delivery, request!.RecipientConfirmationCode);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Conflict(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            }
 
             var ext = contentType.ToLowerInvariant() switch
             {
@@ -195,7 +215,10 @@ public class ShipperDeliveryController : ControllerBase
             delivery.ProofCapturedAt = now;
             delivery.DeliveredAt ??= now;
             delivery.DeliveryStatus = "completed";
-            if (!string.IsNullOrWhiteSpace(request?.Notes))
+            delivery.RecipientConfirmedName = request!.RecipientConfirmedName.Trim();
+            delivery.RecipientConfirmationCode = request.RecipientConfirmationCode.Trim();
+            delivery.RecipientConfirmedAt = now;
+            if (!string.IsNullOrWhiteSpace(request.Notes))
                 delivery.Notes = request.Notes.Trim();
 
             // Keep order in sync (same as status update handler)
@@ -225,7 +248,10 @@ public class ShipperDeliveryController : ControllerBase
                     DeliveredAtUtc = refreshed.DeliveredAt,
                     ProofImageUrl = refreshed.ProofImageUrl,
                     ProofCapturedAtUtc = refreshed.ProofCapturedAt,
-                    Notes = refreshed.Notes
+                    Notes = refreshed.Notes,
+                    RecipientConfirmedName = refreshed.RecipientConfirmedName,
+                    RecipientConfirmedAtUtc = refreshed.RecipientConfirmedAt,
+                    RequiresDeliveryOtp = false,
                 }
             };
 

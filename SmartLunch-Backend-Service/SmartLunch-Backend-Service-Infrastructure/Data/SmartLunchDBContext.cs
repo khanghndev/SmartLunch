@@ -75,6 +75,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<Review> Reviews { get; set; }
         public DbSet<Sentiment> Sentiments { get; set; }
         public DbSet<Complaint> Complaints { get; set; }
+        public DbSet<ComplaintEvidence> ComplaintEvidence { get; set; }
         public DbSet<ContactInquiry> ContactInquiries { get; set; }
         public DbSet<ChatbotLog> ChatbotLogs { get; set; }
         public DbSet<MenuSuggestion> MenuSuggestions { get; set; }
@@ -981,6 +982,9 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.DeliveryAddress).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.DeliveryStatus).IsRequired().HasMaxLength(20);
                 entity.Property(e => e.Notes).HasMaxLength(255);
+                entity.Property(e => e.RecipientConfirmedName).HasMaxLength(200);
+                entity.Property(e => e.RecipientConfirmationCode).HasMaxLength(20);
+                entity.Property(e => e.DeliveryOtp).HasMaxLength(6);
                 entity.HasOne(e => e.Order).WithMany(o => o.Deliveries).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.AssignedStaff).WithMany(u => u.DeliveriesAssigned).HasForeignKey(e => e.AssignedStaffId).OnDelete(DeleteBehavior.SetNull);
             });
@@ -1054,10 +1058,29 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.Status);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.Title).IsRequired().HasMaxLength(255);
-                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(30);
+                entity.Property(e => e.Reason).HasMaxLength(40);
+                entity.Property(e => e.Resolution).HasMaxLength(20);
+                entity.Property(e => e.SuggestedRefundAmount).HasPrecision(18, 2);
+                entity.Property(e => e.FinalRefundAmount).HasPrecision(18, 2);
+                entity.HasOne(e => e.RefundPayment).WithMany().HasForeignKey(e => e.RefundPaymentId).OnDelete(DeleteBehavior.SetNull);
                 entity.HasOne(e => e.User).WithMany(u => u.ComplaintsRaised).HasForeignKey(e => e.UserId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.Order).WithMany(o => o.Complaints).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.SetNull);
                 entity.HasOne(e => e.AssignedToUser).WithMany(u => u.ComplaintsAssigned).HasForeignKey(e => e.AssignedTo).OnDelete(DeleteBehavior.SetNull);
+                entity.HasOne(e => e.ResolvedByUser).WithMany().HasForeignKey(e => e.ResolvedByUserId).OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<ComplaintEvidence>(entity =>
+            {
+                entity.ToTable("complaint_evidence");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => e.ComplaintId);
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.Property(e => e.Kind).IsRequired().HasMaxLength(40);
+                entity.Property(e => e.MediaType).IsRequired().HasMaxLength(10);
+                entity.Property(e => e.StorageObjectName).IsRequired().HasMaxLength(500);
+                entity.Property(e => e.ContentType).HasMaxLength(100);
+                entity.HasOne(e => e.Complaint).WithMany(c => c.Evidence).HasForeignKey(e => e.ComplaintId).OnDelete(DeleteBehavior.Cascade);
             });
 
             modelBuilder.Entity<ContactInquiry>(entity =>

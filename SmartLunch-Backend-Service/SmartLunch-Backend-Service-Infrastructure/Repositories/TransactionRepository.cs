@@ -41,4 +41,11 @@ public class TransactionRepository : ITransactionRepository
 
         return (transactions, totalCount);
     }
+
+    public async Task<Transaction> CreateAsync(Transaction transaction, CancellationToken cancellationToken = default)
+    {
+        await _context.Transactions.AddAsync(transaction, cancellationToken);
+        await _context.SaveChangesAsync(cancellationToken);
+        return transaction;
+    }
 }

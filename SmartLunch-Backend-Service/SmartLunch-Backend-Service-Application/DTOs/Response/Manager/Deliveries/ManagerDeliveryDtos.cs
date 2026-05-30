@@ -20,6 +20,8 @@ public sealed class ManagerDeliveryListItemDto
     public string? Notes { get; set; }
     public string? ProofImageUrl { get; set; }
     public DateTime? DeliveredAt { get; set; }
+    public string? RecipientConfirmedName { get; set; }
+    public DateTime? RecipientConfirmedAt { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 

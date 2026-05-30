@@ -22,5 +22,9 @@ public class ShipperDeliveryDetailDto
     public string? ProofImageUrl { get; set; }
     public DateTime? ProofCapturedAtUtc { get; set; }
     public string? Notes { get; set; }
+    public string? RecipientConfirmedName { get; set; }
+    public DateTime? RecipientConfirmedAtUtc { get; set; }
+    /// <summary>Chỉ trả về khi đã có OTP và shipper là người giao (không lộ OTP qua API shipper).</summary>
+    public bool RequiresDeliveryOtp { get; set; }
 }
 

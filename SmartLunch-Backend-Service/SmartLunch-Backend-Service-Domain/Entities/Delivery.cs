@@ -15,6 +15,11 @@ public class Delivery
     public string? ProofImageUrl { get; set; }
     public DateTime? ProofCapturedAt { get; set; }
     public string? Notes { get; set; }
+    public string? RecipientConfirmedName { get; set; }
+    public string? RecipientConfirmationCode { get; set; }
+    public DateTime? RecipientConfirmedAt { get; set; }
+    public string? DeliveryOtp { get; set; }
+    public DateTime? DeliveryOtpExpiresAt { get; set; }
     public DateTime CreatedAt { get; set; } = VietnamTime.Now;
 
     public virtual Order Order { get; set; } = null!;

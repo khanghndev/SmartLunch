@@ -1,15 +1,30 @@
 # LOGIC AI — Industrial Planner (Menus + Ingredient Prep)
 
-Tài liệu mô tả **nghiệp vụ** và **cách hoạt động** của các endpoint CP-SAT trong `SmartLunch-AI-Service` cho bếp công nghiệp:
+Tài liệu mô tả **nghiệp vụ**, **cách hoạt động** và **nội dung khóa luận** (phân tích/lựa chọn/thiết kế/đánh giá) cho hai chức năng AI trong `SmartLunch-AI-Service`:
 
-- **Sinh top-K thực đơn:** `POST /api/v1/recommend/industrial/menus`
-  - **Handler:** `app/api/v1/endpoints/industrial.py` → `recommend_industrial_menus`
-  - **Engine:** `IndustrialPlannerService.plan_menus_top_k` (Google OR-Tools CP-SAT)
-- **Gợi ý chuẩn bị nguyên liệu theo đơn hàng:** `POST /api/v1/recommend/industrial/ingredients/prepare`
-  - **Handler:** `app/api/v1/endpoints/industrial.py` → `recommend_ingredient_preparation`
-  - **Engine:** `IngredientPrepPlannerService.plan` (Google OR-Tools CP-SAT)
+| # | Chức năng | Endpoint | Engine |
+|---|-----------|----------|--------|
+| 1 | **Gợi ý thực đơn (top-K)** | `POST /api/v1/recommend/industrial/menus` | `IndustrialPlannerService.plan_menus_top_k` |
+| 2 | **Gợi ý chuẩn bị nguyên liệu theo đơn hàng** | `POST /api/v1/recommend/industrial/ingredients/prepare` | `IngredientPrepPlannerService.plan` |
 
-Chi tiết kỹ thuật mở rộng (schema JSON, ví dụ request/response) xem thêm `INDUSTRIAL_PLANNER.md`.
+Cả hai dùng **Google OR-Tools CP-SAT**. Chi tiết schema JSON xem thêm `INDUSTRIAL_PLANNER.md`.
+
+### Mục lục
+
+**Phần A — Tài liệu kỹ thuật (triển khai)**
+
+| Mục | Nội dung |
+|-----|----------|
+| §1–§10 | Gợi ý thực đơn: nghiệp vụ, API, engine, rules, lỗi |
+| §11 | Gợi ý chuẩn bị nguyên liệu: API, engine, backend, lỗi |
+
+**Phần B — Nội dung khóa luận**
+
+| Mục khóa luận | Chức năng |
+|---------------|-----------|
+| §2.5, §3.4, §5.3 | Gợi ý thực đơn |
+| §2.6, §3.5, §5.4 | Gợi ý chuẩn bị nguyên liệu |
+| §12 | So sánh hai chức năng AI |
 
 ---
 
@@ -307,17 +322,16 @@ Backend: MenuSuggestion   (có thể dùng trực tiếp hoặc bước sau)
 
 | Vai trò | Đường dẫn |
 |---------|-----------|
-| Endpoint | `app/api/v1/endpoints/industrial.py` |
+| Endpoint (cả hai chức năng) | `app/api/v1/endpoints/industrial.py` |
 | Schema | `app/schemas/industrial.py` |
-| Planner | `app/services/industrial_planner_service.py` |
-| Ingredient prep planner | `app/services/ingredient_prep_planner_service.py` |
-| Rules | `app/core/rules_loader.py`, `app/core/rules.json` |
-| Backend gọi AI | `SmartLunch-Backend-Service-Application/Commands/MenuSuggestions/GenerateMenuSuggestionFromAi/` |
-| HTTP client | `SmartLunch-Backend-Service-Infrastructure/ExternalServices/AiMenuPlannerClient.cs` |
-
----
-
-*Tài liệu đồng bộ với code tại nhánh hiện tại. Khi đổi ràng buộc CP-SAT hoặc schema, cập nhật section 5 và `INDUSTRIAL_PLANNER.md`.*
+| Planner thực đơn | `app/services/industrial_planner_service.py` |
+| Planner nguyên liệu | `app/services/ingredient_prep_planner_service.py` |
+| Rules (chỉ thực đơn) | `app/core/rules_loader.py`, `app/core/rules.json` |
+| Backend — gợi ý thực đơn | `Commands/MenuSuggestions/GenerateMenuSuggestionFromAi/` |
+| Backend — gợi ý nguyên liệu | `Commands/IngredientIntake/GenerateIngredientPrepFromAi/` |
+| API Controller nguyên liệu | `Controllers/v1/IngredientIntakeProposalController.cs` |
+| HTTP client | `Infrastructure/ExternalServices/AiMenuPlannerClient.cs` |
+| Seed đơn thử nghiệm AI | `Infrastructure/Data/Scripts/04_seed_data/21_seed_bulk_upcoming_orders_for_ai.sql` |
 
 ---
 

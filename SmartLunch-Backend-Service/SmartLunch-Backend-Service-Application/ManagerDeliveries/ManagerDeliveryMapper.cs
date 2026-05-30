@@ -51,6 +51,8 @@ public static class ManagerDeliveryMapper
             Notes = d.Notes,
             ProofImageUrl = d.ProofImageUrl,
             DeliveredAt = d.DeliveredAt,
+            RecipientConfirmedName = d.RecipientConfirmedName,
+            RecipientConfirmedAt = d.RecipientConfirmedAt,
             CreatedAt = d.CreatedAt,
         };
     }

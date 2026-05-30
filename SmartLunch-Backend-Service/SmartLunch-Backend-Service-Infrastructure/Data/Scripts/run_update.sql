@@ -41,6 +41,9 @@ SOURCE migrations/58_orders_recipient_delivery_email.sql;
 SOURCE migrations/59_organization_legal_documents.sql;
 SOURCE migrations/60_dish_values.sql;
 SOURCE migrations/61_period_based_contracts.sql;
+SOURCE migrations/62_organization_complaints.sql;
+SOURCE migrations/63_complaint_refund_payment.sql;
+SOURCE migrations/64_delivery_otp.sql;
 
 SOURCE 04_seed_data/11b_seed_spice_ingredients.sql;
 SOURCE 04_seed_data/20_seed_dish_seasonings.sql;

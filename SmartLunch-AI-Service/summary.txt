@@ -1,0 +1,358 @@
+================================================================================
+TỔNG QUAN HAI CHỨC NĂNG AI TRONG SMARTLUNCH (theo LOGIC_AI.md)
+================================================================================
+
+1) Gợi ý thực đơn
+   - Endpoint: POST /api/v1/recommend/industrial/menus
+   - Engine: IndustrialPlannerService (CP-SAT, maximize score)
+   - Đầu ra: Top-K plans[] (rank, plan_score, week_menu)
+   - Backend: GenerateMenuSuggestionFromAi → MenuSuggestion
+
+2) Gợi ý chuẩn bị nguyên liệu theo đơn hàng
+   - Endpoint: POST /api/v1/recommend/industrial/ingredients/prepare
+   - Engine: IngredientPrepPlannerService (CP-SAT, minimize cost + holding + smooth)
+   - Đầu ra: ingredients[] + summary_by_day[] (demand/buy/end_inventory theo ngày)
+   - Backend: GenerateIngredientPrepFromAi → IngredientIntakeProposal (tuỳ chọn)
+
+================================================================================
+2.5. PHÂN TÍCH VÀ LỰA CHỌN GIẢI PHÁP AI — GỢI Ý THỰC ĐƠN
+================================================================================
+
+1) Mục tiêu của AI gợi ý thực đơn
+
+AI dùng để làm gì:
+- Tự động sinh top-K phương án thực đơn cho nhiều ngày (thường 7 ngày) theo meal_structure (main/side/soup/dessert…).
+- Hỗ trợ món multi-cover (ví dụ phở cover main + side + soup).
+
+Giải quyết vấn đề nào:
+- Lập thực đơn thủ công tốn thời gian, dễ lặp món/đạm/cách chế biến, khó cân bằng ngân sách.
+- Khó tận dụng tồn kho nguyên liệu và các quy tắc vận hành (min cá/max đạm/không lặp NL chính…).
+
+Lợi ích cho người dùng và hệ thống:
+- Bếp trưởng/Admin: có nhiều phương án so sánh và chốt nhanh (top-K, rank, plan_score, objective_value, reasons).
+- Hệ thống: thực đơn nhất quán theo rules.json, cấu hình theo tổ chức (rules_key), giảm lỗi thiếu món cho slot.
+
+2) Phân tích dữ liệu đầu vào
+
+Input chính:
+- Thông tin kế hoạch: days[], meal_structure[], top_k, time_limit_seconds.
+- Pool món: dishes[] (category, covers_categories, main_ingredient NameEnglish, cost_per_serving, cooking_method, max_per_week, tags, popularity…).
+- Ngân sách: budget_per_serving (tổng chi phí/ngày ≤ budget).
+- Tồn kho: available_ingredients[] (cộng điểm món tận dụng kho).
+- Nhóm nguyên liệu: ingredient_groups{} (protein, seafood…) — ràng buộc tần suất/tuần.
+- Ràng buộc: constraints (merge với profile rules.json theo rules_key).
+
+Đặc điểm quan trọng:
+- main_ingredient, available_ingredients, ingredient_groups dùng NameEnglish; khớp sai → ràng buộc cá/đạm có thể không hiệu lực.
+
+3) Phân tích các phương pháp AI
+
+Phương pháp A — CP-SAT (OR-Tools) [giải pháp đang dùng]
+- Nguyên lý: biến nhị phân y[d,i] chọn món i cho ngày d; ràng buộc cứng (slot, budget, min/max nhóm NL, không lặp NL chính/cooking method…); maximize hàm mục tiêu (điểm + popularity + bonus kho − penalty lặp); top-K bằng solve lặp + no-good cut.
+- Ưu điểm: đảm bảo ràng buộc nghiệp vụ, giải thích reasons, multi-cover, cấu hình rules_key.
+- Nhược điểm: cần tuning scoring; timeout/infeasible nếu ràng buộc chặt hoặc pool món thiếu.
+- Khả năng áp dụng: Rất phù hợp — ưu tiên ràng buộc vận hành hơn sở thích cá nhân sâu.
+
+Phương pháp B — Recommender (Collaborative Filtering / Matrix Factorization)
+- Nguyên lý: học từ lịch sử chọn món/thực đơn.
+- Ưu điểm: cá nhân hóa khi có dữ liệu hành vi lớn.
+- Nhược điểm: khó đảm bảo ràng buộc cứng; cold-start.
+- Khả năng áp dụng: Lớp rerank/score bổ trợ, không làm lõi sinh thực đơn.
+
+Phương pháp C — Heuristic (rule-based + greedy)
+- Nguyên lý: chọn theo điểm rồi vá vi phạm ràng buộc.
+- Ưu điểm: nhanh, dễ triển khai.
+- Nhược điểm: nghiệm kém, khó top-K đa dạng.
+- Khả năng áp dụng: Fallback khi solver fail.
+
+4) So sánh các giải pháp
+
+| Phương pháp              | Ưu điểm                          | Nhược điểm              | Phù hợp        |
+|--------------------------|----------------------------------|-------------------------|----------------|
+| CP-SAT                   | Ràng buộc + top-K + multi-cover  | Tuning, timeout         | Lõi chính      |
+| Collaborative Filtering  | Cá nhân hóa                      | Yếu ràng buộc, cold-start | Bổ trợ      |
+| Heuristic                | Nhanh                            | Chất lượng kém          | Fallback       |
+
+5) Lựa chọn giải pháp phù hợp
+
+- Chọn: Google OR-Tools CP-SAT.
+- Lý do: lập kế hoạch dưới nhiều ràng buộc; cần top-K; hỗ trợ multi-cover.
+- Phù hợp hệ thống: Backend map sẵn dữ liệu; thiếu slot → plans: []; kiểm soát time_limit_seconds.
+
+6) Công nghệ sử dụng
+
+- Ngôn ngữ: Python (AI Service), C#/.NET (Backend).
+- Framework: Google OR-Tools CP-SAT.
+- Database: SQL Server (SmartLunch Backend).
+- Train model: Không train ML; cấu hình rules.json + tuning scoring.
+
+7) Quy trình hoạt động AI
+
+- Thu thập: dishes, inventory, ingredient groups, popularity 28 ngày, rules_key.
+- Tiền xử lý: lowercase nguyên liệu; merge constraints; index theo covers_categories.
+- Huấn luyện: Không có — cấu hình rules + scoring.
+- Sinh gợi ý: CP-SAT top-K + no-good cut → week_menu, plan_score, reasons.
+- Trả kết quả: plans[] → Backend lưu MenuSuggestion → UI.
+
+================================================================================
+3.4. THIẾT KẾ CHỨC NĂNG GỢI Ý THỰC ĐƠN
+================================================================================
+
+1) Mô tả chức năng
+
+- Dùng để: sinh top-K thực đơn theo tuần, đủ slot meal_structure, không vượt budget, đa dạng theo quy tắc.
+- Tương tác: Admin/Bếp trưởng → Generate menu suggestion → xem plans (rank, chi phí/ngày, reasons) → chọn và chốt.
+
+2) Yêu cầu chức năng
+
+- Hiển thị gợi ý: plans[], week_menu[], day_cost_per_serving, reasons.
+- Cá nhân hóa: rules_key theo tổ chức + override constraints từ Backend.
+- Lọc món: Backend kiểm soát pool dishes[] (dishIds, category, loại trừ…).
+- Cập nhật hành vi: popularity 28 ngày trong scoring.
+
+3) Thiết kế thuật toán AI
+
+- Input: days, meal_structure, dishes, available_ingredients, budget_per_serving, ingredient_groups, constraints, top_k, time_limit_seconds.
+- Xử lý: base_scores[i] ∈ [0,1]; index dishes_by_cat theo covers_categories.
+- Độ tương đồng: scoring (popularity, tag, budget fit, inventory bonus) + penalty/bonus lặp NL — không dùng embedding.
+- Sinh recommendation: CP-SAT y[d,i] + top-K (no-good cut + random seed).
+
+4) Thiết kế luồng xử lý
+
+UI → Backend (load dishes, inventory, groups, map request)
+     → AI Service (rules.json, plan_menus_top_k)
+     → Backend (lưu MenuSuggestion/MenuSuggestionPlan)
+     → UI
+
+================================================================================
+5.3. ĐÁNH GIÁ HIỆU QUẢ AI GỢI Ý THỰC ĐƠN
+================================================================================
+
+1) Mục tiêu đánh giá
+
+- Độ chính xác: đúng slot, budget, min/max nhóm, không lặp…
+- Trải nghiệm: tỷ lệ chọn plan AI, thời gian chốt thực đơn.
+- Hiệu suất: thời gian top-K, tỷ lệ timeout/infeasible.
+
+2) Dữ liệu đánh giá
+
+- Số lượng: 50–200 món; 7 ngày × 4 slot; popularity 28 ngày; tồn kho.
+- Train/Test: kịch bản (scenarios), không train ML truyền thống.
+- Dataset: DB SmartLunch + rules.json.
+
+3) Các chỉ số đánh giá
+
+- Constraint Satisfaction Rate (% plan thỏa ràng buộc cứng).
+- Diversity: protein/seafood distinct; lặp main_ingredient/cooking_method liên tiếp.
+- Cost: trung bình day_cost_per_serving; % ngày sát budget.
+- Top-K usefulness: % khác biệt món giữa các plan.
+- Precision/Recall/F1 (nếu có ground truth = menu thực tế bếp chốt).
+- RMSE/MAE: thường không phù hợp (trừ khi dự đoán chi phí bằng hồi quy).
+
+4) Kết quả thực nghiệm (khung điền số)
+
+Kịch bản 1: pool 50 món, 7 ngày, 4 slot, budget 25k, top_k=3, time_limit=5s
+Kịch bản 2: pool 200 món, top_k=10, time_limit=10s
+Kịch bản 3: ràng buộc chặt (seafood min cao, protein max thấp) → infeasible/<K plan
+
+================================================================================
+2.6. PHÂN TÍCH VÀ LỰA CHỌN GIẢI PHÁP AI — GỢI Ý CHUẨN BỊ NGUYÊN LIỆU
+================================================================================
+
+1) Mục tiêu của AI gợi ý chuẩn bị nguyên liệu
+
+AI dùng để làm gì:
+- Tính nhu cầu nguyên liệu theo từng ngày từ đơn hàng sắp tới và BOM (kg/suất).
+- Đề xuất lượng mua và tồn kho cuối ngày trong horizon (mặc định 7 ngày, tối đa 60).
+
+Giải quyết vấn đề nào:
+- Ước lượng thủ công khó khi nhiều đơn/món/nguyên liệu.
+- Mua dồn một ngày hoặc thiếu hàng khi không tính lead time, tồn an toàn, tồn hiện có.
+- BOM khác nhau theo mức suất ăn (DishValueId theo hợp đồng).
+
+Lợi ích:
+- Bếp trưởng/nhập kho: kế hoạch mua/chuẩn bị theo ngày; có thể lưu IngredientIntakeProposal.
+- Hệ thống: tách menu planning và procurement planning; AI stateless, Backend gom DB.
+
+2) Phân tích dữ liệu đầu vào
+
+| Nhóm              | Nguồn Backend                          | Vai trò                          |
+|-------------------|----------------------------------------|----------------------------------|
+| start_date, days  | Request UI/API                         | Horizon lập kế hoạch             |
+| order_items[]     | GetUpcomingDishDemandAsync             | (service_date, dish_id, quantity_meals) |
+| dish_boms[]       | dishes + dish_ingredients              | Định mức kg/suất theo DishValueId |
+| available_ingredients[] | inventory                      | Tồn kho ban đầu (kg)             |
+| constraints       | Request + schema mặc định              | lead_time, safety_stock, max_inventory, holding_weight, smooth_weight |
+
+Công thức demand:
+  demand(ingredient, d) = Σ (quantity_meals × quantity_kg_per_meal) theo order_items ngày d
+
+Quy ước:
+- Tên NL: NameEnglish (fallback Name), lowercase khi tính.
+- dish_ingredients.Quantity = kg/suất.
+- service_date ngoài horizon → bỏ qua.
+- BOM: Contract.DishValueId hoặc DishValueIdOverride; không có → tier nhỏ nhất.
+
+Bảng DB: orders, order_items, dishes, dish_ingredients, dish_values, contracts, ingredients, inventory.
+
+3) Phân tích các phương pháp AI
+
+Phương pháp A — CP-SAT (OR-Tools) [giải pháp đang dùng]
+- Nguyên lý: biến buy[ing,d], inv[ing,d] (gram); cân bằng tồn inv[d]=inv[d-1]+buy[d]-effective_demand[d]; lead time L → effective_demand[d]=demand[d+L]; inv≥safety_stock; (optional) inv≤max_inventory; minimize chi phí mua + holding + |buy[d]-buy[d-1]|.
+- Ưu điểm: ràng buộc tồn/lead time; làm mượt mua; tối ưu chi phí khi có cost_per_kg.
+- Nhược điểm: infeasible nếu safety/max_inventory chặt; timeout 10s (cố định trong code).
+- Khả năng áp dụng: Rất phù hợp — bài toán lập kế hoạch mua hàng.
+
+Phương pháp B — ML dự báo nhu cầu (ARIMA, Prophet, LSTM…)
+- Ưu điểm: học xu hướng dài hạn.
+- Nhược điểm: cần lịch sử; khó gắn BOM/đơn cụ thể; khó ràng buộc lead time/safety.
+- Khả năng áp dụng: Bổ trợ dự báo; không thay CP-SAT khi đã có đơn+BOM.
+
+Phương pháp C — Heuristic / MRP đơn giản
+- Nguyên lý: mỗi ngày buy = max(0, demand - tồn) — đúng logic fallback khi CP-SAT infeasible.
+- Ưu điểm: nhanh.
+- Nhược điểm: không smooth, không lead time phức tạp.
+- Khả năng áp dụng: Fallback / baseline so sánh.
+
+Phương pháp D — Recommender
+- Khả năng áp dụng: Không phù hợp (bài toán định lượng kg, không ranking món).
+
+4) So sánh các giải pháp
+
+| Phương pháp   | Ưu điểm                    | Nhược điểm           | Phù hợp      |
+|---------------|----------------------------|----------------------|--------------|
+| CP-SAT        | Tồn, lead time, smooth, cost | Cấu hình, infeasible | Lõi chính    |
+| ML dự báo     | Xu hướng dài hạn           | Thiếu BOM/đơn cụ thể | Bổ trợ       |
+| Heuristic     | Nhanh                      | Mua dồn, không tối ưu | Fallback  |
+| Recommender   | —                          | Không khớp bài toán  | Không dùng   |
+
+5) Lựa chọn giải pháp phù hợp
+
+- Chọn: Google OR-Tools CP-SAT (IngredientPrepPlannerService).
+- Lý do: demand xác định từ đơn×BOM; cần phân bổ mua theo ngày dưới ràng buộc tồn; có fallback heuristic.
+- Phù hợp hệ thống: Backend map DB → JSON; PersistAsProposal → IngredientIntakeProposal.
+
+6) Công nghệ sử dụng
+
+- AI Service: Python, FastAPI.
+- Tối ưu: Google OR-Tools CP-SAT.
+- Backend: C# .NET, MediatR.
+- Database: SQL Server.
+- Train model: Không train — cấu hình constraints + BOM/đơn thực tế.
+
+7) Quy trình hoạt động AI
+
+- Thu thập: đơn sắp tới, BOM theo DishValueId, tồn kho NL liên quan.
+- Tiền xử lý: chuẩn hóa tên NL; gom demand (ingredient, day); kg → gram (số nguyên).
+- Huấn luyện: Không có.
+- Sinh gợi ý: CP-SAT minimize; fail → fallback mua bù demand.
+- Trả kết quả: summary_by_day[], ingredients[].daily[]; Backend có thể tạo proposal nhập kho.
+
+================================================================================
+3.5. THIẾT KẾ CHỨC NĂNG GỢI Ý CHUẨN BỊ NGUYÊN LIỆU
+================================================================================
+
+1) Mô tả chức năng
+
+- Dùng để: từ đơn trong N ngày tới, tính kg NL/ngày và lượng mua đề xuất (đủ dùng, tồn an toàn, tránh mua dồn).
+- Tương tác: chọn start_date, days (contractId, leadTime, safetyStock…) → GenerateIngredientPrepFromAi → xem bảng theo ngày/NL → (tuỳ chọn) lưu đề xuất nhập kho → duyệt proposal.
+
+2) Yêu cầu chức năng
+
+- Hiển thị: summary_by_day (tổng demand/mua/tồn); ingredients[].daily (demand_kg, buy_kg, end_inventory_kg).
+- Phạm vi: lọc ContractId; DishValueIdOverride cho BOM.
+- Lọc dữ liệu: chỉ đơn trong horizon; bỏ món không có BOM.
+- Cập nhật: mỗi lần gọi = demand mới từ DB.
+- Lưu đề xuất: PersistAsProposal → IngredientIntakeProposal (TotalBuyKg từng NL).
+
+3) Thiết kế thuật toán AI
+
+Input:
+  start_date, days, order_items[], dish_boms[], available_ingredients[],
+  constraints: { lead_time_days, safety_stock_kg, max_inventory_kg?, holding_weight, smooth_weight }
+
+Xử lý:
+  1. _compute_demand_rows: join order × BOM → demand (gram)
+  2. _aggregate_demand: gom (ingredient, day_idx)
+  3. _solve_model: CP-SAT toàn bộ nguyên liệu
+
+Độ tương đồng: không dùng — tối ưu số lượng.
+
+Sinh kế hoạch:
+  Minimize: Σ(cost×buy) + holding×inv + smooth×|buy[d]-buy[d-1]|
+
+Fallback (infeasible):
+  buy[d] = max(0, demand[d] - current_inv); current_inv += buy - demand
+
+4) Thiết kế luồng xử lý
+
+UI → Backend (GetUpcomingDishDemand, load BOM, inventory, map request)
+     → AI POST /recommend/industrial/ingredients/prepare
+     → (optional) Create IngredientIntakeProposal
+     → UI (Plan + Proposal)
+
+API Backend: IngredientIntakeProposalController → GenerateIngredientPrepFromAiCommandHandler.
+
+================================================================================
+5.4. ĐÁNH GIÁ HIỆU QUẢ AI GỢI Ý CHUẨN BỊ NGUYÊN LIỆU
+================================================================================
+
+1) Mục tiêu đánh giá
+
+- Độ chính xác: sai lệch buy_kg/demand_kg so với thực tế hoặc baseline heuristic.
+- Trải nghiệm: thời gian lập kế hoạch; tỷ lệ dùng proposal AI.
+- Hiệu suất: thời gian solve (<10s); tỷ lệ fallback CP-SAT.
+
+2) Dữ liệu đánh giá
+
+- Số lượng: seed 21_seed_bulk_upcoming_orders_for_ai.sql; 7–30 ngày; 20–100+ dòng order; 30–80 NL.
+- Train/Test: so kịch bản CP-SAT vs heuristic vs (tuỳ chọn) kế hoạch thủ công.
+- Ground truth: lượng mua thực tế / phiếu nhập kho; hoặc demand tính tay từ cùng BOM.
+
+Kịch bản:
+  K1: 7 ngày, lead=0, safety=0 (baseline)
+  K2: 7 ngày, lead=1, safety>0
+  K3: 14–30 ngày, max_inventory chặt (kiểm tra fallback)
+
+3) Các chỉ số đánh giá
+
+Ưu tiên (bài toán định lượng):
+- Demand accuracy: MAE, RMSE (kg) — demand AI vs tính tay cùng BOM.
+- Buy plan error: MAE/RMSE buy_kg AI vs mua thực tế.
+- Stockout rate: % ngày end_inventory < safety.
+- Constraint satisfaction: % kế hoạch thỏa safety, max_inv, lead time.
+- Purchase smoothness: Σ|buy[d]-buy[d-1]| — càng thấp càng mượt.
+- Total cost: Σ buy × cost_per_kg — so với heuristic.
+- Fallback rate: % request CP-SAT infeasible.
+
+Precision/Recall/F1: không phù hợp làm chỉ số chính (có thể dùng phụ nếu coi NL trong proposal vs NL thực nhập).
+
+MAE/RMSE: NÊN DÙNG cho lượng mua/demand (kg).
+
+4) Kết quả thực nghiệm (khung điền số)
+
+| Kịch bản | Số NL | Ngày | Lead | Safety | Thời gian(s) | Fallback? | MAE buy(kg) | Smoothness | Cost(VND) |
+|----------|-------|------|------|--------|--------------|-----------|-------------|------------|-----------|
+| K1       |       | 7    | 0    | 0      |              |           |             |            |           |
+| K2       |       | 7    | 1    | 2 kg   |              |           |             |            |           |
+| K3       |       | 14   | 1    | +max_inv |            |           |             |            |           |
+
+Nhận xét kỳ vọng:
+- CP-SAT mượt hơn heuristic khi smooth_weight > 0.
+- safety + max_inventory xung đột → fallback; cần nới constraint.
+- demand_kg khớp 100% công thức BOM nếu Backend map đúng DishValueId và service_date.
+
+================================================================================
+PHỤ LỤC: SO SÁNH NHANH HAI CHỨC NĂNG AI
+================================================================================
+
+| Tiêu chí        | Gợi ý thực đơn              | Gợi ý nguyên liệu              |
+|-----------------|----------------------------|--------------------------------|
+| Endpoint        | .../industrial/menus       | .../ingredients/prepare        |
+| Đầu vào chính   | Pool món, rules, budget    | Đơn hàng, BOM, kho             |
+| Đầu ra          | Top-K plans tuần           | Mua/tồn theo ngày             |
+| Hàm mục tiêu    | Maximize score             | Minimize cost+holding+smooth   |
+| Đánh giá chính  | Constraint, diversity      | MAE/RMSE, smoothness, cost     |
+| Persist Backend | MenuSuggestion             | IngredientIntakeProposal       |
+
+Nguồn tham chiếu: LOGIC_AI.md, industrial_planner_service.py, ingredient_prep_planner_service.py

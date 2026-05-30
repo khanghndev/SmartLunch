@@ -56,6 +56,7 @@ SOURCE 01_tables/31_transactions.sql;
 SOURCE 01_tables/32_reviews.sql;
 SOURCE 01_tables/33_sentiments.sql;
 SOURCE 01_tables/34_complaints.sql;
+SOURCE 01_tables/34a_complaint_evidence.sql;
 SOURCE 01_tables/35_chatbot_logs.sql;
 SOURCE 01_tables/36_menu_suggestions.sql;
 SOURCE 01_tables/36a_menu_suggestion_plans.sql;
