@@ -7,6 +7,13 @@
     var isOrg = User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp");
 }
 
+<style>
+    .orders-table .status-badge,
+    .orders-table .payment-badge {
+        white-space: nowrap;
+    }
+</style>
+
 <div class="max-w-7xl mx-auto px-6 py-12">
     <nav class="mb-6 flex text-sm text-gray-500" aria-label="Breadcrumb">
         <ol class="inline-flex items-center space-x-1 md:space-x-3">
@@ -54,16 +61,16 @@
 
     <div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
         <div class="overflow-x-auto">
-            <table class="w-full border-collapse text-left">
+            <table class="orders-table w-full min-w-[960px] border-collapse text-left">
                 <thead>
                     <tr class="border-b border-gray-100 bg-gray-50 text-[11px] font-bold uppercase tracking-wider text-gray-500">
-                        <th class="px-6 py-4">Mã đơn</th>
-                        <th class="px-6 py-4">Ngày đặt</th>
-                        <th class="px-6 py-4">Ngày giao dự kiến</th>
-                        <th class="px-6 py-4 text-right">Tổng (VND)</th>
-                        <th class="px-6 py-4">Trạng thái</th>
-                        <th class="px-6 py-4">Thanh toán</th>
-                        <th class="px-6 py-4 text-right">Thao tác</th>
+                        <th class="px-4 py-4 lg:px-6">Mã đơn</th>
+                        <th class="px-4 py-4 whitespace-nowrap lg:px-6">Ngày đặt</th>
+                        <th class="px-4 py-4 whitespace-nowrap lg:px-6">Ngày giao dự kiến</th>
+                        <th class="px-4 py-4 text-right whitespace-nowrap lg:px-6">Tổng (VND)</th>
+                        <th class="px-4 py-4 whitespace-nowrap lg:px-6">Trạng thái</th>
+                        <th class="px-4 py-4 whitespace-nowrap lg:px-6">Thanh toán</th>
+                        <th class="min-w-[220px] px-4 py-4 text-right lg:px-6">Thao tác</th>
                     </tr>
                 </thead>
                 <tbody class="divide-y divide-gray-100 text-sm">
@@ -93,60 +100,75 @@
                                 <td class="px-6 py-4 text-gray-600">@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
                                 <td class="px-6 py-4 text-gray-600">@o.ScheduledDate.ToString("dd/MM/yyyy")</td>
                                 <td class="px-6 py-4 text-right font-bold text-orange-600">@o.TotalAmount.ToString("N0")</td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex rounded-md border px-2.5 py-1 text-xs font-bold @OrderStatusHelper.BadgeClass(o.Status)">
+                                <td class="px-4 py-4 lg:px-6">
+                                    <span class="status-badge inline-flex shrink-0 rounded-md border px-2.5 py-1 text-xs font-bold whitespace-nowrap @OrderStatusHelper.BadgeClass(o.Status)">
                                         @OrderStatusHelper.ToDisplay(o.Status)
                                     </span>
                                 </td>
-                                <td class="px-6 py-4">
-                                    <span class="inline-flex rounded-full px-2.5 py-1 text-xs font-bold @OrderPaymentStatusDisplay.BadgeClass(o.PaymentStatus)">
+                                <td class="px-4 py-4 lg:px-6">
+                                    <span class="payment-badge inline-flex shrink-0 rounded-full px-2.5 py-1 text-xs font-bold whitespace-nowrap @OrderPaymentStatusDisplay.BadgeClass(o.PaymentStatus)">
                                         @OrderPaymentStatusDisplay.Label(o.PaymentStatus)
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 text-right whitespace-nowrap">
-                                    @if (isOrg && OrderPaymentStatusDisplay.CanPayDeposit(o.PaymentStatus, o.AnnexPdfUrl))
-                                    {
-                                        <form asp-controller="OrganizationMealOrder" asp-action="PayDeposit" method="post" class="mb-1 inline">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="orderId" value="@o.Id" />
-                                            <button type="submit" class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1.5 text-xs font-black text-white shadow hover:from-orange-600 hover:to-amber-600">
-                                                <i data-lucide="credit-card" class="h-3.5 w-3.5"></i> Thanh toán cọc
-                                            </button>
-                                        </form>
-                                        <br />
+                                <td class="px-4 py-4 lg:px-6">
+                                    @{
+                                        var canPayDeposit = isOrg && OrderPaymentStatusDisplay.CanPayDeposit(o.PaymentStatus, o.AnnexPdfUrl);
+                                        var showSignAnnex = isOrg && string.Equals(o.PaymentStatus, "unpaid", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(o.AnnexPdfUrl);
+                                        var canCancel = OrderCustomerCancelDisplay.CanCancel(o.Status, o.PaymentStatus, o.ScheduledDate);
+                                        var hasPrimaryActions = canPayDeposit || showSignAnnex || canCancel;
                                     }
-                                    else if (isOrg && string.Equals(o.PaymentStatus, "unpaid", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(o.AnnexPdfUrl))
-                                    {
-                                        <a asp-action="Contracts" asp-route-orderId="@o.Id" class="mb-1 inline-block text-xs font-bold text-violet-700 hover:underline">Ký phụ lục</a>
-                                        <br />
-                                    }
-                                    @if (OrderCustomerCancelDisplay.CanCancel(o.Status, o.PaymentStatus, o.ScheduledDate))
-                                    {
-                                        <form asp-action="CancelOrder" method="post" class="mb-1 inline"
-                                              onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn @(string.IsNullOrEmpty(o.InvoiceCode) ? "#" + o.Id : o.InvoiceCode)? Hành động này không thể hoàn tác.');">
-                                            @Html.AntiForgeryToken()
-                                            <input type="hidden" name="orderId" value="@o.Id" />
-                                            <input type="hidden" name="page" value="@(Model?.Page ?? 1)" />
-                                            <button type="submit" class="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100">
-                                                <i data-lucide="x-circle" class="h-3.5 w-3.5"></i> Hủy đơn
-                                            </button>
-                                        </form>
-                                        <br />
-                                    }
-                                    <a asp-action="OrderDetail" asp-route-id="@o.Id" class="font-bold text-orange-600 hover:text-orange-800">Chi tiết</a>
-                                    <span class="text-gray-300">|</span>
-                                    @if (!string.IsNullOrEmpty(signedPdfUrl))
-                                    {
-                                        <a href="@signedPdfUrl" target="_blank" rel="noopener" class="font-bold text-slate-600 hover:text-slate-900">Hóa đơn</a>
-                                    }
-                                    else if (isOrg)
-                                    {
-                                        <a asp-action="Contracts" asp-route-orderId="@o.Id" class="font-bold text-slate-600 hover:text-slate-900" title="Ký phụ lục để tạo PDF">Hóa đơn</a>
-                                    }
-                                    else
-                                    {
-                                        <a asp-action="Invoice" asp-route-id="@o.Id" target="_blank" class="font-bold text-slate-600 hover:text-slate-900">Hóa đơn</a>
-                                    }
+                                    <div class="flex flex-col items-end gap-2">
+                                        @if (hasPrimaryActions)
+                                        {
+                                            <div class="flex flex-wrap items-center justify-end gap-2">
+                                                @if (canPayDeposit)
+                                                {
+                                                    <form asp-controller="OrganizationMealOrder" asp-action="PayDeposit" method="post" class="inline-flex m-0">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="orderId" value="@o.Id" />
+                                                        <button type="submit" class="inline-flex items-center gap-1 rounded-lg bg-gradient-to-r from-orange-500 to-amber-500 px-3 py-1.5 text-xs font-black text-white shadow hover:from-orange-600 hover:to-amber-600 whitespace-nowrap">
+                                                            <i data-lucide="credit-card" class="h-3.5 w-3.5 shrink-0"></i> Thanh toán cọc
+                                                        </button>
+                                                    </form>
+                                                }
+                                                else if (showSignAnnex)
+                                                {
+                                                    <a asp-action="Contracts" asp-route-orderId="@o.Id"
+                                                       class="inline-flex items-center rounded-lg border border-violet-200 bg-violet-50 px-3 py-1.5 text-xs font-bold text-violet-800 hover:bg-violet-100 whitespace-nowrap">
+                                                        Ký phụ lục
+                                                    </a>
+                                                }
+                                                @if (canCancel)
+                                                {
+                                                    <form asp-action="CancelOrder" method="post" class="inline-flex m-0"
+                                                          onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn @(string.IsNullOrEmpty(o.InvoiceCode) ? "#" + o.Id : o.InvoiceCode)? Hành động này không thể hoàn tác.');">
+                                                        @Html.AntiForgeryToken()
+                                                        <input type="hidden" name="orderId" value="@o.Id" />
+                                                        <input type="hidden" name="page" value="@(Model?.Page ?? 1)" />
+                                                        <button type="submit" class="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100 whitespace-nowrap">
+                                                            <i data-lucide="x-circle" class="h-3.5 w-3.5 shrink-0"></i> Hủy đơn
+                                                        </button>
+                                                    </form>
+                                                }
+                                            </div>
+                                        }
+                                        <div class="flex flex-wrap items-center justify-end gap-x-2 gap-y-1 text-xs">
+                                            <a asp-action="OrderDetail" asp-route-id="@o.Id" class="font-bold text-orange-600 hover:text-orange-800 whitespace-nowrap">Chi tiết</a>
+                                            <span class="text-gray-300 select-none" aria-hidden="true">|</span>
+                                            @if (!string.IsNullOrEmpty(signedPdfUrl))
+                                            {
+                                                <a href="@signedPdfUrl" target="_blank" rel="noopener" class="font-bold text-slate-600 hover:text-slate-900 whitespace-nowrap">Hóa đơn</a>
+                                            }
+                                            else if (isOrg)
+                                            {
+                                                <a asp-action="Contracts" asp-route-orderId="@o.Id" class="font-bold text-slate-600 hover:text-slate-900 whitespace-nowrap" title="Ký phụ lục để tạo PDF">Hóa đơn</a>
+                                            }
+                                            else
+                                            {
+                                                <a asp-action="Invoice" asp-route-id="@o.Id" target="_blank" class="font-bold text-slate-600 hover:text-slate-900 whitespace-nowrap">Hóa đơn</a>
+                                            }
+                                        </div>
+                                    </div>
                                 </td>
                             </tr>
                         }
