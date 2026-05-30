@@ -53,12 +53,12 @@ public class CreateOrganizationComplaintCommandHandler
             throw new UnauthorizedAccessException("Bạn không có quyền với đơn hàng này.");
 
         var now = VietnamTime.Now;
+        var complaintDeadline = OrganizationComplaintRules.GetComplaintDeadline(order);
         if (!OrganizationComplaintRules.CanComplainAboutOrder(order, now))
         {
-            var deadline = OrganizationComplaintRules.GetComplaintDeadline(order);
-            if (deadline.HasValue && now > deadline.Value)
+            if (complaintDeadline.HasValue && now > complaintDeadline.Value)
                 throw new InvalidOperationException(
-                    $"Đã quá 24 giờ kể từ lúc đơn chuyển sang đã giao (hết hạn lúc {deadline.Value:dd/MM/yyyy HH:mm}).");
+                    $"Đã quá 24 giờ kể từ lúc đơn chuyển sang đã giao (hết hạn lúc {complaintDeadline.Value:dd/MM/yyyy HH:mm}).");
             throw new InvalidOperationException("Chỉ được khiếu nại khi đơn đã giao và trong vòng 24 giờ kể từ thời điểm đó.");
         }
 
@@ -82,8 +82,6 @@ public class CreateOrganizationComplaintCommandHandler
                 throw new ArgumentException($"Số suất hoàn không được vượt quá {mainPortions}.");
         }
 
-        var deadline = OrganizationComplaintRules.GetComplaintDeadline(order);
-
         var entity = new Complaint
         {
             UserId = command.UserId,
@@ -95,7 +93,7 @@ public class CreateOrganizationComplaintCommandHandler
             RefundPortionCount = refundPortions,
             Status = ComplaintStatus.Draft,
             CreatedAt = now,
-            ComplaintDeadlineAt = deadline,
+            ComplaintDeadlineAt = complaintDeadline,
             SuggestedRefundAmount = ComplaintRefundCalculator.SuggestRefund(order, refundPortions),
         };
 
