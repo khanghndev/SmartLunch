@@ -1,4 +1,5 @@
 using MediatR;
+using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationComplaints;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.OrganizationComplaints;
@@ -44,10 +45,11 @@ public class GetOrderComplaintEligibilityQueryHandler : IRequestHandler<GetOrder
         string? blockReason = null;
         if (!canComplain)
         {
-            if (deliveredAt == null)
-                blockReason = "Đơn chưa được giao thành công.";
+            var notDelivered = !string.Equals(order.Status, OrderLifecycleStatus.Delivered, StringComparison.OrdinalIgnoreCase);
+            if (notDelivered)
+                blockReason = "Chỉ được khiếu nại khi đơn ở trạng thái đã giao (delivered).";
             else if (deadline.HasValue && now > deadline.Value)
-                blockReason = "Đã hết thời hạn khiếu nại (24 giờ sau khi giao).";
+                blockReason = $"Đã quá 24 giờ kể từ lúc đơn chuyển sang đã giao (hết hạn lúc {deadline.Value:dd/MM/yyyy HH:mm}).";
             else
                 blockReason = "Đơn chưa đủ điều kiện khiếu nại.";
         }

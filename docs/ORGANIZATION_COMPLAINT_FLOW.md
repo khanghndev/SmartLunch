@@ -11,14 +11,21 @@ Tài liệu tổng hợp **Phase 1 → 3** cho nghiệp vụ: Organization khi�
 
 | Chủ đề | Quyết định |
 |--------|------------|
-| Số khiếu nại / đơn | **Nhiều** khiếu nại, mỗi cái trong **24h** kể từ khi đơn `delivered` |
+| **Thời hạn khiếu nại** | Chỉ khi đơn **`delivered` (đã giao)**. Được khiếu nại **trong vòng 24 giờ** kể từ lúc đơn chuyển sang trạng thái đã giao. **Sau 24 giờ → không** được tạo/gửi khiếu nại mới. |
+| Số khiếu nại / đơn | Trong **cùng cửa sổ 24h** có thể gửi **nhiều** khiếu nại (mỗi sự cố một lần). Hết hạn thì **tất cả** khiếu nại mới đều bị chặn. |
 | Hoàn tiền | Theo **số suất thiếu**; Manager có thể **chỉnh tay** `finalRefundAmount` |
 | Đổi suất | **Không** có |
 | File đính kèm | Ảnh ≤ 5MB; video ≤ 25MB (JPEG/PNG/WebP, MP4/MOV) |
 | Người nhận (Shipper) | **Bắt buộc** tên + **OTP** khi upload proof |
 | Manager quyết định | `refund` hoặc `rejected` (không `replace_meal`) |
 
-**Mốc thời gian 24h:** `deliveries.DeliveredAt` (khi shipper hoàn tất qua `POST /proof`), đồng bộ `orders.Status = delivered`.
+**Mốc “đã giao” (bắt đầu đếm 24h):**
+
+- `orders.status` phải là `delivered`.
+- Thời điểm bắt đầu = `deliveries.delivered_at` khi giao hoàn tất (shipper `POST /proof`, hoặc manager đánh dấu đã giao — cùng thời điểm cập nhật trạng thái đơn).
+- **Hết hạn** = thời điểm đó **+ 24 giờ** (`ComplaintDeadlineAt` trên từng khiếu nại / API eligibility).
+
+**Kiểm tra backend:** `OrganizationComplaintRules.CanComplainAboutOrder` — dùng khi `GET .../eligibility`, `POST` tạo khiếu nại, và `POST .../submit`.
 
 ---
 
@@ -163,7 +170,7 @@ Role: `Organization` | Permissions: `complaints.*`
 
 | Method | Path | Mô tả |
 |--------|------|--------|
-| GET | `orders/{orderId}/eligibility` | Kiểm tra còn được khiếu nại (24h) |
+| GET | `orders/{orderId}/eligibility` | `canComplain`, `deliveredAt`, `complaintDeadlineAt` (now ≤ deadline) |
 | GET | `/` | Danh sách khiếu nại của user |
 | GET | `{id}` | Chi tiết + evidence URLs |
 | POST | `/` | Tạo draft (`orderId`, `reason`, `description`, `missingPortionCount`?) |

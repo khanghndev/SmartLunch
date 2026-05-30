@@ -47,7 +47,13 @@ public class SubmitOrganizationComplaintCommandHandler
 
         var now = VietnamTime.Now;
         if (!OrganizationComplaintRules.CanComplainAboutOrder(order, now))
-            throw new InvalidOperationException("Đã hết thời hạn khiếu nại 24 giờ sau khi giao.");
+        {
+            var deadline = OrganizationComplaintRules.GetComplaintDeadline(order);
+            if (deadline.HasValue && now > deadline.Value)
+                throw new InvalidOperationException(
+                    $"Đã quá 24 giờ kể từ lúc đơn chuyển sang đã giao (hết hạn lúc {deadline.Value:dd/MM/yyyy HH:mm}).");
+            throw new InvalidOperationException("Chỉ được gửi khiếu nại khi đơn đã giao và trong vòng 24 giờ kể từ thời điểm đó.");
+        }
 
         ComplaintEvidenceValidator.ValidateForSubmit(complaint);
 

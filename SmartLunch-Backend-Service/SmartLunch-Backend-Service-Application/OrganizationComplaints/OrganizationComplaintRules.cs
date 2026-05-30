@@ -8,15 +8,23 @@ namespace SmartLunch.Backend.Service.Application.OrganizationComplaints;
 
 public static class OrganizationComplaintRules
 {
+    /// <summary>
+    /// Thời điểm đơn được coi là đã giao — trùng lúc chuyển <c>orders.status = delivered</c>
+    /// (shipper POST /proof hoặc manager cập nhật trạng thái đều ghi <c>deliveries.delivered_at</c>).
+    /// </summary>
     public static DateTime? GetDeliveredAt(Order order)
     {
+        if (!string.Equals(order.Status, OrderLifecycleStatus.Delivered, StringComparison.OrdinalIgnoreCase))
+            return null;
+
         var delivery = order.Deliveries?
             .Where(d => string.Equals(d.DeliveryStatus, "completed", StringComparison.OrdinalIgnoreCase))
             .OrderByDescending(d => d.DeliveredAt)
             .FirstOrDefault();
 
         return delivery?.DeliveredAt
-            ?? order.Deliveries?.Where(d => d.DeliveredAt != null).MaxBy(d => d.DeliveredAt)?.DeliveredAt;
+            ?? order.Deliveries?.Where(d => d.DeliveredAt != null).MaxBy(d => d.DeliveredAt)?.DeliveredAt
+            ?? order.UpdatedAt;
     }
 
     public static DateTime? GetComplaintDeadline(Order order)

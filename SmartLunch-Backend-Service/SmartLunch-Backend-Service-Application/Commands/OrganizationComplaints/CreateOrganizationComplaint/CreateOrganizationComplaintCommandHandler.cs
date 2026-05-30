@@ -54,7 +54,13 @@ public class CreateOrganizationComplaintCommandHandler
 
         var now = VietnamTime.Now;
         if (!OrganizationComplaintRules.CanComplainAboutOrder(order, now))
-            throw new InvalidOperationException("Đơn không còn trong thời hạn khiếu nại 24 giờ sau khi giao.");
+        {
+            var deadline = OrganizationComplaintRules.GetComplaintDeadline(order);
+            if (deadline.HasValue && now > deadline.Value)
+                throw new InvalidOperationException(
+                    $"Đã quá 24 giờ kể từ lúc đơn chuyển sang đã giao (hết hạn lúc {deadline.Value:dd/MM/yyyy HH:mm}).");
+            throw new InvalidOperationException("Chỉ được khiếu nại khi đơn đã giao và trong vòng 24 giờ kể từ thời điểm đó.");
+        }
 
         var mainPortions = OrganizationComplaintRules.CountMainPortions(order);
         int? missingCount = null;
