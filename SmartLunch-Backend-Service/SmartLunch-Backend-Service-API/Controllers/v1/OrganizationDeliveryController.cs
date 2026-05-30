@@ -42,7 +42,12 @@ public class OrganizationDeliveryController : ControllerBase
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized(BaseApiResponse<OrganizationDeliveryOtpResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            if (string.Equals(ex.Message, "Invalid user context.", StringComparison.Ordinal))
+                return Unauthorized(BaseApiResponse<OrganizationDeliveryOtpResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+
+            return StatusCode(
+                (int)HttpStatusCode.Forbidden,
+                BaseApiResponse<OrganizationDeliveryOtpResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
         }
         catch (InvalidOperationException ex)
         {

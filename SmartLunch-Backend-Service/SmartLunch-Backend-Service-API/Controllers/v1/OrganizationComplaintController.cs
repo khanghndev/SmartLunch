@@ -61,7 +61,7 @@ public class OrganizationComplaintController : ControllerBase
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized(BaseApiResponse<ComplaintEligibilityDto>.ErrorResult(ex.Message, new[] { ex.Message }));
+            return ForbiddenResult<ComplaintEligibilityDto>(ex);
         }
         catch (Exception ex)
         {
@@ -108,7 +108,7 @@ public class OrganizationComplaintController : ControllerBase
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized(BaseApiResponse<OrganizationComplaintDetailDto>.ErrorResult(ex.Message, new[] { ex.Message }));
+            return ForbiddenResult<OrganizationComplaintDetailDto>(ex);
         }
         catch (Exception ex)
         {
@@ -136,7 +136,7 @@ public class OrganizationComplaintController : ControllerBase
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized(BaseApiResponse<OrganizationComplaintDetailDto>.ErrorResult(ex.Message, new[] { ex.Message }));
+            return ForbiddenResult<OrganizationComplaintDetailDto>(ex);
         }
         catch (InvalidOperationException ex)
         {
@@ -173,7 +173,8 @@ public class OrganizationComplaintController : ControllerBase
             if (complaint == null)
                 return NotFound(BaseApiResponse<OrganizationComplaintDetailDto>.NotFoundResult("Khiếu nại không tồn tại."));
             if (complaint.UserId != userId)
-                return Unauthorized(BaseApiResponse<OrganizationComplaintDetailDto>.ErrorResult("Forbidden", new[] { "Forbidden" }));
+                return StatusCode((int)HttpStatusCode.Forbidden,
+                    BaseApiResponse<OrganizationComplaintDetailDto>.ErrorResult("Forbidden", new[] { "Forbidden" }));
             if (!OrganizationComplaintRules.IsEditable(complaint))
                 return Conflict(BaseApiResponse<OrganizationComplaintDetailDto>.ErrorResult("Complaint is not editable", new[] { "Not draft." }));
 
@@ -234,7 +235,7 @@ public class OrganizationComplaintController : ControllerBase
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized(BaseApiResponse<OrganizationComplaintDetailDto>.ErrorResult(ex.Message, new[] { ex.Message }));
+            return ForbiddenResult<OrganizationComplaintDetailDto>(ex);
         }
         catch (InvalidOperationException ex)
         {
@@ -264,7 +265,7 @@ public class OrganizationComplaintController : ControllerBase
         }
         catch (UnauthorizedAccessException ex)
         {
-            return Unauthorized(BaseApiResponse<OrganizationComplaintDetailDto>.ErrorResult(ex.Message, new[] { ex.Message }));
+            return ForbiddenResult<OrganizationComplaintDetailDto>(ex);
         }
         catch (InvalidOperationException ex)
         {
@@ -284,5 +285,16 @@ public class OrganizationComplaintController : ControllerBase
         if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
             throw new UnauthorizedAccessException("Invalid user context.");
         return userId;
+    }
+
+    /// <summary>401 chỉ khi JWT/context lỗi; quyền nghiệp vụ (org/đơn) trả 403 để FE không nhầm refresh token.</summary>
+    private ActionResult<BaseApiResponse<T>> ForbiddenResult<T>(UnauthorizedAccessException ex)
+    {
+        if (string.Equals(ex.Message, "Invalid user context.", StringComparison.Ordinal))
+            return Unauthorized(BaseApiResponse<T>.ErrorResult(ex.Message, new[] { ex.Message }));
+
+        return StatusCode(
+            (int)HttpStatusCode.Forbidden,
+            BaseApiResponse<T>.ErrorResult(ex.Message, new[] { ex.Message }));
     }
 }
