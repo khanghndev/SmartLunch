@@ -416,12 +416,14 @@ public class BackendMasterDataClient
         string? status = null,
         string? searchTerm = null,
         DateOnly? scheduledOn = null,
+        string? paymentStatus = null,
         CancellationToken ct = default)
     {
         var q = $"?Page={page}&PageSize={pageSize}";
         if (!string.IsNullOrEmpty(status)) q += $"&Status={Uri.EscapeDataString(status)}";
         if (!string.IsNullOrWhiteSpace(searchTerm)) q += $"&SearchTerm={Uri.EscapeDataString(searchTerm)}";
         if (scheduledOn.HasValue) q += $"&ScheduledOn={scheduledOn.Value:yyyy-MM-dd}";
+        if (!string.IsNullOrEmpty(paymentStatus)) q += $"&PaymentStatus={Uri.EscapeDataString(paymentStatus)}";
         return await GetAsync<GetOrdersClientResponse>($"/api/v1/master-data/Order{q}", accessToken, ct);
     }
 

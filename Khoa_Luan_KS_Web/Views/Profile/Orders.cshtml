@@ -1,9 +1,17 @@
-@model Khoa_Luan_KS_Web.Services.GetOrdersClientResponse
+@model Khoa_Luan_KS_Web.Models.ProfileOrdersPageVm
 @using Khoa_Luan_KS_Web.Helpers
 @{
     ViewData["Title"] = "Lịch sử đơn hàng";
     Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
-    var orders = Model?.Items ?? new List<Khoa_Luan_KS_Web.Services.OrderDetailClientDto>();
+    var orders = Model?.Orders?.Items ?? new List<Khoa_Luan_KS_Web.Services.OrderDetailClientDto>();
+    var totalCount = Model?.Orders?.TotalCount ?? 0;
+    var pageSize = Model?.Orders?.PageSize > 0 ? Model.Orders.PageSize : 20;
+    var currentPage = Model?.Page ?? 1;
+    var totalPages = pageSize > 0 ? Math.Max(1, (int)Math.Ceiling(totalCount / (double)pageSize)) : 1;
+    var hasFilters = !string.IsNullOrWhiteSpace(Model?.FilterStatus)
+        || !string.IsNullOrWhiteSpace(Model?.FilterPaymentStatus)
+        || !string.IsNullOrWhiteSpace(Model?.Search)
+        || Model?.ScheduledOn != null;
     var isOrg = User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp");
 }
 
@@ -60,6 +68,55 @@
     </div>
 
     <div class="overflow-hidden rounded-xl border border-gray-100 bg-white shadow-sm">
+        <form method="get" asp-action="Orders" class="border-b border-gray-100 bg-gray-50/80 px-4 py-4 lg:px-6">
+            <input type="hidden" name="page" value="1" />
+            <div class="flex flex-col gap-4 lg:flex-row lg:flex-wrap lg:items-end">
+                <div class="min-w-[200px] flex-1">
+                    <label class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-gray-500">Tìm mã đơn</label>
+                    <input type="text" name="search" value="@Model?.Search" placeholder="Mã HĐ, #ID đơn..."
+                           class="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400" />
+                </div>
+                <div>
+                    <label class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-gray-500">Trạng thái đơn</label>
+                    <select name="status" class="min-w-[160px] rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-orange-400">
+                        <option value="">Tất cả</option>
+                        <option value="pending" selected="@(Model?.FilterStatus == "pending")">Chờ xác nhận</option>
+                        <option value="confirmed" selected="@(Model?.FilterStatus == "confirmed")">Đã xác nhận</option>
+                        <option value="preparing" selected="@(Model?.FilterStatus == "preparing")">Đang chuẩn bị</option>
+                        <option value="delivered" selected="@(Model?.FilterStatus == "delivered")">Đã giao hàng</option>
+                        <option value="cancelled" selected="@(Model?.FilterStatus == "cancelled")">Đã hủy</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-gray-500">Thanh toán</label>
+                    <select name="paymentStatus" class="min-w-[180px] rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-orange-400">
+                        <option value="">Tất cả</option>
+                        <option value="unpaid" selected="@(Model?.FilterPaymentStatus == "unpaid")">Chưa thanh toán</option>
+                        <option value="awaiting_payment" selected="@(Model?.FilterPaymentStatus == "awaiting_payment")">Chờ thanh toán cọc</option>
+                        <option value="deposit_paid" selected="@(Model?.FilterPaymentStatus == "deposit_paid")">Đã đặt cọc</option>
+                        <option value="partial" selected="@(Model?.FilterPaymentStatus == "partial")">Thanh toán một phần</option>
+                        <option value="paid" selected="@(Model?.FilterPaymentStatus == "paid")">Đã thanh toán đủ</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="mb-1 block text-[11px] font-bold uppercase tracking-wide text-gray-500">Ngày giao dự kiến</label>
+                    <input type="date" name="scheduledOn" value="@(Model?.ScheduledOn?.ToString("yyyy-MM-dd"))"
+                           class="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium outline-none focus:border-orange-400" />
+                </div>
+                <div class="flex flex-wrap gap-2">
+                    <button type="submit" class="rounded-lg bg-orange-500 px-4 py-2 text-sm font-bold text-white hover:bg-orange-600">Lọc</button>
+                    @if (hasFilters)
+                    {
+                        <a asp-action="Orders" class="rounded-lg border border-gray-200 bg-white px-4 py-2 text-sm font-bold text-gray-600 hover:bg-gray-50">Xóa lọc</a>
+                    }
+                </div>
+            </div>
+            @if (hasFilters && totalCount > 0)
+            {
+                <p class="mt-3 text-xs text-gray-500">Tìm thấy <span class="font-bold text-gray-700">@totalCount</span> đơn phù hợp — sắp xếp mới nhất trước.</p>
+            }
+        </form>
+
         <div class="overflow-x-auto">
             <table class="orders-table w-full min-w-[960px] border-collapse text-left">
                 <thead>
@@ -78,14 +135,21 @@
                     {
                         <tr>
                             <td colspan="7" class="px-6 py-12 text-center text-gray-500">
-                                Chưa có đơn nào.
-                                @if (isOrg)
+                                @(hasFilters ? "Không có đơn phù hợp bộ lọc." : "Chưa có đơn nào.")
+                                @if (!hasFilters)
                                 {
-                                    <a asp-controller="OrganizationMealOrder" asp-action="Index" class="font-bold text-orange-600 hover:text-orange-700">Đặt suất doanh nghiệp</a>
+                                    if (isOrg)
+                                    {
+                                        <a asp-controller="OrganizationMealOrder" asp-action="Index" class="font-bold text-orange-600 hover:text-orange-700">Đặt suất doanh nghiệp</a>
+                                    }
+                                    else
+                                    {
+                                        <a asp-controller="Menu" asp-action="Index" class="font-bold text-orange-600 hover:text-orange-700">Xem thực đơn</a>
+                                    }
                                 }
                                 else
                                 {
-                                    <a asp-controller="Menu" asp-action="Index" class="font-bold text-orange-600 hover:text-orange-700">Xem thực đơn</a>
+                                    <a asp-action="Orders" class="ml-1 font-bold text-orange-600 hover:text-orange-700">Xem tất cả đơn</a>
                                 }
                             </td>
                         </tr>
@@ -144,7 +208,14 @@
                                                           onsubmit="return confirm('Bạn chắc chắn muốn hủy đơn @(string.IsNullOrEmpty(o.InvoiceCode) ? "#" + o.Id : o.InvoiceCode)? Hành động này không thể hoàn tác.');">
                                                         @Html.AntiForgeryToken()
                                                         <input type="hidden" name="orderId" value="@o.Id" />
-                                                        <input type="hidden" name="page" value="@(Model?.Page ?? 1)" />
+                                                        <input type="hidden" name="page" value="@currentPage" />
+                                                        <input type="hidden" name="status" value="@Model?.FilterStatus" />
+                                                        <input type="hidden" name="paymentStatus" value="@Model?.FilterPaymentStatus" />
+                                                        <input type="hidden" name="search" value="@Model?.Search" />
+                                                        @if (Model?.ScheduledOn != null)
+                                                        {
+                                                            <input type="hidden" name="scheduledOn" value="@Model.ScheduledOn.Value.ToString("yyyy-MM-dd")" />
+                                                        }
                                                         <button type="submit" class="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-bold text-red-700 hover:bg-red-100 whitespace-nowrap">
                                                             <i data-lucide="x-circle" class="h-3.5 w-3.5 shrink-0"></i> Hủy đơn
                                                         </button>
@@ -181,10 +252,28 @@
                 </tbody>
             </table>
         </div>
-        @if (Model != null && Model.TotalCount > Model.PageSize)
+        @if (totalCount > pageSize)
         {
-            <div class="border-t border-gray-100 bg-gray-50/50 px-6 py-3 text-sm text-gray-600">
-                Trang @Model.Page — tổng @Model.TotalCount đơn (hiển thị tối đa @Model.PageSize mỗi trang).
+            <div class="flex flex-col items-center justify-between gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-4 text-sm text-gray-600 sm:flex-row">
+                <span>Trang @currentPage / @totalPages — tổng @totalCount đơn</span>
+                <div class="flex gap-2">
+                    @if (currentPage > 1)
+                    {
+                        <a asp-action="Orders" asp-route-page="@(currentPage - 1)" asp-route-status="@Model?.FilterStatus" asp-route-paymentStatus="@Model?.FilterPaymentStatus" asp-route-search="@Model?.Search" asp-route-scheduledOn="@Model?.ScheduledOn?.ToString("yyyy-MM-dd")"
+                           class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100">← Trước</a>
+                    }
+                    @if (currentPage < totalPages)
+                    {
+                        <a asp-action="Orders" asp-route-page="@(currentPage + 1)" asp-route-status="@Model?.FilterStatus" asp-route-paymentStatus="@Model?.FilterPaymentStatus" asp-route-search="@Model?.Search" asp-route-scheduledOn="@Model?.ScheduledOn?.ToString("yyyy-MM-dd")"
+                           class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100">Sau →</a>
+                    }
+                </div>
+            </div>
+        }
+        else if (totalCount > 0)
+        {
+            <div class="border-t border-gray-100 bg-gray-50/50 px-6 py-3 text-xs text-gray-500">
+                @totalCount đơn — mới nhất hiển thị trước.
             </div>
         }
     </div>

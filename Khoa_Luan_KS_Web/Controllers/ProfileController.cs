@@ -242,27 +242,54 @@ namespace Khoa_Luan_KS_Web.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        public async Task<IActionResult> Orders(int page = 1, CancellationToken ct = default)
+        public async Task<IActionResult> Orders(
+            int page = 1,
+            string? status = null,
+            string? paymentStatus = null,
+            string? search = null,
+            DateOnly? scheduledOn = null,
+            CancellationToken ct = default)
         {
             var accessToken = HttpContext.Session.GetString("access_token");
             if (string.IsNullOrEmpty(accessToken))
                 return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Orders)) });
 
+            page = page < 1 ? 1 : page;
+            const int pageSize = 20;
+
             try
             {
-                var orders = await _masterDataClient.GetOrdersAsync(accessToken, page, 20, ct: ct);
-                return View(orders);
+                var orders = await _masterDataClient.GetOrdersAsync(
+                    accessToken, page, pageSize, status, search, scheduledOn, paymentStatus, ct);
+
+                var vm = new ProfileOrdersPageVm
+                {
+                    Orders = orders,
+                    Page = page,
+                    FilterStatus = status,
+                    FilterPaymentStatus = paymentStatus,
+                    Search = search,
+                    ScheduledOn = scheduledOn,
+                };
+                return View(vm);
             }
             catch (Exception ex)
             {
                 TempData["Error"] = "Không thể tải danh sách đơn: " + ex.Message;
-                return View(new Services.GetOrdersClientResponse());
+                return View(new ProfileOrdersPageVm());
             }
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> CancelOrder(int orderId, int page = 1, CancellationToken ct = default)
+        public async Task<IActionResult> CancelOrder(
+            int orderId,
+            int page = 1,
+            string? status = null,
+            string? paymentStatus = null,
+            string? search = null,
+            DateOnly? scheduledOn = null,
+            CancellationToken ct = default)
         {
             var accessToken = HttpContext.Session.GetString("access_token");
             if (string.IsNullOrEmpty(accessToken))
@@ -278,7 +305,7 @@ namespace Khoa_Luan_KS_Web.Controllers
                 TempData["Error"] = ex.Message;
             }
 
-            return RedirectToAction(nameof(Orders), new { page });
+            return RedirectToAction(nameof(Orders), new { page, status, paymentStatus, search, scheduledOn });
         }
 
         public async Task<IActionResult> OrderDetail(int id, CancellationToken ct = default)

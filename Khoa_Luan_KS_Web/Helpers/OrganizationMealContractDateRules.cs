@@ -1,8 +1,10 @@
 namespace Khoa_Luan_KS_Web.Helpers;
 
-/// <summary>Quy tắc HĐ theo kỳ: bắt đầu từ tháng sau, tối đa ~1 tháng (62 ngày).</summary>
+/// <summary>Quy tắc HĐ theo kỳ: bắt đầu tối thiểu sau 3 ngày, tối đa 1 tháng.</summary>
 public static class OrganizationMealContractDateRules
 {
+    public const int MinStartLeadDays = 3;
+
     private static readonly TimeZoneInfo VietnamTz =
         TimeZoneInfo.FindSystemTimeZoneById("SE Asia Standard Time");
 
@@ -12,22 +14,22 @@ public static class OrganizationMealContractDateRules
         return DateOnly.FromDateTime(now.Date);
     }
 
-    /// <summary>Ngày đầu tháng kế tiếp (mặc định bắt đầu HĐ).</summary>
-    public static DateOnly GetDefaultPeriodStart(DateOnly today) =>
-        new DateOnly(today.Year, today.Month, 1).AddMonths(1);
+    /// <summary>Ngày bắt đầu sớm nhất (hôm nay + 3 ngày chuẩn bị).</summary>
+    public static DateOnly GetMinPeriodStart(DateOnly today) => today.AddDays(MinStartLeadDays);
 
-  public static DateOnly GetDefaultPeriodEnd(DateOnly start) =>
-        start.AddMonths(1).AddDays(-1);
+    public static DateOnly GetDefaultPeriodStart(DateOnly today) => GetMinPeriodStart(today);
 
-    public static DateOnly GetMinPeriodStart(DateOnly today) => GetDefaultPeriodStart(today);
+    public static DateOnly GetDefaultPeriodEnd(DateOnly start) => GetMaxPeriodEnd(start);
 
-    public static DateOnly GetMaxPeriodEnd(DateOnly start) => start.AddDays(61);
+    /// <summary>Ngày kết thúc muộn nhất: đúng 1 tháng kể từ ngày bắt đầu.</summary>
+    public static DateOnly GetMaxPeriodEnd(DateOnly start) => start.AddMonths(1).AddDays(-1);
 
     public static string GetRuleHint(DateOnly today)
     {
-        var start = GetDefaultPeriodStart(today);
-        var end = GetDefaultPeriodEnd(start);
-        return $"Hợp đồng theo kỳ bắt đầu từ {start:dd/MM/yyyy} (tháng sau). Thời hạn tối đa 1 tháng (đến {end:dd/MM/yyyy}).";
+        var minStart = GetMinPeriodStart(today);
+        var sampleEnd = GetMaxPeriodEnd(minStart);
+        return $"Ngày bắt đầu phải từ {minStart:dd/MM/yyyy} trở đi (đặt trước ít nhất {MinStartLeadDays} ngày để chuẩn bị suất ăn). " +
+               $"Thời hạn tối đa 1 tháng (vd. bắt đầu {minStart:dd/MM/yyyy} → kết thúc tối đa {sampleEnd:dd/MM/yyyy}).";
     }
 
     public static int CountServiceDays(DateOnly start, DateOnly end, IReadOnlyCollection<DateOnly> excluded)

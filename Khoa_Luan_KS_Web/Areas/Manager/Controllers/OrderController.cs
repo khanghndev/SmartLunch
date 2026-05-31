@@ -42,7 +42,7 @@ public class OrderController : Controller
         try
         {
             var orders = await _masterDataClient.GetOrdersAsync(
-                token, page, pageSize, status, search, scheduledOn, ct);
+                token, page, pageSize, status, search, scheduledOn, paymentStatus: null, ct: ct);
 
             var effectivePageSize = orders.PageSize > 0 ? orders.PageSize : pageSize;
             var totalPages = effectivePageSize > 0
@@ -62,7 +62,7 @@ public class OrderController : Controller
                 });
             }
 
-            var statsSource = await _masterDataClient.GetOrdersAsync(token, 1, 500, null, null, null, ct);
+            var statsSource = await _masterDataClient.GetOrdersAsync(token, 1, 500, null, null, null, paymentStatus: null, ct: ct);
             var today = DateOnly.FromDateTime(DateTime.Now);
 
             var vm = new ManagerOrdersPageVm

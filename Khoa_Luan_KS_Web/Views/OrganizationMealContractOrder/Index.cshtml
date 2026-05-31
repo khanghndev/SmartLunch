@@ -608,7 +608,8 @@
                 const s = this.parseIso(this.periodStart);
                 if (!s) return this.periodEnd;
                 const end = new Date(s.y, s.m, s.d);
-                end.setDate(end.getDate() + 61);
+                end.setMonth(end.getMonth() + 1);
+                end.setDate(end.getDate() - 1);
                 return this.toIso(end.getFullYear(), end.getMonth(), end.getDate());
             },
             onPeriodStartChange() {
@@ -824,9 +825,9 @@
             },
             validatePeriod() {
                 if (!this.periodStart || !this.periodEnd) return 'Chọn ngày bắt đầu và kết thúc.';
-                if (this.periodStart < this.periodStartMin) return 'Ngày bắt đầu phải từ tháng kế tiếp trở đi.';
+                if (this.periodStart < this.periodStartMin) return 'Ngày bắt đầu phải đặt trước ít nhất 3 ngày (để chuẩn bị suất ăn).';
                 if (this.periodEnd < this.periodStart) return 'Ngày kết thúc phải sau ngày bắt đầu.';
-                if (this.periodEnd > this.maxPeriodEnd()) return 'Thời hạn tối đa 62 ngày (khoảng 1 tháng).';
+                if (this.periodEnd > this.maxPeriodEnd()) return 'Thời hạn hợp đồng tối đa 1 tháng.';
                 if (!this.mealsPerDay || this.mealsPerDay < 1) return 'Nhập số suất/ngày hợp lệ.';
                 if (!this.mealUnitPrice || this.mealUnitPrice <= 0) return 'Nhập đơn giá/suất hợp lệ.';
                 if (this.serviceDaysCount() < 1) return 'Phải có ít nhất 1 ngày phục vụ sau khi loại trừ.';
