@@ -40,4 +40,11 @@ public class ChatbotLogRepository : IChatbotLogRepository
 
         return (chatbotLogs, totalCount);
     }
+
+    public async Task<ChatbotLog> CreateAsync(ChatbotLog log, CancellationToken cancellationToken = default)
+    {
+        _context.ChatbotLogs.Add(log);
+        await _context.SaveChangesAsync(cancellationToken);
+        return log;
+    }
 }

@@ -104,6 +104,7 @@ public class WeeklyMenuRepository : IWeeklyMenuRepository
     public async Task<WeeklyMenu?> GetWeeklyMenuWithSchedulesByDateAsync(DateTime date, int? customerTypeId = null)
     {
         var query = _context.WeeklyMenus
+            .Include(wm => wm.CustomerType)
             .Include(wm => wm.MenuSchedules)
                 .ThenInclude(ms => ms.Dish)
                     .ThenInclude(d => d.DishDishCategories)

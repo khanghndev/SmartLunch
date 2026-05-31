@@ -1,6 +1,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Scrutor;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.OrganizationChatbot;
 using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Application.Services;
 
@@ -53,6 +54,9 @@ namespace SmartLunch.Backend.Service.Application.DependencyInjection
             services.AddScoped<Deliveries.DeliveryNotificationService>();
             services.AddScoped<Integration.Email.ComplaintEmailService>();
             services.AddScoped<Integration.Email.DeliveryEmailService>();
+            services.AddScoped<IOrganizationChatbotContextBuilder, OrganizationChatbotContextBuilder>();
+            services.AddScoped<OrganizationChatbotRuleFallback>();
+            services.AddScoped<IOrganizationChatbotService, OrganizationChatbotService>();
         }
     }
 }

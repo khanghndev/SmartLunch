@@ -136,6 +136,11 @@ SmartLunch.Backend.Service.Application.DependencyInjection.DependencyInjection.C
 SmartLunch.Backend.Service.Infrastructure.DependencyInjection.DependencyInjection.ConfigureServices(builder.Services);
 
 // PayOS (thanh toán hợp đồng / payment link) — bật và điền key trong cấu hình hoặc User Secrets
+builder.Services.Configure<SmartLunch.Backend.Service.Application.OrganizationChatbot.OrganizationChatbotOptions>(
+    builder.Configuration.GetSection(SmartLunch.Backend.Service.Application.OrganizationChatbot.OrganizationChatbotOptions.SectionKey));
+builder.Services.AddHttpClient<SmartLunch.Backend.Service.Application.OrganizationChatbot.IOrganizationChatbotLlmClient,
+    SmartLunch.Backend.Service.Infrastructure.ExternalServices.GeminiOrganizationChatbotLlmClient>();
+
 builder.Services.Configure<PayOSOptions>(builder.Configuration.GetSection(PayOSOptions.SectionKey));
 builder.Services.Configure<SmtpOptions>(builder.Configuration.GetSection(SmtpOptions.SectionKey));
 builder.Services.AddHttpClient<IPayOSClient, PayOSClient>();
