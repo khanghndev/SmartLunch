@@ -57,4 +57,5 @@ public class Contract
     public virtual ICollection<PartnerPayment> PartnerPayments { get; set; } = new List<PartnerPayment>();
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
     public virtual ICollection<ContractExcludedDate> ExcludedDates { get; set; } = new List<ContractExcludedDate>();
+    public virtual ICollection<ContractDailyMealPortion> DailyMealPortions { get; set; } = new List<ContractDailyMealPortion>();
 }

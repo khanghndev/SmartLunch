@@ -1,7 +1,8 @@
 namespace SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 
 /// <summary>
-/// Tổng HĐ theo kỳ = (Kết thúc − Bắt đầu − số ngày loại trừ + 1) × Số suất/ngày × Giá/suất.
+/// Tổng HĐ theo kỳ = tổng (số suất từng ngày phục vụ × giá/suất).
+/// Mặc định mỗi ngày = MealsPerDay; có thể ghi đè theo ngày.
 /// </summary>
 public static class OrganizationMealPeriodContractCalculator
 {
@@ -23,20 +24,42 @@ public static class OrganizationMealPeriodContractCalculator
         return serviceDays;
     }
 
+    public static int CountTotalMeals(
+        DateOnly startDate,
+        DateOnly endDate,
+        IReadOnlyCollection<DateOnly> excludedDates,
+        int defaultMealsPerDay,
+        IReadOnlyDictionary<DateOnly, int>? dailyOverrides = null)
+    {
+        var total = 0;
+        foreach (var date in EnumerateServiceDates(startDate, endDate, excludedDates))
+        {
+            total += OrganizationMealPeriodContractSchedule.ResolveMealsForDate(
+                date, defaultMealsPerDay, dailyOverrides);
+        }
+
+        if (total < 1)
+            throw new ArgumentException("Contract must have at least one meal portion.");
+
+        return total;
+    }
+
     public static decimal ComputeTotalValue(
         DateOnly startDate,
         DateOnly endDate,
         IReadOnlyCollection<DateOnly> excludedDates,
         int mealsPerDay,
-        decimal mealUnitPrice)
+        decimal mealUnitPrice,
+        IReadOnlyDictionary<DateOnly, int>? dailyOverrides = null)
     {
         if (mealsPerDay < 1)
             throw new ArgumentException("MealsPerDay must be at least 1.");
         if (mealUnitPrice <= 0)
             throw new ArgumentException("MealUnitPrice must be greater than zero.");
 
-        var serviceDays = CountServiceDays(startDate, endDate, excludedDates);
-        var total = serviceDays * mealsPerDay * mealUnitPrice;
+        _ = CountServiceDays(startDate, endDate, excludedDates);
+        var totalMeals = CountTotalMeals(startDate, endDate, excludedDates, mealsPerDay, dailyOverrides);
+        var total = totalMeals * mealUnitPrice;
         return decimal.Round(total, 2, MidpointRounding.AwayFromZero);
     }
 

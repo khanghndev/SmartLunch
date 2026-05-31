@@ -76,6 +76,8 @@ public sealed class OrganizationMealContractWeeklyJobService
             return false;
         var contractEnd = DateOnly.FromDateTime(contract.EndDate.Value);
         var excluded = contract.ExcludedDates.Select(e => e.ExcludedDate).ToList();
+        var dailyOverrides = OrganizationMealPeriodContractSchedule.ToOverrideDictionary(
+            contract.DailyMealPortions.Select(p => new ContractDailyMealPortionSource(p.ServiceDate, p.MealCount)));
         var serviceDates = OrganizationMealPeriodContractCalculator
             .GetWeekServiceDates(weekMonday, contractStart, contractEnd, excluded)
             .ToList();
@@ -91,7 +93,8 @@ public sealed class OrganizationMealContractWeeklyJobService
         var mealDays = OrganizationMealWeeklyMealPlanBuilder.BuildRandomWeeklyMainMealDays(
             serviceDates,
             contract.MealsPerDay.Value,
-            candidates);
+            candidates,
+            dailyOverrides: dailyOverrides);
 
         await PersistWeeklySelectionAsync(contract, userId, weekMonday, mealDays, cancellationToken);
         return true;
@@ -104,9 +107,14 @@ public sealed class OrganizationMealContractWeeklyJobService
         List<DTOs.Request.OrganizationMealOrders.OrganizationMealDayRequest> mealDays,
         CancellationToken cancellationToken)
     {
+        var defaultMeals = contract.MealsPerDay is > 0 ? contract.MealsPerDay.Value : 1;
+        var dailyOverrides = OrganizationMealPeriodContractSchedule.ToOverrideDictionary(
+            contract.DailyMealPortions.Select(p => new ContractDailyMealPortionSource(p.ServiceDate, p.MealCount)));
         var mergedDays = OrganizationMealWeeklyMealPlanBuilder.MergeMainOnlyMealDays(
             mealDays,
-            contract.MealsPerDay);
+            defaultMeals,
+            date => OrganizationMealPeriodContractSchedule.ResolveMealsForDate(
+                date, defaultMeals, dailyOverrides));
         var mealUnitPrice = contract.MealUnitPrice ?? 0m;
         var scheduledUtc = VietnamTime.CalendarDateMidnight(weekMonday);
 

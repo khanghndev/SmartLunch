@@ -60,6 +60,9 @@ public sealed class SubmitOrganizationMealWeeklySelectionCommandHandler
             : throw new ArgumentException("Contract end date is required.");
 
         var excluded = contract.ExcludedDates.Select(e => e.ExcludedDate).ToList();
+        var dailyOverrides = OrganizationMealPeriodContractSchedule.ToOverrideDictionary(
+            contract.DailyMealPortions.Select(p => new ContractDailyMealPortionSource(p.ServiceDate, p.MealCount)));
+        var defaultMeals = contract.MealsPerDay is > 0 ? contract.MealsPerDay.Value : 1;
         var allowedDates = OrganizationMealPeriodContractCalculator
             .GetWeekServiceDates(weekMonday, contractStart, contractEnd, excluded)
             .ToHashSet();
@@ -69,7 +72,9 @@ public sealed class SubmitOrganizationMealWeeklySelectionCommandHandler
 
         var mergedDays = OrganizationMealWeeklyMealPlanBuilder.MergeMainOnlyMealDays(
             req.MealDays,
-            contract.MealsPerDay);
+            defaultMeals,
+            date => OrganizationMealPeriodContractSchedule.ResolveMealsForDate(
+                date, defaultMeals, dailyOverrides));
 
         foreach (var day in mergedDays.Keys)
         {

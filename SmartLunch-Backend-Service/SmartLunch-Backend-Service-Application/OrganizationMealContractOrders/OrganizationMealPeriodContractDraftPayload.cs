@@ -11,7 +11,9 @@ public sealed class OrganizationMealPeriodContractDraftPayload
     public DateOnly StartDate { get; set; }
     public DateOnly EndDate { get; set; }
     public List<DateOnly> ExcludedDates { get; set; } = new();
+    public Dictionary<DateOnly, int> DailyMealOverrides { get; set; } = new();
     public int MealsPerDay { get; set; }
+    public int TotalMeals { get; set; }
     public decimal MealUnitPrice { get; set; }
     public int ServiceDays { get; set; }
     public decimal? SubtotalAmount { get; set; }

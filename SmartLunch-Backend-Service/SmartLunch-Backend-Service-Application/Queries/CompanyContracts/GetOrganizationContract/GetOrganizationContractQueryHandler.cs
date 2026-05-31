@@ -19,7 +19,8 @@ public class GetOrganizationContractQueryHandler : IRequestHandler<GetOrganizati
 
     public async Task<GetContractResponse> Handle(GetOrganizationContractQuery request, CancellationToken cancellationToken)
     {
-        var contract = await _contractRepository.GetByIdAsync(request.ContractId);
+        var contract = await _contractRepository.GetPeriodBasedWithExcludedDatesAsync(request.ContractId, cancellationToken)
+            ?? await _contractRepository.GetByIdAsync(request.ContractId);
         if (contract == null)
             throw new KeyNotFoundException($"Contract with ID {request.ContractId} was not found.");
 

@@ -1,3 +1,4 @@
+using SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
 
 namespace SmartLunch.Backend.Service.Application.Interfaces;
@@ -25,6 +26,11 @@ public interface IContractRepository
     Task<Contract?> GetPeriodBasedWithExcludedDatesAsync(int contractId, CancellationToken cancellationToken = default);
 
     Task ReplaceExcludedDatesAsync(int contractId, IEnumerable<DateOnly> excludedDates, CancellationToken cancellationToken = default);
+
+    Task ReplaceDailyMealPortionsAsync(
+        int contractId,
+        IEnumerable<ContractDailyMealPortionSource> portions,
+        CancellationToken cancellationToken = default);
 
     Task<List<Contract>> GetActivePeriodBasedContractsAsync(CancellationToken cancellationToken = default);
 }

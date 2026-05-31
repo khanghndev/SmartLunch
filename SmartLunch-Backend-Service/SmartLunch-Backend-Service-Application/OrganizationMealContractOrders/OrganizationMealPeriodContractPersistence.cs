@@ -39,8 +39,16 @@ public sealed class OrganizationMealPeriodContractPersistence
             contract = null;
 
         var description = BuildDescription(org, draft);
+        var totalMeals = draft.TotalMeals > 0
+            ? draft.TotalMeals
+            : OrganizationMealPeriodContractCalculator.CountTotalMeals(
+                draft.StartDate,
+                draft.EndDate,
+                draft.ExcludedDates,
+                draft.MealsPerDay,
+                draft.DailyMealOverrides);
         var supplySchedule = $"Thời hạn {draft.StartDate:dd/MM/yyyy}–{draft.EndDate:dd/MM/yyyy}; " +
-                             $"{draft.MealsPerDay} suất/ngày × {draft.ServiceDays} ngày phục vụ.";
+                             $"{totalMeals} suất ({draft.ServiceDays} ngày phục vụ, mặc định {draft.MealsPerDay} suất/ngày).";
 
         if (contract == null)
         {
@@ -67,6 +75,7 @@ public sealed class OrganizationMealPeriodContractPersistence
             };
             contract = await _contractRepository.CreateAsync(contract);
             await _contractRepository.ReplaceExcludedDatesAsync(contract.Id, draft.ExcludedDates, cancellationToken);
+            await PersistDailyMealPortionsAsync(contract.Id, draft, cancellationToken);
         }
         else
         {
@@ -80,6 +89,7 @@ public sealed class OrganizationMealPeriodContractPersistence
             contract.UpdatedAt = VietnamTime.Now;
             await _contractRepository.UpdateAsync(contract);
             await _contractRepository.ReplaceExcludedDatesAsync(contract.Id, draft.ExcludedDates, cancellationToken);
+            await PersistDailyMealPortionsAsync(contract.Id, draft, cancellationToken);
         }
 
         draft.ContractId = contract.Id;
@@ -124,9 +134,31 @@ public sealed class OrganizationMealPeriodContractPersistence
             ? "không có ngày nghỉ"
             : $"{draft.ExcludedDates.Count} ngày không cung cấp";
 
+        var totalMeals = draft.TotalMeals > 0
+            ? draft.TotalMeals
+            : OrganizationMealPeriodContractCalculator.CountTotalMeals(
+                draft.StartDate,
+                draft.EndDate,
+                draft.ExcludedDates,
+                draft.MealsPerDay,
+                draft.DailyMealOverrides);
+        var customDays = draft.DailyMealOverrides.Count;
+        var customNote = customDays > 0 ? $", {customDays} ngày tùy chỉnh số suất" : "";
+
         return $"Hợp đồng đặt suất theo kỳ — {org.Name} ({draft.StartDate:dd/MM/yyyy}–{draft.EndDate:dd/MM/yyyy}). " +
-               $"{draft.MealsPerDay} suất/ngày, {draft.ServiceDays} ngày phục vụ ({excluded}), " +
+               $"{totalMeals} suất / {draft.ServiceDays} ngày phục vụ (mặc định {draft.MealsPerDay} suất/ngày{customNote}, {excluded}), " +
                $"đơn giá {draft.MealUnitPrice:N0} đ/suất, tổng {draft.TotalAmount:N0} đ.";
+    }
+
+    private async Task PersistDailyMealPortionsAsync(
+        int contractId,
+        OrganizationMealPeriodContractDraftPayload draft,
+        CancellationToken cancellationToken)
+    {
+        var portions = draft.DailyMealOverrides
+            .Select(kv => new ContractDailyMealPortionSource(kv.Key, kv.Value))
+            .ToList();
+        await _contractRepository.ReplaceDailyMealPortionsAsync(contractId, portions, cancellationToken);
     }
 
     private async Task<string> AllocateContractNumberAsync(

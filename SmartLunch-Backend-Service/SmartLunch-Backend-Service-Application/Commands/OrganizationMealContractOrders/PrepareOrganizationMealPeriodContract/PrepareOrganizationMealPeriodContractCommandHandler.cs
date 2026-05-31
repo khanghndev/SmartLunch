@@ -48,12 +48,20 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
 
         var delivery = OrganizationMealDeliveryValidator.Normalize(req.Delivery);
         var excluded = NormalizeExcludedDates(req.StartDate, req.EndDate, req.ExcludedDates);
+        var dailyOverrides = OrganizationMealPeriodContractSchedule.NormalizeDailyOverrides(
+            req.StartDate,
+            req.EndDate,
+            excluded,
+            req.MealsPerDay,
+            req.DailyMealPortions?.Select(p => new KeyValuePair<DateOnly, int>(p.ServiceDate, p.MealCount)));
         var mealUnitPrice = decimal.Round(req.MealUnitPrice, 2, MidpointRounding.AwayFromZero);
         var serviceDays = OrganizationMealPeriodContractCalculator.CountServiceDays(
             req.StartDate, req.EndDate, excluded);
+        var totalMeals = OrganizationMealPeriodContractCalculator.CountTotalMeals(
+            req.StartDate, req.EndDate, excluded, req.MealsPerDay, dailyOverrides);
         var subtotal = OrganizationMealPeriodContractCalculator.ComputeTotalValue(
-            req.StartDate, req.EndDate, excluded, req.MealsPerDay, mealUnitPrice);
-        var totalQuantity = serviceDays * req.MealsPerDay;
+            req.StartDate, req.EndDate, excluded, req.MealsPerDay, mealUnitPrice, dailyOverrides);
+        var totalQuantity = totalMeals;
 
         var activeContract = await _contractRepository.GetActiveForOrganizationAsync(req.OrganizationId, cancellationToken);
         var evaluation = await _promotionEngine.EvaluateAsync(new OrderPromotionEvaluateInput
@@ -78,7 +86,9 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
             StartDate = req.StartDate,
             EndDate = req.EndDate,
             ExcludedDates = excluded,
+            DailyMealOverrides = dailyOverrides,
             MealsPerDay = req.MealsPerDay,
+            TotalMeals = totalMeals,
             MealUnitPrice = mealUnitPrice,
             ServiceDays = serviceDays,
             SubtotalAmount = evaluation.Subtotal,

@@ -12,7 +12,8 @@ public static class OrganizationMealWeeklyMealPlanBuilder
 
     public static Dictionary<DateOnly, OrganizationMealOrderDraftDay> MergeMainOnlyMealDays(
         IEnumerable<OrganizationMealDayRequest> mealDays,
-        int? requiredMealsPerDay = null)
+        int? requiredMealsPerDay = null,
+        Func<DateOnly, int>? requiredMealsForDate = null)
     {
         var merged = new Dictionary<DateOnly, OrganizationMealOrderDraftDay>();
 
@@ -59,7 +60,8 @@ public static class OrganizationMealWeeklyMealPlanBuilder
                 });
             }
 
-            if (requiredMealsPerDay is int mpd)
+            var required = requiredMealsForDate?.Invoke(day.ServiceDate) ?? requiredMealsPerDay;
+            if (required is int mpd)
             {
                 var mainQty = draftDay.Main.Sum(l => l.Quantity);
                 if (mainQty != mpd)
@@ -80,7 +82,8 @@ public static class OrganizationMealWeeklyMealPlanBuilder
         IReadOnlyList<DateOnly> serviceDates,
         int mealsPerDay,
         IReadOnlyList<Dish> mainCandidates,
-        Random? rng = null)
+        Random? rng = null,
+        IReadOnlyDictionary<DateOnly, int>? dailyOverrides = null)
     {
         if (serviceDates.Count == 0)
             return new List<OrganizationMealDayRequest>();
@@ -104,7 +107,9 @@ public static class OrganizationMealWeeklyMealPlanBuilder
 
         foreach (var date in serviceDates.OrderBy(d => d))
         {
-            var maxLinesToday = Math.Min(3, Math.Min(weeklyPool.Count, mealsPerDay));
+            var mealsToday = OrganizationMealPeriodContractSchedule.ResolveMealsForDate(
+                date, mealsPerDay, dailyOverrides);
+            var maxLinesToday = Math.Min(3, Math.Min(weeklyPool.Count, mealsToday));
             var linesPerDay = maxLinesToday <= 1 ? 1 : rng.Next(1, maxLinesToday + 1);
 
             var dayDishes = weeklyPool
@@ -112,7 +117,7 @@ public static class OrganizationMealWeeklyMealPlanBuilder
                 .Take(linesPerDay)
                 .ToList();
 
-            var quantities = SplitQuantity(mealsPerDay, dayDishes.Count, rng);
+            var quantities = SplitQuantity(mealsToday, dayDishes.Count, rng);
             var mainLines = dayDishes
                 .Select((dish, i) => new OrganizationMealLineRequest
                 {

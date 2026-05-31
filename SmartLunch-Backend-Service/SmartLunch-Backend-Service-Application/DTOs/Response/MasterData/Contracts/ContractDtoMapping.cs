@@ -23,6 +23,15 @@ public static class ContractDtoMapping
         OrganizationName = c.Organization?.Name,
         SourceOrderId = c.SourceOrderId,
         ContractType = c.ContractType,
+        MealsPerDay = c.MealsPerDay,
+        DailyMealPortions = c.DailyMealPortions?
+            .OrderBy(p => p.ServiceDate)
+            .Select(p => new ContractDailyMealPortionDto
+            {
+                ServiceDate = p.ServiceDate,
+                MealCount = p.MealCount,
+            })
+            .ToList() ?? new List<ContractDailyMealPortionDto>(),
         ContractNumber = c.ContractNumber,
         Description = c.Description,
         SupplySchedule = c.SupplySchedule,

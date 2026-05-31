@@ -79,7 +79,8 @@ public sealed class CheckoutOrganizationMealPeriodContractCommandHandler
             draft.EndDate,
             draft.ExcludedDates,
             draft.MealsPerDay,
-            draft.MealUnitPrice);
+            draft.MealUnitPrice,
+            draft.DailyMealOverrides);
         var draftSubtotal = draft.SubtotalAmount ?? recomputedSubtotal;
         if (draftSubtotal != recomputedSubtotal)
             throw new ArgumentException("Draft subtotal is inconsistent. Call POST contract again.");
@@ -90,7 +91,14 @@ public sealed class CheckoutOrganizationMealPeriodContractCommandHandler
         if (contract.SourceOrderId.HasValue)
             throw new InvalidOperationException("This contract has already been checked out.");
 
-        var totalQuantity = draft.ServiceDays * draft.MealsPerDay;
+        var totalQuantity = draft.TotalMeals > 0
+            ? draft.TotalMeals
+            : OrganizationMealPeriodContractCalculator.CountTotalMeals(
+                draft.StartDate,
+                draft.EndDate,
+                draft.ExcludedDates,
+                draft.MealsPerDay,
+                draft.DailyMealOverrides);
         var evaluation = await _promotionEngine.EvaluateAsync(new OrderPromotionEvaluateInput
         {
             Channel = PromotionConstants.ChannelB2BOrg,

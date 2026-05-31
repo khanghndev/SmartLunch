@@ -9,6 +9,8 @@ public class ContractDto
     public string? OrganizationName { get; set; }
     public int? SourceOrderId { get; set; }
     public string ContractType { get; set; } = "Framework";
+    public int? MealsPerDay { get; set; }
+    public List<ContractDailyMealPortionDto> DailyMealPortions { get; set; } = new();
     public string? ContractNumber { get; set; }
     public string? Description { get; set; }
     public string? SupplySchedule { get; set; }

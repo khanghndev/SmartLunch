@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Domain.Time;
 using SmartLunch.Backend.Service.Infrastructure.Data;
@@ -133,6 +134,7 @@ public class ContractRepository : IContractRepository
             .Include(c => c.Partner)
             .Include(c => c.Organization)
             .Include(c => c.ExcludedDates)
+            .Include(c => c.DailyMealPortions)
             .FirstOrDefaultAsync(
                 c => c.Id == contractId &&
                      c.ContractType == OrganizationMealContractTypes.PeriodBased,
@@ -162,12 +164,37 @@ public class ContractRepository : IContractRepository
         await _context.SaveChangesAsync(cancellationToken);
     }
 
+    public async Task ReplaceDailyMealPortionsAsync(
+        int contractId,
+        IEnumerable<ContractDailyMealPortionSource> portions,
+        CancellationToken cancellationToken = default)
+    {
+        var existing = await _context.ContractDailyMealPortions
+            .Where(e => e.ContractId == contractId)
+            .ToListAsync(cancellationToken);
+        _context.ContractDailyMealPortions.RemoveRange(existing);
+
+        foreach (var p in portions)
+        {
+            _context.ContractDailyMealPortions.Add(new ContractDailyMealPortion
+            {
+                ContractId = contractId,
+                ServiceDate = p.ServiceDate,
+                MealCount = p.MealCount,
+                CreatedAt = VietnamTime.Now,
+            });
+        }
+
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
     public async Task<List<Contract>> GetActivePeriodBasedContractsAsync(CancellationToken cancellationToken = default)
     {
         var today = VietnamTime.Today.ToDateTime(TimeOnly.MinValue);
         return await _context.Contracts
             .Include(c => c.Organization)
             .Include(c => c.ExcludedDates)
+            .Include(c => c.DailyMealPortions)
             .Include(c => c.Orders)
             .Where(c =>
                 c.ContractType == OrganizationMealContractTypes.PeriodBased &&

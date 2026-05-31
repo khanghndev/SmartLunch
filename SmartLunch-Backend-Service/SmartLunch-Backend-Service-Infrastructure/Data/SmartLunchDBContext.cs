@@ -43,6 +43,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<OrganizationLegalDocument> OrganizationLegalDocuments { get; set; }
         public DbSet<Contract> Contracts { get; set; }
         public DbSet<ContractExcludedDate> ContractExcludedDates { get; set; }
+        public DbSet<ContractDailyMealPortion> ContractDailyMealPortions { get; set; }
         public DbSet<PartnerPayment> PartnerPayments { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<IngredientSource> IngredientSources { get; set; }
@@ -598,6 +599,18 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.HasOne(e => e.Contract)
                     .WithMany(c => c.ExcludedDates)
+                    .HasForeignKey(e => e.ContractId)
+                    .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<ContractDailyMealPortion>(entity =>
+            {
+                entity.ToTable("contract_daily_meal_portions");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.ContractId, e.ServiceDate }).IsUnique();
+                entity.Property(e => e.Id).ValueGeneratedOnAdd();
+                entity.HasOne(e => e.Contract)
+                    .WithMany(c => c.DailyMealPortions)
                     .HasForeignKey(e => e.ContractId)
                     .OnDelete(DeleteBehavior.Cascade);
             });
