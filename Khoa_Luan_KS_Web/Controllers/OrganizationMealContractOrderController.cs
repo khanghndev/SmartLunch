@@ -90,6 +90,25 @@ public class OrganizationMealContractOrderController : Controller
             {
                 vm.DeliveryDefaults = OrganizationMealDeliveryDefaultsBuilder.Build(profile, null);
             }
+
+            try
+            {
+                var prices = await _masterDataClient.GetMealPortionPricesAsync(accessToken, ct);
+                vm.MealPortionPrices = (prices.Items ?? new List<MealPortionPriceOptionClientDto>())
+                    .Select(p => new MealPortionPriceOptionVm
+                    {
+                        Id = p.Id,
+                        Amount = p.Amount,
+                        Label = !string.IsNullOrWhiteSpace(p.Label)
+                            ? p.Label!
+                            : $"{p.Amount:N0} đ/suất",
+                    })
+                    .ToList();
+            }
+            catch
+            {
+                vm.MealPortionPrices = new List<MealPortionPriceOptionVm>();
+            }
         }
         catch (Exception ex)
         {

@@ -13,6 +13,14 @@ public class OrganizationMealContractOrderIndexVm
     public DateOnly PeriodEndMax { get; set; }
     public string DateRuleHint { get; set; } = string.Empty;
     public OrganizationMealDeliveryDefaultsVm DeliveryDefaults { get; set; } = new();
+    public List<MealPortionPriceOptionVm> MealPortionPrices { get; set; } = new();
+}
+
+public class MealPortionPriceOptionVm
+{
+    public int Id { get; set; }
+    public decimal Amount { get; set; }
+    public string Label { get; set; } = string.Empty;
 }
 
 public class OrganizationMealPeriodPreviewPromotionRequest

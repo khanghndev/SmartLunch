@@ -645,6 +645,14 @@ public class BackendMasterDataClient
     }
 
     // --- Organization meal contract order (Period-Based) ---
+    public async Task<GetMealPortionPricesClientResponse> GetMealPortionPricesAsync(
+        string accessToken,
+        CancellationToken ct = default) =>
+        await GetAsync<GetMealPortionPricesClientResponse>(
+            "/api/v1/organization/meal-contract-order/portion-prices",
+            accessToken,
+            ct);
+
     public async Task<GetOrganizationDishesByCategoryClientResponse> GetOrganizationMealContractMainDishesAsync(
         string accessToken,
         int page = 1,
@@ -2201,9 +2209,23 @@ public class PrepareOrganizationMealPeriodContractClientRequest
     public int MealsPerDay { get; set; }
     public List<ContractDailyMealPortionClientRequest> DailyMealPortions { get; set; } = new();
     public decimal MealUnitPrice { get; set; }
+    public int? DishValueId { get; set; }
     public string? PromotionCode { get; set; }
     public int? PromotionId { get; set; }
     public OrganizationMealDeliveryClientRequest Delivery { get; set; } = new();
+}
+
+public class MealPortionPriceOptionClientDto
+{
+    public int Id { get; set; }
+    public decimal Amount { get; set; }
+    public string? Label { get; set; }
+    public string? Code { get; set; }
+}
+
+public class GetMealPortionPricesClientResponse
+{
+    public List<MealPortionPriceOptionClientDto> Items { get; set; } = new();
 }
 
 public class PrepareOrganizationMealPeriodContractClientResponse
