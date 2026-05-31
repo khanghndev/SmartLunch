@@ -7,6 +7,8 @@ namespace Khoa_Luan_KS_Web.Services;
 
 public sealed class ApiTokenService : IApiTokenService
 {
+    private static readonly SemaphoreSlim RefreshLock = new(1, 1);
+
     public const string AccessTokenSessionKey = "access_token";
     public const string RefreshTokenSessionKey = "refresh_token";
     public const string AccessTokenCookieKey = "hm_access_token";
@@ -136,8 +138,21 @@ public sealed class ApiTokenService : IApiTokenService
         if (ctx == null)
             return null;
 
+        await RefreshLock.WaitAsync(cancellationToken);
         try
         {
+            // Sau khi chờ lock, token có thể đã được request khác làm mới.
+            var currentAccess = GetAccessToken();
+            var currentRefresh = GetRefreshToken();
+            if (!string.IsNullOrWhiteSpace(currentAccess) && !IsAccessTokenExpiringSoon(currentAccess))
+                return currentAccess;
+
+            if (!string.Equals(currentRefresh, refreshToken, StringComparison.Ordinal) &&
+                !string.IsNullOrWhiteSpace(currentRefresh))
+            {
+                refreshToken = currentRefresh;
+            }
+
             var result = await _backendAuthClient.RefreshTokenAsync(refreshToken, cancellationToken);
             if (string.IsNullOrWhiteSpace(result.AccessToken) || string.IsNullOrWhiteSpace(result.RefreshToken))
                 return null;
@@ -169,6 +184,10 @@ public sealed class ApiTokenService : IApiTokenService
         {
             _logger.LogWarning(ex, "Refresh token failed");
             return null;
+        }
+        finally
+        {
+            RefreshLock.Release();
         }
     }
 

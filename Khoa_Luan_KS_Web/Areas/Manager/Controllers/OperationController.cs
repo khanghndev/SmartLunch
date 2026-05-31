@@ -9,14 +9,20 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
     public class OperationController : Controller
     {
         private readonly BackendMasterDataClient _masterDataClient;
+        private readonly BackendComplaintClient _complaintClient;
 
-        public OperationController(BackendMasterDataClient masterDataClient)
+        public OperationController(
+            BackendMasterDataClient masterDataClient,
+            BackendComplaintClient complaintClient)
         {
             _masterDataClient = masterDataClient;
+            _complaintClient = complaintClient;
         }
 
         public IActionResult FoodSafety() => View();
         public IActionResult Feedback() => View();
+        public IActionResult Complaints() => View();
+        public IActionResult ComplaintReview(int id) => View(id);
         public IActionResult Contact() => View();
 
         [HttpGet]
@@ -169,6 +175,64 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             {
                 await _masterDataClient.DeleteCompanyDocumentAsync(id, token, ct);
                 return Json(new { ok = true });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ComplaintList(
+            int page = 1,
+            int pageSize = 20,
+            string? searchTerm = null,
+            string? status = "pending_review",
+            CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return Unauthorized(new { message = "Not authenticated" });
+            try
+            {
+                var data = await _complaintClient.GetManagerComplaintsAsync(
+                    token, page, pageSize, searchTerm, status, ct);
+                return Json(data);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ComplaintReviewData(int id, CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return Unauthorized(new { message = "Not authenticated" });
+            try
+            {
+                var dto = await _complaintClient.GetManagerComplaintReviewAsync(id, token, ct);
+                return Json(dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResolveComplaint(
+            int id,
+            [FromBody] ResolveManagerComplaintClientRequest request,
+            CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return Unauthorized(new { message = "Not authenticated" });
+            try
+            {
+                var dto = await _complaintClient.ResolveManagerComplaintAsync(id, request, token, ct);
+                return Json(dto);
             }
             catch (Exception ex)
             {

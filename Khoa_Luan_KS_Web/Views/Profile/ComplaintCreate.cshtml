@@ -1,0 +1,267 @@
+@model int?
+@{
+    ViewData["Title"] = "Tạo khiếu nại";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+    var orderId = ViewContext.HttpContext.Request.Query["orderId"].FirstOrDefault();
+    var complaintId = ViewContext.HttpContext.Request.Query["complaintId"].FirstOrDefault();
+}
+
+@Html.AntiForgeryToken()
+<div class="max-w-2xl mx-auto px-4 py-10" x-data="complaintWizard({
+    orderId: @(string.IsNullOrEmpty(orderId) ? "null" : orderId),
+    complaintId: @(string.IsNullOrEmpty(complaintId) ? "null" : complaintId)
+})">
+    <a href="/Profile/Orders" class="text-sm font-bold text-orange-600">← Đơn hàng</a>
+    <h1 class="text-2xl font-black text-gray-900 mt-4 mb-2">Gửi khiếu nại</h1>
+    <p class="text-sm text-gray-500 mb-6">Cần ít nhất 1 ảnh nhận hàng và 1 video. Ảnh ≤ 5MB, video ≤ 25MB.</p>
+
+  <!-- OTP giao hàng -->
+    <div x-show="deliveryOtp?.isActive" class="mb-6 rounded-2xl border-2 border-sky-200 bg-sky-50 p-5">
+        <p class="text-xs font-black uppercase text-sky-900 tracking-wider">Mã OTP giao hàng (cho shipper)</p>
+        <p class="text-3xl font-black text-sky-800 tracking-widest mt-2" x-text="deliveryOtp?.deliveryOtp"></p>
+        <p class="text-xs text-sky-700 mt-1">Hết hạn: <span x-text="formatDate(deliveryOtp?.deliveryOtpExpiresAt)"></span></p>
+    </div>
+
+    <div x-show="eligibility && !eligibility.canComplain" class="mb-6 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <span x-text="eligibility?.blockReason || 'Không thể khiếu nại đơn này.'"></span>
+        <template x-if="eligibility?.complaintDeadlineAt">
+            <span> Hạn cuối: <span class="font-bold" x-text="formatDate(eligibility.complaintDeadlineAt)"></span></span>
+        </template>
+    </div>
+
+    <div x-show="countdownText" class="mb-4 text-sm font-bold text-orange-700" x-text="countdownText"></div>
+
+    <!-- Steps indicator -->
+    <div class="flex gap-2 mb-8">
+        <template x-for="(label, i) in ['Thông tin', 'Bằng chứng', 'Gửi duyệt']" :key="i">
+            <div class="flex-1 text-center text-xs font-bold py-2 rounded-lg"
+                 :class="step === i + 1 ? 'bg-orange-500 text-white' : (step > i + 1 ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-400')"
+                 x-text="label"></div>
+        </template>
+    </div>
+
+    <div x-show="error" class="mb-4 text-sm text-red-700 bg-red-50 border border-red-100 rounded-xl px-4 py-3" x-text="error"></div>
+
+    <!-- Step 1 -->
+    <div x-show="step === 1" class="space-y-4 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1">Lý do *</label>
+            <select x-model="form.reason" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-medium">
+                <option value="missing_portions">Thiếu suất</option>
+                <option value="spoiled_rice">Cơm hỏng / ôi</option>
+                <option value="wrong_dish">Sai món</option>
+                <option value="food_quality">Chất lượng món ăn</option>
+            </select>
+        </div>
+        <div x-show="form.reason === 'missing_portions'">
+            <label class="block text-xs font-bold text-gray-600 mb-1">Số suất thiếu *</label>
+            <input type="number" min="1" x-model.number="form.missingPortionCount" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm font-bold" />
+        </div>
+        <div>
+            <label class="block text-xs font-bold text-gray-600 mb-1">Mô tả chi tiết *</label>
+            <textarea x-model="form.description" rows="4" class="w-full rounded-xl border border-gray-200 px-3 py-2 text-sm"></textarea>
+        </div>
+        <button type="button" @@click="saveStep1()" :disabled="saving || (eligibility && !eligibility.canComplain)"
+                class="w-full py-3 rounded-xl bg-orange-500 text-white font-bold text-sm hover:bg-orange-600 disabled:opacity-50">
+            Tiếp tục
+        </button>
+    </div>
+
+    <!-- Step 2 -->
+    <div x-show="step === 2" class="space-y-4 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <p class="text-sm font-bold text-gray-800">Tải bằng chứng (nháp #<span x-text="complaint?.id"></span>)</p>
+
+        <div class="border border-dashed border-gray-200 rounded-xl p-4">
+            <label class="text-xs font-bold text-gray-600">Ảnh nhận hàng (receipt_photo) *</label>
+            <input type="file" accept="image/jpeg,image/png,image/webp" @@change="uploadFile($event, 'receipt_photo')" class="mt-1 text-sm w-full" />
+        </div>
+        <div class="border border-dashed border-gray-200 rounded-xl p-4">
+            <label class="text-xs font-bold text-gray-600">Video mở thùng / kiểm tra *</label>
+            <select x-model="videoKind" class="w-full mb-2 rounded-lg border text-xs py-1">
+                <option value="unboxing_video">Video mở thùng</option>
+                <option value="portion_count_video">Video đếm suất</option>
+                <option value="food_condition_video">Video tình trạng món</option>
+            </select>
+            <input type="file" accept="video/mp4,video/quicktime" @@change="uploadFile($event, videoKind)" class="text-sm w-full" />
+        </div>
+
+        <div class="grid grid-cols-2 gap-2">
+            <template x-for="ev in complaint?.evidence || []" :key="ev.id">
+                <div class="relative rounded-lg border overflow-hidden">
+                    <template x-if="ev.mediaType === 'video'"><video :src="ev.url" class="w-full h-24 object-cover bg-black" controls></video></template>
+                    <template x-if="ev.mediaType !== 'video'"><img :src="ev.url" class="w-full h-24 object-cover" /></template>
+                    <button type="button" @@click="removeEvidence(ev.id)" class="absolute top-1 right-1 bg-red-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">Xóa</button>
+                </div>
+            </template>
+        </div>
+
+        <div class="flex gap-3">
+            <button type="button" @@click="step = 1" class="flex-1 py-3 rounded-xl border border-gray-200 font-bold text-sm">Quay lại</button>
+            <button type="button" @@click="step = 3" class="flex-1 py-3 rounded-xl bg-orange-500 text-white font-bold text-sm">Tiếp tục</button>
+        </div>
+    </div>
+
+    <!-- Step 3 -->
+    <div x-show="step === 3" class="space-y-4 bg-white rounded-2xl border border-gray-100 p-6 shadow-sm">
+        <p class="text-sm text-gray-600">Kiểm tra lại thông tin và bấm gửi — khiếu nại sẽ chuyển sang trạng thái <strong>chờ duyệt</strong>.</p>
+        <ul class="text-sm space-y-1 text-gray-700">
+            <li>Ảnh nhận: <span class="font-bold" x-text="hasReceipt ? 'Đã có' : 'Chưa có'"></span></li>
+            <li>Video: <span class="font-bold" x-text="hasVideo ? 'Đã có' : 'Chưa có'"></span></li>
+        </ul>
+        <div class="flex gap-3">
+            <button type="button" @@click="step = 2" class="flex-1 py-3 rounded-xl border font-bold text-sm">Quay lại</button>
+            <button type="button" @@click="submitComplaint()" :disabled="submitting"
+                    class="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-bold text-sm hover:bg-emerald-700 disabled:opacity-50">
+                Gửi khiếu nại
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('complaintWizard', (opts) => ({
+        step: 1,
+        orderId: opts.orderId,
+        complaintId: opts.complaintId,
+        complaint: null,
+        eligibility: null,
+        deliveryOtp: null,
+        countdownText: '',
+        countdownTimer: null,
+        form: { reason: 'missing_portions', description: '', missingPortionCount: 1 },
+        videoKind: 'unboxing_video',
+        saving: false,
+        submitting: false,
+        error: '',
+        get hasReceipt() {
+            return (this.complaint?.evidence || []).some(e => e.kind === 'receipt_photo');
+        },
+        get hasVideo() {
+            return (this.complaint?.evidence || []).some(e => e.mediaType === 'video');
+        },
+        init() {
+            if (this.complaintId) this.loadComplaint(this.complaintId);
+            else if (this.orderId) this.bootstrapOrder(this.orderId);
+            else this.error = 'Thiếu mã đơn. Vui lòng chọn từ lịch sử đơn hàng.';
+        },
+        csrf() { return document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''; },
+        formatDate(iso) { if (!iso) return ''; const d = new Date(iso); return isNaN(d) ? '' : d.toLocaleString('vi-VN'); },
+        startCountdown(deadlineIso) {
+            if (this.countdownTimer) clearInterval(this.countdownTimer);
+            const tick = () => {
+                const end = new Date(deadlineIso).getTime();
+                const diff = end - Date.now();
+                if (diff <= 0) { this.countdownText = 'Đã hết hạn khiếu nại (24h).'; clearInterval(this.countdownTimer); return; }
+                const h = Math.floor(diff / 3600000);
+                const m = Math.floor((diff % 3600000) / 60000);
+                this.countdownText = `Còn ${h}h ${m}ph để gửi khiếu nại`;
+            };
+            tick();
+            this.countdownTimer = setInterval(tick, 60000);
+        },
+        async bootstrapOrder(oid) {
+            try {
+                const res = await fetch('@Url.Action("ComplaintBootstrap", "Profile")?orderId=' + oid);
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.message || 'Không tải được thông tin đơn');
+                this.eligibility = data.eligibility;
+                this.deliveryOtp = data.deliveryOtp;
+                if (data.otpError && !this.deliveryOtp) this.error = data.otpError;
+                if (this.eligibility?.complaintDeadlineAt)
+                    this.startCountdown(this.eligibility.complaintDeadlineAt);
+            } catch (e) { this.error = e.message; }
+        },
+        async loadComplaint(cid) {
+            try {
+                const res = await fetch('@Url.Action("ComplaintDetailJson", "Profile")?id=' + cid);
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message);
+                this.complaint = data;
+                this.complaintId = data.id;
+                this.orderId = data.orderId;
+                this.form.reason = data.reason || 'missing_portions';
+                this.form.description = data.description || '';
+                this.form.missingPortionCount = data.missingPortionCount || 1;
+                if (data.orderId) await this.bootstrapOrder(data.orderId);
+                this.step = (data.status === 'draft') ? 2 : 3;
+            } catch (e) { this.error = e.message; }
+        },
+        async saveStep1() {
+            if (!this.form.description.trim()) { this.error = 'Vui lòng nhập mô tả.'; return; }
+            if (this.form.reason === 'missing_portions' && !(this.form.missingPortionCount > 0)) {
+                this.error = 'Nhập số suất thiếu.'; return;
+            }
+            this.saving = true; this.error = '';
+            try {
+                if (this.complaint?.id) {
+                    this.step = 2;
+                    return;
+                }
+                const res = await fetch('@Url.Action("CreateComplaint", "Profile")', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': this.csrf() },
+                    body: JSON.stringify({
+                        orderId: parseInt(this.orderId, 10),
+                        reason: this.form.reason,
+                        description: this.form.description.trim(),
+                        missingPortionCount: this.form.reason === 'missing_portions' ? this.form.missingPortionCount : null
+                    })
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message);
+                this.complaint = data;
+                this.complaintId = data.id;
+                this.step = 2;
+            } catch (e) { this.error = e.message; }
+            finally { this.saving = false; }
+        },
+        async uploadFile(ev, kind) {
+            const file = ev.target.files?.[0];
+            if (!file || !this.complaint?.id) return;
+            this.error = '';
+            const fd = new FormData();
+            fd.append('file', file);
+            fd.append('kind', kind);
+            try {
+                const res = await fetch('@Url.Action("UploadComplaintEvidence", "Profile")?id=' + this.complaint.id, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': this.csrf() },
+                    body: fd
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message);
+                this.complaint = data;
+                ev.target.value = '';
+            } catch (e) { this.error = e.message; }
+        },
+        async removeEvidence(eid) {
+            if (!confirm('Xóa file này?')) return;
+            try {
+                const res = await fetch('@Url.Action("DeleteComplaintEvidence", "Profile")?id=' + this.complaint.id + '&evidenceId=' + eid, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': this.csrf() }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message);
+                this.complaint = data;
+            } catch (e) { this.error = e.message; }
+        },
+        async submitComplaint() {
+            this.submitting = true; this.error = '';
+            try {
+                const res = await fetch('@Url.Action("SubmitComplaint", "Profile")?id=' + this.complaint.id, {
+                    method: 'POST',
+                    headers: { 'RequestVerificationToken': this.csrf() }
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.message);
+                window.location.href = '/Profile/ComplaintDetail/' + this.complaint.id;
+            } catch (e) { this.error = e.message; }
+            finally { this.submitting = false; }
+        }
+    }));
+});
+</script>
+}

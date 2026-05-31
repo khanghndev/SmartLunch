@@ -1,0 +1,115 @@
+@{
+    ViewData["Title"] = "Khiếu nại đơn hàng";
+    Layout = "_LayoutManager";
+}
+
+@Html.AntiForgeryToken()
+<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="complaintQueue()">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-black text-slate-800 tracking-tight">Khiếu nại đơn hàng</h1>
+            <p class="text-slate-500 mt-1 font-medium text-sm">Duyệt khiếu nại B2B sau giao hàng — hoàn tiền theo suất hoặc từ chối kèm ghi chú.</p>
+        </div>
+        <a href="/Manager/Operation/Feedback" class="text-sm font-bold text-blue-600 hover:text-blue-800">← Phản hồi đánh giá</a>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+        <button type="button" @@click="setStatus('pending_review')"
+                class="px-4 py-2 rounded-xl text-sm font-bold border transition-colors"
+                :class="statusFilter === 'pending_review' ? 'bg-amber-50 border-amber-400 text-amber-800' : 'bg-white border-slate-200 text-slate-600'">
+            Chờ duyệt
+        </button>
+        <button type="button" @@click="setStatus('resolved')"
+                class="px-4 py-2 rounded-xl text-sm font-bold border transition-colors"
+                :class="statusFilter === 'resolved' ? 'bg-emerald-50 border-emerald-400 text-emerald-800' : 'bg-white border-slate-200 text-slate-600'">
+            Đã hoàn tiền
+        </button>
+        <button type="button" @@click="setStatus('rejected')"
+                class="px-4 py-2 rounded-xl text-sm font-bold border transition-colors"
+                :class="statusFilter === 'rejected' ? 'bg-red-50 border-red-400 text-red-800' : 'bg-white border-slate-200 text-slate-600'">
+            Đã từ chối
+        </button>
+        <button type="button" @@click="setStatus('')"
+                class="px-4 py-2 rounded-xl text-sm font-bold border bg-white border-slate-200 text-slate-600 hover:bg-slate-50">
+            Tất cả
+        </button>
+        <input type="search" x-model="searchTerm" @@keydown.enter="load()" placeholder="Tìm mã, mô tả..."
+               class="ml-auto rounded-xl border border-slate-200 px-4 py-2 text-sm font-medium min-w-[200px]" />
+        <button type="button" @@click="load()" class="px-4 py-2 bg-blue-600 text-white font-bold rounded-xl text-sm">Tìm</button>
+    </div>
+
+    <div x-show="loadError" class="text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3" x-text="loadError"></div>
+    <div x-show="loading" class="text-center py-12 text-slate-400 font-medium">Đang tải...</div>
+
+    <div class="space-y-3" x-show="!loading">
+        <template x-for="c in items" :key="c.id">
+            <div class="bg-white rounded-2xl border border-slate-100 p-5 shadow-sm flex flex-col md:flex-row md:items-center gap-4 hover:shadow-md transition-shadow">
+                <div class="flex-1 min-w-0">
+                    <div class="flex flex-wrap items-center gap-2 mb-1">
+                        <span class="font-black text-slate-800" x-text="c.code || ('#' + c.id)"></span>
+                        <span class="text-xs font-bold px-2 py-0.5 rounded-full border" :class="statusClass(c.status)" x-text="statusLabel(c.status)"></span>
+                    </div>
+                    <p class="text-sm font-bold text-slate-700" x-text="reasonLabel(c.reason)"></p>
+                    <p class="text-sm text-slate-500 mt-1 line-clamp-2" x-text="c.description || c.title"></p>
+                    <p class="text-xs text-slate-400 mt-2">
+                        Đơn #<span x-text="c.orderId"></span>
+                        · Gửi: <span x-text="formatDate(c.submittedAt || c.createdAt)"></span>
+                        <template x-if="c.suggestedRefundAmount">
+                            · Gợi ý hoàn: <span class="font-bold text-orange-600" x-text="formatMoney(c.suggestedRefundAmount)"></span>
+                        </template>
+                    </p>
+                </div>
+                <a :href="'/Manager/Operation/ComplaintReview/' + c.id"
+                   class="shrink-0 px-5 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-sm hover:bg-blue-700 text-center">
+                    Xem &amp; xử lý
+                </a>
+            </div>
+        </template>
+        <div x-show="items.length === 0" class="text-center py-16 bg-white rounded-2xl border border-dashed border-slate-200 text-slate-500 font-medium">
+            Không có khiếu nại trong bộ lọc này.
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('complaintQueue', () => ({
+        statusFilter: 'pending_review',
+        searchTerm: '',
+        items: [],
+        loading: true,
+        loadError: '',
+        init() { this.load(); },
+        setStatus(s) { this.statusFilter = s; this.load(); },
+        statusLabel(s) {
+            const m = { draft: 'Nháp', pending_review: 'Chờ duyệt', resolved: 'Đã xử lý', rejected: 'Từ chối' };
+            return m[(s||'').toLowerCase()] || s;
+        },
+        statusClass(s) {
+            const m = { pending_review: 'bg-amber-50 text-amber-800 border-amber-200', resolved: 'bg-emerald-50 text-emerald-800 border-emerald-200', rejected: 'bg-red-50 text-red-800 border-red-200', draft: 'bg-slate-100 text-slate-600 border-slate-200' };
+            return m[(s||'').toLowerCase()] || 'bg-gray-100 text-gray-700 border-gray-200';
+        },
+        reasonLabel(r) {
+            const m = { missing_portions: 'Thiếu suất', spoiled_rice: 'Cơm hỏng', wrong_dish: 'Sai món', food_quality: 'Chất lượng món' };
+            return m[(r||'').toLowerCase()] || r;
+        },
+        formatDate(iso) { if (!iso) return '—'; const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleString('vi-VN'); },
+        formatMoney(n) { return new Intl.NumberFormat('vi-VN').format(n) + ' đ'; },
+        async load() {
+            this.loading = true; this.loadError = '';
+            try {
+                const q = new URLSearchParams();
+                if (this.statusFilter) q.set('status', this.statusFilter);
+                if (this.searchTerm.trim()) q.set('searchTerm', this.searchTerm.trim());
+                const res = await fetch('@Url.Action("ComplaintList", "Operation", new { area = "Manager" })?' + q);
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.message || 'Lỗi tải');
+                this.items = data.data || [];
+            } catch (e) { this.loadError = e.message; }
+            finally { this.loading = false; }
+        }
+    }));
+});
+</script>
+}

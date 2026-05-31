@@ -17,17 +17,20 @@ namespace Khoa_Luan_KS_Web.Controllers
         private readonly Services.BackendAuthClient _backendAuthClient;
         private readonly Services.BackendMasterDataClient _masterDataClient;
         private readonly Services.BackendCompanyProfileClient _companyProfileClient;
+        private readonly Services.BackendComplaintClient _complaintClient;
         private readonly Services.IApiTokenService _apiTokenService;
 
         public ProfileController(
             Services.BackendAuthClient backendAuthClient,
             Services.BackendMasterDataClient masterDataClient,
             Services.BackendCompanyProfileClient companyProfileClient,
+            Services.BackendComplaintClient complaintClient,
             Services.IApiTokenService apiTokenService)
         {
             _backendAuthClient = backendAuthClient;
             _masterDataClient = masterDataClient;
             _companyProfileClient = companyProfileClient;
+            _complaintClient = complaintClient;
             _apiTokenService = apiTokenService;
         }
 
@@ -520,6 +523,207 @@ namespace Khoa_Luan_KS_Web.Controllers
                 TempData["ContractError"] = "Không lưu được phụ lục: " + ex.Message;
                 return RedirectToAction(nameof(Contracts), new { orderId });
             }
+        }
+
+        // ─── Organization complaints (B2B) ─────────────────────────────────────
+
+        public IActionResult Complaints()
+        {
+            if (!IsOrganizationAccount(User))
+                return RedirectToAction(nameof(Orders));
+            return View();
+        }
+
+        public IActionResult ComplaintCreate(int? orderId)
+        {
+            if (!IsOrganizationAccount(User))
+                return RedirectToAction(nameof(Orders));
+            return View(orderId);
+        }
+
+        public IActionResult ComplaintDetail(int id)
+        {
+            if (!IsOrganizationAccount(User))
+                return RedirectToAction(nameof(Orders));
+            return View(id);
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ComplaintBootstrap(int orderId, CancellationToken ct = default)
+        {
+            var (ok, token, deny) = await TryGetOrgAccessTokenAsync(ct);
+            if (!ok) return deny!;
+            try
+            {
+                var eligibility = await _complaintClient.GetEligibilityAsync(orderId, token, ct);
+                OrganizationDeliveryOtpClientDto? deliveryOtp = null;
+                string? otpError = null;
+                try
+                {
+                    deliveryOtp = await _complaintClient.GetDeliveryOtpAsync(orderId, token, ct);
+                }
+                catch (Exception ex)
+                {
+                    otpError = ex.Message;
+                }
+
+                return Json(new { eligibility, deliveryOtp, otpError });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ComplaintEligibility(int orderId, CancellationToken ct = default)
+        {
+            var (ok, token, deny) = await TryGetOrgAccessTokenAsync(ct);
+            if (!ok) return deny!;
+            try
+            {
+                var dto = await _complaintClient.GetEligibilityAsync(orderId, token, ct);
+                return Json(dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ComplaintListJson(int page = 1, int pageSize = 20, CancellationToken ct = default)
+        {
+            var (ok, token, deny) = await TryGetOrgAccessTokenAsync(ct);
+            if (!ok) return deny!;
+            try
+            {
+                var dto = await _complaintClient.ListOrganizationComplaintsAsync(token, page, pageSize, ct);
+                return Json(dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ComplaintDetailJson(int id, CancellationToken ct = default)
+        {
+            var (ok, token, deny) = await TryGetOrgAccessTokenAsync(ct);
+            if (!ok) return deny!;
+            try
+            {
+                var dto = await _complaintClient.GetOrganizationComplaintAsync(id, token, ct);
+                return Json(dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> DeliveryOtp(int orderId, CancellationToken ct = default)
+        {
+            var (ok, token, deny) = await TryGetOrgAccessTokenAsync(ct);
+            if (!ok) return deny!;
+            try
+            {
+                var dto = await _complaintClient.GetDeliveryOtpAsync(orderId, token, ct);
+                return Json(dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateComplaint(
+            [FromBody] CreateOrganizationComplaintClientRequest request,
+            CancellationToken ct = default)
+        {
+            var (ok, token, deny) = await TryGetOrgAccessTokenAsync(ct);
+            if (!ok) return deny!;
+            try
+            {
+                var dto = await _complaintClient.CreateOrganizationComplaintAsync(request, token, ct);
+                return Json(dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        [RequestSizeLimit(26 * 1024 * 1024)]
+        public async Task<IActionResult> UploadComplaintEvidence(
+            int id,
+            string kind,
+            IFormFile file,
+            CancellationToken ct = default)
+        {
+            var (ok, token, deny) = await TryGetOrgAccessTokenAsync(ct);
+            if (!ok) return deny!;
+            try
+            {
+                var dto = await _complaintClient.UploadEvidenceAsync(id, kind, file, token, ct);
+                return Json(dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> DeleteComplaintEvidence(int id, int evidenceId, CancellationToken ct = default)
+        {
+            var (ok, token, deny) = await TryGetOrgAccessTokenAsync(ct);
+            if (!ok) return deny!;
+            try
+            {
+                var dto = await _complaintClient.DeleteEvidenceAsync(id, evidenceId, token, ct);
+                return Json(dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> SubmitComplaint(int id, CancellationToken ct = default)
+        {
+            var (ok, token, deny) = await TryGetOrgAccessTokenAsync(ct);
+            if (!ok) return deny!;
+            try
+            {
+                var dto = await _complaintClient.SubmitOrganizationComplaintAsync(id, token, ct);
+                return Json(dto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        private async Task<(bool Ok, string Token, IActionResult? Deny)> TryGetOrgAccessTokenAsync(CancellationToken ct)
+        {
+            if (!IsOrganizationAccount(User))
+                return (false, string.Empty, Forbid());
+
+            var accessToken = await _apiTokenService.EnsureValidAccessTokenAsync(ct);
+            if (string.IsNullOrEmpty(accessToken))
+                return (false, string.Empty, Unauthorized(new { message = "Not authenticated" }));
+
+            return (true, accessToken, null);
         }
     }
 }

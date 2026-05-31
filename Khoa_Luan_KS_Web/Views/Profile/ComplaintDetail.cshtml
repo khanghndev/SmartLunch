@@ -1,0 +1,86 @@
+@model int
+@using Khoa_Luan_KS_Web.Helpers
+@{
+    ViewData["Title"] = "Chi tiết khiếu nại";
+    Layout = "~/Views/Shared/_LayoutCustomer.cshtml";
+    var id = Model;
+}
+
+@Html.AntiForgeryToken()
+<div class="max-w-3xl mx-auto px-4 py-10" x-data="orgComplaintDetail(@id)">
+    <a href="/Profile/Complaints" class="text-sm font-bold text-orange-600 hover:text-orange-800">← Danh sách khiếu nại</a>
+
+    <div x-show="loading" class="py-16 text-center text-gray-400">Đang tải...</div>
+    <div x-show="loadError" class="mt-4 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" x-text="loadError"></div>
+
+    <template x-if="c && !loading">
+        <div class="mt-6 space-y-6">
+            <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <div class="flex flex-wrap justify-between gap-2">
+                    <h1 class="text-xl font-black text-gray-900" x-text="c.code || ('#' + c.id)"></h1>
+                    <span class="text-xs font-bold px-2.5 py-1 rounded-full border" :class="statusBadge(c.status)" x-text="statusText(c.status)"></span>
+                </div>
+                <p class="text-sm font-bold text-gray-700 mt-2" x-text="reasonText(c.reason)"></p>
+                <p class="text-sm text-gray-600 mt-3" x-text="c.description"></p>
+                <dl class="mt-4 grid grid-cols-2 gap-3 text-sm">
+                    <div><dt class="text-gray-500 text-xs font-bold">Đơn hàng</dt><dd class="font-bold" x-text="'#' + c.orderId"></dd></div>
+                    <div><dt class="text-gray-500 text-xs font-bold">Trạng thái</dt><dd class="font-bold" x-text="statusText(c.status)"></dd></div>
+                    <div x-show="c.missingPortionCount"><dt class="text-gray-500 text-xs font-bold">Suất thiếu</dt><dd class="font-bold" x-text="c.missingPortionCount"></dd></div>
+                    <div x-show="c.finalRefundAmount"><dt class="text-gray-500 text-xs font-bold">Hoàn tiền</dt><dd class="font-bold text-emerald-600" x-text="formatMoney(c.finalRefundAmount)"></dd></div>
+                </dl>
+                <p x-show="c.resolutionNote" class="mt-4 text-sm bg-slate-50 rounded-xl p-3 border border-slate-100">
+                    <span class="font-bold text-slate-700">Phản hồi quản lý:</span>
+                    <span x-text="c.resolutionNote"></span>
+                </p>
+            </div>
+
+            <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+                <h2 class="font-black text-gray-900 mb-3">Bằng chứng đã gửi</h2>
+                <div class="grid grid-cols-2 gap-3">
+                    <template x-for="ev in c.evidence || []" :key="ev.id">
+                        <div class="rounded-xl overflow-hidden border border-gray-100">
+                            <template x-if="ev.mediaType === 'video'">
+                                <video :src="ev.url" controls class="w-full max-h-40 bg-black"></video>
+                            </template>
+                            <template x-if="ev.mediaType !== 'video'">
+                                <img :src="ev.url" class="w-full h-32 object-cover" alt="" />
+                            </template>
+                            <p class="text-[10px] font-bold text-gray-500 px-2 py-1" x-text="ev.kind"></p>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div x-show="isDraft" class="flex gap-3">
+                <a :href="'/Profile/ComplaintCreate?complaintId=' + c.id" class="flex-1 text-center rounded-xl bg-orange-500 py-3 text-sm font-bold text-white hover:bg-orange-600">
+                    Tiếp tục chỉnh sửa / gửi
+                </a>
+            </div>
+        </div>
+    </template>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('orgComplaintDetail', (id) => ({
+        c: null, loading: true, loadError: '',
+        get isDraft() { return (this.c?.status || '').toLowerCase() === 'draft'; },
+        init() { this.load(); },
+        statusText(s) { const m = { draft: 'Nháp', pending_review: 'Chờ duyệt', resolved: 'Đã xử lý', rejected: 'Từ chối' }; return m[(s||'').toLowerCase()] || s; },
+        statusBadge(s) { const m = { draft: 'bg-slate-100', pending_review: 'bg-amber-50 text-amber-800', resolved: 'bg-emerald-50', rejected: 'bg-red-50' }; return m[(s||'').toLowerCase()] || ''; },
+        reasonText(r) { const m = { missing_portions: 'Thiếu suất', spoiled_rice: 'Cơm hỏng', wrong_dish: 'Sai món', food_quality: 'Chất lượng' }; return m[(r||'').toLowerCase()] || r; },
+        formatMoney(n) { return new Intl.NumberFormat('vi-VN').format(n) + ' đ'; },
+        async load() {
+            try {
+                const res = await fetch('@Url.Action("ComplaintDetailJson", "Profile")?id=' + id);
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.message || 'Lỗi');
+                this.c = data;
+            } catch (e) { this.loadError = e.message; }
+            finally { this.loading = false; }
+        }
+    }));
+});
+</script>
+}

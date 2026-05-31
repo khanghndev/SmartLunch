@@ -1,0 +1,188 @@
+@model int
+@{
+    ViewData["Title"] = "Xử lý khiếu nại";
+    Layout = "_LayoutManager";
+    var complaintId = Model;
+}
+
+@Html.AntiForgeryToken()
+<div class="p-4 md:p-6 space-y-6 bg-slate-50 min-h-screen font-sans" x-data="complaintReview(@complaintId)">
+    <div class="flex items-center gap-4">
+        <a href="/Manager/Operation/Complaints" class="text-sm font-bold text-slate-500 hover:text-blue-600">← Danh sách khiếu nại</a>
+    </div>
+
+    <div x-show="loading" class="text-center py-20 text-slate-400 font-medium">Đang tải hồ sơ...</div>
+    <div x-show="loadError" class="text-red-600 bg-red-50 border border-red-100 rounded-xl px-4 py-3" x-text="loadError"></div>
+
+    <template x-if="complaint && !loading">
+        <div class="space-y-6">
+            <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+                <div class="flex flex-wrap items-start justify-between gap-4">
+                    <div>
+                        <h1 class="text-2xl font-black text-slate-800" x-text="complaint.code || ('Khiếu nại #' + complaint.id)"></h1>
+                        <p class="text-sm text-slate-500 mt-1">
+                            <span x-text="complaint.organizationName"></span>
+                            · Đơn <span class="font-bold" x-text="complaint.orderInvoiceCode || ('#' + complaint.orderId)"></span>
+                        </p>
+                    </div>
+                    <span class="text-xs font-bold px-3 py-1 rounded-full border" :class="statusClass(complaint.status)" x-text="statusLabel(complaint.status)"></span>
+                </div>
+                <div class="mt-4 grid md:grid-cols-3 gap-4 text-sm">
+                    <div class="bg-slate-50 rounded-xl p-3"><span class="text-slate-500 block text-xs font-bold uppercase">Lý do</span><span class="font-bold" x-text="reasonLabel(complaint.reason)"></span></div>
+                    <div class="bg-slate-50 rounded-xl p-3"><span class="text-slate-500 block text-xs font-bold uppercase">Suất đặt / thiếu</span><span class="font-bold"><span x-text="complaint.mealCount"></span> suất · thiếu <span x-text="complaint.missingPortionCount || '—'"></span></span></div>
+                    <div class="bg-slate-50 rounded-xl p-3"><span class="text-slate-500 block text-xs font-bold uppercase">Đơn giá / tổng đơn</span><span class="font-bold" x-text="formatMoney(complaint.unitPricePerPortion) + ' · ' + formatMoney(complaint.orderTotalAmount)"></span></div>
+                </div>
+                <p class="mt-4 text-sm text-slate-700 leading-relaxed" x-text="complaint.description"></p>
+            </div>
+
+            <div class="grid lg:grid-cols-2 gap-6">
+                <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+                    <h2 class="text-lg font-black text-slate-800 mb-4">Bằng chứng khách hàng</h2>
+                    <div class="grid grid-cols-2 gap-3">
+                        <template x-for="ev in complaint.evidence || []" :key="ev.id">
+                            <div class="rounded-xl border border-slate-100 overflow-hidden">
+                                <template x-if="ev.mediaType === 'video'">
+                                    <video :src="ev.url" controls class="w-full max-h-48 bg-black"></video>
+                                </template>
+                                <template x-if="ev.mediaType !== 'video'">
+                                    <a :href="ev.url" target="_blank" rel="noopener"><img :src="ev.url" class="w-full h-40 object-cover" alt="" /></a>
+                                </template>
+                                <p class="text-[10px] font-bold text-slate-500 px-2 py-1" x-text="evidenceKindLabel(ev.kind)"></p>
+                            </div>
+                        </template>
+                    </div>
+                    <p x-show="!(complaint.evidence||[]).length" class="text-sm text-slate-400">Không có file.</p>
+                </div>
+
+                <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm">
+                    <h2 class="text-lg font-black text-slate-800 mb-4">Bằng chứng giao hàng (Shipper)</h2>
+                    <template x-if="complaint.shipperDelivery">
+                        <div class="space-y-3 text-sm">
+                            <template x-if="complaint.shipperDelivery.proofImageUrl">
+                                <a :href="complaint.shipperDelivery.proofImageUrl" target="_blank" rel="noopener">
+                                    <img :src="complaint.shipperDelivery.proofImageUrl" class="w-full max-h-56 object-cover rounded-xl border" alt="Proof" />
+                                </a>
+                            </template>
+                            <p><span class="text-slate-500">Người nhận xác nhận:</span> <span class="font-bold" x-text="complaint.shipperDelivery.recipientConfirmedName || '—'"></span></p>
+                            <p><span class="text-slate-500">Shipper:</span> <span class="font-bold" x-text="complaint.shipperDelivery.shipperName || '—'"></span></p>
+                            <p><span class="text-slate-500">Giao lúc:</span> <span class="font-bold" x-text="formatDate(complaint.shipperDelivery.deliveredAt)"></span></p>
+                        </div>
+                    </template>
+                    <p x-show="!complaint.shipperDelivery" class="text-sm text-slate-400">Chưa có bằng chứng giao hàng.</p>
+                </div>
+            </div>
+
+            <div x-show="canResolve" class="bg-white rounded-2xl border-2 border-blue-100 p-6 shadow-sm">
+                <h2 class="text-lg font-black text-slate-800 mb-4">Quyết định</h2>
+                <div class="flex flex-wrap gap-3 mb-4">
+                    <button type="button" @@click="resolution = 'refund'"
+                            class="px-4 py-2 rounded-xl font-bold text-sm border"
+                            :class="resolution === 'refund' ? 'bg-emerald-50 border-emerald-500 text-emerald-800' : 'border-slate-200'">Hoàn tiền</button>
+                    <button type="button" @@click="resolution = 'rejected'"
+                            class="px-4 py-2 rounded-xl font-bold text-sm border"
+                            :class="resolution === 'rejected' ? 'bg-red-50 border-red-500 text-red-800' : 'border-slate-200'">Từ chối</button>
+                </div>
+                <div x-show="resolution === 'refund'" class="grid md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Số suất hoàn</label>
+                        <input type="number" min="1" x-model.number="refundPortionCount" @@input="syncSuggestedAmount()"
+                               class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold" />
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-600 mb-1">Số tiền hoàn (VND, có thể chỉnh)</label>
+                        <input type="number" min="0" x-model.number="finalRefundAmount"
+                               class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm font-bold" />
+                        <p class="text-xs text-slate-400 mt-1">Gợi ý: <span x-text="formatMoney(complaint.suggestedRefundAmount)"></span></p>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1">Ghi chú <span x-show="resolution === 'rejected'" class="text-red-500">*</span></label>
+                    <textarea x-model="resolutionNote" rows="3" class="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm"></textarea>
+                </div>
+                <p x-show="resolveError" class="text-sm text-red-600 mt-2" x-text="resolveError"></p>
+                <button type="button" @@click="submitResolve()" :disabled="resolving"
+                        class="mt-4 px-6 py-2.5 bg-blue-600 text-white font-bold rounded-xl text-sm hover:bg-blue-700 disabled:opacity-50">
+                    Xác nhận quyết định
+                </button>
+            </div>
+
+            <div x-show="!canResolve && complaint.resolution" class="bg-slate-50 rounded-2xl p-6 border border-slate-200">
+                <p class="font-bold text-slate-800">Đã xử lý: <span x-text="complaint.resolution === 'refund' ? 'Hoàn tiền' : 'Từ chối'"></span></p>
+                <p class="text-sm mt-2" x-show="complaint.finalRefundAmount">Số tiền: <span class="font-black text-emerald-700" x-text="formatMoney(complaint.finalRefundAmount)"></span></p>
+                <p class="text-sm text-slate-600 mt-2" x-text="complaint.resolutionNote"></p>
+            </div>
+        </div>
+    </template>
+</div>
+
+@section Scripts {
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('complaintReview', (id) => ({
+        complaint: null,
+        loading: true,
+        loadError: '',
+        resolution: 'refund',
+        refundPortionCount: 1,
+        finalRefundAmount: 0,
+        resolutionNote: '',
+        resolveError: '',
+        resolving: false,
+        get canResolve() {
+            const s = (this.complaint?.status || '').toLowerCase();
+            return s === 'pending_review';
+        },
+        init() { this.load(); },
+        csrf() { return document.querySelector('input[name="__RequestVerificationToken"]')?.value || ''; },
+        statusLabel(s) { const m = { pending_review: 'Chờ duyệt', resolved: 'Đã xử lý', rejected: 'Từ chối' }; return m[(s||'').toLowerCase()] || s; },
+        statusClass(s) { const m = { pending_review: 'bg-amber-50 text-amber-800 border-amber-200', resolved: 'bg-emerald-50 text-emerald-800 border-emerald-200', rejected: 'bg-red-50 text-red-800 border-red-200' }; return m[(s||'').toLowerCase()] || ''; },
+        reasonLabel(r) { const m = { missing_portions: 'Thiếu suất', spoiled_rice: 'Cơm hỏng', wrong_dish: 'Sai món', food_quality: 'Chất lượng' }; return m[(r||'').toLowerCase()] || r; },
+        evidenceKindLabel(k) { const m = { receipt_photo: 'Ảnh nhận', unboxing_video: 'Mở thùng', portion_count_video: 'Đếm suất', food_condition_video: 'Tình trạng món' }; return m[(k||'').toLowerCase()] || k; },
+        formatDate(iso) { if (!iso) return '—'; const d = new Date(iso); return isNaN(d) ? '—' : d.toLocaleString('vi-VN'); },
+        formatMoney(n) { if (n == null) return '—'; return new Intl.NumberFormat('vi-VN').format(n) + ' đ'; },
+        syncSuggestedAmount() {
+            const unit = this.complaint?.unitPricePerPortion || 0;
+            this.finalRefundAmount = Math.round(unit * (this.refundPortionCount || 0));
+        },
+        async load() {
+            this.loading = true; this.loadError = '';
+            try {
+                const res = await fetch('@Url.Action("ComplaintReviewData", "Operation", new { area = "Manager" })?id=' + id);
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.message || 'Lỗi');
+                this.complaint = data;
+                this.refundPortionCount = data.refundPortionCount || data.missingPortionCount || 1;
+                this.finalRefundAmount = data.suggestedRefundAmount || 0;
+                if (!this.finalRefundAmount) this.syncSuggestedAmount();
+            } catch (e) { this.loadError = e.message; }
+            finally { this.loading = false; }
+        },
+        async submitResolve() {
+            if (this.resolution === 'rejected' && !this.resolutionNote.trim()) {
+                this.resolveError = 'Vui lòng nhập ghi chú khi từ chối.';
+                return;
+            }
+            this.resolving = true; this.resolveError = '';
+            try {
+                const body = {
+                    resolution: this.resolution,
+                    resolutionNote: this.resolutionNote.trim() || null,
+                    refundPortionCount: this.resolution === 'refund' ? this.refundPortionCount : null,
+                    finalRefundAmount: this.resolution === 'refund' ? this.finalRefundAmount : null
+                };
+                const res = await fetch('@Url.Action("ResolveComplaint", "Operation", new { area = "Manager" })?id=' + id, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': this.csrf() },
+                    body: JSON.stringify(body)
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) throw new Error(data.message || 'Thất bại');
+                this.complaint = data;
+                alert('Đã lưu quyết định.');
+            } catch (e) { this.resolveError = e.message; }
+            finally { this.resolving = false; }
+        }
+    }));
+});
+</script>
+}

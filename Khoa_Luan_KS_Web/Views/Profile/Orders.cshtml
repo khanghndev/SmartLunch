@@ -154,6 +154,11 @@
                                         }
                                         <div class="flex flex-wrap items-center justify-end gap-x-2 gap-y-1 text-xs">
                                             <a asp-action="OrderDetail" asp-route-id="@o.Id" class="font-bold text-orange-600 hover:text-orange-800 whitespace-nowrap">Chi tiết</a>
+                                            @if (isOrg && string.Equals(o.Status, "delivered", StringComparison.OrdinalIgnoreCase))
+                                            {
+                                                <span class="text-gray-300 select-none" aria-hidden="true">|</span>
+                                                <a asp-action="ComplaintCreate" asp-route-orderId="@o.Id" class="font-bold text-red-600 hover:text-red-800 whitespace-nowrap" title="Trong vòng 24h sau khi giao">Khiếu nại</a>
+                                            }
                                             <span class="text-gray-300 select-none" aria-hidden="true">|</span>
                                             @if (!string.IsNullOrEmpty(signedPdfUrl))
                                             {
