@@ -49,6 +49,7 @@ SOURCE 04_seed_data/11b_seed_spice_ingredients.sql;
 SOURCE 04_seed_data/20_seed_dish_seasonings.sql;
 SOURCE 04_seed_data/14b_clone_dish_ingredients_by_value.sql;
 SOURCE 04_seed_data/19_seed_dish_images.sql;
+SOURCE 04_seed_data/21_seed_bulk_upcoming_orders_for_ai.sql;
 
 -- ---------- Tối ưu thống kê (tùy chọn, an toàn) ----------
 SOURCE 05_maintenance/01_analyze_optimize.sql;
