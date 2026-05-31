@@ -112,6 +112,7 @@ builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendWarehouseClient>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendDeliveryClient>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendComplaintClient>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendOrganizationChatbotClient>();
+builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.BackendOrganizationChatbotAdminClient>();
 builder.Services.AddScoped<Khoa_Luan_KS_Web.Services.ReportExcelExportService>();
 
 builder.Services.AddAntiforgery(options =>

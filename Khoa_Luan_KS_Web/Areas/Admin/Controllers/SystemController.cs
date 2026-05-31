@@ -9,11 +9,16 @@ namespace Khoa_Luan_KS_Web.Areas.Admin.Controllers
     public class SystemController : Controller
     {
         private readonly Services.BackendMasterDataClient _adminClient;
+        private readonly Services.BackendOrganizationChatbotAdminClient _chatbotAdminClient;
         private readonly IConfiguration _configuration;
 
-        public SystemController(Services.BackendMasterDataClient adminClient, IConfiguration configuration)
+        public SystemController(
+            Services.BackendMasterDataClient adminClient,
+            Services.BackendOrganizationChatbotAdminClient chatbotAdminClient,
+            IConfiguration configuration)
         {
             _adminClient = adminClient;
+            _chatbotAdminClient = chatbotAdminClient;
             _configuration = configuration;
         }
 
@@ -164,6 +169,77 @@ namespace Khoa_Luan_KS_Web.Areas.Admin.Controllers
             return RedirectToAction(nameof(BackupRestore));
         }
 
-        public IActionResult AiConfig() => View();
+        public async Task<IActionResult> AiConfig(CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
+
+            try
+            {
+                var config = await _chatbotAdminClient.GetConfigAsync(token, ct);
+                return View(config);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return View(new Services.OrganizationChatbotAdminConfigClientDto());
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> GetChatbotAiConfig(CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized(new { error = "Phiên đăng nhập hết hạn." });
+
+            try
+            {
+                var config = await _chatbotAdminClient.GetConfigAsync(token, ct);
+                return Json(config);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> SaveChatbotAiConfig(
+            [FromBody] Services.UpdateOrganizationChatbotConfigClientRequest request,
+            CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized(new { error = "Phiên đăng nhập hết hạn." });
+
+            try
+            {
+                var saved = await _chatbotAdminClient.SaveConfigAsync(request, token, ct);
+                return Json(new { success = true, config = saved, message = "Đã lưu cấu hình chatbot CSKH." });
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> TestChatbotAiConnection(CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token))
+                return Unauthorized(new { error = "Phiên đăng nhập hết hạn." });
+
+            try
+            {
+                var result = await _chatbotAdminClient.TestConnectionAsync(token, ct);
+                return Json(result);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(new { error = ex.Message });
+            }
+        }
     }
 }
