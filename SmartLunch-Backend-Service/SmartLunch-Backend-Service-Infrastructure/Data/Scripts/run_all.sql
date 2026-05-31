@@ -29,6 +29,7 @@ SOURCE 01_tables/11_partners.sql;
 SOURCE 01_tables/11a_dish_values.sql;
 SOURCE 01_tables/12_contracts.sql;
 SOURCE 01_tables/12a_contract_excluded_dates.sql;
+SOURCE 01_tables/12b_contract_daily_meal_portions.sql;
 SOURCE 01_tables/13_partner_payments.sql;
 SOURCE 01_tables/14_ingredient_categories.sql;
 SOURCE 01_tables/14a_ingredients.sql;
