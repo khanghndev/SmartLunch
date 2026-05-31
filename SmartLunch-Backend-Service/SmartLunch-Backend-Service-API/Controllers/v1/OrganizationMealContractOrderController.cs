@@ -65,8 +65,7 @@ public class OrganizationMealContractOrderController : ControllerBase
     }
 
     /// <summary>
-    /// Flow 1 — Chuẩn bị HĐ theo kỳ: thời hạn, ngày không cung cấp, số suất/ngày, giá/suất.
-    /// Tổng = (Kết thúc − Bắt đầu − số ngày loại trừ + 1) × Số suất × Giá/suất.
+    /// Flow 1 — Chuẩn bị HĐ theo kỳ: thời hạn (bắt đầu ≥ hôm nay + 3 ngày, tối đa 1 tháng), ngày loại trừ, suất/ngày, giá/suất.
     /// </summary>
     [HttpPost("contract")]
     public async Task<ActionResult<BaseApiResponse<PrepareOrganizationMealPeriodContractResponse>>> PrepareContract(

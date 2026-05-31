@@ -129,16 +129,12 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
     {
         if (req.OrganizationId <= 0)
             throw new ArgumentException("OrganizationId is required.");
-        if (req.EndDate < req.StartDate)
-            throw new ArgumentException("EndDate must be on or after StartDate.");
+        OrganizationMealPeriodContractDateRules.ValidatePeriod(req.StartDate, req.EndDate);
+
         if (req.MealsPerDay < 1)
             throw new ArgumentException("MealsPerDay must be at least 1.");
         if (req.MealUnitPrice <= 0)
             throw new ArgumentException("MealUnitPrice must be greater than zero.");
-
-        var spanDays = req.EndDate.DayNumber - req.StartDate.DayNumber + 1;
-        if (spanDays > 62)
-            throw new ArgumentException("Contract period must not exceed 62 days (typically one month).");
     }
 
     private static List<DateOnly> NormalizeExcludedDates(
