@@ -1,211 +1,462 @@
 @* Widget chatbot + FAB — HuitMeal *@
-<div x-data="huitMealChatbot()" x-cloak>
+@{
+    var chatUser = Context.User;
+    var isOrgChatbotUser = chatUser?.Identity?.IsAuthenticated == true && (
+        chatUser.IsInRole("Organization") ||
+        chatUser.IsInRole("Company") ||
+        chatUser.IsInRole("Khách hàng doanh nghiệp"));
+}
+<div x-data="huitMealChatbot(@(isOrgChatbotUser ? "true" : "false"))" x-cloak class="hm-chat-root">
+
     <!-- Chat panel -->
     <div x-show="chatOpen"
-         x-transition:enter="transition ease-out duration-250"
-         x-transition:enter-start="opacity-0 translate-y-3 scale-[0.98]"
+         x-transition:enter="transition ease-out duration-300"
+         x-transition:enter-start="opacity-0 translate-y-4 scale-[0.97]"
          x-transition:enter-end="opacity-100 translate-y-0 scale-100"
-         x-transition:leave="transition ease-in duration-150"
-         x-transition:leave-end="opacity-0 translate-y-3 scale-[0.98]"
-         class="hm-chat-panel fixed bottom-[7.5rem] right-6 z-[110] w-[min(calc(100vw-1.5rem),380px)] h-[min(72vh,500px)] flex flex-col rounded-3xl overflow-hidden shadow-2xl border border-white/20"
+         x-transition:leave="transition ease-in duration-200"
+         x-transition:leave-end="opacity-0 translate-y-4 scale-[0.97]"
+         class="hm-chat-panel"
          style="display: none;"
          @@keydown.escape.window="if (chatOpen) chatOpen = false">
 
-        <div class="absolute inset-0 bg-slate-900/80 backdrop-blur-xl pointer-events-none"></div>
-        <div class="absolute inset-0 opacity-30 bg-cover bg-center pointer-events-none"
-             style="background-image: url('/assets/images/home_hero.png');"></div>
-        <div class="absolute inset-0 bg-gradient-to-b from-slate-900/40 to-slate-950/90 pointer-events-none"></div>
+        <div class="hm-chat-panel__bg"></div>
+        <div class="hm-chat-panel__overlay"></div>
 
         <!-- Header -->
-        <header class="relative z-10 flex items-center gap-3 px-4 py-3 border-b border-white/10 shrink-0">
-            <div class="w-10 h-10 rounded-xl bg-green-500/25 border border-green-400/40 flex items-center justify-center shrink-0">
-                <i data-lucide="shield-check" class="w-[18px] h-[18px] text-green-400"></i>
+        <header class="hm-chat-header">
+            <div class="hm-chat-header__avatar">
+                <i data-lucide="bot" class="w-5 h-5 text-green-300"></i>
             </div>
             <div class="flex-1 min-w-0">
-                <p class="text-white text-sm font-bold leading-tight truncate">HuitMeal AI Assistant</p>
-                <p class="text-[10px] text-green-300 font-semibold flex items-center gap-1.5 mt-0.5">
-                    <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse shrink-0"></span>
-                    Sẵn sàng hỗ trợ
+                <p class="text-white text-base font-bold leading-tight truncate">HuitMeal Assistant</p>
+                <p class="text-xs text-green-300/90 font-medium flex items-center gap-2 mt-1">
+                    <span class="w-2 h-2 rounded-full bg-green-400 animate-pulse shrink-0"></span>
+                    <span x-text="isOrgUser ? 'Tra cứu dữ liệu thật từ hệ thống' : 'Hỗ trợ tư vấn nhanh'"></span>
                 </p>
             </div>
-            <button type="button" @@click="chatOpen = false"
-                    class="w-9 h-9 rounded-lg bg-white/10 hover:bg-white/20 text-white flex items-center justify-center shrink-0 transition"
-                    aria-label="Đóng">
-                <i data-lucide="x" class="w-4 h-4"></i>
+            <button type="button" @@click="chatOpen = false" class="hm-chat-close" aria-label="Đóng">
+                <i data-lucide="x" class="w-5 h-5"></i>
             </button>
         </header>
 
-        <!-- Trust strip — compact -->
-        <div class="relative z-10 mx-4 mt-2 mb-0 px-3 py-2 rounded-xl border border-white/10 bg-white/5 flex items-center gap-2.5 shrink-0">
-            <span class="text-lg font-black text-white leading-none">100%</span>
-            <div class="flex-1 min-w-0">
-                <p class="text-[9px] font-bold text-white/60 uppercase tracking-wider">An toàn thực phẩm</p>
-                <div class="h-0.5 w-full max-w-[120px] bg-white/10 rounded-full mt-1">
+        <!-- Trust strip (guest only) -->
+        <div x-show="!isOrgUser" class="hm-chat-trust">
+            <span class="text-xl font-black text-white">100%</span>
+            <div class="flex-1">
+                <p class="text-[10px] font-bold text-white/60 uppercase tracking-wider">An toàn thực phẩm</p>
+                <div class="h-1 w-full max-w-[140px] bg-white/10 rounded-full mt-1.5">
                     <div class="h-full w-[92%] bg-red-500 rounded-full"></div>
                 </div>
             </div>
         </div>
 
         <!-- Messages -->
-        <div x-ref="chatScroll" class="relative z-10 flex-1 min-h-0 overflow-y-auto overscroll-contain px-4 py-3 space-y-4">
+        <div x-ref="chatScroll" class="hm-chat-messages">
             <template x-for="(msg, idx) in messages" :key="'m-' + idx">
-                <div class="flex gap-2" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
-                    <div x-show="msg.role === 'bot'"
-                         class="w-8 h-8 rounded-full bg-green-500/20 border border-green-400/30 flex items-center justify-center shrink-0 mt-0.5">
-                        <i data-lucide="sparkles" class="w-3.5 h-3.5 text-green-300"></i>
+                <div class="flex gap-3" :class="msg.role === 'user' ? 'justify-end' : 'justify-start'">
+                    <div x-show="msg.role === 'bot'" class="hm-chat-bot-avatar shrink-0">
+                        <i data-lucide="sparkles" class="w-4 h-4 text-green-300"></i>
                     </div>
                     <div class="min-w-0"
-                         :class="msg.role === 'user' ? 'max-w-[85%] flex flex-col items-end' : 'max-w-[calc(100%-2.5rem)]'">
-                        <div class="px-3.5 py-2.5 rounded-2xl text-[13px] leading-snug break-words"
-                             :class="msg.role === 'user'
-                                ? 'bg-orange-600 text-white rounded-br-sm'
-                                : 'bg-white/15 text-white border border-white/15 rounded-bl-sm'">
-                            <span x-text="msg.text"></span>
-                        </div>
-                        <p class="text-[9px] text-white/35 mt-1"
+                         :class="msg.role === 'user' ? 'max-w-[88%]' : 'max-w-[calc(100%-3rem)] flex-1'">
+                        <!-- User bubble -->
+                        <div x-show="msg.role === 'user'"
+                             class="hm-chat-bubble hm-chat-bubble--user"
+                             x-text="msg.text"></div>
+                        <!-- Bot bubble — rich text -->
+                        <div x-show="msg.role === 'bot'"
+                             class="hm-chat-bubble hm-chat-bubble--bot"
+                             x-html="msg.html"></div>
+                        <p class="text-[11px] text-white/40 mt-1.5"
                            :class="msg.role === 'user' ? 'text-right' : 'text-left'"
                            x-text="msg.time"></p>
                     </div>
                 </div>
             </template>
 
-            <div x-show="isTyping" class="flex items-start gap-2" style="display: none;">
-                <div class="w-8 h-8 rounded-full bg-green-500/20 border border-green-400/30 flex items-center justify-center shrink-0">
-                    <i data-lucide="sparkles" class="w-3.5 h-3.5 text-green-300"></i>
+            <div x-show="isTyping" class="flex items-start gap-3" style="display: none;">
+                <div class="hm-chat-bot-avatar shrink-0">
+                    <i data-lucide="sparkles" class="w-4 h-4 text-green-300"></i>
                 </div>
-                <div class="px-4 py-3 rounded-2xl rounded-bl-sm bg-white/10 border border-white/15 flex gap-1 items-center">
-                    <span class="w-1.5 h-1.5 rounded-full bg-white/50 animate-bounce"></span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-white/50 animate-bounce [animation-delay:120ms]"></span>
-                    <span class="w-1.5 h-1.5 rounded-full bg-white/50 animate-bounce [animation-delay:240ms]"></span>
+                <div class="hm-chat-typing">
+                    <span class="hm-chat-dot"></span>
+                    <span class="hm-chat-dot hm-chat-dot--2"></span>
+                    <span class="hm-chat-dot hm-chat-dot--3"></span>
                 </div>
             </div>
         </div>
 
-        <!-- Quick replies — grid 2 cột đều -->
-        <div class="relative z-10 px-4 pb-2 shrink-0" x-show="!isTyping">
-            <div class="grid grid-cols-2 gap-2">
-                <template x-for="chip in quickReplies" :key="chip">
-                    <button type="button" @@click="sendQuick(chip)"
-                            class="w-full min-h-[36px] px-2 py-2 rounded-xl text-[11px] font-bold leading-tight text-center text-white bg-white/10 hover:bg-white/18 border border-white/12 transition">
-                        <span x-text="chip"></span>
-                    </button>
-                </template>
-            </div>
+        <!-- Quick replies -->
+        <div class="hm-chat-chips" x-show="!isTyping && quickReplies.length">
+            <template x-for="chip in quickReplies" :key="chip">
+                <button type="button" @@click="sendQuick(chip)" class="hm-chat-chip">
+                    <span x-text="chip"></span>
+                </button>
+            </template>
         </div>
 
-        <!-- Input + nút gửi cùng một hàng -->
-        <footer class="relative z-10 shrink-0 px-4 pb-3 pt-2 border-t border-white/10 bg-slate-950/40">
-            <form @@submit.prevent="sendMessage()" class="hm-chat-form">
+        <!-- Input -->
+        <footer class="hm-chat-footer">
+            <div class="hm-chat-input-row">
                 <input type="text"
                        x-model="input"
                        x-ref="chatInput"
                        autocomplete="off"
-                       placeholder="Nhập câu hỏi..."
+                       placeholder="Nhập câu hỏi của bạn..."
                        class="hm-chat-input"
                        @@keydown.enter.prevent="sendMessage()" />
                 <button type="submit"
+                        @@click.prevent="sendMessage()"
                         :disabled="!input.trim() || isTyping"
                         class="hm-chat-send"
                         aria-label="Gửi tin nhắn">
-                    <i data-lucide="send" class="w-[18px] h-[18px] pointer-events-none"></i>
+                    <i data-lucide="send" class="w-5 h-5 pointer-events-none"></i>
                 </button>
-            </form>
-            <p class="text-[9px] text-white/30 text-center mt-2 leading-relaxed">Trợ lý AI · Liên hệ hotline để xác nhận thông tin</p>
+            </div>
+            <p class="text-[11px] text-white/35 text-center mt-2.5"
+               x-text="isOrgUser ? '' : 'Đăng nhập DN để tra cứu đơn hàng thật · Hotline 0334 297 551'"></p>
         </footer>
     </div>
 
-    <!-- FAB -->
-    <div class="hm-contact-fab-stack fixed bottom-10 right-6 z-[100] flex flex-col items-end gap-3">
-        <a href="https://zalo.me/0334297551" target="_blank" rel="noopener"
-           class="group relative w-14 h-14 flex items-center justify-center bg-[#0068ff] text-white text-sm font-black rounded-full shadow-lg hover:-translate-y-0.5 transition">
+    <!-- FAB stack -->
+    <div class="hm-fab-stack">
+        <a href="https://zalo.me/0334297551" target="_blank" rel="noopener" class="hm-fab hm-fab--zalo">
             Zalo
-            <span class="absolute right-full mr-2 px-2.5 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-lg transition">Chat Zalo</span>
         </a>
-        <a href="tel:0334297551"
-           class="group relative w-14 h-14 flex items-center justify-center bg-orange-600 text-white rounded-full shadow-lg hover:-translate-y-0.5 transition">
+        <a href="tel:0334297551" class="hm-fab hm-fab--phone">
             <i data-lucide="phone" class="w-6 h-6"></i>
-            <span class="absolute right-full mr-2 px-2.5 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg opacity-0 group-hover:opacity-100 pointer-events-none whitespace-nowrap shadow-lg transition">0334 297 551</span>
         </a>
-        <button type="button" @@click="toggleChatbot()"
-                class="group relative w-14 h-14 flex items-center justify-center rounded-full border-2 shadow-lg transition"
-                :class="chatOpen ? 'bg-green-600 border-green-400 text-white' : 'bg-slate-900 border-white/20 text-white hover:-translate-y-0.5'">
-            <span x-show="!chatOpen"
-                  class="absolute right-full mr-2 px-2.5 py-1 bg-slate-900 text-white text-[10px] font-bold rounded-lg border border-white/10 shadow-lg opacity-0 group-hover:opacity-100 translate-x-1 group-hover:translate-x-0 transition-all pointer-events-none whitespace-nowrap">
-                Hỗ trợ AI
-            </span>
+        <button type="button" @@click="toggleChatbot()" class="hm-fab hm-fab--chat" :class="chatOpen && 'hm-fab--chat-open'">
             <i data-lucide="message-circle" class="w-6 h-6" x-show="!chatOpen"></i>
             <i data-lucide="chevron-down" class="w-5 h-5" x-show="chatOpen" style="display: none;"></i>
-            <span x-show="unreadHint && !chatOpen" class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full border-2 border-slate-900"></span>
+            <span x-show="unreadHint && !chatOpen" class="hm-fab-badge"></span>
         </button>
     </div>
 </div>
 
 <style>
     [x-cloak] { display: none !important; }
-    .hm-chat-panel { isolation: isolate; }
-    .hm-chat-form {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) 44px;
-        gap: 8px;
+
+    .hm-chat-panel {
+        position: fixed;
+        z-index: 110;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        border-radius: 1.25rem;
+        border: 1px solid rgba(255,255,255,0.15);
+        box-shadow: 0 25px 60px -12px rgba(0,0,0,0.55);
+        isolation: isolate;
+        /* Desktop: lớn hơn */
+        bottom: 6.5rem;
+        right: 1.5rem;
+        width: min(calc(100vw - 2rem), 480px);
+        height: min(88vh, 680px);
+        max-height: calc(100vh - 7rem);
+    }
+    @@media (max-width: 640px) {
+        .hm-chat-panel {
+            bottom: 0;
+            right: 0;
+            left: 0;
+            width: 100%;
+            height: min(92vh, 100dvh);
+            max-height: 92dvh;
+            border-radius: 1.25rem 1.25rem 0 0;
+        }
+    }
+
+    .hm-chat-panel__bg {
+        position: absolute; inset: 0;
+        background: rgba(15, 23, 42, 0.92);
+        backdrop-filter: blur(20px);
+        pointer-events: none;
+    }
+    .hm-chat-panel__overlay {
+        position: absolute; inset: 0;
+        background: linear-gradient(165deg, rgba(15,23,42,0.5) 0%, rgba(2,6,23,0.95) 100%);
+        pointer-events: none;
+    }
+
+    .hm-chat-header {
+        position: relative; z-index: 10;
+        display: flex; align-items: center; gap: 0.875rem;
+        padding: 1rem 1.125rem;
+        border-bottom: 1px solid rgba(255,255,255,0.1);
+        flex-shrink: 0;
+    }
+    .hm-chat-header__avatar {
+        width: 2.75rem; height: 2.75rem;
+        border-radius: 0.875rem;
+        background: rgba(34,197,94,0.2);
+        border: 1px solid rgba(74,222,128,0.35);
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+    }
+    .hm-chat-close {
+        width: 2.5rem; height: 2.5rem;
+        border-radius: 0.625rem;
+        background: rgba(255,255,255,0.1);
+        color: #fff;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+        transition: background 0.2s;
+    }
+    .hm-chat-close:hover { background: rgba(255,255,255,0.2); }
+
+    .hm-chat-trust {
+        position: relative; z-index: 10;
+        margin: 0.75rem 1.125rem 0;
+        padding: 0.75rem 1rem;
+        border-radius: 0.875rem;
+        border: 1px solid rgba(255,255,255,0.1);
+        background: rgba(255,255,255,0.05);
+        display: flex; align-items: center; gap: 0.75rem;
+        flex-shrink: 0;
+    }
+
+    .hm-chat-messages {
+        position: relative; z-index: 10;
+        flex: 1; min-height: 0;
+        overflow-y: auto; overscroll-behavior: contain;
+        padding: 1rem 1.125rem;
+        display: flex; flex-direction: column; gap: 1.125rem;
+    }
+
+    .hm-chat-bot-avatar {
+        width: 2.25rem; height: 2.25rem;
+        border-radius: 9999px;
+        background: rgba(34,197,94,0.18);
+        border: 1px solid rgba(74,222,128,0.3);
+        display: flex; align-items: center; justify-content: center;
+        margin-top: 0.125rem;
+    }
+
+    .hm-chat-bubble {
+        padding: 0.875rem 1rem;
+        border-radius: 1rem;
+        font-size: 0.9375rem;
+        line-height: 1.55;
+        word-break: break-word;
+    }
+    .hm-chat-bubble--user {
+        background: #ea580c;
+        color: #fff;
+        border-bottom-right-radius: 0.25rem;
+    }
+    .hm-chat-bubble--bot {
+        background: rgba(255,255,255,0.12);
+        color: #f8fafc;
+        border: 1px solid rgba(255,255,255,0.12);
+        border-bottom-left-radius: 0.25rem;
+    }
+    .hm-chat-bubble--bot .hm-para { margin: 0 0 0.5rem; line-height: 1.55; }
+    .hm-chat-bubble--bot .hm-para:last-child { margin-bottom: 0; }
+    .hm-chat-bubble--bot .hm-title {
+        font-weight: 700;
+        color: #fff;
+        margin: 0.75rem 0 0.35rem;
+        font-size: 0.875rem;
+        letter-spacing: 0.02em;
+    }
+    .hm-chat-bubble--bot .hm-title:first-child { margin-top: 0; }
+    .hm-chat-bubble--bot .hm-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.35rem 0.5rem;
+        margin: 0.25rem 0;
+        padding: 0.35rem 0;
+        border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .hm-chat-bubble--bot .hm-row:last-child { border-bottom: none; }
+    .hm-chat-bubble--bot .hm-row__k {
+        color: rgba(255,255,255,0.55);
+        font-size: 0.8125rem;
+        min-width: 5.5rem;
+        flex-shrink: 0;
+    }
+    .hm-chat-bubble--bot .hm-row__v {
+        color: #f1f5f9;
+        font-size: 0.875rem;
+        font-weight: 500;
+        flex: 1;
+        min-width: 0;
+        word-break: break-word;
+    }
+    .hm-chat-bubble--bot .hm-bullet {
+        position: relative;
+        padding-left: 1rem;
+        margin: 0.3rem 0;
+        line-height: 1.5;
+        font-size: 0.875rem;
+        color: rgba(255,255,255,0.92);
+    }
+    .hm-chat-bubble--bot .hm-bullet::before {
+        content: '•';
+        position: absolute;
+        left: 0;
+        color: #86efac;
+        font-weight: 700;
+    }
+    .hm-chat-bubble--bot .hm-highlight {
+        margin: 0.5rem 0;
+        padding: 0.625rem 0.75rem;
+        border-radius: 0.625rem;
+        background: rgba(34,197,94,0.15);
+        border: 1px solid rgba(74,222,128,0.25);
+        color: #86efac;
+        font-weight: 700;
+        font-size: 0.9375rem;
+        line-height: 1.45;
+    }
+    .hm-chat-bubble--bot .hm-card {
+        margin: 0.5rem 0;
+        padding: 0.625rem 0.75rem;
+        border-radius: 0.625rem;
+        background: rgba(0,0,0,0.2);
+        border: 1px solid rgba(255,255,255,0.08);
+    }
+
+    .hm-chat-typing {
+        padding: 1rem 1.25rem;
+        border-radius: 1rem;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.12);
+        display: flex; gap: 0.35rem; align-items: center;
+    }
+    .hm-chat-dot {
+        width: 0.5rem; height: 0.5rem;
+        border-radius: 9999px;
+        background: rgba(255,255,255,0.5);
+        animation: hmBounce 1s infinite;
+    }
+    .hm-chat-dot--2 { animation-delay: 0.15s; }
+    .hm-chat-dot--3 { animation-delay: 0.3s; }
+    @@keyframes hmBounce {
+        0%, 100% { transform: translateY(0); opacity: 0.5; }
+        50% { transform: translateY(-4px); opacity: 1; }
+    }
+
+    .hm-chat-chips {
+        position: relative; z-index: 10;
+        padding: 0 1.125rem 0.75rem;
+        display: flex; flex-wrap: wrap; gap: 0.5rem;
+        flex-shrink: 0;
+    }
+    .hm-chat-chip {
+        padding: 0.5rem 0.875rem;
+        border-radius: 9999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: #fff;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid rgba(255,255,255,0.15);
+        transition: background 0.2s, border-color 0.2s;
+        white-space: nowrap;
+    }
+    .hm-chat-chip:hover {
+        background: rgba(34,197,94,0.25);
+        border-color: rgba(74,222,128,0.4);
+    }
+
+    .hm-chat-footer {
+        position: relative; z-index: 10;
+        padding: 0.875rem 1.125rem 1.125rem;
+        border-top: 1px solid rgba(255,255,255,0.1);
+        background: rgba(2,6,23,0.5);
+        flex-shrink: 0;
+    }
+    .hm-chat-input-row {
+        display: flex;
+        flex-direction: row;
         align-items: center;
+        gap: 0.625rem;
         width: 100%;
     }
     .hm-chat-input {
-        width: 100%;
+        flex: 1 1 auto;
         min-width: 0;
-        height: 44px;
-        padding: 0 14px;
-        border-radius: 12px;
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        background: rgba(255, 255, 255, 0.1);
+        height: 3rem;
+        padding: 0 1rem;
+        border-radius: 0.875rem;
+        border: 1px solid rgba(255,255,255,0.2);
+        background: rgba(255,255,255,0.08);
         color: #fff;
-        font-size: 14px;
-        line-height: 44px;
-        font-family: inherit;
+        font-size: 0.9375rem;
         outline: none;
-        box-sizing: border-box;
     }
-    .hm-chat-input::placeholder { color: rgba(255, 255, 255, 0.35); }
+    .hm-chat-input::placeholder { color: rgba(255,255,255,0.35); }
     .hm-chat-input:focus {
-        border-color: rgba(34, 197, 94, 0.7);
-        box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.3);
+        border-color: rgba(34,197,94,0.65);
+        box-shadow: 0 0 0 2px rgba(34,197,94,0.2);
     }
     .hm-chat-send {
-        width: 44px;
-        height: 44px;
-        min-width: 44px;
-        padding: 0;
-        margin: 0;
+        flex: 0 0 3rem;
+        width: 3rem; height: 3rem;
         border: none;
-        border-radius: 12px;
+        border-radius: 0.875rem;
         background: #16a34a;
         color: #fff;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
+        display: flex; align-items: center; justify-content: center;
         cursor: pointer;
-        flex-shrink: 0;
-        box-sizing: border-box;
-        transition: background 0.2s;
+        transition: background 0.2s, opacity 0.2s;
     }
     .hm-chat-send:hover:not(:disabled) { background: #22c55e; }
-    .hm-chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
+    .hm-chat-send:disabled { opacity: 0.45; cursor: not-allowed; }
+
+    .hm-fab-stack {
+        position: fixed;
+        bottom: 2.5rem;
+        right: 1.5rem;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 0.75rem;
+    }
+    .hm-fab {
+        width: 3.5rem; height: 3.5rem;
+        border-radius: 9999px;
+        display: flex; align-items: center; justify-content: center;
+        font-weight: 800; font-size: 0.875rem;
+        color: #fff;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+        transition: transform 0.2s;
+    }
+    .hm-fab:hover { transform: translateY(-2px); }
+    .hm-fab--zalo { background: #0068ff; }
+    .hm-fab--phone { background: #ea580c; }
+    .hm-fab--chat {
+        background: #0f172a;
+        border: 2px solid rgba(255,255,255,0.2);
+        position: relative;
+    }
+    .hm-fab--chat-open { background: #16a34a; border-color: #4ade80; }
+    .hm-fab-badge {
+        position: absolute; top: 0; right: 0;
+        width: 0.75rem; height: 0.75rem;
+        background: #ef4444;
+        border-radius: 9999px;
+        border: 2px solid #0f172a;
+    }
 </style>
 
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('huitMealChatbot', () => ({
+    Alpine.data('huitMealChatbot', (isOrgUser = false) => ({
+        isOrgUser: !!isOrgUser,
         chatOpen: false,
         isTyping: false,
         input: '',
         unreadHint: true,
         messages: [],
-        quickReplies: [
-            'Thực đơn tuần',
-            'Đặt suất ăn DN',
-            'Giá & thanh toán',
-            'An toàn thực phẩm'
-        ],
+        quickReplies: [],
+
+        init() {
+            this.quickReplies = this.isOrgUser
+                ? ['Cần thanh toán bao nhiêu', 'Đơn hàng gần đây', 'Hợp đồng hiện tại', 'Thực đơn tuần này']
+                : ['Thực đơn tuần', 'Đặt suất ăn DN', 'Giá & thanh toán', 'An toàn thực phẩm'];
+        },
 
         toggleChatbot() {
             this.chatOpen = !this.chatOpen;
@@ -221,15 +472,129 @@ document.addEventListener('alpine:init', () => {
         },
 
         welcomeText() {
-            return 'Xin chào! Tôi là trợ lý AI HuitMeal. Tôi có thể hỗ trợ về thực đơn, đặt suất ăn, an toàn thực phẩm và liên hệ tư vấn.';
+            if (this.isOrgUser) {
+                return 'Xin chào! Tôi tra cứu trực tiếp từ cơ sở dữ liệu HuitMeal.\n\nBạn có thể hỏi:\n• Tổng tiền đơn hàng\n• Đơn hàng gần đây\n• Hợp đồng & thực đơn tuần\n• Hạn chốt đơn, thanh toán, giao hàng';
+            }
+            return 'Xin chào! Tôi là trợ lý HuitMeal. Đăng nhập tài khoản doanh nghiệp để tra cứu đơn hàng thật từ hệ thống.';
         },
 
         nowLabel() {
             return new Date().toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' });
         },
 
-        pushUser(text) { this.messages.push({ role: 'user', text, time: this.nowLabel() }); },
-        pushBot(text) { this.messages.push({ role: 'bot', text, time: this.nowLabel() }); },
+        toLines(text) {
+            return (text || '').split('\n').map(l => l.trimEnd()).filter(l => l.length > 0);
+        },
+
+        escapeHtml(s) {
+            return String(s ?? '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;');
+        },
+
+        /** Tránh Alpine x-html cắt nội dung tại dấu : trong giờ (VD: 17:00). */
+        protectTimes(text) {
+            const times = [];
+            const safe = (text || '').replace(/\b(\d{1,2}:\d{2})\b/g, (_, t) => {
+                times.push(t);
+                return `__HM_TIME_${times.length - 1}__`;
+            });
+            return { safe, times };
+        },
+
+        restoreTimes(text, times) {
+            let out = text || '';
+            times.forEach((t, i) => {
+                out = out.split(`__HM_TIME_${i}__`).join(t.replace(':', 'h'));
+            });
+            return out;
+        },
+
+        splitLabelValue(line) {
+            const idx = line.indexOf(':');
+            if (idx < 2 || idx > 40) return null;
+            const key = line.slice(0, idx).trim();
+            const val = line.slice(idx + 1).trim();
+            if (!val || val.length < 2) return null;
+            if (val.includes(';') || val.length > 72) return null;
+            if (/^\d/.test(key)) return null;
+            if (/^(Bước|Phục vụ)\s/i.test(key)) return null;
+            return [key, val];
+        },
+
+        normalizeBotText(text) {
+            let t = (text || '').trim();
+            const i = t.toLowerCase().lastIndexOf('gợi ý:');
+            if (i >= 0) t = t.slice(0, i).trim();
+            return t
+                .replace(/\*\*([^*]+)\*\*/g, '$1')
+                .replace(/^\*\s+/gm, '• ')
+                .replace(/\*\*/g, '')
+                .replace(/\b(\d{1,2}):(\d{2})\b/g, '$1h$2')
+                .replace(/\n{3,}/g, '\n\n');
+        },
+
+        formatBotHtml(text) {
+            const { safe, times } = this.protectTimes(this.normalizeBotText(text));
+            const lines = safe.split('\n').map(l => l.trim()).filter(Boolean);
+            if (!lines.length) return '';
+
+            let html = '';
+            let inCard = false;
+
+            const closeCard = () => {
+                if (inCard) { html += '</div>'; inCard = false; }
+            };
+
+            for (const raw of lines) {
+                const line = raw.replace(/^[•\-]\s*/, '').trim();
+                const displayLine = this.restoreTimes(line, times);
+
+                if (/^(Khiếu nại|Đơn|Hợp đồng|📦)\s/i.test(displayLine) && !displayLine.includes(':')) {
+                    closeCard();
+                    html += `<p class="hm-title">${this.escapeHtml(displayLine)}</p>`;
+                    inCard = true;
+                    html += '<div class="hm-card">';
+                    continue;
+                }
+
+                if (/tổng tiền|tổng cộng|cần thanh toán|tổng giá trị/i.test(displayLine)) {
+                    html += `<p class="hm-highlight">${this.escapeHtml(displayLine)}</p>`;
+                    continue;
+                }
+
+                const kv = this.splitLabelValue(displayLine);
+                if (kv) {
+                    html += `<div class="hm-row"><span class="hm-row__k">${this.escapeHtml(kv[0])}</span><span class="hm-row__v">${this.escapeHtml(kv[1])}</span></div>`;
+                    continue;
+                }
+
+                if (/^[•\-]/.test(raw) || /^Bước\s+\d/i.test(displayLine) || /^T[2-7]\s/i.test(displayLine)) {
+                    html += `<div class="hm-bullet">${this.escapeHtml(displayLine)}</div>`;
+                    continue;
+                }
+
+                closeCard();
+                html += `<p class="hm-para">${this.escapeHtml(displayLine)}</p>`;
+            }
+            closeCard();
+            return html;
+        },
+
+        pushUser(text) {
+            this.messages.push({ role: 'user', text, html: '', time: this.nowLabel() });
+        },
+        pushBot(text) {
+            const clean = this.normalizeBotText(text);
+            this.messages.push({
+                role: 'bot',
+                text: clean,
+                html: this.formatBotHtml(clean),
+                time: this.nowLabel()
+            });
+        },
 
         scrollToBottom() {
             const el = this.$refs.chatScroll;
@@ -238,37 +603,63 @@ document.addEventListener('alpine:init', () => {
 
         sendQuick(text) { this.input = text; this.sendMessage(); },
 
-        sendMessage() {
+        applySuggestions(list) {
+            if (Array.isArray(list) && list.length > 0)
+                this.quickReplies = list.slice(0, 4);
+        },
+
+        async sendMessage() {
             const text = this.input.trim();
             if (!text || this.isTyping) return;
             this.pushUser(text);
             this.input = '';
             this.isTyping = true;
             this.$nextTick(() => this.scrollToBottom());
-            setTimeout(() => {
-                this.pushBot(this.generateReply(text));
-                this.isTyping = false;
-                this.$nextTick(() => {
-                    this.scrollToBottom();
-                    if (typeof lucide !== 'undefined') lucide.createIcons();
-                });
-            }, 550);
+
+            if (this.isOrgUser) {
+                try {
+                    const res = await fetch('/Chatbot/Send', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({ message: text })
+                    });
+                    const data = await res.json().catch(() => ({}));
+                    if (!res.ok) {
+                        this.pushBot(data.error || 'Không thể tra cứu. Vui lòng đăng nhập lại hoặc gọi hotline.');
+                    } else {
+                        this.pushBot(data.reply || 'Không có phản hồi.');
+                        this.applySuggestions(data.suggestions);
+                    }
+                } catch {
+                    this.pushBot('Mất kết nối máy chủ. Vui lòng thử lại hoặc liên hệ hotline 0334 297 551.');
+                }
+            } else {
+                await new Promise(r => setTimeout(r, 450));
+                this.pushBot(this.generateGuestReply(text));
+            }
+
+            this.isTyping = false;
+            this.$nextTick(() => {
+                this.scrollToBottom();
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            });
         },
 
-        generateReply(q) {
+        generateGuestReply(q) {
             const s = q.toLowerCase();
             if (/thực đơn|menu|món|tuần/.test(s))
                 return 'Xem thực đơn tại Dịch vụ → Thực đơn cố định hoặc Thực đơn tự chọn (đơn vị).';
             if (/đặt|đơn|suất|doanh nghiệp|tổ chức/.test(s))
-                return 'Khách DN đăng nhập và dùng Thực đơn tự chọn, hoặc liên hệ qua trang Liên hệ.';
-            if (/giá|thanh toán|hóa đơn/.test(s))
-                return 'Giá phụ thuộc thực đơn và số suất. Gọi 0334 297 551 để báo giá chi tiết.';
+                return 'Khách DN đăng nhập để tra cứu đơn hàng thật từ hệ thống.';
+            if (/giá|thanh toán|hóa đơn|tổng tiền/.test(s))
+                return 'Đăng nhập tài khoản DN và hỏi \"Tổng tiền đơn hàng\" — hệ thống sẽ trả lời chính xác từ dữ liệu đơn của bạn.';
             if (/an toàn|vệ sinh|iso|haccp/.test(s))
                 return 'HuitMeal tuân thủ HACCP, ISO 22000 và truy xuất nguồn nguyên liệu.';
             if (/liên hệ|zalo|gọi|hotline/.test(s))
                 return 'Hotline 0334 297 551 · Zalo · contact@HuitMeal.com';
             if (/chào|hello|hi/.test(s)) return this.welcomeText();
-            return 'Bạn mô tả thêm nhu cầu hoặc bấm Zalo/Gọi bên dưới để gặp tư vấn viên.';
+            return 'Đăng nhập DN để tra cứu dữ liệu thật, hoặc bấm Zalo/Gọi bên dưới.';
         }
     }));
 });
