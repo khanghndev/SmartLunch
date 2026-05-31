@@ -1,0 +1,12 @@
+{
+  "options": {
+    "provider": "Gemini",
+    "apiKey": "AQ.Ab8RN6JsdjftdWkkjwf3cL0HuOkPOpwbPvnfQHOAeFQrRncBwA",
+    "model": "gemini-2.5-flash",
+    "enabled": true,
+    "temperature": 0.15,
+    "maxOutputTokens": 1024,
+    "isConfigured": true
+  },
+  "updatedAt": "2026-05-31T17:24:12.7849833"
+}

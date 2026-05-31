@@ -50,6 +50,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
                         type.Name != "OrganizationMealOrderDraftCacheService" && // Registered explicitly as IOrganizationMealOrderDraftCache
                         type.Name != "OrganizationMealPeriodContractDraftCacheService" &&
                         type.Name != "GeminiOrganizationChatbotLlmClient" &&
+                        type.Name != "OrganizationChatbotSettingsProvider" &&
                         type.Name != "MailKitEmailSender" &&
                         type.Name != "OrganizationOrderEmailService" &&
                         !type.Name.EndsWith("Options") && // Exclude options classes

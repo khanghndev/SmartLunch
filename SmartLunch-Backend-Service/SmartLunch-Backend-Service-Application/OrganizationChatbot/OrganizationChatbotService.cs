@@ -3,7 +3,6 @@ using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Domain.Time;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace SmartLunch.Backend.Service.Application.OrganizationChatbot;
 
@@ -16,24 +15,24 @@ public sealed class OrganizationChatbotService : IOrganizationChatbotService
 {
     private readonly IOrganizationChatbotContextBuilder _contextBuilder;
     private readonly IOrganizationChatbotLlmClient _llmClient;
+    private readonly IOrganizationChatbotSettingsProvider _settings;
     private readonly OrganizationChatbotRuleFallback _ruleFallback;
     private readonly IChatbotLogRepository _chatbotLogs;
-    private readonly OrganizationChatbotOptions _options;
     private readonly ILogger<OrganizationChatbotService> _logger;
 
     public OrganizationChatbotService(
         IOrganizationChatbotContextBuilder contextBuilder,
         IOrganizationChatbotLlmClient llmClient,
+        IOrganizationChatbotSettingsProvider settings,
         OrganizationChatbotRuleFallback ruleFallback,
         IChatbotLogRepository chatbotLogs,
-        IOptions<OrganizationChatbotOptions> options,
         ILogger<OrganizationChatbotService> logger)
     {
         _contextBuilder = contextBuilder;
         _llmClient = llmClient;
+        _settings = settings;
         _ruleFallback = ruleFallback;
         _chatbotLogs = chatbotLogs;
-        _options = options.Value;
         _logger = logger;
     }
 
@@ -65,7 +64,7 @@ public sealed class OrganizationChatbotService : IOrganizationChatbotService
         }
 
         // Primary: RAG + Gemini (trả lời tự nhiên, không cứng nhắc)
-        if (_options.Enabled)
+        if (_settings.GetCurrent().IsConfigured)
         {
             try
             {

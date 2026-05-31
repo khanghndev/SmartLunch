@@ -16,11 +16,35 @@ public sealed class OrganizationChatbotOptions
     /// <summary>OpenAI-compatible base URL (OpenAI provider only).</summary>
     public string? BaseUrl { get; set; }
 
+    public bool Enabled { get; set; } = true;
+
     public double Temperature { get; set; } = 0.15;
 
     public int MaxOutputTokens { get; set; } = 1024;
 
-    public bool Enabled =>
+    /// <summary>System prompt tùy chỉnh thay thế mặc định; null/empty = dùng mặc định.</summary>
+    public string? SystemPrompt { get; set; }
+
+    /// <summary>Quy tắc bổ sung admin — nối vào cuối system prompt.</summary>
+    public string? CustomRules { get; set; }
+
+    public bool IsConfigured =>
+        Enabled &&
         !string.Equals(Provider, "None", StringComparison.OrdinalIgnoreCase) &&
         !string.IsNullOrWhiteSpace(ApiKey);
+
+    public bool UsesDefaultSystemPrompt => string.IsNullOrWhiteSpace(SystemPrompt);
+
+    public string ResolveCorePrompt() =>
+        UsesDefaultSystemPrompt
+            ? OrganizationChatbotDefaultPrompts.SystemPrompt
+            : SystemPrompt!.Trim();
+
+    public string ResolveSystemPrompt()
+    {
+        var core = ResolveCorePrompt();
+        if (string.IsNullOrWhiteSpace(CustomRules))
+            return core;
+        return core + "\n\nQUY TẮC BỔ SUNG (admin):\n" + CustomRules.Trim();
+    }
 }
