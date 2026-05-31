@@ -41,16 +41,44 @@ public static class OrganizationMealContractDateRules
         return Math.Max(0, inclusive - excludedInRange);
     }
 
+    public static int CountTotalMeals(
+        DateOnly start,
+        DateOnly end,
+        IReadOnlyCollection<DateOnly> excluded,
+        int defaultMealsPerDay,
+        IReadOnlyDictionary<string, int>? dailyOverridesByIso = null)
+    {
+        if (defaultMealsPerDay < 1) return 0;
+        var total = 0;
+        foreach (var date in EnumerateServiceDates(start, end, excluded))
+        {
+            var iso = date.ToString("yyyy-MM-dd");
+            if (dailyOverridesByIso != null &&
+                dailyOverridesByIso.TryGetValue(iso, out var custom) &&
+                custom > 0)
+            {
+                total += custom;
+            }
+            else
+            {
+                total += defaultMealsPerDay;
+            }
+        }
+
+        return total;
+    }
+
     public static decimal ComputeTotal(
         DateOnly start,
         DateOnly end,
         IReadOnlyCollection<DateOnly> excluded,
         int mealsPerDay,
-        decimal mealUnitPrice)
+        decimal mealUnitPrice,
+        IReadOnlyDictionary<string, int>? dailyOverridesByIso = null)
     {
-        var days = CountServiceDays(start, end, excluded);
-        if (days < 1 || mealsPerDay < 1 || mealUnitPrice <= 0) return 0;
-        return Math.Round(days * mealsPerDay * mealUnitPrice, 0, MidpointRounding.AwayFromZero);
+        var totalMeals = CountTotalMeals(start, end, excluded, mealsPerDay, dailyOverridesByIso);
+        if (totalMeals < 1 || mealUnitPrice <= 0) return 0;
+        return Math.Round(totalMeals * mealUnitPrice, 0, MidpointRounding.AwayFromZero);
     }
 
     public static DateOnly GetWeekMonday(DateOnly date)

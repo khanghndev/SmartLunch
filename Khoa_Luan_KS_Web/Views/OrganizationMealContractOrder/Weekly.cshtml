@@ -18,6 +18,7 @@
         }),
         new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
     var excludedJson = ViewBag.ExcludedDatesJson as string ?? "[]";
+    var dailyMealsJson = ViewBag.DailyMealPortionsJson as string ?? "{}";
     var antiToken = Antiforgery.GetAndStoreTokens(Context).RequestToken ?? "";
     var antiTokenJson = JsonSerializer.Serialize(antiToken);
 }
@@ -103,7 +104,7 @@
                                     <span x-text="formatDateLong(day.serviceDate)"></span>
                                 </p>
                                 <span class="rounded-full bg-emerald-100 px-3 py-1 text-xs font-bold text-emerald-800"
-                                      x-text="mealsPerDay + ' suất'"></span>
+                                      x-text="day.requiredMeals + ' suất'"></span>
                             </div>
                             <div class="flex flex-col gap-3 sm:flex-row sm:items-end">
                                 <div class="relative min-w-0 flex-1">
@@ -165,6 +166,7 @@
         const mealsPerDay = @Model.MealsPerDay;
         const weeks = @Html.Raw(weeksJson);
         const excludedDates = @Html.Raw(excludedJson);
+        const dailyMealPortions = @Html.Raw(dailyMealsJson);
         const antiToken = @Html.Raw(antiTokenJson);
 
         Alpine.data('orgWeeklyMealApp', () => ({
@@ -206,6 +208,11 @@
             excludedSet() {
                 return new Set(excludedDates || []);
             },
+            mealsForDate(iso) {
+                const def = Math.max(1, parseInt(this.mealsPerDay, 10) || 1);
+                const custom = dailyMealPortions && dailyMealPortions[iso];
+                return custom && custom > 0 ? custom : def;
+            },
             buildWeekServiceDates(weekMonday) {
                 const excluded = this.excludedSet();
                 const startP = this.parseIso(contractStart);
@@ -230,6 +237,7 @@
                 const dates = this.buildWeekServiceDates(w.weekMonday);
                 this.weekDays = dates.map(serviceDate => ({
                     serviceDate,
+                    requiredMeals: this.mealsForDate(serviceDate),
                     search: '',
                     dishes: [],
                     selectedDish: null,
@@ -272,13 +280,12 @@
                 return '';
             },
             buildPayload() {
-                const qty = Math.max(1, parseInt(this.mealsPerDay, 10) || 1);
                 return {
                     weekStart: this.selectedWeek.weekMonday,
                     mealDays: this.weekDays.map(day => ({
                         serviceDate: day.serviceDate,
                         mealPlan: {
-                            main: [{ dishId: day.selectedDish.id, quantity: qty }],
+                            main: [{ dishId: day.selectedDish.id, quantity: day.requiredMeals }],
                             side: [],
                             soup: [],
                         },

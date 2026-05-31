@@ -1833,6 +1833,7 @@ public class CustomerContractDto
     public int? SourceOrderId { get; set; }
     public string ContractType { get; set; } = "Framework";
     public int? MealsPerDay { get; set; }
+    public List<ContractDailyMealPortionClientDto> DailyMealPortions { get; set; } = new();
     public string? ContractNumber { get; set; }
     public string? Description { get; set; }
     public string? SupplySchedule { get; set; }
@@ -2177,6 +2178,18 @@ public class InitiateOrganizationMealPaymentClientResponse
 }
 
 // ─── Organization meal contract order (Period-Based) ────────────────────────
+public class ContractDailyMealPortionClientRequest
+{
+    public string ServiceDate { get; set; } = string.Empty;
+    public int MealCount { get; set; }
+}
+
+public class ContractDailyMealPortionClientDto
+{
+    public DateOnly ServiceDate { get; set; }
+    public int MealCount { get; set; }
+}
+
 public class PrepareOrganizationMealPeriodContractClientRequest
 {
     public int OrganizationId { get; set; }
@@ -2184,6 +2197,7 @@ public class PrepareOrganizationMealPeriodContractClientRequest
     public string EndDate { get; set; } = string.Empty;
     public List<string> ExcludedDates { get; set; } = new();
     public int MealsPerDay { get; set; }
+    public List<ContractDailyMealPortionClientRequest> DailyMealPortions { get; set; } = new();
     public decimal MealUnitPrice { get; set; }
     public string? PromotionCode { get; set; }
     public int? PromotionId { get; set; }

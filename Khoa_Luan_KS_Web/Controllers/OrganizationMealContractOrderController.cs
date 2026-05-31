@@ -14,6 +14,7 @@ public class OrganizationMealContractOrderController : Controller
 {
     private const string DraftSessionKey = "org_meal_period_draft_v1";
     private const string ExcludedSessionPrefix = "org_meal_period_excluded_";
+    private const string DailyMealsSessionPrefix = "org_meal_period_daily_";
     private static readonly JsonSerializerOptions JsonOpts = new() { PropertyNameCaseInsensitive = true };
 
     private readonly BackendMasterDataClient _masterDataClient;
@@ -34,6 +35,19 @@ public class OrganizationMealContractOrderController : Controller
         user.IsInRole("Organization") ||
         user.IsInRole("Company") ||
         user.IsInRole("Khách hàng doanh nghiệp");
+
+    [HttpGet]
+    public IActionResult Holidays(string? from, string? to)
+    {
+        if (!DateOnly.TryParse(from, out var start) || !DateOnly.TryParse(to, out var end))
+            return BadRequest(new { message = "Tham số from và to phải là ngày yyyy-MM-dd." });
+
+        var items = VietnamesePublicHolidayCalendar.GetHolidays(start, end)
+            .Select(h => new { date = h.Date, name = h.Name, kind = h.Kind, isWeekend = h.IsWeekend })
+            .ToList();
+        var map = VietnamesePublicHolidayCalendar.GetHolidayMap(start, end);
+        return Json(new { items, map });
+    }
 
     [HttpGet]
     public async Task<IActionResult> Index(CancellationToken ct = default)
@@ -186,11 +200,21 @@ public class OrganizationMealContractOrderController : Controller
             HttpContext.Session.SetString(DraftSessionKey, JsonSerializer.Serialize(draft, JsonOpts));
             HttpContext.Session.SetString(DraftSessionKey + "_org", profile.Unit.Name);
 
-            if (draft.ContractId > 0 && draft.ExcludedDates?.Count > 0)
+            if (draft.ContractId > 0)
             {
-                HttpContext.Session.SetString(
-                    ExcludedSessionPrefix + draft.ContractId,
-                    JsonSerializer.Serialize(draft.ExcludedDates, JsonOpts));
+                if (draft.ExcludedDates?.Count > 0)
+                {
+                    HttpContext.Session.SetString(
+                        ExcludedSessionPrefix + draft.ContractId,
+                        JsonSerializer.Serialize(draft.ExcludedDates, JsonOpts));
+                }
+
+                if (request.DailyMealPortions?.Count > 0)
+                {
+                    HttpContext.Session.SetString(
+                        DailyMealsSessionPrefix + draft.ContractId,
+                        JsonSerializer.Serialize(request.DailyMealPortions, JsonOpts));
+                }
             }
 
             return Json(new { success = true, redirectUrl = Url.Action(nameof(Review)) });
@@ -450,14 +474,44 @@ public class OrganizationMealContractOrderController : Controller
             ViewBag.ExcludedDatesJson = JsonSerializer.Serialize(
                 excluded.Select(d => d.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)).ToList(),
                 JsonOpts);
+            var dailyPortions = LoadDailyMealPortions(contractId, detail.Contract.DailyMealPortions);
+            ViewBag.DailyMealPortionsJson = JsonSerializer.Serialize(dailyPortions, JsonOpts);
         }
         catch (Exception ex)
         {
             vm.ApiError = ex.Message;
             ViewBag.ExcludedDatesJson = "[]";
+            ViewBag.DailyMealPortionsJson = "{}";
         }
 
         return View(vm);
+    }
+
+    private Dictionary<string, int> LoadDailyMealPortions(
+        int contractId,
+        IReadOnlyList<ContractDailyMealPortionClientDto>? fromApi)
+    {
+        if (fromApi is { Count: > 0 })
+        {
+            return fromApi.ToDictionary(
+                p => p.ServiceDate.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                p => p.MealCount);
+        }
+
+        var raw = HttpContext.Session.GetString(DailyMealsSessionPrefix + contractId);
+        if (string.IsNullOrEmpty(raw)) return new Dictionary<string, int>();
+        try
+        {
+            var items = JsonSerializer.Deserialize<List<ContractDailyMealPortionClientRequest>>(raw, JsonOpts)
+                ?? new List<ContractDailyMealPortionClientRequest>();
+            return items
+                .Where(p => !string.IsNullOrWhiteSpace(p.ServiceDate) && p.MealCount > 0)
+                .ToDictionary(p => p.ServiceDate, p => p.MealCount);
+        }
+        catch
+        {
+            return new Dictionary<string, int>();
+        }
     }
 
     private List<DateOnly> LoadExcludedDates(int contractId)
