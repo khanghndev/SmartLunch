@@ -11,4 +11,7 @@ public class GetOrdersRequest
 
     /// <summary>Filter by order status (e.g. pending, confirmed, delivered).</summary>
     public string? Status { get; set; }
+
+    /// <summary>Filter by payment status (e.g. unpaid, awaiting_payment, paid).</summary>
+    public string? PaymentStatus { get; set; }
 }

@@ -55,6 +55,7 @@ public class OrderController : ControllerBase
                 request.SearchTerm,
                 request.ScheduledOn,
                 request.Status,
+                request.PaymentStatus,
                 restrictUser);
             var response = await _mediator.Send(query);
             return Ok(BaseApiResponse<GetOrdersResponse>.SuccessResult(response, "Orders retrieved successfully"));

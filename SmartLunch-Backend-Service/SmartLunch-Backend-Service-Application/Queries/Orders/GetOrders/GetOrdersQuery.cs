@@ -10,6 +10,7 @@ public class GetOrdersQuery : IRequest<GetOrdersResponse>
     public string? SearchTerm { get; set; }
     public DateOnly? ScheduledOn { get; set; }
     public string? Status { get; set; }
+    public string? PaymentStatus { get; set; }
 
     /// <summary>Khi đặt (ví dụ khách B2C), chỉ trả về đơn của user này.</summary>
     public int? RestrictToUserId { get; set; }
@@ -20,6 +21,7 @@ public class GetOrdersQuery : IRequest<GetOrdersResponse>
         string? searchTerm = null,
         DateOnly? scheduledOn = null,
         string? status = null,
+        string? paymentStatus = null,
         int? restrictToUserId = null)
     {
         Page = page;
@@ -27,6 +29,7 @@ public class GetOrdersQuery : IRequest<GetOrdersResponse>
         SearchTerm = searchTerm;
         ScheduledOn = scheduledOn;
         Status = status;
+        PaymentStatus = paymentStatus;
         RestrictToUserId = restrictToUserId;
     }
 }

@@ -13,6 +13,7 @@ public interface IOrderRepository
         string? searchTerm = null,
         DateOnly? scheduledOn = null,
         string? status = null,
+        string? paymentStatus = null,
         int? restrictToUserId = null);
 
     Task<List<MealStatisticItemDto>> GetMealStatisticsAsync(

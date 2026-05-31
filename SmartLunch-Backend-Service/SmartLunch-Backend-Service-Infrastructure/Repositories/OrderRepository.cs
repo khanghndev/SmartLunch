@@ -48,6 +48,7 @@ public class OrderRepository : IOrderRepository
         string? searchTerm = null,
         DateOnly? scheduledOn = null,
         string? status = null,
+        string? paymentStatus = null,
         int? restrictToUserId = null)
     {
         var query = _context.Orders
@@ -72,6 +73,12 @@ public class OrderRepository : IOrderRepository
             query = query.Where(o => o.Status == s);
         }
 
+        if (!string.IsNullOrWhiteSpace(paymentStatus))
+        {
+            var p = paymentStatus.Trim().ToLowerInvariant();
+            query = query.Where(o => o.PaymentStatus == p);
+        }
+
         if (!string.IsNullOrWhiteSpace(searchTerm))
         {
             var term = searchTerm.Trim();
@@ -87,8 +94,8 @@ public class OrderRepository : IOrderRepository
         var totalCount = await query.CountAsync();
 
         var orders = await query
-            .OrderBy(e => e.ScheduledDate)
-            .ThenBy(e => e.CreatedAt)
+            .OrderByDescending(e => e.OrderDate)
+            .ThenByDescending(e => e.Id)
             .Skip((page - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync();
