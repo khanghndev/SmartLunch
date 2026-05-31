@@ -15,6 +15,7 @@ public sealed class OrganizationMealPeriodContractDraftPayload
     public int MealsPerDay { get; set; }
     public int TotalMeals { get; set; }
     public decimal MealUnitPrice { get; set; }
+    public int? DishValueId { get; set; }
     public int ServiceDays { get; set; }
     public decimal? SubtotalAmount { get; set; }
     public decimal DiscountAmount { get; set; }

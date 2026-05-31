@@ -17,8 +17,11 @@ public sealed class PrepareOrganizationMealPeriodContractRequest
     /// <summary>Số suất tùy chỉnh theo ngày (chỉ gửi ngày khác MealsPerDay).</summary>
     public List<ContractDailyMealPortionRequest> DailyMealPortions { get; set; } = new();
 
-    /// <summary>Giá một suất (VND).</summary>
+    /// <summary>Giá một suất (VND) — phải khớp mức giá trong dish_values.</summary>
     public decimal MealUnitPrice { get; set; }
+
+    /// <summary>Mức giá suất ăn (FK dish_values). Ưu tiên hơn MealUnitPrice khi gửi kèm.</summary>
+    public int? DishValueId { get; set; }
 
     public string? PromotionCode { get; set; }
     public int? PromotionId { get; set; }

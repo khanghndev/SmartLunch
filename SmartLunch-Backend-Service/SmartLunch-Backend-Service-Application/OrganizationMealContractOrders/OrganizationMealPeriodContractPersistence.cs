@@ -68,6 +68,7 @@ public sealed class OrganizationMealPeriodContractPersistence
                 EndDate = draft.EndDate.ToDateTime(TimeOnly.MinValue),
                 TotalValue = draft.TotalAmount,
                 MealUnitPrice = draft.MealUnitPrice,
+                DishValueId = draft.DishValueId,
                 MealsPerDay = draft.MealsPerDay,
                 DepositAmount = null,
                 Status = ContractStatus.Active,
@@ -80,6 +81,7 @@ public sealed class OrganizationMealPeriodContractPersistence
         else
         {
             contract.MealUnitPrice = draft.MealUnitPrice;
+            contract.DishValueId = draft.DishValueId;
             contract.MealsPerDay = draft.MealsPerDay;
             contract.TotalValue = draft.TotalAmount;
             contract.Description = description;

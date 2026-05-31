@@ -7,6 +7,7 @@ using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Application.Promotions;
+using SmartLunch.Backend.Service.Domain.Entities;
 
 namespace SmartLunch.Backend.Service.Application.Commands.OrganizationMealContractOrders.PrepareOrganizationMealPeriodContract;
 
@@ -18,19 +19,22 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
     private readonly OrganizationMealPeriodContractPersistence _persistence;
     private readonly IPromotionEngine _promotionEngine;
     private readonly IContractRepository _contractRepository;
+    private readonly IDishValueRepository _dishValueRepository;
 
     public PrepareOrganizationMealPeriodContractCommandHandler(
         IUserOrganizationRepository userOrganizationRepository,
         IOrganizationMealPeriodContractDraftCache draftCache,
         OrganizationMealPeriodContractPersistence persistence,
         IPromotionEngine promotionEngine,
-        IContractRepository contractRepository)
+        IContractRepository contractRepository,
+        IDishValueRepository dishValueRepository)
     {
         _userOrganizationRepository = userOrganizationRepository;
         _draftCache = draftCache;
         _persistence = persistence;
         _promotionEngine = promotionEngine;
         _contractRepository = contractRepository;
+        _dishValueRepository = dishValueRepository;
     }
 
     public async Task<PrepareOrganizationMealPeriodContractResponse> Handle(
@@ -39,6 +43,8 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
     {
         var req = command.Request;
         ValidateRequest(req);
+
+        var (mealUnitPrice, dishValueId) = await ResolveMealUnitPriceAsync(req, cancellationToken);
 
         var membership = await _userOrganizationRepository.GetByUserAndOrganizationAsync(
             command.UserId,
@@ -54,7 +60,6 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
             excluded,
             req.MealsPerDay,
             req.DailyMealPortions?.Select(p => new KeyValuePair<DateOnly, int>(p.ServiceDate, p.MealCount)));
-        var mealUnitPrice = decimal.Round(req.MealUnitPrice, 2, MidpointRounding.AwayFromZero);
         var serviceDays = OrganizationMealPeriodContractCalculator.CountServiceDays(
             req.StartDate, req.EndDate, excluded);
         var totalMeals = OrganizationMealPeriodContractCalculator.CountTotalMeals(
@@ -90,6 +95,7 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
             MealsPerDay = req.MealsPerDay,
             TotalMeals = totalMeals,
             MealUnitPrice = mealUnitPrice,
+            DishValueId = dishValueId,
             ServiceDays = serviceDays,
             SubtotalAmount = evaluation.Subtotal,
             DiscountAmount = evaluation.DiscountAmount,
@@ -133,8 +139,30 @@ public sealed class PrepareOrganizationMealPeriodContractCommandHandler
 
         if (req.MealsPerDay < 1)
             throw new ArgumentException("MealsPerDay must be at least 1.");
-        if (req.MealUnitPrice <= 0)
-            throw new ArgumentException("MealUnitPrice must be greater than zero.");
+    }
+
+    private async Task<(decimal MealUnitPrice, int DishValueId)> ResolveMealUnitPriceAsync(
+        PrepareOrganizationMealPeriodContractRequest req,
+        CancellationToken cancellationToken)
+    {
+        var tiers = await _dishValueRepository.GetActiveOrderedAsync(cancellationToken);
+        if (tiers.Count == 0)
+            throw new ArgumentException("Chưa cấu hình mức giá suất ăn trên hệ thống.");
+
+        DishValue? tier = null;
+        if (req.DishValueId is > 0)
+            tier = tiers.FirstOrDefault(t => t.Id == req.DishValueId.Value);
+
+        if (tier == null && req.MealUnitPrice > 0)
+        {
+            var rounded = decimal.Round(req.MealUnitPrice, 2, MidpointRounding.AwayFromZero);
+            tier = tiers.FirstOrDefault(t => t.Amount == rounded);
+        }
+
+        if (tier == null)
+            throw new ArgumentException("Đơn giá/suất phải chọn từ danh mục mức giá đang áp dụng.");
+
+        return (decimal.Round(tier.Amount, 2, MidpointRounding.AwayFromZero), tier.Id);
     }
 
     private static List<DateOnly> NormalizeExcludedDates(

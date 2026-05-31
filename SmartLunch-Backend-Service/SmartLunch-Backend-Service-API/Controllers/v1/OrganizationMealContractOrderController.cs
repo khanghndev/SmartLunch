@@ -11,6 +11,7 @@ using SmartLunch.Backend.Service.Application.DTOs;
 using SmartLunch.Backend.Service.Application.DTOs.Request.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealOrders;
+using SmartLunch.Backend.Service.Application.Queries.OrganizationMealContractOrders.GetMealPortionPrices;
 using SmartLunch.Backend.Service.Application.Queries.OrganizationMealContractOrders.GetOrganizationMealContractMainDishes;
 
 namespace SmartLunch.Backend.Service.API.Controllers;
@@ -33,6 +34,28 @@ public class OrganizationMealContractOrderController : ControllerBase
     {
         _logger = logger;
         _mediator = mediator;
+    }
+
+    /// <summary>Mức giá suất ăn (bảng dish_values) — dùng khi chọn đơn giá HĐ kỳ.</summary>
+    [HttpGet("portion-prices")]
+    public async Task<ActionResult<BaseApiResponse<GetMealPortionPricesResponse>>> GetPortionPrices()
+    {
+        try
+        {
+            var response = await _mediator.Send(new GetMealPortionPricesQuery());
+            return Ok(BaseApiResponse<GetMealPortionPricesResponse>.SuccessResult(
+                response,
+                "Meal portion prices retrieved successfully"));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Period meal contract: list portion prices");
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetMealPortionPricesResponse>.ErrorResult(
+                    "An error occurred while retrieving portion prices",
+                    new[] { ex.Message }));
+        }
     }
 
     /// <summary>Danh sách món chính (slot <c>main</c>) — dùng khi chọn món tuần.</summary>
