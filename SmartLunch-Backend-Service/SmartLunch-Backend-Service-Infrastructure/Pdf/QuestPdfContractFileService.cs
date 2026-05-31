@@ -1,6 +1,7 @@
 using System.Net;
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Domain.Time;
@@ -66,6 +67,17 @@ public sealed class QuestPdfContractFileService : IContractPdfService
         {
             container.Page(page => MealContractPdfSections.ComposeContractPage(
                 page, contract, supplier, buyer, order, buyerSignatureDataUrl, delivery));
+
+            if (PeriodContractAnnexScheduleBuilder.IsPeriodContract(contract))
+            {
+                container.Page(page => MealContractPdfSections.ComposePeriodContractSchedulePage(
+                    page,
+                    contract,
+                    buyer?.Name ?? buyer?.ContactPerson ?? "Bên mua",
+                    delivery,
+                    buyerSignatureDataUrl,
+                    order));
+            }
         }).GeneratePdf();
     }
 }

@@ -107,7 +107,7 @@ public sealed class OrganizationMealPeriodContractPersistence
         OrganizationMealPeriodContractDraftPayload draft,
         CancellationToken cancellationToken)
     {
-        var forPdf = await _contractRepository.GetByIdAsync(contractId)
+        var forPdf = await _contractRepository.GetPeriodBasedWithExcludedDatesAsync(contractId, cancellationToken)
             ?? throw new InvalidOperationException("Contract not found after persist.");
 
         if (forPdf.Partner == null)

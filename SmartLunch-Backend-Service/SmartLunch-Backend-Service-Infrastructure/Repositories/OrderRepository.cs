@@ -28,6 +28,8 @@ public class OrderRepository : IOrderRepository
         return await _context.Orders
             .Include(o => o.Contract).ThenInclude(c => c!.Partner)
             .Include(o => o.Contract).ThenInclude(c => c!.Organization)
+            .Include(o => o.Contract).ThenInclude(c => c!.ExcludedDates)
+            .Include(o => o.Contract).ThenInclude(c => c!.DailyMealPortions)
             .Include(o => o.User).ThenInclude(u => u!.UserOrganizations).ThenInclude(uo => uo.Organization)
             .Include(o => o.CreatedBySalesUser)
             .Include(o => o.OrderItems)

@@ -1,5 +1,6 @@
 using System.Globalization;
 using SmartLunch.Backend.Service.Application.Constants;
+using SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Domain.Time;
@@ -61,6 +62,141 @@ internal static class MealContractPdfSections
         });
     }
 
+    /// <summary>Phụ lục lịch suất/ngày khi tạo PDF hợp đồng Period-Based (chưa có đơn hoặc trước ký).</summary>
+    internal static void ComposePeriodContractSchedulePage(
+        PageDescriptor page,
+        Contract contract,
+        string buyerDisplayName,
+        OrganizationMealDeliveryPdfContext? delivery,
+        string? signatureDataUrl,
+        Order? orderForTotals = null)
+    {
+        var contractNo = contract.ContractNumber ?? $"HĐ-{contract.Id}";
+        page.Size(PageSizes.A4);
+        page.MarginHorizontal(50);
+        page.MarginVertical(42);
+        page.DefaultTextStyle(x => x.FontFamily("Times New Roman").FontSize(12).LineHeight(1.25f));
+
+        page.Footer().AlignCenter().DefaultTextStyle(x => x.FontSize(9).FontColor(Colors.Grey.Darken2))
+            .Text(t =>
+            {
+                t.Span("HuitMeal — Phụ lục đính kèm — Trang ");
+                t.CurrentPageNumber();
+                t.Span(" / ");
+                t.TotalPages();
+            });
+
+        page.Content().Column(col =>
+        {
+            col.Item().AlignCenter().Text("PHỤ LỤC ĐÍNH KÈM").Bold().FontSize(14);
+            col.Item().AlignCenter().PaddingTop(2).Text("LỊCH CUNG CẤP SUẤT ĂN THEO KỲ").Bold().FontSize(13);
+            col.Item().AlignCenter().PaddingTop(6).Text($"Số hợp đồng: {contractNo}").FontSize(11);
+            col.Item().PaddingTop(8).Text(
+                    $"Kính gửi: {buyerDisplayName}. Phụ lục này là bộ phận không tách rời của Hợp đồng bán thức ăn suất nêu trên, " +
+                    $"lập ngày {FmtDateTime(VietnamTime.Now)}.")
+                .Italic().FontSize(11);
+
+            if (orderForTotals != null)
+            {
+                col.Item().PaddingTop(8).Element(c => ComposeAnnexBody(
+                    c, orderForTotals, buyerDisplayName, signatureDataUrl, delivery));
+            }
+            else
+            {
+                col.Item().PaddingTop(8).Element(c =>
+                    ComposePeriodScheduleAnnexBody(c, contract, buyerDisplayName, signatureDataUrl, delivery));
+            }
+        });
+    }
+
+    private static void ComposePeriodScheduleAnnexBody(
+        IContainer parent,
+        Contract contract,
+        string buyerDisplayName,
+        string? signatureDataUrl,
+        OrganizationMealDeliveryPdfContext? delivery)
+    {
+        var periodRows = PeriodContractAnnexScheduleBuilder.BuildServiceDayRows(contract);
+        var dailyPortions = periodRows.Select(r => (r.Date, r.MealCount)).ToList();
+        var totalPortions = periodRows.Sum(r => r.MealCount);
+        var pricePerPortion = contract.MealUnitPrice ?? 0m;
+        var subtotal = decimal.Round(pricePerPortion * totalPortions, 2, MidpointRounding.AwayFromZero);
+        var total = contract.TotalValue ?? subtotal;
+
+        parent.Column(col =>
+        {
+            col.Spacing(8);
+            col.Item().Text("I. CÁC BÊN").Bold().FontSize(12);
+            col.Item().PaddingTop(2).Text($"Bên A (Bên bán): {SupplierLegalName}");
+            col.Item().Text($"Bên B (Bên mua): {buyerDisplayName}").SemiBold();
+
+            if (delivery is { HasData: true })
+                col.Item().Element(c => MealSupplyContractDocumentComposer.ComposeDeliveryBlock(c, delivery));
+
+            if (periodRows.Count > 0)
+            {
+                col.Item().PaddingTop(8).Text("II. LỊCH CUNG CẤP SUẤT ĂN THEO NGÀY").Bold().FontSize(12);
+                var defaultMeals = contract.MealsPerDay is > 0 ? contract.MealsPerDay.Value : 1;
+                var excludedCount = PeriodContractAnnexScheduleBuilder.CountExcludedDays(contract);
+                col.Item().PaddingTop(4).Text(
+                        $"Kỳ {FmtDateOnly(DateOnly.FromDateTime(contract.StartDate))} – {FmtDateOnly(DateOnly.FromDateTime(contract.EndDate!.Value))}; " +
+                        $"mặc định {defaultMeals:N0} suất/ngày" +
+                        (excludedCount > 0 ? $"; loại trừ {excludedCount:N0} ngày không cung cấp." : "."))
+                    .FontSize(11);
+
+                col.Item().PaddingTop(4).Table(schedule =>
+                {
+                    schedule.ColumnsDefinition(c =>
+                    {
+                        c.ConstantColumn(28);
+                        c.RelativeColumn(1.4f);
+                        c.RelativeColumn(1.2f);
+                        c.ConstantColumn(52);
+                        c.RelativeColumn(2.2f);
+                    });
+                    schedule.Header(h =>
+                    {
+                        h.Cell().Element(Th).Text("STT");
+                        h.Cell().Element(Th).Text("Ngày");
+                        h.Cell().Element(Th).Text("Thứ");
+                        h.Cell().Element(Th).AlignRight().Text("Số suất");
+                        h.Cell().Element(Th).Text("Ghi chú");
+                    });
+                    foreach (var row in periodRows)
+                    {
+                        schedule.Cell().Element(Td).AlignCenter().Text(row.Index.ToString());
+                        schedule.Cell().Element(Td).Text(FmtDateOnly(row.Date));
+                        schedule.Cell().Element(Td).Text(row.WeekdayLabel);
+                        schedule.Cell().Element(Td).AlignRight().Text(row.MealCount.ToString("N0", Vi));
+                        schedule.Cell().Element(Td).Text(string.IsNullOrWhiteSpace(row.Note) ? "—" : row.Note).FontSize(10);
+                    }
+                    schedule.Cell().ColumnSpan(3).Element(Td).AlignRight().Text("Tổng suất trong kỳ:").Bold();
+                    schedule.Cell().Element(Td).AlignRight().Text(totalPortions.ToString("N0", Vi)).Bold();
+                });
+
+                col.Item().PaddingTop(4).Text(
+                        "Món chính theo từng ngày sẽ được chọn và cập nhật theo từng tuần sau khi ký hợp đồng.")
+                    .Italic().FontSize(10);
+            }
+
+            col.Item().PaddingTop(8).Text("III. TỔNG HỢP GIÁ TRỊ HỢP ĐỒNG").Bold().FontSize(12);
+            col.Item().PaddingTop(4).Table(sum =>
+            {
+                sum.ColumnsDefinition(c => { c.RelativeColumn(2f); c.RelativeColumn(1f); });
+                SummaryRow(sum, "Tổng suất trong kỳ", $"{totalPortions:N0}");
+                SummaryRow(sum, "Đơn giá mỗi suất", Money(pricePerPortion));
+                SummaryRow(sum, "Thành tiền (tham chiếu)", Money(subtotal));
+                if (total != subtotal)
+                    SummaryRow(sum, "TỔNG HỢP ĐỒNG (sau KM nếu có)", Money(total), bold: true);
+                else
+                    SummaryRow(sum, "TỔNG HỢP ĐỒNG", Money(total), bold: true);
+            });
+
+            col.Item().PaddingTop(12).Text("IV. XÁC NHẬN CỦA CÁC BÊN").Bold().FontSize(12);
+            col.Item().Element(c => ComposeAnnexSignatures(c, buyerDisplayName, signatureDataUrl, delivery));
+        });
+    }
+
     internal static void ComposeAnnexBody(
         IContainer parent,
         Order order,
@@ -69,10 +205,20 @@ internal static class MealContractPdfSections
         OrganizationMealDeliveryPdfContext? delivery = null)
     {
         delivery ??= OrganizationMealDeliveryPdfContext.FromOrder(order);
+        var contract = order.Contract;
+        var isPeriod = PeriodContractAnnexScheduleBuilder.IsPeriodContract(contract);
+        var periodRows = isPeriod && contract != null
+            ? PeriodContractAnnexScheduleBuilder.BuildServiceDayRows(contract)
+            : new List<PeriodContractDayRow>();
+
         var tableLines = BuildAnnexTableLines(order);
         var bomByDish = BuildAnnexDishBom(order);
         var dailyPortions = BuildDailyPortions(order);
-        var (subtotal, discount, total, promos, pricePerPortion, totalPortions) = BuildAnnexTotals(order, dailyPortions);
+        if (dailyPortions.Count == 0 && periodRows.Count > 0)
+            dailyPortions = periodRows.Select(r => (r.Date, r.MealCount)).ToList();
+
+        var (subtotal, discount, total, promos, pricePerPortion, totalPortions) =
+            BuildAnnexTotals(order, dailyPortions, contract, periodRows);
 
         parent.Column(col =>
         {
@@ -85,30 +231,101 @@ internal static class MealContractPdfSections
             if (delivery is { HasData: true })
                 col.Item().Element(c => MealSupplyContractDocumentComposer.ComposeDeliveryBlock(c, delivery));
 
-            col.Item().PaddingTop(8).Text("II. BẢNG KÊ MÓN ĂN THEO ĐƠN ĐẶT HÀNG").Bold().FontSize(12);
-            col.Item().Table(table =>
+            if (periodRows.Count > 0 && contract != null)
             {
-                table.ColumnsDefinition(c =>
+                col.Item().PaddingTop(8).Text("II. LỊCH CUNG CẤP SUẤT ĂN THEO NGÀY").Bold().FontSize(12);
+                var defaultMeals = contract.MealsPerDay is > 0 ? contract.MealsPerDay.Value : 1;
+                var excludedCount = PeriodContractAnnexScheduleBuilder.CountExcludedDays(contract);
+                col.Item().PaddingTop(4).Text(
+                        $"Kỳ {FmtDateOnly(DateOnly.FromDateTime(contract.StartDate))} – {FmtDateOnly(DateOnly.FromDateTime(contract.EndDate!.Value))}; " +
+                        $"mặc định {defaultMeals:N0} suất/ngày" +
+                        (excludedCount > 0 ? $"; loại trừ {excludedCount:N0} ngày không cung cấp." : "."))
+                    .FontSize(11);
+
+                col.Item().PaddingTop(4).Table(schedule =>
                 {
-                    c.ConstantColumn(28);
-                    c.RelativeColumn(5f);
-                    c.RelativeColumn(1.2f);
+                    schedule.ColumnsDefinition(c =>
+                    {
+                        c.ConstantColumn(28);
+                        c.RelativeColumn(1.4f);
+                        c.RelativeColumn(1.2f);
+                        c.ConstantColumn(52);
+                        c.RelativeColumn(2.2f);
+                    });
+                    schedule.Header(h =>
+                    {
+                        h.Cell().Element(Th).Text("STT");
+                        h.Cell().Element(Th).Text("Ngày");
+                        h.Cell().Element(Th).Text("Thứ");
+                        h.Cell().Element(Th).AlignRight().Text("Số suất");
+                        h.Cell().Element(Th).Text("Ghi chú");
+                    });
+                    foreach (var row in periodRows)
+                    {
+                        schedule.Cell().Element(Td).AlignCenter().Text(row.Index.ToString());
+                        schedule.Cell().Element(Td).Text(FmtDateOnly(row.Date));
+                        schedule.Cell().Element(Td).Text(row.WeekdayLabel);
+                        schedule.Cell().Element(Td).AlignRight().Text(row.MealCount.ToString("N0", Vi));
+                        schedule.Cell().Element(Td).Text(string.IsNullOrWhiteSpace(row.Note) ? "—" : row.Note).FontSize(10);
+                    }
+                    schedule.Cell().ColumnSpan(3).Element(Td).AlignRight().Text("Tổng suất trong kỳ:").Bold();
+                    schedule.Cell().Element(Td).AlignRight().Text(totalPortions.ToString("N0", Vi)).Bold();
                 });
-                table.Header(h =>
+            }
+
+            if (tableLines.Count > 0)
+            {
+                col.Item().PaddingTop(8).Text(
+                        periodRows.Count > 0
+                            ? "III. BẢNG KÊ MÓN ĂN THEO ĐƠN ĐẶT HÀNG"
+                            : "II. BẢNG KÊ MÓN ĂN THEO ĐƠN ĐẶT HÀNG")
+                    .Bold().FontSize(12);
+                col.Item().Table(table =>
                 {
-                    h.Cell().Element(Th).Text("STT");
-                    h.Cell().Element(Th).Text("Tên món");
-                    h.Cell().Element(Th).AlignRight().Text("SL");
+                    table.ColumnsDefinition(c =>
+                    {
+                        c.ConstantColumn(28);
+                        c.RelativeColumn(5f);
+                        c.RelativeColumn(1.2f);
+                    });
+                    table.Header(h =>
+                    {
+                        h.Cell().Element(Th).Text("STT");
+                        h.Cell().Element(Th).Text("Tên món");
+                        h.Cell().Element(Th).AlignRight().Text("SL");
+                    });
+                    var stt = 1;
+                    foreach (var ln in tableLines)
+                    {
+                        table.Cell().Element(Td).AlignCenter().Text(stt.ToString());
+                        table.Cell().Element(Td).Text(ln.Name);
+                        table.Cell().Element(Td).AlignRight().Text(ln.Quantity.ToString(Vi));
+                        stt++;
+                    }
                 });
-                var stt = 1;
-                foreach (var ln in tableLines)
+            }
+            else if (periodRows.Count == 0)
+            {
+                col.Item().PaddingTop(8).Text("II. BẢNG KÊ MÓN ĂN THEO ĐƠN ĐẶT HÀNG").Bold().FontSize(12);
+                col.Item().Table(table =>
                 {
-                    table.Cell().Element(Td).AlignCenter().Text(stt.ToString());
-                    table.Cell().Element(Td).Text(ln.Name);
-                    table.Cell().Element(Td).AlignRight().Text(ln.Quantity.ToString(Vi));
-                    stt++;
-                }
-            });
+                    table.ColumnsDefinition(c =>
+                    {
+                        c.ConstantColumn(28);
+                        c.RelativeColumn(5f);
+                        c.RelativeColumn(1.2f);
+                    });
+                    table.Header(h =>
+                    {
+                        h.Cell().Element(Th).Text("STT");
+                        h.Cell().Element(Th).Text("Tên món");
+                        h.Cell().Element(Th).AlignRight().Text("SL");
+                    });
+                    table.Cell().ColumnSpan(3).Element(Td)
+                        .Text("Chi tiết món ăn theo từng ngày — xem phụ lục cập nhật khi có thực đơn.")
+                        .Italic().FontSize(10);
+                });
+            }
 
             if (bomByDish.Count > 0)
             {
@@ -141,7 +358,11 @@ internal static class MealContractPdfSections
                 }
             }
 
-            col.Item().PaddingTop(8).Text("III. TỔNG HỢP GIÁ TRỊ ĐƠN HÀNG").Bold().FontSize(12);
+            col.Item().PaddingTop(8).Text(
+                    periodRows.Count > 0 && tableLines.Count > 0
+                        ? "IV. TỔNG HỢP GIÁ TRỊ ĐƠN HÀNG"
+                        : "III. TỔNG HỢP GIÁ TRỊ ĐƠN HÀNG")
+                .Bold().FontSize(12);
             col.Item().PaddingTop(4).Table(sum =>
             {
                 sum.ColumnsDefinition(c => { c.RelativeColumn(2f); c.RelativeColumn(1f); });
@@ -157,7 +378,11 @@ internal static class MealContractPdfSections
                 SummaryRow(sum, "TỔNG PHẢI TRẢ", Money(total), bold: true);
             });
 
-            col.Item().PaddingTop(12).Text("IV. XÁC NHẬN CỦA CÁC BÊN").Bold().FontSize(12);
+            col.Item().PaddingTop(12).Text(
+                    periodRows.Count > 0 && tableLines.Count > 0
+                        ? "V. XÁC NHẬN CỦA CÁC BÊN"
+                        : "IV. XÁC NHẬN CỦA CÁC BÊN")
+                .Bold().FontSize(12);
             col.Item().Element(c => ComposeAnnexSignatures(c, buyerDisplayName, signatureDataUrl, delivery));
         });
     }
@@ -218,6 +443,7 @@ internal static class MealContractPdfSections
         x.Border(0.5f).BorderColor(Colors.Black).Padding(5);
 
     private static string FmtDate(DateTime d) => d.ToString("dd/MM/yyyy", Vi);
+    private static string FmtDateOnly(DateOnly d) => d.ToString("dd/MM/yyyy", Vi);
     private static string FmtDateTime(DateTime d) => d.ToString("dd/MM/yyyy HH:mm", Vi);
     private static string Money(decimal? v) => v.HasValue ? v.Value.ToString("N0", Vi) + " VNĐ" : "—";
     private static string Money(decimal v) => v.ToString("N0", Vi) + " VNĐ";
@@ -248,11 +474,19 @@ internal static class MealContractPdfSections
             .ToList();
 
     private static (decimal Subtotal, decimal Discount, decimal Total, List<OrderPromotionApplication> Promos, decimal PricePerPortion, int TotalPortions)
-        BuildAnnexTotals(Order order, List<(DateOnly Date, int Portions)> dailyPortions)
+        BuildAnnexTotals(
+            Order order,
+            List<(DateOnly Date, int Portions)> dailyPortions,
+            Contract? contract = null,
+            List<PeriodContractDayRow>? periodRows = null)
     {
         var promos = order.PromotionApplications?.OrderBy(p => p.Id).ToList() ?? new List<OrderPromotionApplication>();
         var totalPortions = dailyPortions.Sum(d => d.Portions);
-        var pricePerPortion = order.Contract?.MealUnitPrice
+        if (totalPortions <= 0 && periodRows is { Count: > 0 })
+            totalPortions = periodRows.Sum(r => r.MealCount);
+
+        var pricePerPortion = contract?.MealUnitPrice
+            ?? order.Contract?.MealUnitPrice
             ?? order.OrderItems.Where(i => i.UnitPrice > 0).Select(i => i.UnitPrice).FirstOrDefault();
         if (pricePerPortion <= 0 && totalPortions > 0 && order.TotalAmount > 0)
             pricePerPortion = decimal.Round(order.TotalAmount / totalPortions, 2, MidpointRounding.AwayFromZero);
@@ -260,7 +494,10 @@ internal static class MealContractPdfSections
         var discount = order.DiscountAmount;
         if (discount <= 0 && promos.Count > 0) discount = promos.Sum(p => p.DiscountAmount);
 
-        var subtotal = order.SubtotalAmount ?? decimal.Round(pricePerPortion * totalPortions, 2, MidpointRounding.AwayFromZero);
+        var subtotal = order.SubtotalAmount ?? 0m;
+        if (subtotal <= 0 && pricePerPortion > 0 && totalPortions > 0)
+            subtotal = decimal.Round(pricePerPortion * totalPortions, 2, MidpointRounding.AwayFromZero);
+
         var total = order.TotalAmount > 0 ? order.TotalAmount : Math.Max(0, subtotal - discount);
         return (subtotal, discount, total, promos, pricePerPortion, totalPortions);
     }
