@@ -961,8 +961,11 @@ public class BackendMasterDataClient
             {
                 var errorList = errors.EnumerateArray().Select(e => e.GetString()).Where(e => !string.IsNullOrEmpty(e));
                 var errorStr = string.Join(" | ", errorList);
-                if (!string.IsNullOrEmpty(errorStr))
-                    finalMsg = (finalMsg == null ? errorStr : $"{finalMsg} ({errorStr})");
+                if (!string.IsNullOrEmpty(errorStr)
+                    && !string.Equals(finalMsg, errorStr, StringComparison.Ordinal))
+                {
+                    finalMsg = finalMsg == null ? errorStr : $"{finalMsg} ({errorStr})";
+                }
             }
             return finalMsg;
         }
@@ -1612,6 +1615,7 @@ public class GetOrderClientResponse
 public class OrderDetailClientDto
 {
     public int Id { get; set; }
+    public int? ContractId { get; set; }
     public int? UserId { get; set; }
     public int? OrganizationId { get; set; }
     public string? OrganizationName { get; set; }
@@ -1641,9 +1645,12 @@ public class OrderPromotionSummaryClientDto
 public class OrderContractSummaryClientDto
 {
     public int Id { get; set; }
+    public string ContractType { get; set; } = string.Empty;
     public string? ContractNumber { get; set; }
     public string? ContractFileUrl { get; set; }
     public bool IsDigitallySigned { get; set; }
+    public DateTime StartDate { get; set; }
+    public DateTime? EndDate { get; set; }
 }
 
 public class SignOrderAnnexApiRequest
@@ -1843,6 +1850,7 @@ public class CustomerContractDto
     public int? SourceOrderId { get; set; }
     public string ContractType { get; set; } = "Framework";
     public int? MealsPerDay { get; set; }
+    public List<DateOnly> ExcludedDates { get; set; } = new();
     public List<ContractDailyMealPortionClientDto> DailyMealPortions { get; set; } = new();
     public string? ContractNumber { get; set; }
     public string? Description { get; set; }

@@ -73,6 +73,7 @@ public class PeriodContractListItemVm
     public string? ContractFileUrl { get; set; }
     public bool CanPayDeposit { get; set; }
     public bool CanSelectWeeklyMeals { get; set; }
+    public DateOnly? OpenWeekMonday { get; set; }
 }
 
 public class OrganizationMealContractWeeklyVm
@@ -96,4 +97,6 @@ public class ContractWeekVm
     public bool IsCurrent { get; set; }
     public bool IsFuture { get; set; }
     public bool HasServiceDays { get; set; }
+    public bool CanSelect { get; set; }
+    public bool IsOpenWeek { get; set; }
 }

@@ -13,6 +13,7 @@
         || !string.IsNullOrWhiteSpace(Model?.Search)
         || Model?.ScheduledOn != null;
     var isOrg = User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp");
+    var todayVn = OrganizationMealContractDateRules.TodayVietnam();
 }
 
 <style>
@@ -179,6 +180,7 @@
                                         var canPayDeposit = isOrg && OrderPaymentStatusDisplay.CanPayDeposit(o.PaymentStatus, o.AnnexPdfUrl);
                                         var showSignAnnex = isOrg && string.Equals(o.PaymentStatus, "unpaid", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(o.AnnexPdfUrl);
                                         var canCancel = OrderCustomerCancelDisplay.CanCancel(o.Status, o.PaymentStatus, o.ScheduledDate);
+                                        var placeMealLink = OrderMealPlacementDisplay.TryGetPlaceMealLink(o, isOrg, todayVn);
                                         var hasPrimaryActions = canPayDeposit || showSignAnnex || canCancel;
                                     }
                                     <div class="flex flex-col items-end gap-2">
@@ -242,6 +244,18 @@
                                             else
                                             {
                                                 <a asp-action="Invoice" asp-route-id="@o.Id" target="_blank" class="font-bold text-slate-600 hover:text-slate-900 whitespace-nowrap">Hóa đơn</a>
+                                            }
+                                            @if (placeMealLink != null)
+                                            {
+                                                <span class="text-gray-300 select-none" aria-hidden="true">|</span>
+                                                <a asp-controller="@placeMealLink.Controller"
+                                                   asp-action="@placeMealLink.Action"
+                                                   asp-all-route-data="@placeMealLink.RouteValues"
+                                                   class="inline-flex items-center gap-1 rounded-md bg-gradient-to-r from-orange-500 to-amber-500 px-2.5 py-1 text-[11px] font-black text-white shadow-sm hover:from-orange-600 hover:to-amber-600 whitespace-nowrap"
+                                                   title="@placeMealLink.Title">
+                                                    <i data-lucide="utensils" class="h-3 w-3 shrink-0"></i>
+                                                    @OrderMealPlacementDisplay.ButtonLabel
+                                                </a>
                                             }
                                         </div>
                                     </div>

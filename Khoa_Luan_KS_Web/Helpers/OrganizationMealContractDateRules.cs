@@ -129,4 +129,55 @@ public static class OrganizationMealContractDateRules
         foreach (var d in EnumerateServiceDates(rangeStart, rangeEnd, excluded))
             yield return d;
     }
+
+    /// <summary>Tuần đang mở để chọn món (thường tuần kế tiếp; tuần đầu HĐ có thể là tuần hiện tại).</summary>
+    public static DateOnly? ResolveOpenWeekMonday(
+        DateOnly today,
+        DateOnly contractStart,
+        DateOnly contractEnd,
+        IReadOnlyCollection<DateOnly> excluded)
+    {
+        var thisMonday = GetWeekMonday(today);
+        var nextMonday = thisMonday.AddDays(7);
+
+        if (contractStart < nextMonday && contractStart >= thisMonday)
+        {
+            var firstWeekMonday = GetWeekMonday(contractStart);
+            if (WeekIsOpenForSelection(firstWeekMonday, today, contractStart, contractEnd, excluded))
+                return firstWeekMonday;
+        }
+
+        if (WeekIsOpenForSelection(nextMonday, today, contractStart, contractEnd, excluded))
+            return nextMonday;
+
+        foreach (var (monday, weekEnd) in EnumerateWeeks(contractStart, contractEnd))
+        {
+            if (monday < thisMonday)
+                continue;
+            if (WeekIsOpenForSelection(monday, today, contractStart, contractEnd, excluded))
+                return monday;
+        }
+
+        return null;
+    }
+
+    public static bool IsOpenWeekMonday(
+        DateOnly weekMonday,
+        DateOnly today,
+        DateOnly contractStart,
+        DateOnly contractEnd,
+        IReadOnlyCollection<DateOnly> excluded) =>
+        ResolveOpenWeekMonday(today, contractStart, contractEnd, excluded) == weekMonday;
+
+    public static bool WeekIsOpenForSelection(
+        DateOnly weekMonday,
+        DateOnly today,
+        DateOnly contractStart,
+        DateOnly contractEnd,
+        IReadOnlyCollection<DateOnly> excluded)
+    {
+        if (weekMonday.AddDays(6) < today)
+            return false;
+        return GetWeekServiceDates(weekMonday, contractStart, contractEnd, excluded).Any();
+    }
 }

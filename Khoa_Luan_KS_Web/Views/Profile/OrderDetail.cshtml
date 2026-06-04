@@ -30,6 +30,8 @@
         var deliveryNotes = ViewBag.OrderDeliveryNotes as List<OrderDeliveryNoteLine>;
         var isOrg = User.IsInRole("Organization") || User.IsInRole("Company") || User.IsInRole("Khách hàng doanh nghiệp");
         var isDelivered = string.Equals(Model.Status, "delivered", StringComparison.OrdinalIgnoreCase);
+        var todayVn = OrganizationMealContractDateRules.TodayVietnam();
+        var placeMealLink = OrderMealPlacementDisplay.TryGetPlaceMealLink(Model, isOrg, todayVn);
     }
     @if (deliveryNotes is { Count: > 0 })
     {
@@ -84,6 +86,16 @@
                     <i data-lucide="credit-card" class="h-4 w-4"></i> Thanh toán đặt cọc
                 </button>
             </form>
+        }
+        @if (placeMealLink != null)
+        {
+            <a asp-controller="@placeMealLink.Controller"
+               asp-action="@placeMealLink.Action"
+               asp-all-route-data="@placeMealLink.RouteValues"
+               class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2.5 text-xs font-black text-white shadow-lg hover:from-orange-600 hover:to-amber-600 sm:text-sm"
+               title="@placeMealLink.Title">
+                <i data-lucide="utensils" class="h-4 w-4"></i> @OrderMealPlacementDisplay.ButtonLabel
+            </a>
         }
         @if (OrderCustomerCancelDisplay.CanCancel(Model.Status, Model.PaymentStatus, Model.ScheduledDate))
         {

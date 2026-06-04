@@ -79,8 +79,11 @@ internal static class BackendApiAuthHelper
                     .Select(e => e.GetString())
                     .Where(e => !string.IsNullOrEmpty(e));
                 var errorStr = string.Join(" | ", errorList);
-                if (!string.IsNullOrEmpty(errorStr))
+                if (!string.IsNullOrEmpty(errorStr)
+                    && !string.Equals(finalMsg, errorStr, StringComparison.Ordinal))
+                {
                     finalMsg = finalMsg == null ? errorStr : $"{finalMsg} ({errorStr})";
+                }
             }
 
             return finalMsg;

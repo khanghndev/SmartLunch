@@ -111,10 +111,11 @@
                             }
                             @if (c.CanSelectWeeklyMeals)
                             {
-                                <a asp-action="Weekly" asp-route-contractId="@c.Id"
+                                <a asp-action="Weekly"
+                                   asp-route-id="@c.Id"
                                    class="inline-flex items-center gap-2 rounded-xl border border-orange-200 bg-white px-4 py-2.5 text-xs font-bold text-orange-700 hover:bg-orange-50">
                                     <i data-lucide="calendar-days" class="h-4 w-4"></i>
-                                    Chọn món theo tuần
+                                    Chọn món tuần @(c.OpenWeekMonday?.ToString("dd/MM") ?? "")
                                 </a>
                             }
                             @if (!string.IsNullOrEmpty(c.ContractFileUrl))
