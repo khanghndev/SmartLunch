@@ -72,6 +72,19 @@ public sealed class SubmitOrganizationMealWeeklySelectionCommandHandler
             : throw new ArgumentException("Contract end date is required.");
 
         var excluded = contract.ExcludedDates.Select(e => e.ExcludedDate).ToList();
+        var today = VietnamTime.Today;
+        var openWeekMonday = OrganizationMealWeeklySelectionRules.ResolveOpenWeekMonday(
+            today, contractStart, contractEnd, excluded);
+        if (!openWeekMonday.HasValue)
+            throw new ArgumentException("Hiện không có tuần nào cần chọn món trong hợp đồng.");
+        if (weekMonday != openWeekMonday.Value)
+        {
+            var openEnd = openWeekMonday.Value.AddDays(6);
+            throw new ArgumentException(
+                $"Chỉ được đặt món cho tuần đang mở ({openWeekMonday.Value:dd/MM/yyyy} – {openEnd:dd/MM/yyyy}). " +
+                "Mỗi tuần chỉ chọn một lần; tuần sau sẽ mở khi đến kỳ.");
+        }
+
         var dailyOverrides = OrganizationMealPeriodContractSchedule.ToOverrideDictionary(
             contract.DailyMealPortions.Select(p => new ContractDailyMealPortionSource(p.ServiceDate, p.MealCount)));
         var defaultMeals = contract.MealsPerDay is > 0 ? contract.MealsPerDay.Value : 1;
