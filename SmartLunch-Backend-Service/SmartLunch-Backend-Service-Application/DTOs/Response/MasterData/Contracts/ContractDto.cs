@@ -10,6 +10,7 @@ public class ContractDto
     public int? SourceOrderId { get; set; }
     public string ContractType { get; set; } = "Framework";
     public int? MealsPerDay { get; set; }
+    public List<DateOnly> ExcludedDates { get; set; } = new();
     public List<ContractDailyMealPortionDto> DailyMealPortions { get; set; } = new();
     public string? ContractNumber { get; set; }
     public string? Description { get; set; }

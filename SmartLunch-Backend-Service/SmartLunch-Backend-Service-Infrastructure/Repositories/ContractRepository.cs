@@ -35,6 +35,7 @@ public class ContractRepository : IContractRepository
         return await _context.Contracts
             .Include(c => c.Partner)
             .Include(c => c.Organization)
+            .Include(c => c.ExcludedDates)
             .Where(c => c.OrganizationId.HasValue && organizationIds.Contains(c.OrganizationId.Value))
             .OrderByDescending(c => c.StartDate)
             .Take(50)
