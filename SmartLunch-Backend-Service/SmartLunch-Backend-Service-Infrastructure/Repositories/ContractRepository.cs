@@ -130,15 +130,16 @@ public class ContractRepository : IContractRepository
 
     public async Task<Contract?> GetPeriodBasedWithExcludedDatesAsync(int contractId, CancellationToken cancellationToken = default)
     {
-        return await _context.Contracts
+        var contract = await _context.Contracts
             .Include(c => c.Partner)
             .Include(c => c.Organization)
             .Include(c => c.ExcludedDates)
             .Include(c => c.DailyMealPortions)
-            .FirstOrDefaultAsync(
-                c => c.Id == contractId &&
-                     c.ContractType == OrganizationMealContractTypes.PeriodBased,
-                cancellationToken);
+            .FirstOrDefaultAsync(c => c.Id == contractId, cancellationToken);
+
+        return contract != null && OrganizationMealContractTypes.IsPeriodBased(contract.ContractType)
+            ? contract
+            : null;
     }
 
     public async Task ReplaceExcludedDatesAsync(
@@ -197,7 +198,8 @@ public class ContractRepository : IContractRepository
             .Include(c => c.DailyMealPortions)
             .Include(c => c.Orders)
             .Where(c =>
-                c.ContractType == OrganizationMealContractTypes.PeriodBased &&
+                c.ContractType != null &&
+                c.ContractType.ToLower() == OrganizationMealContractTypes.PeriodBased.ToLower() &&
                 c.Status == ContractStatus.Active &&
                 c.StartDate.Date <= today &&
                 (c.EndDate == null || c.EndDate.Value.Date >= today) &&

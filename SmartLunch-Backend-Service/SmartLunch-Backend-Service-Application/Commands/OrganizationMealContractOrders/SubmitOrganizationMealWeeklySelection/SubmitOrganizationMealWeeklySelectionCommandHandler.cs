@@ -39,8 +39,20 @@ public sealed class SubmitOrganizationMealWeeklySelectionCommandHandler
         if (weekMonday != req.WeekStart)
             throw new ArgumentException("WeekStart must be a Monday.");
 
-        var contract = await _contractRepository.GetPeriodBasedWithExcludedDatesAsync(command.ContractId, cancellationToken)
-            ?? throw new ArgumentException("Period-Based contract not found.");
+        var contract = await _contractRepository.GetPeriodBasedWithExcludedDatesAsync(command.ContractId, cancellationToken);
+        if (contract == null)
+        {
+            var any = await _contractRepository.GetByIdAsync(command.ContractId);
+            if (any == null)
+            {
+                throw new ArgumentException(
+                    $"Không tìm thấy hợp đồng #{command.ContractId}. Vui lòng mở lại từ mục Hợp đồng hoặc Lịch sử đơn.");
+            }
+
+            throw new ArgumentException(
+                $"Hợp đồng #{command.ContractId} là loại «{any.ContractType}», không thể gửi thực đơn tuần. " +
+                "Chỉ hợp đồng đặt suất theo kỳ (Period-Based) mới dùng trang này.");
+        }
 
         if (!contract.OrganizationId.HasValue)
             throw new ArgumentException("Contract has no organization.");
