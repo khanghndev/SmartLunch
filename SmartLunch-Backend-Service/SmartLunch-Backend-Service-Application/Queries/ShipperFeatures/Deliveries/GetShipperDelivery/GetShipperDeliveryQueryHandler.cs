@@ -1,5 +1,5 @@
 using MediatR;
-using SmartLunch.Backend.Service.Application.Deliveries;
+using SmartLunch.Backend.Service.Application.Commands.Shipper.Deliveries.UpdateShipperDeliveryStatus;
 using SmartLunch.Backend.Service.Application.DTOs.Response.Shipper.Deliveries;
 using SmartLunch.Backend.Service.Application.Interfaces;
 
@@ -28,23 +28,7 @@ public class GetShipperDeliveryQueryHandler : IRequestHandler<GetShipperDelivery
 
         return new GetShipperDeliveryResponse
         {
-            Delivery = new ShipperDeliveryDetailDto
-            {
-                DeliveryId = delivery.Id,
-                OrderId = delivery.OrderId,
-                DeliveryAddress = delivery.DeliveryAddress,
-                DeliveryStatus = delivery.DeliveryStatus,
-                ScheduledDateUtc = delivery.Order?.ScheduledDate ?? DateTime.MinValue,
-                MealCount = mealCount,
-                DeliveredAtUtc = delivery.DeliveredAt,
-                ProofImageUrl = delivery.ProofImageUrl,
-                ProofCapturedAtUtc = delivery.ProofCapturedAt,
-                Notes = delivery.Notes,
-                RecipientConfirmedName = delivery.RecipientConfirmedName,
-                RecipientConfirmedAtUtc = delivery.RecipientConfirmedAt,
-                RequiresDeliveryOtp = string.Equals(delivery.DeliveryStatus, "in_transit", StringComparison.OrdinalIgnoreCase)
-                    && DeliveryOtpService.IsOtpActive(delivery),
-            }
+            Delivery = UpdateShipperDeliveryStatusCommandHandler.MapDetail(delivery, mealCount)
         };
     }
 }

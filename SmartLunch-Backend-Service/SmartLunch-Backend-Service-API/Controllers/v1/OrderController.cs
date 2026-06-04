@@ -46,7 +46,7 @@ public class OrderController : ControllerBase
         try
         {
             int? restrictUser = null;
-            if (User.IsInRole("Customer") && !User.IsInRole("Admin") && !User.IsInRole("Manager") && !User.IsInRole("Super Admin"))
+            if (User.IsInRole("Organization") && !User.IsInRole("Admin") && !User.IsInRole("Manager") && !User.IsInRole("Super Admin"))
                 restrictUser = RequireUserId();
 
             var query = new GetOrdersQuery(

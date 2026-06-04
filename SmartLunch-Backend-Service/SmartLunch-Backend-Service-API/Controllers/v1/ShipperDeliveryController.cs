@@ -12,7 +12,7 @@ using SmartLunch.Backend.Service.Application.Queries.ShipperFeatures.Deliveries.
 using SmartLunch.Backend.Service.Application.Helpers.Interfaces;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.Constants;
-using SmartLunch.Backend.Service.Application.Deliveries;
+using SmartLunch.Backend.Service.Domain.Time;
 
 namespace SmartLunch.Backend.Service.API.Controllers.v1;
 
@@ -142,33 +142,28 @@ public class ShipperDeliveryController : ControllerBase
     }
 
     /// <summary>
-    /// Xác nhận giao hàng + chụp ảnh xác nhận + ghi nhận thời gian giao thực tế.
-    /// Upload ảnh lên storage và gắn URL vào delivery.
+    /// Xác nhận giao hàng: ảnh PoD + chữ ký người nhận + tên người nhận.
     /// </summary>
     [HttpPost("{id:int}/proof")]
     [Authorize(Policy = "permission:deliveries.update")]
-    [RequestSizeLimit(10 * 1024 * 1024)]
+    [RequestSizeLimit(15 * 1024 * 1024)]
     public async Task<ActionResult<BaseApiResponse<GetShipperDeliveryResponse>>> UploadProof(
         int id,
         [FromForm] IFormFile file,
+        [FromForm] IFormFile signature,
         [FromForm] UploadDeliveryProofRequest request)
     {
         try
         {
             var shipperId = RequireUserId();
             if (file == null || file.Length <= 0)
-                return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("File is required", new[] { "Missing file." }));
+                return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("File is required", new[] { "Missing proof photo." }));
+
+            if (signature == null || signature.Length <= 0)
+                return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("Signature is required", new[] { "Missing recipient signature." }));
 
             if (string.IsNullOrWhiteSpace(request?.RecipientConfirmedName))
                 return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("RecipientConfirmedName is required", new[] { "Missing recipient name." }));
-
-            if (string.IsNullOrWhiteSpace(request?.RecipientConfirmationCode))
-                return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("RecipientConfirmationCode is required", new[] { "Missing confirmation code." }));
-
-            var contentType = file.ContentType ?? string.Empty;
-            var allowed = new HashSet<string>(StringComparer.OrdinalIgnoreCase) { "image/jpeg", "image/png", "image/webp" };
-            if (!allowed.Contains(contentType))
-                return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("Unsupported image ContentType", new[] { $"ContentType: {contentType}" }));
 
             var delivery = await _deliveryRepository.GetByIdWithOrderAsync(id, HttpContext.RequestAborted);
             if (delivery == null)
@@ -180,43 +175,31 @@ public class ShipperDeliveryController : ControllerBase
             if (!delivery.AssignedStaffId.HasValue)
                 return Conflict(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("Delivery is not assigned to you yet.", new[] { "Receive the delivery first." }));
 
+            if (!string.Equals(delivery.DeliveryStatus, "in_transit", StringComparison.OrdinalIgnoreCase))
+                return Conflict(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult(
+                    "Delivery must be in_transit before proof upload.",
+                    new[] { $"Current status: {delivery.DeliveryStatus}" }));
+
+            var now = VietnamTime.Now;
+            string proofUrl;
+            string signatureUrl;
             try
             {
-                DeliveryOtpService.ValidateForProof(delivery, request!.RecipientConfirmationCode);
+                proofUrl = await UploadDeliveryImageAsync(file, id, "proof", now, HttpContext.RequestAborted);
+                signatureUrl = await UploadDeliveryImageAsync(signature, id, "signature", now, HttpContext.RequestAborted);
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
-            catch (InvalidOperationException ex)
-            {
-                return Conflict(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
-            }
 
-            var ext = contentType.ToLowerInvariant() switch
-            {
-                "image/jpeg" => ".jpg",
-                "image/png" => ".png",
-                "image/webp" => ".webp",
-                _ => ""
-            };
-
-            var now = VietnamTime.Now;
-            var objectName = $"deliveries/{id:D}/proof/{now:yyyy}/{now:MM}/{Guid.NewGuid():N}{ext}";
-
-            await using (var stream = file.OpenReadStream())
-            {
-                await _storage.UploadObjectAsync(objectName, stream, contentType, HttpContext.RequestAborted);
-            }
-
-            var signed = await _storage.CreateSignedUrlAsync(objectName, System.Net.Http.HttpMethod.Get, contentType: null, expiresIn: TimeSpan.FromMinutes(30));
-
-            delivery.ProofImageUrl = signed.Url;
+            delivery.ProofImageUrl = proofUrl;
             delivery.ProofCapturedAt = now;
             delivery.DeliveredAt ??= now;
             delivery.DeliveryStatus = "completed";
             delivery.RecipientConfirmedName = request!.RecipientConfirmedName.Trim();
-            delivery.RecipientConfirmationCode = request.RecipientConfirmationCode.Trim();
+            delivery.RecipientSignatureUrl = signatureUrl;
+            delivery.RecipientConfirmationCode = null;
             delivery.RecipientConfirmedAt = now;
             if (!string.IsNullOrWhiteSpace(request.Notes))
                 delivery.Notes = request.Notes.Trim();
@@ -251,7 +234,8 @@ public class ShipperDeliveryController : ControllerBase
                     Notes = refreshed.Notes,
                     RecipientConfirmedName = refreshed.RecipientConfirmedName,
                     RecipientConfirmedAtUtc = refreshed.RecipientConfirmedAt,
-                    RequiresDeliveryOtp = false,
+                    RecipientSignatureUrl = refreshed.RecipientSignatureUrl,
+                    RequiresRecipientSignature = false,
                 }
             };
 
@@ -272,6 +256,44 @@ public class ShipperDeliveryController : ControllerBase
         if (string.IsNullOrWhiteSpace(raw) || !int.TryParse(raw, out var userId))
             throw new UnauthorizedAccessException("Invalid user context.");
         return userId;
+    }
+
+    private static readonly HashSet<string> AllowedImageContentTypes = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "image/jpeg", "image/png", "image/webp"
+    };
+
+    private async Task<string> UploadDeliveryImageAsync(
+        IFormFile file,
+        int deliveryId,
+        string folder,
+        DateTime now,
+        CancellationToken cancellationToken)
+    {
+        var contentType = file.ContentType ?? string.Empty;
+        if (!AllowedImageContentTypes.Contains(contentType))
+            throw new ArgumentException($"Unsupported image ContentType: {contentType}");
+
+        var ext = contentType.ToLowerInvariant() switch
+        {
+            "image/jpeg" => ".jpg",
+            "image/png" => ".png",
+            "image/webp" => ".webp",
+            _ => throw new ArgumentException($"Unsupported image ContentType: {contentType}")
+        };
+
+        var objectName = $"deliveries/{deliveryId:D}/{folder}/{now:yyyy}/{now:MM}/{Guid.NewGuid():N}{ext}";
+        await using (var stream = file.OpenReadStream())
+        {
+            await _storage.UploadObjectAsync(objectName, stream, contentType, cancellationToken);
+        }
+
+        var signed = await _storage.CreateSignedUrlAsync(
+            objectName,
+            System.Net.Http.HttpMethod.Get,
+            contentType: null,
+            expiresIn: TimeSpan.FromMinutes(30));
+        return signed.Url;
     }
 }
 

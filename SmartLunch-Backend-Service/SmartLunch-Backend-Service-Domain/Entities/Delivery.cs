@@ -17,6 +17,8 @@ public class Delivery
     public string? Notes { get; set; }
     public string? RecipientConfirmedName { get; set; }
     public string? RecipientConfirmationCode { get; set; }
+    /// <summary>Ảnh chữ ký người nhận (object storage URL).</summary>
+    public string? RecipientSignatureUrl { get; set; }
     public DateTime? RecipientConfirmedAt { get; set; }
     public string? DeliveryOtp { get; set; }
     public DateTime? DeliveryOtpExpiresAt { get; set; }

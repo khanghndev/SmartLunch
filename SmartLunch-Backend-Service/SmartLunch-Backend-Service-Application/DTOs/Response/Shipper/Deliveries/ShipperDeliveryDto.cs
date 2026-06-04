@@ -24,7 +24,8 @@ public class ShipperDeliveryDetailDto
     public string? Notes { get; set; }
     public string? RecipientConfirmedName { get; set; }
     public DateTime? RecipientConfirmedAtUtc { get; set; }
-    /// <summary>Chỉ trả về khi đã có OTP và shipper là người giao (không lộ OTP qua API shipper).</summary>
-    public bool RequiresDeliveryOtp { get; set; }
+    public string? RecipientSignatureUrl { get; set; }
+    /// <summary>Đơn đang giao — cần chữ ký người nhận khi POST /proof.</summary>
+    public bool RequiresRecipientSignature { get; set; }
 }
 

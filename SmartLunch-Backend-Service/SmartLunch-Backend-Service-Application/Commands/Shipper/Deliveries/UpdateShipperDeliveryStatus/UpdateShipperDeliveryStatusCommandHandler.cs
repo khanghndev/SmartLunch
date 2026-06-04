@@ -1,6 +1,5 @@
 using MediatR;
 using SmartLunch.Backend.Service.Application.Constants;
-using SmartLunch.Backend.Service.Application.Deliveries;
 using SmartLunch.Backend.Service.Application.DTOs.Response.Shipper.Deliveries;
 using SmartLunch.Backend.Service.Application.Interfaces;
 
@@ -19,14 +18,10 @@ public class UpdateShipperDeliveryStatusCommandHandler
     };
 
     private readonly IDeliveryRepository _deliveryRepository;
-    private readonly DeliveryNotificationService _deliveryNotifications;
 
-    public UpdateShipperDeliveryStatusCommandHandler(
-        IDeliveryRepository deliveryRepository,
-        DeliveryNotificationService deliveryNotifications)
+    public UpdateShipperDeliveryStatusCommandHandler(IDeliveryRepository deliveryRepository)
     {
         _deliveryRepository = deliveryRepository;
-        _deliveryNotifications = deliveryNotifications;
     }
 
     public async Task<GetShipperDeliveryResponse> Handle(UpdateShipperDeliveryStatusCommand request, CancellationToken cancellationToken)
@@ -66,7 +61,7 @@ public class UpdateShipperDeliveryStatusCommandHandler
 
         if (target == "completed")
             throw new InvalidOperationException(
-                "Không thể đánh dấu hoàn tất qua API trạng thái. Hãy dùng POST /proof (ảnh + OTP người nhận).");
+                "Không thể đánh dấu hoàn tất qua API trạng thái. Hãy dùng POST /proof (ảnh + chữ ký người nhận).");
 
         if (current != target)
         {
@@ -74,16 +69,10 @@ public class UpdateShipperDeliveryStatusCommandHandler
 
             if (target is "failed" or "rejected")
                 delivery.Notes = request.Request.Notes?.Trim();
-
-            if (target == "in_transit")
-                DeliveryOtpService.GenerateAndAssign(delivery);
         }
 
         await _deliveryRepository.UpdateAsync(delivery, cancellationToken);
         await _deliveryRepository.CommitAsync(cancellationToken);
-
-        if (target == "in_transit" && delivery.Order?.UserId is int orderUserId)
-            await _deliveryNotifications.NotifyOrderOwnerDeliveryOtpAsync(delivery, orderUserId, cancellationToken);
 
         var reloaded = await _deliveryRepository.GetByIdWithOrderAsync(request.DeliveryId, cancellationToken)
             ?? throw new InvalidOperationException("Delivery updated but failed to reload.");
@@ -91,25 +80,29 @@ public class UpdateShipperDeliveryStatusCommandHandler
         var mealCount = reloaded.Order?.OrderItems?.Sum(i => i.Quantity) ?? 0;
         return new GetShipperDeliveryResponse
         {
-            Delivery = new ShipperDeliveryDetailDto
-            {
-                DeliveryId = reloaded.Id,
-                OrderId = reloaded.OrderId,
-                DeliveryAddress = reloaded.DeliveryAddress,
-                DeliveryStatus = reloaded.DeliveryStatus,
-                ScheduledDateUtc = reloaded.Order?.ScheduledDate ?? DateTime.MinValue,
-                MealCount = mealCount,
-                DeliveredAtUtc = reloaded.DeliveredAt,
-                ProofImageUrl = reloaded.ProofImageUrl,
-                ProofCapturedAtUtc = reloaded.ProofCapturedAt,
-                Notes = reloaded.Notes,
-                RecipientConfirmedName = reloaded.RecipientConfirmedName,
-                RecipientConfirmedAtUtc = reloaded.RecipientConfirmedAt,
-                RequiresDeliveryOtp = string.Equals(reloaded.DeliveryStatus, "in_transit", StringComparison.OrdinalIgnoreCase)
-                    && DeliveryOtpService.IsOtpActive(reloaded),
-            }
+            Delivery = MapDetail(reloaded, mealCount)
         };
     }
+
+    internal static ShipperDeliveryDetailDto MapDetail(Domain.Entities.Delivery delivery, int mealCount) =>
+        new()
+        {
+            DeliveryId = delivery.Id,
+            OrderId = delivery.OrderId,
+            DeliveryAddress = delivery.DeliveryAddress,
+            DeliveryStatus = delivery.DeliveryStatus,
+            ScheduledDateUtc = delivery.Order?.ScheduledDate ?? DateTime.MinValue,
+            MealCount = mealCount,
+            DeliveredAtUtc = delivery.DeliveredAt,
+            ProofImageUrl = delivery.ProofImageUrl,
+            ProofCapturedAtUtc = delivery.ProofCapturedAt,
+            Notes = delivery.Notes,
+            RecipientConfirmedName = delivery.RecipientConfirmedName,
+            RecipientConfirmedAtUtc = delivery.RecipientConfirmedAt,
+            RecipientSignatureUrl = delivery.RecipientSignatureUrl,
+            RequiresRecipientSignature = string.Equals(
+                delivery.DeliveryStatus, "in_transit", StringComparison.OrdinalIgnoreCase),
+        };
 
     private static bool IsAllowedTransition(string current, string target)
     {
@@ -131,4 +124,3 @@ public class UpdateShipperDeliveryStatusCommandHandler
         };
     }
 }
-
