@@ -101,4 +101,20 @@ public static class OrganizationMealPeriodContractCalculator
         foreach (var d in EnumerateServiceDates(rangeStart, rangeEnd, excludedDates))
             yield return d;
     }
+
+    public static IEnumerable<(DateOnly WeekMonday, DateOnly WeekEnd)> EnumerateWeeks(
+        DateOnly contractStart,
+        DateOnly contractEnd)
+    {
+        if (contractEnd < contractStart)
+            yield break;
+
+        var monday = GetWeekMonday(contractStart);
+        while (monday <= contractEnd)
+        {
+            var weekEnd = monday.AddDays(6);
+            yield return (monday, weekEnd > contractEnd ? contractEnd : weekEnd);
+            monday = monday.AddDays(7);
+        }
+    }
 }

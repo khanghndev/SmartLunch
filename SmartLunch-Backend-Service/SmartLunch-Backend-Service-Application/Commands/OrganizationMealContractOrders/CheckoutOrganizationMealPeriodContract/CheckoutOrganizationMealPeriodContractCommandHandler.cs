@@ -24,6 +24,7 @@ public sealed class CheckoutOrganizationMealPeriodContractCommandHandler
     private readonly IPromotionEngine _promotionEngine;
     private readonly IPromotionRepository _promotionRepository;
     private readonly IOrganizationOrderEmailService _orderEmailService;
+    private readonly OrganizationMealContractWeeklySelectionService _weeklySelectionService;
     private readonly ILogger<CheckoutOrganizationMealPeriodContractCommandHandler> _logger;
 
     public CheckoutOrganizationMealPeriodContractCommandHandler(
@@ -35,6 +36,7 @@ public sealed class CheckoutOrganizationMealPeriodContractCommandHandler
         IPromotionEngine promotionEngine,
         IPromotionRepository promotionRepository,
         IOrganizationOrderEmailService orderEmailService,
+        OrganizationMealContractWeeklySelectionService weeklySelectionService,
         ILogger<CheckoutOrganizationMealPeriodContractCommandHandler> logger)
     {
         _draftCache = draftCache;
@@ -45,6 +47,7 @@ public sealed class CheckoutOrganizationMealPeriodContractCommandHandler
         _promotionEngine = promotionEngine;
         _promotionRepository = promotionRepository;
         _orderEmailService = orderEmailService;
+        _weeklySelectionService = weeklySelectionService;
         _logger = logger;
     }
 
@@ -188,6 +191,10 @@ public sealed class CheckoutOrganizationMealPeriodContractCommandHandler
         contract.MealsPerDay = draft.MealsPerDay;
         contract.UpdatedAt = VietnamTime.Now;
         await _contractRepository.UpdateAsync(contract);
+
+        var contractForWeeks = await _contractRepository.GetPeriodBasedWithExcludedDatesAsync(contract.Id, cancellationToken);
+        if (contractForWeeks != null)
+            await _weeklySelectionService.EnsureWeeksSeededAsync(contractForWeeks, cancellationToken);
 
         await _draftCache.RemoveAsync(command.UserId, req.DraftId.Trim(), cancellationToken);
 

@@ -6,6 +6,9 @@ namespace SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 /// </summary>
 public static class OrganizationMealWeeklySelectionRules
 {
+    /// <summary>Phải chọn món thủ công trước N ngày so với Thứ 2 tuần phục vụ.</summary>
+    public const int ManualSelectionLeadDays = 3;
+
     /// <summary>Tuần (Thứ 2) đang được phép chọn món; null nếu không còn tuần nào.</summary>
     public static DateOnly? ResolveOpenWeekMonday(
         DateOnly today,
@@ -63,6 +66,9 @@ public static class OrganizationMealWeeklySelectionRules
             .GetWeekServiceDates(weekMonday, contractStart, contractEnd, excludedDates)
             .Any();
     }
+
+    public static bool CanManuallySelectWeek(DateOnly today, DateOnly weekMonday) =>
+        today <= weekMonday.AddDays(-ManualSelectionLeadDays);
 
     private static IEnumerable<(DateOnly WeekMonday, DateOnly WeekEnd)> EnumerateContractWeeks(
         DateOnly contractStart,

@@ -1,6 +1,8 @@
 using MediatR;
+using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Contracts;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 
 namespace SmartLunch.Backend.Service.Application.Queries.CompanyContracts.GetMyOrganizationContracts;
 
@@ -9,13 +11,19 @@ public class GetMyOrganizationContractsQueryHandler
 {
     private readonly IContractRepository _contractRepository;
     private readonly IUserOrganizationRepository _userOrganizationRepository;
+    private readonly IContractWeeklySelectionRepository _weeklyRepository;
+    private readonly OrganizationMealContractWeeklySelectionService _weeklySelectionService;
 
     public GetMyOrganizationContractsQueryHandler(
         IContractRepository contractRepository,
-        IUserOrganizationRepository userOrganizationRepository)
+        IUserOrganizationRepository userOrganizationRepository,
+        IContractWeeklySelectionRepository weeklyRepository,
+        OrganizationMealContractWeeklySelectionService weeklySelectionService)
     {
         _contractRepository = contractRepository;
         _userOrganizationRepository = userOrganizationRepository;
+        _weeklyRepository = weeklyRepository;
+        _weeklySelectionService = weeklySelectionService;
     }
 
     public async Task<GetMyOrganizationContractsResponse> Handle(
@@ -28,9 +36,34 @@ public class GetMyOrganizationContractsQueryHandler
             return new GetMyOrganizationContractsResponse();
 
         var contracts = await _contractRepository.GetByOrganizationIdsAsync(orgIds, cancellationToken);
-        return new GetMyOrganizationContractsResponse
+        var dtos = new List<ContractDto>();
+
+        foreach (var c in contracts)
         {
-            Contracts = contracts.Select(ContractDtoMapping.ToDto).ToList(),
-        };
+            if (OrganizationMealContractTypes.IsPeriodBased(c.ContractType)
+                && !c.SourceOrderId.HasValue
+                && !c.IsDigitallySigned)
+            {
+                continue;
+            }
+
+            var dto = ContractDtoMapping.ToDto(c);
+
+            if (OrganizationMealContractTypes.IsPeriodBased(c.ContractType) && c.SourceOrderId.HasValue)
+            {
+                var full = await _contractRepository.GetPeriodBasedWithExcludedDatesAsync(c.Id, cancellationToken);
+                if (full != null)
+                {
+                    await _weeklySelectionService.EnsureWeeksSeededAsync(full, cancellationToken);
+                    var (total, filled) = await _weeklyRepository.GetProgressAsync(c.Id, cancellationToken);
+                    dto.TotalServiceWeeks = total;
+                    dto.FilledServiceWeeks = filled;
+                }
+            }
+
+            dtos.Add(dto);
+        }
+
+        return new GetMyOrganizationContractsResponse { Contracts = dtos };
     }
 }

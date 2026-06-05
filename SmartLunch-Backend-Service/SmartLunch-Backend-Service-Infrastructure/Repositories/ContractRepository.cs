@@ -207,4 +207,21 @@ public class ContractRepository : IContractRepository
                 c.SourceOrderId.HasValue)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<Contract?> GetUnsignedPeriodBasedForOrganizationAsync(
+        int organizationId,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Contracts
+            .Include(c => c.ExcludedDates)
+            .Include(c => c.DailyMealPortions)
+            .Where(c =>
+                c.OrganizationId == organizationId
+                && c.ContractType != null
+                && c.ContractType.ToLower() == OrganizationMealContractTypes.PeriodBased.ToLower()
+                && !c.SourceOrderId.HasValue
+                && !c.IsDigitallySigned)
+            .OrderByDescending(c => c.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+    }
 }

@@ -48,6 +48,7 @@ namespace SmartLunch.Backend.Service.Application.DependencyInjection
             services.AddScoped<IPromotionEngine, PromotionEngine>();
             services.AddScoped<OrganizationMealContractDraftPersistence>();
             services.AddScoped<OrganizationMealContractOrders.OrganizationMealPeriodContractPersistence>();
+            services.AddScoped<OrganizationMealContractOrders.OrganizationMealContractWeeklySelectionService>();
             services.AddScoped<OrganizationMealContractOrders.OrganizationMealContractWeeklyJobService>();
             services.AddScoped<OrganizationComplaints.ComplaintRefundRecorder>();
             services.AddScoped<OrganizationComplaints.ComplaintNotificationService>();

@@ -1,6 +1,8 @@
 using MediatR;
+using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Contracts;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 
 namespace SmartLunch.Backend.Service.Application.Queries.CompanyContracts.GetOrganizationContract;
 
@@ -8,13 +10,19 @@ public class GetOrganizationContractQueryHandler : IRequestHandler<GetOrganizati
 {
     private readonly IContractRepository _contractRepository;
     private readonly IUserOrganizationRepository _userOrganizationRepository;
+    private readonly OrganizationMealContractWeeklySelectionService _weeklySelectionService;
+    private readonly IContractWeeklySelectionRepository _weeklyRepository;
 
     public GetOrganizationContractQueryHandler(
         IContractRepository contractRepository,
-        IUserOrganizationRepository userOrganizationRepository)
+        IUserOrganizationRepository userOrganizationRepository,
+        OrganizationMealContractWeeklySelectionService weeklySelectionService,
+        IContractWeeklySelectionRepository weeklyRepository)
     {
         _contractRepository = contractRepository;
         _userOrganizationRepository = userOrganizationRepository;
+        _weeklySelectionService = weeklySelectionService;
+        _weeklyRepository = weeklyRepository;
     }
 
     public async Task<GetContractResponse> Handle(GetOrganizationContractQuery request, CancellationToken cancellationToken)
@@ -33,6 +41,23 @@ public class GetOrganizationContractQueryHandler : IRequestHandler<GetOrganizati
         if (membership == null || !membership.IsActive)
             throw new UnauthorizedAccessException("You do not have access to this contract.");
 
-        return new GetContractResponse { Contract = ContractDtoMapping.ToDto(contract) };
+        if (OrganizationMealContractTypes.IsPeriodBased(contract.ContractType)
+            && contract.SourceOrderId.HasValue
+            && contract.EndDate.HasValue)
+        {
+            var full = await _contractRepository.GetPeriodBasedWithExcludedDatesAsync(contract.Id, cancellationToken)
+                ?? contract;
+            await _weeklySelectionService.EnsureWeeksSeededAsync(full, cancellationToken);
+        }
+
+        var dto = ContractDtoMapping.ToDto(contract);
+        if (OrganizationMealContractTypes.IsPeriodBased(contract.ContractType) && contract.SourceOrderId.HasValue)
+        {
+            var (total, filled) = await _weeklyRepository.GetProgressAsync(contract.Id, cancellationToken);
+            dto.TotalServiceWeeks = total;
+            dto.FilledServiceWeeks = filled;
+        }
+
+        return new GetContractResponse { Contract = dto };
     }
 }

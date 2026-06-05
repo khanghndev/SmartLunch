@@ -172,6 +172,33 @@ public sealed class OrganizationOrderEmailService : IOrganizationOrderEmailServi
             cancellationToken: cancellationToken);
     }
 
+    public async Task SendWeeklyMealAutoFilledAsync(
+        Contract contract,
+        DateOnly weekStart,
+        CancellationToken cancellationToken = default)
+    {
+        if (!contract.SourceOrderId.HasValue)
+            return;
+
+        var sourceOrder = await _orderRepository.GetByIdAsync(contract.SourceOrderId.Value);
+        if (string.IsNullOrWhiteSpace(sourceOrder?.RecipientEmail))
+            return;
+
+        var orgName = contract.Organization?.Name ?? "Đơn vị của bạn";
+        var weekEnd = weekStart.AddDays(6);
+        var html = OrganizationEmailHtmlTemplates.WeeklyMealAutoFilled(
+            orgName,
+            contract.ContractNumber,
+            weekStart,
+            weekEnd);
+
+        await _emailSender.SendAsync(
+            sourceOrder.RecipientEmail,
+            $"[HuitMeal] Đã tự chọn món tuần {weekStart:dd/MM} – {weekEnd:dd/MM}",
+            html,
+            cancellationToken: cancellationToken);
+    }
+
     private async Task RegenerateStoredContractPdfAsync(
         Contract contract,
         Partner partner,

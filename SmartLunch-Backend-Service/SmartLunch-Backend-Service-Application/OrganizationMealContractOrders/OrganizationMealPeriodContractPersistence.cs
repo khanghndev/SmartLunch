@@ -52,6 +52,12 @@ public sealed class OrganizationMealPeriodContractPersistence
 
         if (contract == null)
         {
+            contract = await _contractRepository.GetUnsignedPeriodBasedForOrganizationAsync(
+                org.Id, cancellationToken);
+        }
+
+        if (contract == null)
+        {
             var (partners, _) = await _partnerRepository.GetPartnersAsync(1, 1, null, true);
             var partner = partners.FirstOrDefault()
                 ?? throw new InvalidOperationException("No active partner found to create contract.");

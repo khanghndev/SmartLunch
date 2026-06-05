@@ -44,6 +44,8 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
         public DbSet<Contract> Contracts { get; set; }
         public DbSet<ContractExcludedDate> ContractExcludedDates { get; set; }
         public DbSet<ContractDailyMealPortion> ContractDailyMealPortions { get; set; }
+        public DbSet<ContractWeeklySelection> ContractWeeklySelections { get; set; }
+        public DbSet<ContractWeeklySelectionItem> ContractWeeklySelectionItems { get; set; }
         public DbSet<PartnerPayment> PartnerPayments { get; set; }
         public DbSet<Ingredient> Ingredients { get; set; }
         public DbSet<IngredientSource> IngredientSources { get; set; }
@@ -613,6 +615,37 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                     .WithMany(c => c.DailyMealPortions)
                     .HasForeignKey(e => e.ContractId)
                     .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            modelBuilder.Entity<ContractWeeklySelection>(entity =>
+            {
+                entity.ToTable("contract_weekly_selections");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.ContractId, e.WeekMonday }).IsUnique();
+                entity.Property(e => e.Status).IsRequired().HasMaxLength(20);
+                entity.HasOne(e => e.Contract)
+                    .WithMany(c => c.WeeklySelections)
+                    .HasForeignKey(e => e.ContractId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.FulfillmentOrder)
+                    .WithMany()
+                    .HasForeignKey(e => e.FulfillmentOrderId)
+                    .OnDelete(DeleteBehavior.SetNull);
+            });
+
+            modelBuilder.Entity<ContractWeeklySelectionItem>(entity =>
+            {
+                entity.ToTable("contract_weekly_selection_items");
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.WeeklySelectionId, e.ServiceDate, e.DishId }).IsUnique();
+                entity.HasOne(e => e.WeeklySelection)
+                    .WithMany(w => w.Items)
+                    .HasForeignKey(e => e.WeeklySelectionId)
+                    .OnDelete(DeleteBehavior.Cascade);
+                entity.HasOne(e => e.Dish)
+                    .WithMany()
+                    .HasForeignKey(e => e.DishId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
 
             // DishValue

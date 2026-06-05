@@ -1,4 +1,3 @@
-using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
@@ -6,47 +5,49 @@ using SmartLunch.Backend.Service.Domain.Time;
 
 namespace SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
 
-/// <summary>Auto random 5–10 món chính / tuần, phân bổ theo từng ngày phục vụ.</summary>
+/// <summary>Auto random món chính / tuần khi khách không chọn đúng hạn.</summary>
 public sealed class OrganizationMealContractWeeklyJobService
 {
     private readonly IContractRepository _contractRepository;
     private readonly IOrderRepository _orderRepository;
     private readonly IDishRepository _dishRepository;
+    private readonly OrganizationMealContractWeeklySelectionService _weeklySelectionService;
 
     public OrganizationMealContractWeeklyJobService(
         IContractRepository contractRepository,
         IOrderRepository orderRepository,
-        IDishRepository dishRepository)
+        IDishRepository dishRepository,
+        OrganizationMealContractWeeklySelectionService weeklySelectionService)
     {
         _contractRepository = contractRepository;
         _orderRepository = orderRepository;
         _dishRepository = dishRepository;
+        _weeklySelectionService = weeklySelectionService;
     }
 
-    public async Task<int> AutoFillNextWeekAsync(CancellationToken cancellationToken = default)
+    public async Task<int> AutoFillOpenWeekAsync(
+        DateOnly openWeekMonday,
+        CancellationToken cancellationToken = default)
     {
-        var today = VietnamTime.Today;
-        var nextMonday = OrganizationMealPeriodContractCalculator.GetWeekMonday(today).AddDays(7);
         var filled = 0;
-
         var contracts = await _contractRepository.GetActivePeriodBasedContractsAsync(cancellationToken);
+
         foreach (var contract in contracts)
         {
-            if (contract.WeeklyAutoFillWeekStart == nextMonday)
+            if (contract.WeeklyAutoFillWeekStart == openWeekMonday)
                 continue;
 
-            if (await _orderRepository.ContractWeekHasMainItemsAsync(contract.Id, nextMonday, cancellationToken))
+            if (await _weeklySelectionService.WeekIsFilledAsync(contract.Id, openWeekMonday, cancellationToken))
             {
-                contract.WeeklyAutoFillWeekStart = nextMonday;
+                contract.WeeklyAutoFillWeekStart = openWeekMonday;
                 contract.UpdatedAt = VietnamTime.Now;
                 await _contractRepository.UpdateAsync(contract);
                 continue;
             }
 
-            var created = await TryAutoFillWeekAsync(contract, nextMonday, cancellationToken);
-            if (created)
+            if (await TryAutoFillWeekAsync(contract, openWeekMonday, cancellationToken))
             {
-                contract.WeeklyAutoFillWeekStart = nextMonday;
+                contract.WeeklyAutoFillWeekStart = openWeekMonday;
                 contract.UpdatedAt = VietnamTime.Now;
                 await _contractRepository.UpdateAsync(contract);
                 filled++;
@@ -54,6 +55,29 @@ public sealed class OrganizationMealContractWeeklyJobService
         }
 
         return filled;
+    }
+
+    public async Task<(Contract Contract, DateOnly WeekMonday)?> TryAutoFillOpenWeekForContractAsync(
+        Contract contract,
+        CancellationToken cancellationToken = default)
+    {
+        if (!contract.EndDate.HasValue)
+            return null;
+
+        var contractStart = DateOnly.FromDateTime(contract.StartDate);
+        var contractEnd = DateOnly.FromDateTime(contract.EndDate.Value);
+        var excluded = contract.ExcludedDates.Select(e => e.ExcludedDate).ToList();
+        var today = VietnamTime.Today;
+        var openWeekMonday = OrganizationMealWeeklySelectionRules.ResolveOpenWeekMonday(
+            today, contractStart, contractEnd, excluded);
+        if (!openWeekMonday.HasValue)
+            return null;
+
+        if (await _weeklySelectionService.WeekIsFilledAsync(contract.Id, openWeekMonday.Value, cancellationToken))
+            return null;
+
+        var ok = await TryAutoFillWeekAsync(contract, openWeekMonday.Value, cancellationToken);
+        return ok ? (contract, openWeekMonday.Value) : null;
     }
 
     private async Task<bool> TryAutoFillWeekAsync(
@@ -86,95 +110,33 @@ public sealed class OrganizationMealContractWeeklyJobService
             return false;
 
         var mainDishes = await _dishRepository.GetDishesAsync(1, 500, isActive: true, category: "main");
-        var candidates = mainDishes.Dishes;
-        if (candidates.Count == 0)
+        if (mainDishes.Dishes.Count == 0)
             return false;
+
+        await _weeklySelectionService.EnsureWeeksSeededAsync(contract, cancellationToken);
 
         var mealDays = OrganizationMealWeeklyMealPlanBuilder.BuildRandomWeeklyMainMealDays(
             serviceDates,
             contract.MealsPerDay.Value,
-            candidates,
+            mainDishes.Dishes,
             dailyOverrides: dailyOverrides);
 
-        await PersistWeeklySelectionAsync(contract, userId, weekMonday, mealDays, cancellationToken);
-        return true;
-    }
-
-    private async Task PersistWeeklySelectionAsync(
-        Contract contract,
-        int userId,
-        DateOnly weekMonday,
-        List<DTOs.Request.OrganizationMealOrders.OrganizationMealDayRequest> mealDays,
-        CancellationToken cancellationToken)
-    {
-        var defaultMeals = contract.MealsPerDay is > 0 ? contract.MealsPerDay.Value : 1;
-        var dailyOverrides = OrganizationMealPeriodContractSchedule.ToOverrideDictionary(
-            contract.DailyMealPortions.Select(p => new ContractDailyMealPortionSource(p.ServiceDate, p.MealCount)));
+        var defaultMeals = contract.MealsPerDay.Value;
         var mergedDays = OrganizationMealWeeklyMealPlanBuilder.MergeMainOnlyMealDays(
             mealDays,
             defaultMeals,
             date => OrganizationMealPeriodContractSchedule.ResolveMealsForDate(
                 date, defaultMeals, dailyOverrides));
-        var mealUnitPrice = contract.MealUnitPrice ?? 0m;
-        var scheduledUtc = VietnamTime.CalendarDateMidnight(weekMonday);
 
-        var weekOrder = await _orderRepository.GetContractWeekOrderAsync(contract.Id, weekMonday, cancellationToken);
-        if (weekOrder == null)
-        {
-            weekOrder = new Order
-            {
-                UserId = userId,
-                ContractId = contract.Id,
-                OrderDate = VietnamTime.Now,
-                ScheduledDate = scheduledUtc,
-                Status = OrderLifecycleStatus.Confirmed,
-                PaymentStatus = OrderPaymentStatus.Paid,
-                TotalAmount = 0,
-                CreatedAt = VietnamTime.Now,
-                InvoiceCode = $"Tuan-{weekMonday:yyyyMMdd}-{contract.Id}-AUTO",
-            };
+        await _weeklySelectionService.SaveWeeklySelectionAsync(
+            contract,
+            userId,
+            weekMonday,
+            mergedDays,
+            ContractWeeklySelectionStatuses.AutoFilled,
+            invoiceSuffix: "-AUTO",
+            cancellationToken);
 
-            if (contract.SourceOrderId is int sourceId)
-            {
-                var source = await _orderRepository.GetByIdAsync(sourceId);
-                if (source != null)
-                {
-                    OrganizationMealDeliveryValidator.ApplyToOrder(weekOrder, new OrganizationMealOrderDraftDelivery
-                    {
-                        RecipientName = source.RecipientName ?? "",
-                        RecipientPhone = source.RecipientPhone ?? "",
-                        RecipientEmail = source.RecipientEmail ?? "",
-                        DeliveryAddress = source.DeliveryAddress ?? "",
-                        DeliveryWardDistrict = source.DeliveryWardDistrict,
-                        DeliveryNotes = "[Auto-fill món chính]",
-                        PreferredDeliveryTime = source.PreferredDeliveryTime,
-                    });
-                }
-            }
-
-            await _orderRepository.AddAsync(weekOrder, cancellationToken);
-            await _orderRepository.CommitAsync();
-            weekOrder = await _orderRepository.GetContractWeekOrderAsync(contract.Id, weekMonday, cancellationToken)
-                ?? weekOrder;
-        }
-
-        weekOrder.OrderItems.Clear();
-        foreach (var day in mergedDays.Values.OrderBy(d => d.ServiceDate))
-        {
-            foreach (var line in day.Main)
-            {
-                weekOrder.OrderItems.Add(new OrderItem
-                {
-                    DishId = line.DishId,
-                    Quantity = line.Quantity,
-                    UnitPrice = mealUnitPrice,
-                    TotalPrice = decimal.Round(mealUnitPrice * line.Quantity, 2, MidpointRounding.AwayFromZero),
-                    ServiceDate = day.ServiceDate,
-                });
-            }
-        }
-
-        weekOrder.UpdatedAt = VietnamTime.Now;
-        await _orderRepository.CommitAsync();
+        return true;
     }
 }

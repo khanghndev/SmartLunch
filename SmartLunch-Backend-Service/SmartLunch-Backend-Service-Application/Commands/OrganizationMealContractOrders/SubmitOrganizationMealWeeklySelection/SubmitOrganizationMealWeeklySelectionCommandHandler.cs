@@ -4,7 +4,6 @@ using SmartLunch.Backend.Service.Application.DTOs.Request.OrganizationMealContra
 using SmartLunch.Backend.Service.Application.DTOs.Response.OrganizationMealContractOrders;
 using SmartLunch.Backend.Service.Application.Interfaces;
 using SmartLunch.Backend.Service.Application.OrganizationMealContractOrders;
-using SmartLunch.Backend.Service.Application.OrganizationMealOrders;
 using SmartLunch.Backend.Service.Domain.Entities;
 using SmartLunch.Backend.Service.Domain.Time;
 
@@ -15,19 +14,19 @@ public sealed class SubmitOrganizationMealWeeklySelectionCommandHandler
 {
     private readonly IUserOrganizationRepository _userOrganizationRepository;
     private readonly IContractRepository _contractRepository;
-    private readonly IOrderRepository _orderRepository;
     private readonly IDishRepository _dishRepository;
+    private readonly OrganizationMealContractWeeklySelectionService _weeklySelectionService;
 
     public SubmitOrganizationMealWeeklySelectionCommandHandler(
         IUserOrganizationRepository userOrganizationRepository,
         IContractRepository contractRepository,
-        IOrderRepository orderRepository,
-        IDishRepository dishRepository)
+        IDishRepository dishRepository,
+        OrganizationMealContractWeeklySelectionService weeklySelectionService)
     {
         _userOrganizationRepository = userOrganizationRepository;
         _contractRepository = contractRepository;
-        _orderRepository = orderRepository;
         _dishRepository = dishRepository;
+        _weeklySelectionService = weeklySelectionService;
     }
 
     public async Task<SubmitOrganizationMealWeeklySelectionResponse> Handle(
@@ -85,6 +84,20 @@ public sealed class SubmitOrganizationMealWeeklySelectionCommandHandler
                 "Mỗi tuần chỉ chọn một lần; tuần sau sẽ mở khi đến kỳ.");
         }
 
+        if (await _weeklySelectionService.WeekIsFilledAsync(contract.Id, weekMonday, cancellationToken))
+        {
+            throw new ArgumentException(
+                "Tuần này đã chọn món. Vui lòng xem thực đơn trong chi tiết hợp đồng.");
+        }
+
+        var manualDeadline = weekMonday.AddDays(-OrganizationMealWeeklySelectionRules.ManualSelectionLeadDays);
+        if (today > manualDeadline)
+        {
+            throw new ArgumentException(
+                $"Đã quá hạn chọn món thủ công (trước {OrganizationMealWeeklySelectionRules.ManualSelectionLeadDays} ngày so với đầu tuần). " +
+                "Hệ thống sẽ tự chọn món đúng số suất hoặc bạn xem thực đơn đã có trong chi tiết hợp đồng.");
+        }
+
         var dailyOverrides = OrganizationMealPeriodContractSchedule.ToOverrideDictionary(
             contract.DailyMealPortions.Select(p => new ContractDailyMealPortionSource(p.ServiceDate, p.MealCount)));
         var defaultMeals = contract.MealsPerDay is > 0 ? contract.MealsPerDay.Value : 1;
@@ -128,76 +141,22 @@ public sealed class SubmitOrganizationMealWeeklySelectionCommandHandler
                 throw new ArgumentException($"Dish '{d.Name}' is not a main dish.");
         }
 
-        var mealUnitPrice = contract.MealUnitPrice ?? 0m;
-        var scheduledUtc = VietnamTime.CalendarDateMidnight(weekMonday);
-
-        var weekOrder = await _orderRepository.GetContractWeekOrderAsync(command.ContractId, weekMonday, cancellationToken);
-        if (weekOrder == null)
-        {
-            weekOrder = new Order
-            {
-                UserId = command.UserId,
-                ContractId = contract.Id,
-                OrderDate = VietnamTime.Now,
-                ScheduledDate = scheduledUtc,
-                Status = OrderLifecycleStatus.Confirmed,
-                PaymentStatus = OrderPaymentStatus.Paid,
-                SubtotalAmount = 0,
-                DiscountAmount = 0,
-                TotalAmount = 0,
-                CreatedAt = VietnamTime.Now,
-                InvoiceCode = $"Tuan-{weekMonday:yyyyMMdd}-{contract.Id}",
-            };
-
-            if (contract.SourceOrderId is int sourceId)
-            {
-                var source = await _orderRepository.GetByIdAsync(sourceId);
-                if (source != null)
-                {
-                    OrganizationMealDeliveryValidator.ApplyToOrder(weekOrder, new OrganizationMealOrderDraftDelivery
-                    {
-                        RecipientName = source.RecipientName ?? "",
-                        RecipientPhone = source.RecipientPhone ?? "",
-                        RecipientEmail = source.RecipientEmail ?? "",
-                        DeliveryAddress = source.DeliveryAddress ?? "",
-                        DeliveryWardDistrict = source.DeliveryWardDistrict,
-                        DeliveryNotes = source.DeliveryNotes,
-                        PreferredDeliveryTime = source.PreferredDeliveryTime,
-                    });
-                }
-            }
-
-            await _orderRepository.AddAsync(weekOrder, cancellationToken);
-            await _orderRepository.CommitAsync();
-            weekOrder = await _orderRepository.GetContractWeekOrderAsync(command.ContractId, weekMonday, cancellationToken)
-                ?? weekOrder;
-        }
-
-        weekOrder.OrderItems.Clear();
-        foreach (var day in mergedDays.Values.OrderBy(d => d.ServiceDate))
-        {
-            foreach (var line in day.Main)
-            {
-                weekOrder.OrderItems.Add(new OrderItem
-                {
-                    DishId = line.DishId,
-                    Quantity = line.Quantity,
-                    UnitPrice = mealUnitPrice,
-                    TotalPrice = decimal.Round(mealUnitPrice * line.Quantity, 2, MidpointRounding.AwayFromZero),
-                    ServiceDate = day.ServiceDate,
-                });
-            }
-        }
-
-        weekOrder.UpdatedAt = VietnamTime.Now;
-        await _orderRepository.CommitAsync();
+        var selection = await _weeklySelectionService.SaveWeeklySelectionAsync(
+            contract,
+            command.UserId,
+            weekMonday,
+            mergedDays,
+            ContractWeeklySelectionStatuses.Selected,
+            cancellationToken: cancellationToken);
 
         return new SubmitOrganizationMealWeeklySelectionResponse
         {
             ContractId = contract.Id,
-            OrderId = weekOrder.Id,
+            WeeklySelectionId = selection.Id,
+            OrderId = selection.FulfillmentOrderId ?? 0,
             WeekStart = weekMonday,
-            ItemCount = weekOrder.OrderItems.Count,
+            Status = selection.Status,
+            ItemCount = selection.Items.Count,
         };
     }
 }

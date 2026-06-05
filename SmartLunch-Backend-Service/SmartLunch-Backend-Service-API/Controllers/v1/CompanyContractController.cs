@@ -10,6 +10,7 @@ using SmartLunch.Backend.Service.Application.DTOs.Response.MasterData.Contracts;
 using SmartLunch.Backend.Service.Application.DTOs.Request.Finance;
 using SmartLunch.Backend.Service.Application.DTOs.Response.Finance;
 using SmartLunch.Backend.Service.Application.Queries.CompanyContracts.GetMyOrganizationContracts;
+using SmartLunch.Backend.Service.Application.Queries.CompanyContracts.GetOrganizationContractWeeklySelections;
 using SmartLunch.Backend.Service.Application.Queries.CompanyContracts.GetOrganizationContract;
 using SmartLunch.Backend.Service.Application.Queries.Finance.GetContractPayments;
 
@@ -58,6 +59,39 @@ public class CompanyContractController : ControllerBase
                 (int)HttpStatusCode.InternalServerError,
                 BaseApiResponse<GetMyOrganizationContractsResponse>.ErrorResult(
                     "An error occurred while listing contracts",
+                    new[] { ex.Message }));
+        }
+    }
+
+    /// <summary>Danh sách suất ăn theo tuần của HĐ Period-Based.</summary>
+    [HttpGet("{id:int}/weekly-selections")]
+    public async Task<ActionResult<BaseApiResponse<GetContractWeeklySelectionsResponse>>> GetWeeklySelections(int id)
+    {
+        try
+        {
+            var userId = RequireUserId();
+            var response = await _mediator.Send(new GetOrganizationContractWeeklySelectionsQuery(id, userId));
+            return Ok(BaseApiResponse<GetContractWeeklySelectionsResponse>.SuccessResult(
+                response,
+                "Weekly selections retrieved successfully"));
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(BaseApiResponse<GetContractWeeklySelectionsResponse>.NotFoundResult(ex.Message));
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            if (IsInvalidUserContext(ex))
+                return Unauthorized(BaseApiResponse<GetContractWeeklySelectionsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+            return StatusCode((int)HttpStatusCode.Forbidden, BaseApiResponse<GetContractWeeklySelectionsResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Company get weekly selections {ContractId}", id);
+            return StatusCode(
+                (int)HttpStatusCode.InternalServerError,
+                BaseApiResponse<GetContractWeeklySelectionsResponse>.ErrorResult(
+                    "An error occurred while retrieving weekly selections",
                     new[] { ex.Message }));
         }
     }

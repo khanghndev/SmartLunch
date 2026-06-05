@@ -33,4 +33,9 @@ public interface IContractRepository
         CancellationToken cancellationToken = default);
 
     Task<List<Contract>> GetActivePeriodBasedContractsAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>HĐ Period-Based chưa checkout (nháp) của đơn vị — tái sử dụng thay vì tạo HĐ mới.</summary>
+    Task<Contract?> GetUnsignedPeriodBasedForOrganizationAsync(
+        int organizationId,
+        CancellationToken cancellationToken = default);
 }

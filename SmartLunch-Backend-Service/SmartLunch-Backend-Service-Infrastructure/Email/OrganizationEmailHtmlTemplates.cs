@@ -112,11 +112,37 @@ internal static class OrganizationEmailHtmlTemplates
             heroSubtitle: $"{org} · HĐ <strong>{contractLabel}</strong>",
             body: $@"
 <p style=""margin:0 0 16px;font-size:15px;line-height:1.6;color:#334155"">
-  Theo hợp đồng đặt suất theo kỳ, vui lòng đăng nhập cổng <strong>HuitMeal</strong> và chọn món cho tuần
-  <strong>{from} – {to}</strong> trước <strong>18:00 thứ Sáu</strong>.
+  Theo hợp đồng đặt suất theo kỳ, vui lòng đăng nhập cổng <strong>HuitMeal</strong> → <strong>Hợp đồng</strong> → <strong>Chọn món tuần</strong>
+  cho tuần <strong>{from} – {to}</strong> (còn 3 ngày trước hạn).
 </p>
 <p style=""margin:0;font-size:13px;line-height:1.55;color:#64748b"">
-  Nếu không chọn món, hệ thống sẽ tự động gán khoảng 5–10 món chính ngẫu nhiên phân bổ theo các ngày trong tuần (cuối ngày thứ Sáu).
+  Nếu không chọn món đúng hạn, hệ thống sẽ tự gán món chính ngẫu nhiên đủ số suất từng ngày và gửi email xác nhận.
+</p>");
+    }
+
+    public static string WeeklyMealAutoFilled(
+        string organizationName,
+        string? contractNumber,
+        DateOnly weekStart,
+        DateOnly weekEnd)
+    {
+        var org = WebUtility.HtmlEncode(organizationName);
+        var contractLabel = WebUtility.HtmlEncode(contractNumber ?? "—");
+        var from = weekStart.ToString("dd/MM/yyyy", Vi);
+        var to = weekEnd.ToString("dd/MM/yyyy", Vi);
+
+        return Wrap(
+            title: "Đã tự chọn món tuần",
+            accent: "#ea580c",
+            heroTitle: "Hệ thống đã tự chọn món cho tuần phục vụ",
+            heroSubtitle: $"{org} · HĐ <strong>{contractLabel}</strong>",
+            body: $@"
+<p style=""margin:0 0 16px;font-size:15px;line-height:1.6;color:#334155"">
+  Do chưa nhận được thực đơn tuần <strong>{from} – {to}</strong> trước hạn, HuitMeal đã tự động phân bổ món chính ngẫu nhiên
+  đúng số suất theo hợp đồng cho từng ngày phục vụ.
+</p>
+<p style=""margin:0;font-size:13px;line-height:1.55;color:#64748b"">
+  Bạn có thể đăng nhập cổng doanh nghiệp → <strong>Hợp đồng</strong> để xem chi tiết. Tuần tiếp theo vui lòng chọn món trước hạn.
 </p>");
     }
 

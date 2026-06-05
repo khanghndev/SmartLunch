@@ -10,7 +10,7 @@ using SmartLunch.Backend.Service.Domain.Time;
 namespace SmartLunch.Backend.Service.API.Services;
 
 /// <summary>
-/// Thứ 5 tối: nhắc đặt món tuần kế tiếp. Thứ 6 tối: auto random món chính nếu chưa có order_item.
+/// Mỗi ngày 18h–20h (VN): nhắc đặt món trước 3 ngày tuần mở; auto random + email nếu quá hạn (Chủ nhật trước tuần phục vụ).
 /// </summary>
 public sealed class OrganizationMealContractWeeklyHostedService : BackgroundService
 {
@@ -54,31 +54,38 @@ public sealed class OrganizationMealContractWeeklyHostedService : BackgroundServ
         if (vnNow.Hour < 18 || vnNow.Hour >= 20)
             return;
 
-        var day = vnNow.DayOfWeek;
-        if (day is not DayOfWeek.Thursday and not DayOfWeek.Friday)
-            return;
-
         using var scope = _scopeFactory.CreateScope();
         var contractRepository = scope.ServiceProvider.GetRequiredService<IContractRepository>();
         var emailService = scope.ServiceProvider.GetRequiredService<IOrganizationOrderEmailService>();
         var weeklyJob = scope.ServiceProvider.GetRequiredService<OrganizationMealContractWeeklyJobService>();
+        var weeklySelectionService = scope.ServiceProvider.GetRequiredService<OrganizationMealContractWeeklySelectionService>();
 
         var today = DateOnly.FromDateTime(vnNow);
-        var nextMonday = OrganizationMealPeriodContractCalculator.GetWeekMonday(today).AddDays(7);
-
         var contracts = await contractRepository.GetActivePeriodBasedContractsAsync(cancellationToken);
 
-        if (day == DayOfWeek.Thursday)
+        foreach (var contract in contracts)
         {
-            foreach (var contract in contracts)
-            {
-                if (contract.LastWeeklyReminderWeekStart == nextMonday)
-                    continue;
+            if (!contract.EndDate.HasValue)
+                continue;
 
+            var contractStart = DateOnly.FromDateTime(contract.StartDate);
+            var contractEnd = DateOnly.FromDateTime(contract.EndDate.Value);
+            var excluded = contract.ExcludedDates.Select(e => e.ExcludedDate).ToList();
+            var openWeekMonday = OrganizationMealWeeklySelectionRules.ResolveOpenWeekMonday(
+                today, contractStart, contractEnd, excluded);
+            if (!openWeekMonday.HasValue)
+                continue;
+
+            var reminderDay = openWeekMonday.Value.AddDays(-3);
+            if (today == reminderDay
+                && contract.LastWeeklyReminderWeekStart != openWeekMonday.Value
+                && !await weeklySelectionService.WeekIsFilledAsync(contract.Id, openWeekMonday.Value, cancellationToken))
+            {
                 try
                 {
-                    await emailService.SendWeeklyMealSelectionReminderAsync(contract, nextMonday, cancellationToken);
-                    contract.LastWeeklyReminderWeekStart = nextMonday;
+                    await emailService.SendWeeklyMealSelectionReminderAsync(
+                        contract, openWeekMonday.Value, cancellationToken);
+                    contract.LastWeeklyReminderWeekStart = openWeekMonday.Value;
                     contract.UpdatedAt = VietnamTime.Now;
                     await contractRepository.UpdateAsync(contract);
                 }
@@ -87,12 +94,34 @@ public sealed class OrganizationMealContractWeeklyHostedService : BackgroundServ
                     _logger.LogWarning(ex, "Weekly reminder failed for contract {ContractId}.", contract.Id);
                 }
             }
-        }
-        else if (day == DayOfWeek.Friday)
-        {
-            var filled = await weeklyJob.AutoFillNextWeekAsync(cancellationToken);
-            if (filled > 0)
-                _logger.LogInformation("Auto-filled weekly meals for {Count} period contracts.", filled);
+
+            var autoFillDay = openWeekMonday.Value.AddDays(-1);
+            if (today == autoFillDay
+                && contract.WeeklyAutoFillWeekStart != openWeekMonday.Value
+                && !await weeklySelectionService.WeekIsFilledAsync(contract.Id, openWeekMonday.Value, cancellationToken))
+            {
+                try
+                {
+                    var result = await weeklyJob.TryAutoFillOpenWeekForContractAsync(contract, cancellationToken);
+                    if (result.HasValue)
+                    {
+                        var (filledContract, weekMonday) = result.Value;
+                        filledContract.WeeklyAutoFillWeekStart = weekMonday;
+                        filledContract.UpdatedAt = VietnamTime.Now;
+                        await contractRepository.UpdateAsync(filledContract);
+                        await emailService.SendWeeklyMealAutoFilledAsync(
+                            filledContract, weekMonday, cancellationToken);
+                        _logger.LogInformation(
+                            "Auto-filled weekly meals for contract {ContractId}, week {WeekStart}.",
+                            filledContract.Id,
+                            weekMonday);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning(ex, "Weekly auto-fill failed for contract {ContractId}.", contract.Id);
+                }
+            }
         }
     }
 }

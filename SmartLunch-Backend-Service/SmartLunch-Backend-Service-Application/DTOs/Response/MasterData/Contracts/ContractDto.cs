@@ -28,4 +28,10 @@ public class ContractDto
     public string Status { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+
+    /// <summary>Tổng số tuần phục vụ trong HĐ (Period-Based).</summary>
+    public int? TotalServiceWeeks { get; set; }
+
+    /// <summary>Số tuần đã chọn món (selected / auto_filled).</summary>
+    public int? FilledServiceWeeks { get; set; }
 }
