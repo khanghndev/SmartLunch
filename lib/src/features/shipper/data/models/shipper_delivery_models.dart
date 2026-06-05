@@ -61,6 +61,11 @@ class ShipperDeliveryDetailModel {
   final String? proofImageUrl;
   final DateTime? proofCapturedAtUtc;
   final String? notes;
+  final String? recipientConfirmedName;
+  final DateTime? recipientConfirmedAtUtc;
+  final String? recipientSignatureUrl;
+  /// BE: đơn `in_transit` — cần chữ ký người nhận khi POST /proof.
+  final bool requiresRecipientSignature;
 
   ShipperDeliveryDetailModel({
     required this.deliveryId,
@@ -73,6 +78,10 @@ class ShipperDeliveryDetailModel {
     this.proofImageUrl,
     this.proofCapturedAtUtc,
     this.notes,
+    this.recipientConfirmedName,
+    this.recipientConfirmedAtUtc,
+    this.recipientSignatureUrl,
+    this.requiresRecipientSignature = false,
   });
 
   factory ShipperDeliveryDetailModel.fromJson(Map<String, dynamic> json) {
@@ -93,6 +102,14 @@ class ShipperDeliveryDetailModel {
           ? DateTime.tryParse(json['proofCapturedAtUtc'] as String)
           : null,
       notes: json['notes'] as String?,
+      recipientConfirmedName: json['recipientConfirmedName'] as String?,
+      recipientConfirmedAtUtc: json['recipientConfirmedAtUtc'] != null
+          ? DateTime.tryParse(json['recipientConfirmedAtUtc'] as String)
+          : null,
+      recipientSignatureUrl: json['recipientSignatureUrl'] as String?,
+      requiresRecipientSignature: json['requiresRecipientSignature'] as bool? ??
+          json['requiresDeliveryOtp'] as bool? ??
+          false,
     );
   }
 }

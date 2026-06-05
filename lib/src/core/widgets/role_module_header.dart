@@ -185,9 +185,10 @@ class RoleModuleBrandMark extends StatelessWidget {
           'HUITMeal',
           style: AppDesignSystem.font.copyWith(
             color: Colors.white,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w800,
             fontSize: 18,
-            letterSpacing: -0.3,
+            letterSpacing: 0,
+            height: 1.2,
           ),
         ),
       ],
@@ -296,7 +297,7 @@ class RoleHeaderChip extends StatelessWidget {
   }
 }
 
-/// Hai nút shortcut trong panel header (dashboard).
+/// Shortcut trong panel header (dashboard): icon trên, nhãn đầy đủ bên dưới.
 class RoleHeaderQuickActionsPanel extends StatelessWidget {
   final List<RoleHeaderQuickAction> actions;
 
@@ -345,26 +346,32 @@ class _QuickTile extends StatelessWidget {
         onTap: action.onTap,
         borderRadius: BorderRadius.circular(12),
         child: Ink(
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
           decoration: AppDesignSystem.card(radius: 12),
-          child: Row(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: action.color.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
+              Center(
+                child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: action.color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Icon(action.icon, color: action.color, size: 22),
                 ),
-                child: Icon(action.icon, color: action.color, size: 20),
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: Text(
-                  action.label,
-                  style: AppDesignSystem.label().copyWith(fontSize: 13),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
+              const SizedBox(height: 8),
+              Text(
+                action.label,
+                textAlign: TextAlign.center,
+                style: AppDesignSystem.label().copyWith(
+                  fontSize: 11.5,
+                  height: 1.3,
+                  fontWeight: FontWeight.w700,
                 ),
+                softWrap: true,
               ),
             ],
           ),

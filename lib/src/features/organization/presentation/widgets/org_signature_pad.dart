@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -31,14 +32,20 @@ class OrgSignaturePadState extends State<OrgSignaturePad> {
     widget.onSignatureChanged?.call(false);
   }
 
-  Future<String?> exportDataUrl() async {
+  Future<Uint8List?> exportPngBytes() async {
     if (!hasSignature) return null;
     final boundary = _boundaryKey.currentContext?.findRenderObject();
     if (boundary is! RenderRepaintBoundary) return null;
     final image = await boundary.toImage(pixelRatio: 2);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
     if (bytes == null) return null;
-    final b64 = base64Encode(bytes.buffer.asUint8List());
+    return bytes.buffer.asUint8List();
+  }
+
+  Future<String?> exportDataUrl() async {
+    final png = await exportPngBytes();
+    if (png == null) return null;
+    final b64 = base64Encode(png);
     return 'data:image/png;base64,$b64';
   }
 

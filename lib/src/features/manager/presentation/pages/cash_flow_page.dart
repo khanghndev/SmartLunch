@@ -6,7 +6,12 @@ import '../../data/repositories/manager_repository.dart';
 import '../widgets/manager_ui.dart';
 
 class CashFlowPage extends StatefulWidget {
-  const CashFlowPage({super.key});
+  final bool embeddedInModuleShell;
+
+  const CashFlowPage({
+    super.key,
+    this.embeddedInModuleShell = false,
+  });
 
   @override
   State<CashFlowPage> createState() => _CashFlowPageState();
@@ -81,6 +86,7 @@ class _CashFlowPageState extends State<CashFlowPage> {
     return ManagerPageShell(
       title: 'Quản lý thu chi',
       onRefresh: _load,
+      embeddedInModuleShell: widget.embeddedInModuleShell,
       body: _loading
           ? const ManagerLoadingBody()
           : _error != null

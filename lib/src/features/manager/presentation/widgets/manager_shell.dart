@@ -7,11 +7,27 @@ abstract final class ManagerShellConfig {
   static const roleBadge = 'Manager';
   static const drawerUserRole = 'Quản lý hệ thống';
 
+  /// Tab 0–4: Dashboard, Thống kê, Thu chi, Đối soát, Hồ sơ.
   static const navItems = [
     BottomNavigationBarItem(
       icon: Icon(Icons.dashboard_outlined),
       activeIcon: Icon(Icons.dashboard_rounded),
-      label: 'Dashboard',
+      label: 'Tổng quan',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.bar_chart_outlined),
+      activeIcon: Icon(Icons.bar_chart_rounded),
+      label: 'Thống kê',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.payments_outlined),
+      activeIcon: Icon(Icons.payments_rounded),
+      label: 'Thu chi',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.receipt_long_outlined),
+      activeIcon: Icon(Icons.receipt_long_rounded),
+      label: 'Đối soát',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.person_outline_rounded),
@@ -34,19 +50,19 @@ abstract final class ManagerShellConfig {
           icon: Icons.bar_chart_rounded,
           label: 'statistics',
           labelVi: 'Thống kê tổng quan',
-          route: AppRoutes.managerStatistics,
+          tabIndex: 1,
         ),
         DrawerItem(
           icon: Icons.attach_money_rounded,
           label: 'cash_flow',
           labelVi: 'Quản lý thu chi',
-          route: AppRoutes.managerCashFlow,
+          tabIndex: 2,
         ),
         DrawerItem(
           icon: Icons.receipt_long_rounded,
           label: 'reconciliation',
           labelVi: 'Đối soát thanh toán',
-          route: AppRoutes.managerReconciliation,
+          tabIndex: 3,
         ),
       ],
     ),
@@ -74,7 +90,7 @@ abstract final class ManagerShellConfig {
           icon: Icons.person_rounded,
           label: 'profile',
           labelVi: 'Hồ sơ cá nhân',
-          tabIndex: 1,
+          tabIndex: 4,
         ),
       ],
     ),

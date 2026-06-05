@@ -6,7 +6,12 @@ import '../../data/repositories/manager_repository.dart';
 import '../widgets/manager_ui.dart';
 
 class ManagerReconciliationPage extends StatefulWidget {
-  const ManagerReconciliationPage({super.key});
+  final bool embeddedInModuleShell;
+
+  const ManagerReconciliationPage({
+    super.key,
+    this.embeddedInModuleShell = false,
+  });
 
   @override
   State<ManagerReconciliationPage> createState() => _ManagerReconciliationPageState();
@@ -84,6 +89,7 @@ class _ManagerReconciliationPageState extends State<ManagerReconciliationPage>
     return ManagerPageShell(
       title: 'Đối soát thanh toán',
       onRefresh: _load,
+      embeddedInModuleShell: widget.embeddedInModuleShell,
       body: _loading
           ? const ManagerLoadingBody()
           : _error != null

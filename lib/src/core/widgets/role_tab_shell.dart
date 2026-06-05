@@ -30,6 +30,19 @@ class RoleTabScope extends InheritedWidget {
       bottomInset != oldWidget.bottomInset;
 }
 
+/// Padding list trong tab bottom nav — tránh nội dung bị che.
+EdgeInsets moduleTabListPadding(
+  BuildContext context, {
+  double horizontal = 16,
+  double top = 16,
+}) {
+  final scope = RoleTabScope.maybeOf(context);
+  if (scope != null) {
+    return EdgeInsets.fromLTRB(horizontal, top, horizontal, scope.bottomInset);
+  }
+  return moduleListPadding(context);
+}
+
 /// Scaffold chuẩn: drawer + IndexedStack tabs + bottom navigation.
 class RoleTabShell extends StatefulWidget {
   final GlobalKey<ScaffoldState>? scaffoldKey;
@@ -128,6 +141,21 @@ class _RoleTabShellState extends State<RoleTabShell> {
             backgroundColor: Colors.white,
             selectedItemColor: widget.role.primary,
             unselectedItemColor: AppDesignSystem.gray400,
+            selectedFontSize: 10.5,
+            unselectedFontSize: 10,
+            selectedLabelStyle: AppDesignSystem.font.copyWith(
+              fontWeight: FontWeight.w700,
+              fontSize: 10.5,
+              letterSpacing: 0.1,
+              height: 1.2,
+            ),
+            unselectedLabelStyle: AppDesignSystem.font.copyWith(
+              fontWeight: FontWeight.w500,
+              fontSize: 10,
+              letterSpacing: 0.1,
+              height: 1.2,
+            ),
+            iconSize: 22,
             elevation: 0,
             items: widget.navItems,
           ),

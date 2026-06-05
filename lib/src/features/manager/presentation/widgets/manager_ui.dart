@@ -5,14 +5,14 @@ import '../../../../core/analytics/meal_statistics_repository.dart'
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_design_system.dart';
 import '../../../../core/widgets/module_page_shell.dart';
-import '../../../../core/widgets/module_scroll.dart';
+import '../../../../core/widgets/role_tab_shell.dart' show moduleTabListPadding;
 
 export '../../../../core/widgets/module_page_shell.dart';
 export '../../../../core/widgets/module_scroll.dart';
 export '../../../../core/widgets/role_tab_shell.dart';
 
 EdgeInsets managerListPadding(BuildContext context) =>
-    moduleListPadding(context, bottomBarInset: 0);
+    moduleTabListPadding(context);
 
 /// Manager dùng palette amber — đồng bộ design system.
 const RolePalette kManagerRole = RolePalette.manager;
@@ -54,6 +54,7 @@ class ManagerPageShell extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? floatingAction;
   final Future<void> Function()? onRefresh;
+  final bool embeddedInModuleShell;
 
   const ManagerPageShell({
     super.key,
@@ -62,6 +63,7 @@ class ManagerPageShell extends StatelessWidget {
     this.actions,
     this.floatingAction,
     this.onRefresh,
+    this.embeddedInModuleShell = false,
   });
 
   @override
@@ -72,6 +74,7 @@ class ManagerPageShell extends StatelessWidget {
         actions: actions,
         floatingAction: floatingAction,
         onRefresh: onRefresh,
+        embeddedInModuleShell: embeddedInModuleShell,
       );
 }
 

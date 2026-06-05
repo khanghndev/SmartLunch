@@ -22,10 +22,20 @@ class SmartLunchApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       onGenerateRoute: router.onGenerateRoute,
       initialRoute: AppRoutes.initialFor(config.flavor),
-      builder: (context, child) => DefaultTextStyle(
-        style: AppDesignSystem.body(color: AppDesignSystem.gray900),
-        child: child ?? const SizedBox.shrink(),
-      ),
+      builder: (context, child) {
+        final mq = MediaQuery.of(context);
+        final clampedScaler = mq.textScaler.clamp(
+          minScaleFactor: 0.9,
+          maxScaleFactor: 1.2,
+        );
+        return MediaQuery(
+          data: mq.copyWith(textScaler: clampedScaler),
+          child: DefaultTextStyle(
+            style: AppDesignSystem.body(color: AppDesignSystem.gray900),
+            child: child ?? const SizedBox.shrink(),
+          ),
+        );
+      },
     );
   }
 }

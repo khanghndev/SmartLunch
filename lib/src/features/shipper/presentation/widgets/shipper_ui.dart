@@ -6,7 +6,7 @@ import '../../../../core/config/app_env.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_design_system.dart';
 import '../../../../core/widgets/module_page_shell.dart';
-import '../../../../core/widgets/module_scroll.dart';
+import '../../../../core/widgets/role_tab_shell.dart' show moduleTabListPadding;
 import '../../data/models/shipper_delivery_models.dart';
 
 export '../../../../core/widgets/module_page_shell.dart';
@@ -17,7 +17,7 @@ const RolePalette kShipperRole = RolePalette.shipper;
 Color get shipperAccent => kShipperRole.primary;
 
 EdgeInsets shipperListPadding(BuildContext context) =>
-    moduleListPadding(context, bottomBarInset: 0);
+    moduleTabListPadding(context);
 
 String shipperApiError(Object e) {
   if (e is ApiException) return e.message;
@@ -71,6 +71,7 @@ class ShipperPageShell extends StatelessWidget {
   final Widget body;
   final List<Widget>? actions;
   final Future<void> Function()? onRefresh;
+  final bool embeddedInModuleShell;
 
   const ShipperPageShell({
     super.key,
@@ -78,6 +79,7 @@ class ShipperPageShell extends StatelessWidget {
     required this.body,
     this.actions,
     this.onRefresh,
+    this.embeddedInModuleShell = false,
   });
 
   @override
@@ -87,6 +89,7 @@ class ShipperPageShell extends StatelessWidget {
         body: body,
         actions: actions,
         onRefresh: onRefresh,
+        embeddedInModuleShell: embeddedInModuleShell,
       );
 }
 

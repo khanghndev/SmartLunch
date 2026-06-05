@@ -11,7 +11,12 @@ import '../widgets/organization_ui.dart';
 
 /// Hợp đồng & thanh toán đơn vị B2B — khớp web `Profile/Contracts` + `Orders` (PayOS cọc).
 class ContractSettlementPage extends StatefulWidget {
-  const ContractSettlementPage({super.key});
+  final bool embeddedInModuleShell;
+
+  const ContractSettlementPage({
+    super.key,
+    this.embeddedInModuleShell = false,
+  });
 
   @override
   State<ContractSettlementPage> createState() => _ContractSettlementPageState();
@@ -262,6 +267,7 @@ class _ContractSettlementPageState extends State<ContractSettlementPage> {
     return OrgPageShell(
       title: 'Hợp đồng & Thanh toán',
       onRefresh: _load,
+      embeddedInModuleShell: widget.embeddedInModuleShell,
       body: _loading
           ? const OrgLoadingBody(message: 'Đang tải hợp đồng…')
           : _error != null

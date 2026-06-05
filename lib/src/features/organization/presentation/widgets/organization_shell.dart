@@ -10,11 +10,27 @@ abstract final class OrganizationShellConfig {
   static const roleBadge = 'Organization';
   static const drawerUserRole = 'Tổ chức B2B';
 
+  /// Tab 0–4: Tổng quan, Đặt suất, Hợp đồng, Đánh giá, Hồ sơ.
   static const navItems = [
     BottomNavigationBarItem(
-      icon: Icon(Icons.business_outlined),
-      activeIcon: Icon(Icons.business_rounded),
-      label: 'Dashboard',
+      icon: Icon(Icons.dashboard_outlined),
+      activeIcon: Icon(Icons.dashboard_rounded),
+      label: 'Tổng quan',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.restaurant_menu_outlined),
+      activeIcon: Icon(Icons.restaurant_menu_rounded),
+      label: 'Đặt suất',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.description_outlined),
+      activeIcon: Icon(Icons.description_rounded),
+      label: 'Hợp đồng',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.star_outline_rounded),
+      activeIcon: Icon(Icons.star_rounded),
+      label: 'Đánh giá',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.person_outline_rounded),
@@ -37,19 +53,19 @@ abstract final class OrganizationShellConfig {
           icon: Icons.restaurant_menu_rounded,
           label: 'bulk_order',
           labelVi: 'Đặt suất ăn tập trung',
-          route: AppRoutes.orgBulkOrderMode,
+          tabIndex: 1,
         ),
         DrawerItem(
           icon: Icons.request_quote_rounded,
           label: 'contracts',
           labelVi: 'Hợp đồng & Thanh toán',
-          route: AppRoutes.orgContractSettlement,
+          tabIndex: 2,
         ),
         DrawerItem(
           icon: Icons.star_rounded,
           label: 'reviews',
           labelVi: 'Đánh giá suất ăn',
-          route: AppRoutes.orgReviews,
+          tabIndex: 3,
         ),
       ],
     ),
@@ -89,7 +105,7 @@ abstract final class OrganizationShellConfig {
           icon: Icons.person_rounded,
           label: 'profile',
           labelVi: 'Hồ sơ đơn vị',
-          tabIndex: 1,
+          tabIndex: 4,
         ),
         DrawerItem(
           icon: Icons.support_agent_rounded,

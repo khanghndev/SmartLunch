@@ -8,12 +8,18 @@ import '../widgets/organization_ui.dart';
 /// - Đặt suất ăn tự động (luồng cũ: OrganizationMealOrder / bulk order)
 /// - Đặt suất ăn theo hợp đồng (Period-Based)
 class OrgBulkOrderModePage extends StatelessWidget {
-  const OrgBulkOrderModePage({super.key});
+  final bool embeddedInModuleShell;
+
+  const OrgBulkOrderModePage({
+    super.key,
+    this.embeddedInModuleShell = false,
+  });
 
   @override
   Widget build(BuildContext context) {
     return OrgPageShell(
       title: 'Đặt suất ăn tập trung',
+      embeddedInModuleShell: embeddedInModuleShell,
       body: ModuleListView(
         padding: orgListPadding(context),
         children: [

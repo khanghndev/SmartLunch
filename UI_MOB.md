@@ -66,6 +66,7 @@ Nguồn chuẩn: `lib/src/core/theme/app_design_system.dart` + `lib/src/features
 
 #### Nguyên tắc
 - **Font**: Google **Outfit** — `AppDesignSystem.font` / `AppDesignSystem.typography()` / `AuthTheme.displayFont`. Toàn app: `ThemeData.fontFamily` + `DefaultTextStyle` trong `app.dart`; tránh `TextStyle(...)` không font — dùng `AppDesignSystem.body()` / `label()` / `mergeWith()`.
+- **Chữ rõ, không méo dấu**: không dùng `letterSpacing` âm trên body/title; tiêu đề dùng `w800` (không `w900` trên cỡ nhỏ); body `letterSpacing: 0.15`, `height: 1.5`. `MaterialApp.builder` giới hạn `textScaler` 0.9–1.2.
 - **Nền trang nội dung**: `#F9FAFB` (`AppDesignSystem.gray50`).
 - **Thẻ (Card)**: nền trắng, viền `#F3F4F6`, bo góc `16px`, shadow nhẹ — `AppDesignSystem.card()`.
 - **Input**: nền `#FAFAFA`, viền `1.5px #E5E7EB`, bo góc `12px`, focus theo accent role.
@@ -126,8 +127,9 @@ Nguồn chuẩn: `lib/src/core/theme/app_design_system.dart` + `lib/src/features
 
 ##### Header + shell tab (Customer, Manager, Organization, Shipper)
 - Tab shell: `CustomerTabShell` hoặc `RoleModuleTabShell` — drawer + bottom nav + `RoleTabScope`.
+- **Bottom nav 5 mục** (Manager / Shipper / Organization): Tổng quan + 3 nghiệp vụ chính + Hồ sơ — cấu hình `navItems` trong `*_shell.dart`, nội dung tab dùng `RoleModuleTabPage` + trang con `embeddedInModuleShell: true`. **Customer** giữ 2 tab (Trang chủ / Thực đơn).
 - Mỗi tab: `Column` = `RoleModuleHeader` (cố định) + `Expanded` body scroll.
-- Dashboard tab: shortcut trong `RoleHeaderQuickActionsPanel`; thông báo ở `headerTrailing`.
+- Dashboard tab: shortcut trong `RoleHeaderQuickActionsPanel` (icon trên, nhãn đầy đủ dưới — không ellipsis); thông báo ở `headerTrailing`.
 - Tab Hồ sơ: header `Hồ sơ cá nhân` + `ProfilePage(embeddedInModuleShell: true)` (không AppBar trùng).
 - Trang con (push): vẫn `ModulePageShell` / `ManagerPageShell` / `OrgPageShell`.
 
@@ -206,6 +208,16 @@ File hỗ trợ: `dashboard_format.dart` (`formatDashboardVnd`, `formatDashboard
 
 ### Shipper
 
+#### Bottom nav & tab chính (Manager / Shipper / Organization)
+
+| Module | Tab 0 | Tab 1 | Tab 2 | Tab 3 | Tab 4 |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Manager** | Tổng quan | Thống kê | Thu chi | Đối soát | Hồ sơ |
+| **Shipper** | Tổng quan | Đơn giao | Lịch giao | Lịch sử | Hồ sơ |
+| **Organization** | Tổng quan | Đặt suất | Hợp đồng | Đánh giá | Hồ sơ |
+
+Màn phụ (báo cáo, bản đồ tuyến, chatbot, …) vẫn mở qua drawer / `pushNamed`.
+
 #### Drawer Shipper (`shipper_shell.dart` → `ShipperShellConfig.drawerSections`)
 | Section | Mục menu |
 | :--- | :--- |
@@ -222,7 +234,7 @@ File hỗ trợ: `dashboard_format.dart` (`formatDashboardVnd`, `formatDashboard
 - **Lịch giao** (`delivery_schedule_page.dart`): `ShipperDatePickerCard`, `ShipperOpsStrip`, `ShipperShortcutRow`, `ShipperDeliveryTile`.
 - **Lịch sử** (`delivery_history_page.dart`): `ShipperPeriodChips`, filter + tổng kết trong `ShipperContentCard`, `ShipperStatTile`.
 - **Bản đồ tuyến** (`route_map_page.dart`): `ShipperContentCard` (tối ưu tuyến), `ShipperSubTabBar`, `ShipperRouteMapPanel` / `ShipperOsmMap`.
-- **PoD** (`proof_of_delivery_page.dart`): `ShipperPhotoCaptureCard`, `ShipperPageIntro`, ghi chú `AppDesignSystem.inputDecoration`.
+- **PoD** (`proof_of_delivery_page.dart`): tên người nhận + `OrgSignaturePad` (multipart `signature`) + `ShipperPhotoCaptureCard` (`file`), ghi chú; chỉ khi `in_transit`.
 - **Thông báo** (`shipper_notifications_page.dart`): `ShipperPlaceholderCard` (placeholder đồng bộ palette).
 - **Hồ sơ** (`shipper_profile_page.dart`): dùng chung `ProfilePage` (shell Shipper).
 - Widget dùng chung: `ShipperContentCard`, `ShipperPageIntro`, `ShipperSectionHeader`, `ShipperDataRow`, `ShipperPrimaryButton` / `ShipperOutlineButton`, `ShipperLoadingBody` / `ShipperErrorBody`.
@@ -359,7 +371,7 @@ Tất cả các API trả về cấu trúc chuẩn JSON như sau:
 | Danh sách đơn cần giao | GET | `/api/v1/shipper/deliveries` | Query: `page`, `pageSize`, `status` (pending\|assigned\|received\|in_transit\|completed\|failed\|rejected), `scheduledOn` (yyyy-MM-dd) | `roles:Shipper` + `deliveries.list` |
 | Chi tiết đơn giao | GET | `/api/v1/shipper/deliveries/{id}` | Lấy chi tiết qua Route parameter `{id}` | `roles:Shipper` + `deliveries.read` |
 | Cập nhật trạng thái giao | PATCH | `/api/v1/shipper/deliveries/{id}/status` | Body: `{ "status": "received"\|"in_transit"\|"failed"\|"rejected", "notes" }` *(notes bắt buộc nếu failed/rejected)* | `roles:Shipper` + `deliveries.update` |
-| Xác nhận giao + chụp ảnh PoD | POST | `/api/v1/shipper/deliveries/{id}/proof` | Form-data: `file` (ảnh chụp thực tế), text field `notes` (optional). Tự động cập nhật status sang `completed`. | `roles:Shipper` + `deliveries.update` |
+| Xác nhận giao + chụp ảnh PoD | POST | `/api/v1/shipper/deliveries/{id}/proof` | Form-data: `file` (ảnh PoD), **`signature`** (PNG chữ ký người nhận), **`RecipientConfirmedName`**, `notes` (optional). Đơn phải `in_transit` → `completed`. Response: `recipientSignatureUrl`, `requiresRecipientSignature`. | `roles:Shipper` + `deliveries.update` |
 | Tối ưu tuyến đường giao | POST | `/api/v1/shipper/routes/optimize` | Body: `{ "start": { "latitude", "longitude" }, "stops": [ { "deliveryId", "latitude", "longitude" } ] }` | `roles:Shipper` + `deliveries.list` |
 
 ---

@@ -7,7 +7,12 @@ import '../../data/repositories/shipper_repository.dart';
 import '../widgets/shipper_ui.dart';
 
 class DeliveryHistoryPage extends StatefulWidget {
-  const DeliveryHistoryPage({super.key});
+  final bool embeddedInModuleShell;
+
+  const DeliveryHistoryPage({
+    super.key,
+    this.embeddedInModuleShell = false,
+  });
 
   @override
   State<DeliveryHistoryPage> createState() => _DeliveryHistoryPageState();
@@ -90,6 +95,7 @@ class _DeliveryHistoryPageState extends State<DeliveryHistoryPage> {
     return ShipperPageShell(
       title: 'Lịch sử giao hàng',
       onRefresh: _load,
+      embeddedInModuleShell: widget.embeddedInModuleShell,
       body: _loading
           ? const ShipperLoadingBody(message: 'Đang tải lịch sử…')
           : _error != null

@@ -32,20 +32,24 @@ abstract final class AppDesignSystem {
 
   static TextStyle get font => GoogleFonts.outfit();
 
+  /// Chữ tiếng Việt rõ — không kéo sát chữ (tránh méo dấu).
+  static const double _bodyLetterSpacing = 0.15;
+  static const double _titleLetterSpacing = 0;
+
   /// TextTheme Material 3 — một nguồn Outfit cho toàn app (UI_MOB / Auth).
   static TextTheme typography() {
     final base = GoogleFonts.outfitTextTheme();
     return base.copyWith(
       displayLarge: base.displayLarge?.copyWith(
-        fontWeight: FontWeight.w900,
-        letterSpacing: -0.4,
-        height: 1.1,
+        fontWeight: FontWeight.w800,
+        letterSpacing: _titleLetterSpacing,
+        height: 1.12,
         color: gray900,
       ),
       displayMedium: base.displayMedium?.copyWith(
-        fontWeight: FontWeight.w900,
-        letterSpacing: -0.3,
-        height: 1.12,
+        fontWeight: FontWeight.w800,
+        letterSpacing: _titleLetterSpacing,
+        height: 1.14,
         color: gray900,
       ),
       displaySmall: base.displaySmall?.copyWith(
@@ -87,19 +91,22 @@ abstract final class AppDesignSystem {
       bodyLarge: base.bodyLarge?.copyWith(
         fontWeight: FontWeight.w500,
         fontSize: 16,
-        height: 1.45,
+        height: 1.5,
+        letterSpacing: _bodyLetterSpacing,
         color: gray700,
       ),
       bodyMedium: base.bodyMedium?.copyWith(
         fontWeight: FontWeight.w500,
         fontSize: 14,
-        height: 1.45,
+        height: 1.5,
+        letterSpacing: _bodyLetterSpacing,
         color: gray500,
       ),
       bodySmall: base.bodySmall?.copyWith(
         fontWeight: FontWeight.w500,
         fontSize: 12,
-        height: 1.4,
+        height: 1.45,
+        letterSpacing: _bodyLetterSpacing,
         color: gray500,
       ),
       labelLarge: base.labelLarge?.copyWith(
@@ -130,10 +137,10 @@ abstract final class AppDesignSystem {
   static TextStyle title({double size = 28, Color color = gray900}) =>
       font.copyWith(
         fontSize: size,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w800,
         color: color,
-        letterSpacing: -0.4,
-        height: 1.1,
+        letterSpacing: _titleLetterSpacing,
+        height: 1.15,
       );
 
   static TextStyle sectionTitle({Color color = gray900}) => font.copyWith(
@@ -147,7 +154,8 @@ abstract final class AppDesignSystem {
         fontSize: size,
         fontWeight: FontWeight.w500,
         color: color,
-        height: 1.45,
+        height: 1.5,
+        letterSpacing: _bodyLetterSpacing,
       );
 
   static TextStyle label({Color color = gray700}) => font.copyWith(
@@ -158,9 +166,9 @@ abstract final class AppDesignSystem {
 
   static TextStyle roleBadge(Color accent) => font.copyWith(
         fontSize: 10,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w800,
         color: accent,
-        letterSpacing: 3.2,
+        letterSpacing: 2.4,
       );
 
   static BoxDecoration card({

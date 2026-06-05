@@ -218,9 +218,20 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
         ),
       ]);
     } else if (s == 'in_transit') {
+      if (d.requiresRecipientSignature) {
+        buttons.add(
+          ShipperInfoBanner(
+            message:
+                'Đơn đang giao: thu chữ ký và tên người nhận trên màn hình xác nhận PoD.',
+            icon: Icons.draw_outlined,
+            color: shipperAccent,
+          ),
+        );
+        buttons.add(const SizedBox(height: 10));
+      }
       buttons.addAll([
         ShipperPrimaryButton(
-          label: 'Xác nhận giao (chụp ảnh)',
+          label: 'Xác nhận giao (ảnh + chữ ký)',
           icon: Icons.camera_alt_outlined,
           onPressed: _openProof,
         ),
@@ -256,6 +267,31 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
                     style: AppDesignSystem.body(size: 12, color: AppDesignSystem.success)
                         .copyWith(fontWeight: FontWeight.w700),
                   ),
+                ],
+                if (d.recipientConfirmedName != null &&
+                    d.recipientConfirmedName!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    'Người nhận: ${d.recipientConfirmedName}',
+                    style: AppDesignSystem.body(size: 12),
+                  ),
+                ],
+                if (d.recipientConfirmedAtUtc != null) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    'Xác nhận lúc: ${formatShipperDateTime(d.recipientConfirmedAtUtc!)}',
+                    style: AppDesignSystem.body(size: 12),
+                  ),
+                ],
+                if (d.recipientSignatureUrl != null &&
+                    d.recipientSignatureUrl!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Chữ ký người nhận',
+                    style: AppDesignSystem.label(color: AppDesignSystem.gray500),
+                  ),
+                  const SizedBox(height: 8),
+                  ShipperProofImage(imageUrl: d.recipientSignatureUrl, height: 120),
                 ],
               ],
             ),
@@ -347,6 +383,19 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
                                   icon: Icons.check_circle_outline,
                                   label: 'Giao thực tế',
                                   value: formatShipperDateTime(d.deliveredAtUtc!),
+                                ),
+                              if (d.recipientConfirmedName != null &&
+                                  d.recipientConfirmedName!.isNotEmpty)
+                                ShipperDetailField(
+                                  icon: Icons.person_outline,
+                                  label: 'Người nhận xác nhận',
+                                  value: d.recipientConfirmedName!,
+                                ),
+                              if (d.recipientConfirmedAtUtc != null)
+                                ShipperDetailField(
+                                  icon: Icons.verified_user_outlined,
+                                  label: 'Thời điểm xác nhận',
+                                  value: formatShipperDateTime(d.recipientConfirmedAtUtc!),
                                 ),
                               if (d.notes != null && d.notes!.isNotEmpty)
                                 ShipperDetailField(

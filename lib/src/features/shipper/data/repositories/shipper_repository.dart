@@ -40,6 +40,8 @@ class ShipperRepository {
     required List<int> imageBytes,
     required String filename,
     required String contentType,
+    required List<int> signatureBytes,
+    required String recipientConfirmedName,
     String? notes,
   }) =>
       _remote.uploadDeliveryProof(
@@ -47,6 +49,8 @@ class ShipperRepository {
         imageBytes: imageBytes,
         filename: filename,
         contentType: contentType,
+        signatureBytes: signatureBytes,
+        recipientConfirmedName: recipientConfirmedName,
         notes: notes,
       );
 

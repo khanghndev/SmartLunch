@@ -7,7 +7,12 @@ import '../widgets/manager_ui.dart';
 enum _StatsRange { week, month, quarter, year }
 
 class ManagerStatisticsPage extends StatefulWidget {
-  const ManagerStatisticsPage({super.key});
+  final bool embeddedInModuleShell;
+
+  const ManagerStatisticsPage({
+    super.key,
+    this.embeddedInModuleShell = false,
+  });
 
   @override
   State<ManagerStatisticsPage> createState() => _ManagerStatisticsPageState();
@@ -147,6 +152,7 @@ class _ManagerStatisticsPageState extends State<ManagerStatisticsPage>
     return ManagerPageShell(
       title: 'Thống kê suất ăn',
       onRefresh: _load,
+      embeddedInModuleShell: widget.embeddedInModuleShell,
       body: _loading
           ? const ManagerLoadingBody()
           : _error != null

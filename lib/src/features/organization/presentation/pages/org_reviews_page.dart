@@ -9,7 +9,12 @@ import '../widgets/organization_ui.dart';
 
 /// Đánh giá suất ăn — khớp web `Customer/Reviews` + `CustomerController.Reviews`.
 class OrgReviewsPage extends StatefulWidget {
-  const OrgReviewsPage({super.key});
+  final bool embeddedInModuleShell;
+
+  const OrgReviewsPage({
+    super.key,
+    this.embeddedInModuleShell = false,
+  });
 
   @override
   State<OrgReviewsPage> createState() => _OrgReviewsPageState();
@@ -142,6 +147,7 @@ class _OrgReviewsPageState extends State<OrgReviewsPage> {
     return OrgPageShell(
       title: 'Đánh giá suất ăn',
       onRefresh: _load,
+      embeddedInModuleShell: widget.embeddedInModuleShell,
       body: _loading
           ? const OrgLoadingBody(message: 'Đang tải đánh giá…')
           : ModuleListView(

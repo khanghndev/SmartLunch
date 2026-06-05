@@ -90,12 +90,15 @@ class ShipperRemoteDataSource {
     }
   }
 
-  /// `POST .../deliveries/{id}/proof` — multipart: field `file` + optional `notes`.
+  /// `POST .../deliveries/{id}/proof` — multipart: `file`, `signature`,
+  /// `RecipientConfirmedName`, optional `notes`.
   Future<ShipperDeliveryDetailModel> uploadDeliveryProof(
     int deliveryId, {
     required List<int> imageBytes,
     required String filename,
     required String contentType,
+    required List<int> signatureBytes,
+    required String recipientConfirmedName,
     String? notes,
   }) async {
     try {
@@ -105,13 +108,21 @@ class ShipperRemoteDataSource {
         filename: filename,
         contentType: contentType,
       );
-      final fields = <String, String>{};
+      final signatureFile = ApiClient.multipartImageBytes(
+        fieldName: 'signature',
+        bytes: signatureBytes,
+        filename: 'recipient-signature.png',
+        contentType: 'image/png',
+      );
+      final fields = <String, String>{
+        'RecipientConfirmedName': recipientConfirmedName.trim(),
+      };
       if (notes != null && notes.trim().isNotEmpty) {
         fields['notes'] = notes.trim();
       }
       final response = await _apiClient.postMultipart(
         '/api/v1/shipper/deliveries/$deliveryId/proof',
-        files: <http.MultipartFile>[file],
+        files: <http.MultipartFile>[file, signatureFile],
         fields: fields,
       );
       final data = response['data'] as Map<String, dynamic>?;

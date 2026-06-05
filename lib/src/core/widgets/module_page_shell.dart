@@ -11,6 +11,8 @@ class ModulePageShell extends StatelessWidget {
   final List<Widget>? actions;
   final Widget? floatingAction;
   final Future<void> Function()? onRefresh;
+  /// Tab trong [RoleModuleTabShell] — không AppBar trùng, chỉ nội dung scroll.
+  final bool embeddedInModuleShell;
 
   const ModulePageShell({
     super.key,
@@ -20,6 +22,7 @@ class ModulePageShell extends StatelessWidget {
     this.actions,
     this.floatingAction,
     this.onRefresh,
+    this.embeddedInModuleShell = false,
   });
 
   @override
@@ -27,6 +30,13 @@ class ModulePageShell extends StatelessWidget {
     final content = onRefresh != null
         ? RefreshIndicator(color: role.primary, onRefresh: onRefresh!, child: body)
         : body;
+
+    if (embeddedInModuleShell) {
+      return ColoredBox(
+        color: AppDesignSystem.gray50,
+        child: content,
+      );
+    }
 
     return Scaffold(
       resizeToAvoidBottomInset: true,

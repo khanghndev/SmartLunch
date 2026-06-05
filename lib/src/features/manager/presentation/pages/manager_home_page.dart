@@ -13,6 +13,9 @@ import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../profile/data/models/user_profile_model.dart';
 import '../../../profile/data/profile_repository.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
+import 'cash_flow_page.dart';
+import 'manager_reconciliation_page.dart';
+import 'manager_statistics_page.dart';
 import '../../data/models/finance_models.dart';
 import '../../data/models/review_complaint_models.dart';
 import '../../data/repositories/manager_repository.dart';
@@ -154,19 +157,19 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
             label: 'Thống kê',
             icon: Icons.bar_chart_rounded,
             color: mgr.primary,
-            onTap: () => Navigator.of(context).pushNamed(AppRoutes.managerStatistics),
+            onTap: () => setState(() => _currentIndex = 1),
           ),
           RoleHeaderQuickAction(
             label: 'Thu chi',
             icon: Icons.attach_money_rounded,
             color: AppDesignSystem.success,
-            onTap: () => Navigator.of(context).pushNamed(AppRoutes.managerCashFlow),
+            onTap: () => setState(() => _currentIndex = 2),
           ),
           RoleHeaderQuickAction(
-            label: 'Báo cáo',
-            icon: Icons.file_download_rounded,
+            label: 'Đối soát',
+            icon: Icons.receipt_long_rounded,
             color: AppDesignSystem.info,
-            onTap: () => Navigator.of(context).pushNamed(AppRoutes.managerReports),
+            onTap: () => setState(() => _currentIndex = 3),
           ),
         ],
       ),
@@ -282,6 +285,36 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
     );
   }
 
+  Widget _buildStatisticsTab() {
+    return const RoleModuleTabPage(
+      role: kManagerRole,
+      headerTitle: 'Thống kê suất ăn',
+      headerSubtitle: 'Theo ngày / ca / bộ phận · doanh thu',
+      trustPill: 'Quản trị',
+      body: ManagerStatisticsPage(embeddedInModuleShell: true),
+    );
+  }
+
+  Widget _buildCashFlowTab() {
+    return const RoleModuleTabPage(
+      role: kManagerRole,
+      headerTitle: 'Quản lý thu chi',
+      headerSubtitle: 'Dòng tiền theo ngày / tuần / tháng',
+      trustPill: 'Quản trị',
+      body: CashFlowPage(embeddedInModuleShell: true),
+    );
+  }
+
+  Widget _buildReconciliationTab() {
+    return const RoleModuleTabPage(
+      role: kManagerRole,
+      headerTitle: 'Đối soát thanh toán',
+      headerSubtitle: 'Công nợ đơn vị & nhà cung cấp',
+      trustPill: 'Quản trị',
+      body: ManagerReconciliationPage(embeddedInModuleShell: true),
+    );
+  }
+
   Widget _buildProfileTab() {
     final email = _profile?.email ?? 'Tài khoản của bạn';
     return RoleModuleTabPage(
@@ -309,6 +342,9 @@ class _ManagerHomePageState extends State<ManagerHomePage> {
       navItems: ManagerShellConfig.navItems,
       tabs: [
         _buildDashboardTab(context),
+        _buildStatisticsTab(),
+        _buildCashFlowTab(),
+        _buildReconciliationTab(),
         _buildProfileTab(),
       ],
     );

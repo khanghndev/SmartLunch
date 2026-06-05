@@ -7,6 +7,9 @@ import '../../../../core/widgets/role_module_header.dart';
 import '../../../../core/widgets/role_module_shell.dart';
 import '../widgets/organization_shell.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
+import 'contract_settlement_page.dart';
+import 'org_bulk_order_mode_page.dart';
+import 'org_reviews_page.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../profile/data/profile_repository.dart';
 import '../../../profile/data/models/user_profile_model.dart';
@@ -147,15 +150,19 @@ class _OrganizationHomePageState extends State<OrganizationHomePage> {
             label: 'Đặt suất ăn',
             icon: Icons.restaurant_menu_rounded,
             color: org.primary,
-            onTap: () =>
-                Navigator.of(context).pushNamed(AppRoutes.orgBulkOrderMode),
+            onTap: () => setState(() => _currentIndex = 1),
           ),
           RoleHeaderQuickAction(
             label: 'Hợp đồng',
             icon: Icons.request_quote_rounded,
             color: org.primaryAlt,
-            onTap: () =>
-                Navigator.of(context).pushNamed(AppRoutes.orgContractSettlement),
+            onTap: () => setState(() => _currentIndex = 2),
+          ),
+          RoleHeaderQuickAction(
+            label: 'Đánh giá',
+            icon: Icons.star_rounded,
+            color: AppDesignSystem.warning,
+            onTap: () => setState(() => _currentIndex = 3),
           ),
         ],
       ),
@@ -271,6 +278,36 @@ class _OrganizationHomePageState extends State<OrganizationHomePage> {
     );
   }
 
+  Widget _buildBulkOrderTab() {
+    return const RoleModuleTabPage(
+      role: kOrgRoleShell,
+      headerTitle: 'Đặt suất ăn',
+      headerSubtitle: 'Tự động hoặc theo hợp đồng kỳ',
+      trustPill: 'B2B',
+      body: OrgBulkOrderModePage(embeddedInModuleShell: true),
+    );
+  }
+
+  Widget _buildContractsTab() {
+    return const RoleModuleTabPage(
+      role: kOrgRoleShell,
+      headerTitle: 'Hợp đồng & thanh toán',
+      headerSubtitle: 'Đối soát và thanh toán cọc PayOS',
+      trustPill: 'B2B',
+      body: ContractSettlementPage(embeddedInModuleShell: true),
+    );
+  }
+
+  Widget _buildReviewsTab() {
+    return const RoleModuleTabPage(
+      role: kOrgRoleShell,
+      headerTitle: 'Đánh giá suất ăn',
+      headerSubtitle: 'Xem và gửi đánh giá theo đơn',
+      trustPill: 'B2B',
+      body: OrgReviewsPage(embeddedInModuleShell: true),
+    );
+  }
+
   Widget _buildProfileTab() {
     final email = _profile?.email ?? 'Tài khoản đơn vị';
     return RoleModuleTabPage(
@@ -310,6 +347,9 @@ class _OrganizationHomePageState extends State<OrganizationHomePage> {
       navItems: OrganizationShellConfig.navItems,
       tabs: [
         _buildDashboardTab(context),
+        _buildBulkOrderTab(),
+        _buildContractsTab(),
+        _buildReviewsTab(),
         _buildProfileTab(),
       ],
     );

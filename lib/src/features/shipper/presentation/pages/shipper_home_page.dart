@@ -8,6 +8,9 @@ import '../../../../core/widgets/role_module_shell.dart';
 import '../widgets/shipper_shell.dart';
 import '../widgets/shipper_ui.dart';
 import '../../../profile/presentation/pages/profile_page.dart';
+import 'delivery_history_page.dart';
+import 'delivery_list_page.dart';
+import 'delivery_schedule_page.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
 import '../../../profile/data/profile_repository.dart';
 import '../../../profile/data/models/user_profile_model.dart';
@@ -128,19 +131,19 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
             label: 'Đơn cần giao',
             icon: Icons.list_alt_rounded,
             color: shipper.primary,
-            onTap: () => Navigator.of(context).pushNamed(AppRoutes.shipperDeliveryList),
-          ),
-          RoleHeaderQuickAction(
-            label: 'Bản đồ',
-            icon: Icons.map_rounded,
-            color: AppDesignSystem.success,
-            onTap: () => Navigator.of(context).pushNamed(AppRoutes.shipperRouteMap),
+            onTap: () => setState(() => _currentIndex = 1),
           ),
           RoleHeaderQuickAction(
             label: 'Lịch giao',
             icon: Icons.calendar_month_rounded,
+            color: AppDesignSystem.success,
+            onTap: () => setState(() => _currentIndex = 2),
+          ),
+          RoleHeaderQuickAction(
+            label: 'Lịch sử',
+            icon: Icons.history_rounded,
             color: shipper.primaryAlt,
-            onTap: () => Navigator.of(context).pushNamed(AppRoutes.shipperSchedule),
+            onTap: () => setState(() => _currentIndex = 3),
           ),
         ],
       ),
@@ -238,6 +241,36 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
     );
   }
 
+  Widget _buildDeliveriesTab() {
+    return const RoleModuleTabPage(
+      role: kShipperRoleShell,
+      headerTitle: 'Đơn cần giao',
+      headerSubtitle: 'Lọc theo ngày và trạng thái giao',
+      trustPill: 'Giao hàng',
+      body: DeliveryListPage(embeddedInModuleShell: true),
+    );
+  }
+
+  Widget _buildScheduleTab() {
+    return const RoleModuleTabPage(
+      role: kShipperRoleShell,
+      headerTitle: 'Lịch trình giao',
+      headerSubtitle: 'Chọn ngày xem đơn theo lịch',
+      trustPill: 'Giao hàng',
+      body: DeliverySchedulePage(embeddedInModuleShell: true),
+    );
+  }
+
+  Widget _buildHistoryTab() {
+    return const RoleModuleTabPage(
+      role: kShipperRoleShell,
+      headerTitle: 'Lịch sử giao hàng',
+      headerSubtitle: 'Đơn hoàn tất hoặc giao thất bại',
+      trustPill: 'Giao hàng',
+      body: DeliveryHistoryPage(embeddedInModuleShell: true),
+    );
+  }
+
   Widget _buildProfileTab() {
     final email = _profile?.email ?? 'Tài khoản giao hàng';
     return RoleModuleTabPage(
@@ -277,6 +310,9 @@ class _ShipperHomePageState extends State<ShipperHomePage> {
       navItems: ShipperShellConfig.navItems,
       tabs: [
         _buildDashboardTab(context),
+        _buildDeliveriesTab(),
+        _buildScheduleTab(),
+        _buildHistoryTab(),
         _buildProfileTab(),
       ],
     );

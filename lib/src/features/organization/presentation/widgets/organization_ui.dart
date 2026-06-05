@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../core/network/api_exception.dart';
 import '../../../../core/theme/app_design_system.dart';
 import '../../../../core/widgets/module_page_shell.dart';
-import '../../../../core/widgets/module_scroll.dart';
+import '../../../../core/widgets/role_tab_shell.dart' show moduleTabListPadding;
 
 export '../../../../core/widgets/module_page_shell.dart';
 export '../../../../core/widgets/module_scroll.dart';
@@ -39,7 +39,7 @@ const RolePalette kOrgRole = RolePalette.organization;
 Color get orgAccent => kOrgRole.primary;
 
 EdgeInsets orgListPadding(BuildContext context) =>
-    moduleListPadding(context, bottomBarInset: 0);
+    moduleTabListPadding(context);
 
 String formatOrgVnd(double amount) {
   final s = amount.toStringAsFixed(0).replaceAllMapped(
@@ -56,6 +56,7 @@ class OrgPageShell extends StatelessWidget {
   final Widget body;
   final List<Widget>? actions;
   final Future<void> Function()? onRefresh;
+  final bool embeddedInModuleShell;
 
   const OrgPageShell({
     super.key,
@@ -63,6 +64,7 @@ class OrgPageShell extends StatelessWidget {
     required this.body,
     this.actions,
     this.onRefresh,
+    this.embeddedInModuleShell = false,
   });
 
   @override
@@ -73,6 +75,7 @@ class OrgPageShell extends StatelessWidget {
       body: body,
       actions: actions,
       onRefresh: onRefresh,
+      embeddedInModuleShell: embeddedInModuleShell,
     );
   }
 }

@@ -13,11 +13,27 @@ abstract final class ShipperShellConfig {
   static const roleBadge = 'Shipper';
   static const drawerUserRole = 'Nhân viên giao hàng';
 
+  /// Tab 0–4: Tổng quan, Đơn giao, Lịch, Lịch sử, Hồ sơ.
   static const navItems = [
     BottomNavigationBarItem(
-      icon: Icon(Icons.local_shipping_outlined),
-      activeIcon: Icon(Icons.local_shipping_rounded),
-      label: 'Vận chuyển',
+      icon: Icon(Icons.dashboard_outlined),
+      activeIcon: Icon(Icons.dashboard_rounded),
+      label: 'Tổng quan',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.list_alt_outlined),
+      activeIcon: Icon(Icons.list_alt_rounded),
+      label: 'Đơn giao',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.calendar_month_outlined),
+      activeIcon: Icon(Icons.calendar_month_rounded),
+      label: 'Lịch giao',
+    ),
+    BottomNavigationBarItem(
+      icon: Icon(Icons.history_outlined),
+      activeIcon: Icon(Icons.history_rounded),
+      label: 'Lịch sử',
     ),
     BottomNavigationBarItem(
       icon: Icon(Icons.person_outline_rounded),
@@ -40,7 +56,7 @@ abstract final class ShipperShellConfig {
           icon: Icons.list_alt_rounded,
           label: 'deliveries',
           labelVi: 'Danh sách đơn hàng',
-          route: AppRoutes.shipperDeliveryList,
+          tabIndex: 1,
         ),
         DrawerItem(
           icon: Icons.map_rounded,
@@ -57,13 +73,13 @@ abstract final class ShipperShellConfig {
           icon: Icons.calendar_month_rounded,
           label: 'schedule',
           labelVi: 'Lịch trình giao',
-          route: AppRoutes.shipperSchedule,
+          tabIndex: 2,
         ),
         DrawerItem(
           icon: Icons.history_rounded,
           label: 'history',
           labelVi: 'Lịch sử giao hàng',
-          route: AppRoutes.shipperHistory,
+          tabIndex: 3,
         ),
       ],
     ),
@@ -74,7 +90,7 @@ abstract final class ShipperShellConfig {
           icon: Icons.person_rounded,
           label: 'profile',
           labelVi: 'Hồ sơ cá nhân',
-          tabIndex: 1,
+          tabIndex: 4,
         ),
       ],
     ),

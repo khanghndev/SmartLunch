@@ -6,7 +6,12 @@ import '../../data/repositories/shipper_repository.dart';
 import '../widgets/shipper_ui.dart';
 
 class DeliverySchedulePage extends StatefulWidget {
-  const DeliverySchedulePage({super.key});
+  final bool embeddedInModuleShell;
+
+  const DeliverySchedulePage({
+    super.key,
+    this.embeddedInModuleShell = false,
+  });
 
   @override
   State<DeliverySchedulePage> createState() => _DeliverySchedulePageState();
@@ -74,6 +79,7 @@ class _DeliverySchedulePageState extends State<DeliverySchedulePage> {
     return ShipperPageShell(
       title: 'Lịch trình giao',
       onRefresh: _load,
+      embeddedInModuleShell: widget.embeddedInModuleShell,
       body: _loading
           ? const ShipperLoadingBody(message: 'Đang tải lịch giao…')
           : _error != null
