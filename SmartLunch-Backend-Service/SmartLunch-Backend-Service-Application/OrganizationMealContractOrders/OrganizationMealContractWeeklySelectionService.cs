@@ -65,11 +65,14 @@ public sealed class OrganizationMealContractWeeklySelectionService
     /// <summary>Đồng bộ đơn fulfillment tuần cũ (Tuan-*) vào bảng weekly selections.</summary>
     public async Task SyncLegacyWeekOrdersAsync(Contract contract, CancellationToken cancellationToken = default)
     {
-        var selections = await _weeklyRepository.GetAllByContractIdAsync(contract.Id, cancellationToken: cancellationToken);
+        var selections = await _weeklyRepository.GetAllByContractIdAsync(
+            contract.Id, includeItems: true, cancellationToken: cancellationToken);
         var changed = false;
         foreach (var sel in selections)
         {
-            if (ContractWeeklySelectionStatuses.IsFilled(sel.Status))
+            var needsHeaderSync = !ContractWeeklySelectionStatuses.IsFilled(sel.Status);
+            var needsItemsSync = sel.Items.Count == 0;
+            if (!needsHeaderSync && !needsItemsSync)
                 continue;
 
             var order = await _orderRepository.GetContractWeekOrderAsync(
@@ -77,11 +80,38 @@ public sealed class OrganizationMealContractWeeklySelectionService
             if (order == null || order.OrderItems.Count == 0)
                 continue;
 
-            sel.Status = ContractWeeklySelectionStatuses.Selected;
-            sel.FulfillmentOrderId = order.Id;
-            sel.SelectedAt = order.UpdatedAt ?? order.CreatedAt;
+            if (needsHeaderSync)
+            {
+                sel.Status = ContractWeeklySelectionStatuses.Selected;
+                sel.FulfillmentOrderId = order.Id;
+                sel.SelectedAt = order.UpdatedAt ?? order.CreatedAt;
+                changed = true;
+            }
+            else if (sel.FulfillmentOrderId != order.Id)
+            {
+                sel.FulfillmentOrderId = order.Id;
+                changed = true;
+            }
+
+            if (needsItemsSync)
+            {
+                foreach (var item in order.OrderItems)
+                {
+                    if (!item.ServiceDate.HasValue)
+                        continue;
+
+                    sel.Items.Add(new ContractWeeklySelectionItem
+                    {
+                        ServiceDate = item.ServiceDate.Value,
+                        DishId = item.DishId,
+                        Quantity = item.Quantity,
+                    });
+                }
+
+                changed = true;
+            }
+
             sel.UpdatedAt = VietnamTime.Now;
-            changed = true;
         }
 
         if (changed)

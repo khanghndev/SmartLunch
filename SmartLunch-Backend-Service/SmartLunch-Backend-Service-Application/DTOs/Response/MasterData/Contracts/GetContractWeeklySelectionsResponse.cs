@@ -18,6 +18,9 @@ public sealed class ContractWeeklySelectionDto
     public DateOnly WeekEnd { get; set; }
     public string Status { get; set; } = ContractWeeklySelectionStatuses.Pending;
     public int? FulfillmentOrderId { get; set; }
+    public string? FulfillmentOrderStatus { get; set; }
+    public string? FulfillmentPaymentStatus { get; set; }
+    public string? FulfillmentInvoiceCode { get; set; }
     public DateTime? SelectedAt { get; set; }
     public bool IsOpenWeek { get; set; }
     public bool CanSelect { get; set; }

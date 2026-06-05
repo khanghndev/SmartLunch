@@ -38,7 +38,8 @@ public class ContractWeeklySelectionRepository : IContractWeeklySelectionReposit
         bool includeItems = false,
         CancellationToken cancellationToken = default)
     {
-        IQueryable<ContractWeeklySelection> query = _context.ContractWeeklySelections;
+        IQueryable<ContractWeeklySelection> query = _context.ContractWeeklySelections
+            .Include(w => w.FulfillmentOrder);
         if (includeItems)
         {
             query = query
