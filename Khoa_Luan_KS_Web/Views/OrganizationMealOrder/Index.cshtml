@@ -173,7 +173,7 @@
                         <div class="border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-orange-50/30 px-6 py-5 sm:px-8">
                             <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600">Bước 1</p>
                             <h2 class="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Thiết lập đơn hàng</h2>
-                            <p class="mt-1 text-sm text-slate-500">Nhập giá/suất và thêm các ngày phục vụ trước khi chọn món.</p>
+                            <p class="mt-1 text-sm text-slate-500">Chọn giá/suất và thêm các ngày phục vụ trước khi chọn món.</p>
                         </div>
                         <div class="space-y-8 p-6 sm:p-8">
                             <!-- Price -->
@@ -185,9 +185,14 @@
                                     <div class="min-w-0 flex-1">
                                         <label class="block text-[11px] font-black uppercase tracking-wider text-orange-800/80">Giá thỏa thuận / suất (VND)</label>
                                         <div class="relative mt-2">
-                                            <input type="number" x-model.number="pricePerPortion" min="1000" step="1000"
-                                                   class="w-full rounded-2xl border border-orange-200/80 bg-white py-3.5 pl-4 pr-14 text-2xl font-black text-slate-900 shadow-inner focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200" placeholder="45000" />
-                                            <span class="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-400">đ</span>
+                                            <select x-model.number="pricePerPortion"
+                                                    class="w-full cursor-pointer appearance-none rounded-2xl border border-orange-200/80 bg-white py-3.5 pl-4 pr-14 text-2xl font-black text-slate-900 shadow-inner focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200">
+                                                <option value="25000">25.000 đ</option>
+                                                <option value="30000">30.000 đ</option>
+                                                <option value="45000">45.000 đ</option>
+                                                <option value="60000">60.000 đ</option>
+                                            </select>
+                                            <i data-lucide="chevron-down" class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"></i>
                                         </div>
                                     </div>
                                 </div>
@@ -971,7 +976,8 @@
 
         Alpine.data('orgMealOrderApp', () => ({
             step: 1,
-            pricePerPortion: 45000,
+            pricePerPortion: 25000,
+            pricePerPortionOptions: [25000, 30000, 45000, 60000],
             promotionCode: '',
             newDate: dateDefault,
             dateMin, dateMax,
@@ -1040,12 +1046,16 @@
             formatMoney(n) {
                 return new Intl.NumberFormat('vi-VN').format(Math.round(n || 0));
             },
+            normalizePricePerPortion(value) {
+                const n = parseInt(value, 10);
+                return this.pricePerPortionOptions.includes(n) ? n : this.pricePerPortionOptions[0];
+            },
             cacheStorageKey() {
                 return draftCacheKey;
             },
             hasMeaningfulDraft() {
                 return this.mealDays.length > 0 || this.step > 1
-                    || (this.pricePerPortion && this.pricePerPortion !== 45000);
+                    || (this.pricePerPortion && this.pricePerPortion !== this.pricePerPortionOptions[0]);
             },
             scheduleDraftCacheSave() {
                 if (!this.hasMeaningfulDraft()) return;
@@ -1090,7 +1100,7 @@
                     if (!data.mealDays?.length && (data.step || 1) === 1) return false;
 
                     this.step = Math.min(4, Math.max(1, parseInt(data.step, 10) || 1));
-                    this.pricePerPortion = data.pricePerPortion > 0 ? data.pricePerPortion : this.pricePerPortion;
+                    this.pricePerPortion = this.normalizePricePerPortion(data.pricePerPortion);
                     this.newDate = data.newDate || this.newDate;
                     this.mealDays = Array.isArray(data.mealDays) ? data.mealDays : [];
                     this.activeDay = data.activeDay || this.mealDays[0]?.serviceDate || null;
@@ -1185,7 +1195,7 @@
             goStep2() {
                 this.formError = '';
                 if (!this.pricePerPortion || this.pricePerPortion <= 0) {
-                    this.formError = 'Nhập giá thỏa thuận / suất hợp lệ.';
+                    this.formError = 'Chọn giá thỏa thuận / suất hợp lệ.';
                     return;
                 }
                 if (this.mealDays.length === 0) {
