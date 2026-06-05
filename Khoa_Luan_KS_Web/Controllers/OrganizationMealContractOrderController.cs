@@ -447,9 +447,89 @@ public class OrganizationMealContractOrderController : Controller
                         CanPayDeposit = signed && hasOrder && IsAwaitingDeposit(c.Status),
                         CanSelectWeeklyMeals = signed && hasOrder && !IsFullyCompleted(end, today) && openWeek.HasValue,
                         OpenWeekMonday = openWeek,
+                        TotalServiceWeeks = c.TotalServiceWeeks ?? 0,
+                        FilledServiceWeeks = c.FilledServiceWeeks ?? 0,
                     };
                 })
                 .ToList();
+        }
+        catch (Exception ex)
+        {
+            vm.ApiError = ex.Message;
+        }
+
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> Detail(int id, CancellationToken ct = default)
+    {
+        if (!IsOrgUser(User)) return RedirectToAction(nameof(Index));
+        if (id <= 0) return RedirectToAction(nameof(Contracts));
+
+        var accessToken = HttpContext.Session.GetString("access_token");
+        if (string.IsNullOrEmpty(accessToken))
+            return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(Detail), new { id }) });
+
+        var vm = new OrganizationMealContractDetailVm { ContractId = id };
+        try
+        {
+            var profile = await _authClient.GetProfileAsync(accessToken, ct);
+            vm.OrganizationName = profile.Unit?.Name ?? "Đơn vị";
+
+            var detail = await _masterDataClient.GetCompanyContractAsync(id, accessToken, ct);
+            vm.Contract = detail.Contract;
+            vm.SourceOrderId = detail.Contract.SourceOrderId;
+            vm.Weekly = await _masterDataClient.GetContractWeeklySelectionsAsync(id, accessToken, ct);
+        }
+        catch (Exception ex)
+        {
+            vm.ApiError = ex.Message;
+        }
+
+        return View(vm);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> WeeklyTrack(
+        int id,
+        string? weekStart = null,
+        CancellationToken ct = default)
+    {
+        if (!IsOrgUser(User)) return RedirectToAction(nameof(Index));
+        if (id <= 0) return RedirectToAction(nameof(Contracts));
+
+        var accessToken = HttpContext.Session.GetString("access_token");
+        if (string.IsNullOrEmpty(accessToken))
+            return RedirectToAction("Login", "Auth", new { returnUrl = Url.Action(nameof(WeeklyTrack), new { id, weekStart }) });
+
+        var vm = new OrganizationMealContractWeeklyTrackVm { ContractId = id };
+        try
+        {
+            var profile = await _authClient.GetProfileAsync(accessToken, ct);
+            vm.OrganizationName = profile.Unit?.Name ?? "Đơn vị";
+
+            var detail = await _masterDataClient.GetCompanyContractAsync(id, accessToken, ct);
+            vm.ContractNumber = detail.Contract.ContractNumber;
+
+            var weekly = await _masterDataClient.GetContractWeeklySelectionsAsync(id, accessToken, ct);
+            ContractWeeklySelectionClientDto? week = null;
+            if (!string.IsNullOrWhiteSpace(weekStart)
+                && DateOnly.TryParse(weekStart, CultureInfo.InvariantCulture, out var parsed))
+            {
+                var monday = OrganizationMealContractDateRules.GetWeekMonday(parsed);
+                week = weekly.Weeks.FirstOrDefault(w => w.WeekMonday == monday);
+            }
+
+            week ??= weekly.Weeks.FirstOrDefault(w => w.IsOpenWeek && w.IsFilled)
+                     ?? weekly.Weeks.LastOrDefault(w => w.IsFilled);
+
+            if (week == null || !week.IsFilled)
+            {
+                return RedirectToAction(nameof(Detail), new { id });
+            }
+
+            vm.Week = week;
         }
         catch (Exception ex)
         {
@@ -497,6 +577,27 @@ public class OrganizationMealContractOrderController : Controller
                 ? DateOnly.FromDateTime(c.EndDate.Value)
                 : vm.ContractStart;
             vm.MealsPerDay = c.MealsPerDay is > 0 ? c.MealsPerDay.Value : 1;
+
+            var weeklySelections = await _masterDataClient.GetContractWeeklySelectionsAsync(contractId, accessToken, ct);
+            var openSel = weeklySelections.Weeks.FirstOrDefault(w => w.IsOpenWeek);
+            if (openSel != null)
+            {
+                if (openSel.IsFilled)
+                {
+                    return RedirectToAction(nameof(WeeklyTrack), new
+                    {
+                        id = contractId,
+                        weekStart = openSel.WeekMonday.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                    });
+                }
+
+                if (!openSel.CanSelect)
+                {
+                    TempData["OrgPeriodInfo"] =
+                        "Tuần đang mở đã quá hạn chọn món thủ công (trước 3 ngày). Hệ thống sẽ tự chọn món hoặc đã gửi email nhắc.";
+                    return RedirectToAction(nameof(Detail), new { id = contractId });
+                }
+            }
 
             var excluded = ResolveExcludedDates(contractId, c);
             var today = OrganizationMealContractDateRules.TodayVietnam();
@@ -714,7 +815,17 @@ public class OrganizationMealContractOrderController : Controller
             }
 
             var res = await _masterDataClient.SubmitOrganizationMealWeeklySelectionAsync(contractId, request, accessToken, ct);
-            return Json(new { success = true, itemCount = res.ItemCount, redirectUrl = Url.Action(nameof(Contracts)) });
+            TempData["OrgPeriodSuccess"] = "Đã lưu thực đơn tuần thành công.";
+            return Json(new
+            {
+                success = true,
+                itemCount = res.ItemCount,
+                redirectUrl = Url.Action(nameof(WeeklyTrack), new
+                {
+                    id = contractId,
+                    weekStart = openWeekMonday.Value.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture),
+                }),
+            });
         }
         catch (Exception ex)
         {

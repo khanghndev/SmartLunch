@@ -4,7 +4,7 @@ namespace Khoa_Luan_KS_Web.Helpers;
 
 /// <summary>
 /// Nút «Đặt suất ăn» trên lịch sử đơn sau khi đặt cọc.
-/// Period-Based → chọn món theo tuần; Order-Based → xem/chỉnh suất đã đặt (chi tiết đơn).
+/// Period-Based → quản lý suất ăn theo tuần (chi tiết HĐ); Order-Based → xem chi tiết đơn.
 /// </summary>
 public static class OrderMealPlacementDisplay
 {
@@ -51,7 +51,6 @@ public static class OrderMealPlacementDisplay
     public static int ResolveContractId(OrderDetailClientDto order) =>
         order.ContractSummary?.Id ?? order.ContractId ?? 0;
 
-    /// <summary>Đã tới ngày giao dự kiến (VN).</summary>
     public static bool HasReachedScheduledDate(DateTime scheduledDate, DateOnly todayVietnam) =>
         todayVietnam >= ToScheduledDateOnly(scheduledDate);
 
@@ -83,14 +82,15 @@ public static class OrderMealPlacementDisplay
             if (!IsWithinContractPeriod(contract, today))
                 return null;
 
-            var weekStart = ResolveOpenWeekForPlacement(contract, today);
-            if (!weekStart.HasValue)
+            var openWeek = ResolveOpenWeekForPlacement(contract, today);
+            if (!openWeek.HasValue)
                 return null;
+
             return new PlaceMealLink(
                 Controller: "OrganizationMealContractOrder",
-                Action: "Weekly",
-                RouteValues: WeeklyRoute(contractId),
-                Title: $"Chọn món tuần {weekStart.Value:dd/MM} – {weekStart.Value.AddDays(6):dd/MM/yyyy}");
+                Action: "Detail",
+                RouteValues: ContractDetailRoute(contractId),
+                Title: ContractWeeklySelectionDisplay.ManageContractButtonLabel);
         }
 
         if (IsOrderBasedContract(contract))
@@ -104,7 +104,6 @@ public static class OrderMealPlacementDisplay
                     : $"Xem suất đã đặt — giao dự kiến {ToScheduledDateOnly(order.ScheduledDate):dd/MM/yyyy}");
         }
 
-        // Đơn có phụ lục nhưng API chưa trả ContractSummary — không suy luận Weekly (tránh nhầm Order-Based)
         if (contract == null && !string.IsNullOrWhiteSpace(order.AnnexPdfUrl))
         {
             return new PlaceMealLink(
@@ -139,7 +138,7 @@ public static class OrderMealPlacementDisplay
     public static string? PlaceMealTitle(OrderDetailClientDto order, DateOnly? todayVietnam = null) =>
         TryGetPlaceMealLink(order, isOrganizationAccount: true, todayVietnam)?.Title;
 
-    private static Dictionary<string, string> WeeklyRoute(int contractId) =>
+    private static Dictionary<string, string> ContractDetailRoute(int contractId) =>
         new() { ["id"] = contractId.ToString() };
 
     private static Dictionary<string, string> OrderDetailRoute(int orderId) =>

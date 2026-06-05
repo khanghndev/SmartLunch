@@ -130,6 +130,12 @@ public static class OrganizationMealContractDateRules
             yield return d;
     }
 
+    /// <summary>Phải chọn món thủ công trước N ngày so với Thứ 2 tuần phục vụ.</summary>
+    public const int ManualSelectionLeadDays = 3;
+
+    public static bool CanManuallySelectWeek(DateOnly today, DateOnly weekMonday) =>
+        today <= weekMonday.AddDays(-ManualSelectionLeadDays);
+
     /// <summary>Tuần đang mở để chọn món (thường tuần kế tiếp; tuần đầu HĐ có thể là tuần hiện tại).</summary>
     public static DateOnly? ResolveOpenWeekMonday(
         DateOnly today,

@@ -262,6 +262,10 @@ namespace Khoa_Luan_KS_Web.Controllers
                 var orders = await _masterDataClient.GetOrdersAsync(
                     accessToken, page, pageSize, status, search, scheduledOn, paymentStatus, ct);
 
+                orders.Items = orders.Items
+                    .Where(o => !ContractWeeklySelectionDisplay.IsWeeklyFulfillmentOrder(o.InvoiceCode, o.ContractId))
+                    .ToList();
+
                 var vm = new ProfileOrdersPageVm
                 {
                     Orders = orders,
@@ -333,7 +337,31 @@ namespace Khoa_Luan_KS_Web.Controllers
                     }
                 }
 
-                return View(res.Order);
+                var vm = new ProfileOrderDetailPageVm { Order = res.Order };
+                var contractId = OrderMealPlacementDisplay.ResolveContractId(res.Order);
+                if (IsOrganizationAccount(User) && contractId > 0)
+                {
+                    try
+                    {
+                        var contractRes = await _masterDataClient.GetCompanyContractAsync(contractId, accessToken, ct);
+                        if (string.Equals(
+                                contractRes.Contract.ContractType,
+                                "Period-Based",
+                                StringComparison.OrdinalIgnoreCase))
+                        {
+                            vm.IsPeriodBased = true;
+                            vm.Contract = contractRes.Contract;
+                            vm.Weekly = await _masterDataClient.GetContractWeeklySelectionsAsync(
+                                contractId, accessToken, ct);
+                        }
+                    }
+                    catch
+                    {
+                        /* fallback to standard order detail */
+                    }
+                }
+
+                return View(vm);
             }
             catch (Exception)
             {

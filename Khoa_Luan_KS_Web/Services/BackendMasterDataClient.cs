@@ -507,6 +507,17 @@ public class BackendMasterDataClient
         return await GetAsync<GetContractClientResponse>($"/api/v1/company/contracts/{contractId}", accessToken, ct);
     }
 
+    public async Task<GetContractWeeklySelectionsClientResponse> GetContractWeeklySelectionsAsync(
+        int contractId,
+        string accessToken,
+        CancellationToken ct = default)
+    {
+        return await GetAsync<GetContractWeeklySelectionsClientResponse>(
+            $"/api/v1/company/contracts/{contractId}/weekly-selections",
+            accessToken,
+            ct);
+    }
+
     public async Task<GetContractClientResponse> SignCompanyContractAsync(int contractId, SignCompanyContractRequest request, string accessToken, CancellationToken ct = default)
     {
         return await PostAsync<GetContractClientResponse>($"/api/v1/company/contracts/{contractId}/sign", request, accessToken, ct);
@@ -1866,6 +1877,8 @@ public class CustomerContractDto
     public string Status { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }
     public DateTime? UpdatedAt { get; set; }
+    public int? TotalServiceWeeks { get; set; }
+    public int? FilledServiceWeeks { get; set; }
 }
 
 public class SignCompanyContractRequest
@@ -2290,7 +2303,49 @@ public class SubmitOrganizationMealWeeklySelectionClientRequest
 public class SubmitOrganizationMealWeeklySelectionClientResponse
 {
     public int ContractId { get; set; }
+    public int WeeklySelectionId { get; set; }
     public int OrderId { get; set; }
     public string WeekStart { get; set; } = string.Empty;
+    public string Status { get; set; } = string.Empty;
     public int ItemCount { get; set; }
+}
+
+public class GetContractWeeklySelectionsClientResponse
+{
+    public int ContractId { get; set; }
+    public DateOnly? OpenWeekMonday { get; set; }
+    public int TotalServiceWeeks { get; set; }
+    public int FilledServiceWeeks { get; set; }
+    public List<ContractWeeklySelectionClientDto> Weeks { get; set; } = new();
+}
+
+public class ContractWeeklySelectionClientDto
+{
+    public int Id { get; set; }
+    public DateOnly WeekMonday { get; set; }
+    public DateOnly WeekEnd { get; set; }
+    public string Status { get; set; } = "pending";
+    public int? FulfillmentOrderId { get; set; }
+    public string? FulfillmentOrderStatus { get; set; }
+    public string? FulfillmentPaymentStatus { get; set; }
+    public string? FulfillmentInvoiceCode { get; set; }
+    public DateTime? SelectedAt { get; set; }
+    public bool IsOpenWeek { get; set; }
+    public bool CanSelect { get; set; }
+    public bool IsFilled { get; set; }
+    public List<ContractWeeklySelectionDayClientDto> Days { get; set; } = new();
+}
+
+public class ContractWeeklySelectionDayClientDto
+{
+    public DateOnly ServiceDate { get; set; }
+    public int RequiredMeals { get; set; }
+    public List<ContractWeeklySelectionLineClientDto> Main { get; set; } = new();
+}
+
+public class ContractWeeklySelectionLineClientDto
+{
+    public int DishId { get; set; }
+    public string DishName { get; set; } = string.Empty;
+    public int Quantity { get; set; }
 }

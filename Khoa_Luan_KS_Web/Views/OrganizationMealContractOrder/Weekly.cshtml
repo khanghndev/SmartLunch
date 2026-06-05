@@ -77,14 +77,20 @@
         }
         else
         {
-            <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
+            <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
                 <p class="text-sm text-slate-600">
                     Kỳ @Model.ContractStart.ToString("dd/MM/yyyy") – @Model.ContractEnd.ToString("dd/MM/yyyy")
                 </p>
-                <a asp-action="Contracts"
+                <div class="flex flex-wrap gap-2">
+                    <a asp-action="Detail" asp-route-id="@Model.ContractId"
+                       class="inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white px-4 py-2 text-sm font-bold text-orange-700 hover:bg-orange-50">
+                        <i data-lucide="layout-list" class="h-4 w-4"></i> Chi tiết HĐ
+                    </a>
+                    <a asp-action="Contracts"
                    class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 hover:border-orange-200 hover:text-orange-600">
                     <i data-lucide="arrow-left" class="h-4 w-4"></i> Danh sách HĐ
                 </a>
+                </div>
             </div>
 
             <div class="mb-4 rounded-2xl border border-sky-100 bg-sky-50/80 px-4 py-3 text-sm text-sky-900">

@@ -74,6 +74,27 @@ public class PeriodContractListItemVm
     public bool CanPayDeposit { get; set; }
     public bool CanSelectWeeklyMeals { get; set; }
     public DateOnly? OpenWeekMonday { get; set; }
+    public int TotalServiceWeeks { get; set; }
+    public int FilledServiceWeeks { get; set; }
+}
+
+public class OrganizationMealContractDetailVm
+{
+    public int ContractId { get; set; }
+    public string OrganizationName { get; set; } = string.Empty;
+    public CustomerContractDto Contract { get; set; } = new();
+    public GetContractWeeklySelectionsClientResponse Weekly { get; set; } = new();
+    public string? ApiError { get; set; }
+    public int? SourceOrderId { get; set; }
+}
+
+public class OrganizationMealContractWeeklyTrackVm
+{
+    public int ContractId { get; set; }
+    public string OrganizationName { get; set; } = string.Empty;
+    public string? ContractNumber { get; set; }
+    public ContractWeeklySelectionClientDto Week { get; set; } = new();
+    public string? ApiError { get; set; }
 }
 
 public class OrganizationMealContractWeeklyVm

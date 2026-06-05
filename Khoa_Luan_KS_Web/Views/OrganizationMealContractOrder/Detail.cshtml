@@ -1,0 +1,147 @@
+@model Khoa_Luan_KS_Web.Models.OrganizationMealContractDetailVm
+@using Khoa_Luan_KS_Web.Helpers
+@{
+    ViewData["Title"] = "Chi tiết hợp đồng & suất ăn tuần";
+    Layout = "_LayoutCustomer";
+    var c = Model.Contract;
+    var contractStart = c.StartDate != default ? DateOnly.FromDateTime(c.StartDate) : (DateOnly?)null;
+    var contractEnd = c.EndDate.HasValue ? DateOnly.FromDateTime(c.EndDate.Value) : contractStart;
+    var progress = Model.Weekly.TotalServiceWeeks > 0
+        ? (int)Math.Round(100.0 * Model.Weekly.FilledServiceWeeks / Model.Weekly.TotalServiceWeeks)
+        : 0;
+}
+
+<div class="min-h-screen bg-slate-100/90" style="background-image: radial-gradient(circle at 1px 1px, rgba(148,163,184,0.2) 1px, transparent 0); background-size: 24px 24px;">
+    <section class="relative h-[200px] overflow-hidden sm:h-[220px]">
+        <img src="https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=1920&auto=format&fit=crop"
+             alt="" class="absolute inset-0 h-full w-full object-cover brightness-[0.45]" />
+        <div class="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/65 to-slate-900/25"></div>
+        <div class="relative z-10 mx-auto flex h-full max-w-6xl flex-col justify-end px-4 pb-8 pt-24 sm:px-6">
+            <nav class="mb-3 flex flex-wrap items-center gap-2 text-xs font-semibold text-white/70">
+                <a asp-action="Contracts" class="hover:text-orange-300">Hợp đồng</a>
+                <span class="text-white/30">/</span>
+                <span class="text-white/90">Chi tiết & suất ăn tuần</span>
+            </nav>
+            <h1 class="text-2xl font-black text-white sm:text-3xl">@(c.ContractNumber ?? $"HĐ #{Model.ContractId}")</h1>
+            <p class="mt-2 text-sm text-slate-300">@Model.OrganizationName</p>
+        </div>
+    </section>
+
+    <div class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:py-10">
+        @if (TempData["OrgPeriodSuccess"] is string ok && !string.IsNullOrEmpty(ok))
+        {
+            <div class="mb-6 rounded-2xl border border-emerald-200 bg-emerald-50 px-5 py-4 text-sm font-medium text-emerald-900">@ok</div>
+        }
+        @if (TempData["OrgPeriodInfo"] is string info && !string.IsNullOrEmpty(info))
+        {
+            <div class="mb-6 rounded-2xl border border-sky-200 bg-sky-50 px-5 py-4 text-sm font-medium text-sky-900">@info</div>
+        }
+        @if (!string.IsNullOrEmpty(Model.ApiError))
+        {
+            <div class="rounded-3xl border border-amber-200 bg-white p-10 text-center shadow-xl">
+                <p class="font-bold text-amber-900">@Model.ApiError</p>
+                <a asp-action="Contracts" class="mt-4 inline-block text-sm font-bold text-orange-600 hover:underline">Quay lại</a>
+            </div>
+        }
+        else
+        {
+            <div class="mb-6 grid gap-4 lg:grid-cols-3">
+                <div class="rounded-3xl border border-slate-200/80 bg-white p-6 shadow-lg lg:col-span-2">
+                    <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Thông tin hợp đồng</p>
+                    <dl class="mt-4 grid gap-3 sm:grid-cols-2 text-sm">
+                        <div><dt class="text-slate-500">Kỳ phục vụ</dt><dd class="font-bold text-slate-900">@contractStart?.ToString("dd/MM/yyyy") – @contractEnd?.ToString("dd/MM/yyyy")</dd></div>
+                        <div><dt class="text-slate-500">Suất mặc định/ngày</dt><dd class="font-bold text-slate-900">@(c.MealsPerDay ?? 0)</dd></div>
+                        <div><dt class="text-slate-500">Giá trị HĐ</dt><dd class="font-bold text-orange-700">@((c.TotalValue ?? 0).ToString("N0")) đ</dd></div>
+                        <div><dt class="text-slate-500">Trạng thái</dt><dd class="font-bold text-slate-900">@c.Status</dd></div>
+                    </dl>
+                    <p class="mt-4 text-xs leading-relaxed text-slate-500">
+                        Mỗi tuần phục vụ bạn chọn món trước <strong>3 ngày</strong> so với Thứ 2 tuần đó.
+                        Hệ thống email nhắc đúng hạn; nếu không chọn, Chủ nhật trước tuần phục vụ sẽ tự random món đủ suất.
+                    </p>
+                </div>
+                <div class="rounded-3xl border border-orange-200/80 bg-gradient-to-br from-orange-50 to-amber-50 p-6 shadow-lg">
+                    <p class="text-[10px] font-black uppercase tracking-wider text-orange-700">Tiến độ chọn món</p>
+                    <p class="mt-2 text-3xl font-black text-slate-900">@Model.Weekly.FilledServiceWeeks<span class="text-lg text-slate-500">/@Model.Weekly.TotalServiceWeeks tuần</span></p>
+                    <div class="mt-3 h-2 overflow-hidden rounded-full bg-white/80">
+                        <div class="h-full rounded-full bg-gradient-to-r from-orange-500 to-amber-500 transition-all" style="width:@(progress)%"></div>
+                    </div>
+                    @if (Model.SourceOrderId is int srcId)
+                    {
+                        <a asp-controller="Profile" asp-action="OrderDetail" asp-route-id="@srcId"
+                           class="mt-4 inline-flex items-center gap-2 text-xs font-bold text-orange-700 hover:underline">
+                            <i data-lucide="receipt" class="h-3.5 w-3.5"></i> Xem đơn đặt cọc
+                        </a>
+                    }
+                </div>
+            </div>
+
+            <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl">
+                <div class="border-b border-slate-100 bg-slate-50/80 px-6 py-4">
+                    <h2 class="text-lg font-black text-slate-900">Suất ăn theo tuần</h2>
+                    <p class="mt-1 text-sm text-slate-500">Mỗi tuần chỉ chọn một lần. Tuần sau mở khi đến kỳ.</p>
+                </div>
+                <div class="divide-y divide-slate-100">
+                    @foreach (var w in Model.Weekly.Weeks)
+                    {
+                        var weekLabel = $"Tuần {w.WeekMonday:dd/MM} – {w.WeekEnd:dd/MM/yyyy}";
+                        var statusClass = ContractWeeklySelectionDisplay.StatusBadgeClass(w.Status);
+                        <div class="flex flex-col gap-4 px-6 py-5 sm:flex-row sm:items-center sm:justify-between @(w.IsOpenWeek ? "bg-orange-50/40" : "")">
+                            <div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    @if (w.IsOpenWeek)
+                                    {
+                                        <span class="rounded-full bg-orange-500 px-2 py-0.5 text-[10px] font-black uppercase text-white">Tuần đang mở</span>
+                                    }
+                                    <span class="rounded-full px-2.5 py-0.5 text-[10px] font-bold @statusClass">@ContractWeeklySelectionDisplay.StatusLabel(w.Status)</span>
+                                </div>
+                                <p class="mt-1 font-black text-slate-900">@weekLabel</p>
+                                <p class="mt-0.5 text-xs text-slate-500">@w.Days.Count ngày ăn · hạn chọn thủ công: @w.WeekMonday.AddDays(-OrganizationMealContractDateRules.ManualSelectionLeadDays).ToString("dd/MM/yyyy")</p>
+                            </div>
+                            <div class="flex flex-wrap gap-2">
+                                @if (w.CanSelect)
+                                {
+                                    <a asp-action="Weekly" asp-route-id="@Model.ContractId"
+                                       class="inline-flex items-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 px-4 py-2.5 text-xs font-black text-white shadow hover:from-orange-600 hover:to-amber-600">
+                                        <i data-lucide="utensils" class="h-4 w-4"></i>
+                                        @ContractWeeklySelectionDisplay.SelectWeekButtonLabel
+                                    </a>
+                                }
+                                else if (w.IsFilled)
+                                {
+                                    <a asp-action="WeeklyTrack" asp-route-id="@Model.ContractId" asp-route-weekStart="@w.WeekMonday.ToString("yyyy-MM-dd")"
+                                       class="inline-flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-2.5 text-xs font-black text-emerald-800 hover:bg-emerald-100">
+                                        <i data-lucide="eye" class="h-4 w-4"></i>
+                                        @ContractWeeklySelectionDisplay.TrackWeekButtonLabel
+                                    </a>
+                                }
+                                else if (w.IsOpenWeek)
+                                {
+                                    <span class="inline-flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-2.5 text-xs font-bold text-amber-800">
+                                        <i data-lucide="clock" class="h-4 w-4"></i> Chờ hệ thống tự chọn / đã quá hạn chọn thủ công
+                                    </span>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="mt-6 flex flex-wrap gap-3">
+                <a asp-action="Contracts" class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-600 hover:border-orange-200 hover:text-orange-600">
+                    <i data-lucide="arrow-left" class="h-4 w-4"></i> Danh sách HĐ
+                </a>
+                @if (!string.IsNullOrEmpty(c.ContractFileUrl))
+                {
+                    <a href="@c.ContractFileUrl" target="_blank" rel="noopener"
+                       class="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-5 py-2.5 text-sm font-bold text-slate-700 hover:border-slate-300">
+                        <i data-lucide="file-text" class="h-4 w-4"></i> Xem PDF hợp đồng
+                    </a>
+                }
+            </div>
+        }
+    </div>
+</div>
+
+@section Scripts {
+    <script>document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });</script>
+}
