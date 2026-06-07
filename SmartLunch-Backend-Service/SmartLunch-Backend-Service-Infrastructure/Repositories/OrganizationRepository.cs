@@ -63,6 +63,13 @@ public class OrganizationRepository : IOrganizationRepository
             .ToDictionaryAsync(u => u.Id, u => u.Name, cancellationToken);
     }
 
+    public async Task<Organization> CreateAsync(Organization organization, CancellationToken cancellationToken = default)
+    {
+        _context.Organizations.Add(organization);
+        await _context.SaveChangesAsync(cancellationToken);
+        return organization;
+    }
+
     public async Task UpdateAsync(Organization organization, CancellationToken cancellationToken = default)
     {
         _context.Organizations.Update(organization);
