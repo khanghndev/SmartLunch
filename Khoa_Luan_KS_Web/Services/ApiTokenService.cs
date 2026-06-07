@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Khoa_Luan_KS_Web.Helpers;
 
 namespace Khoa_Luan_KS_Web.Services;
 
@@ -202,14 +203,7 @@ public sealed class ApiTokenService : IApiTokenService
             ClaimTypes.Name,
             ClaimTypes.Role);
 
-        if (!identity.HasClaim(c => c.Type == ClaimTypes.Name))
-        {
-            var name = token.Claims.FirstOrDefault(c => c.Type == "FullName")?.Value
-                       ?? token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value
-                       ?? token.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value;
-            if (!string.IsNullOrWhiteSpace(name))
-                identity.AddClaim(new Claim(ClaimTypes.Name, name));
-        }
+        ApplyDisplayNameClaim(identity, token.Claims);
 
         foreach (var roleName in token.Claims
                      .Where(c => c.Type == "role" || c.Type == ClaimTypes.Role)
@@ -221,5 +215,24 @@ public sealed class ApiTokenService : IApiTokenService
         }
 
         return new ClaimsPrincipal(identity);
+    }
+
+    private static void ApplyDisplayNameClaim(ClaimsIdentity identity, IEnumerable<Claim> jwtClaims)
+    {
+        var claims = jwtClaims.ToList();
+        var fullName = claims.FirstOrDefault(c => c.Type == "FullName")?.Value;
+        var username = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value
+                       ?? claims.FirstOrDefault(c => c.Type == "unique_name")?.Value;
+        var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+        var displayName = UserDisplayNameHelper.Resolve(fullName, email, username);
+
+        var existing = identity.FindFirst(ClaimTypes.Name);
+        if (existing != null)
+            identity.RemoveClaim(existing);
+
+        identity.AddClaim(new Claim(ClaimTypes.Name, displayName));
+
+        if (!string.IsNullOrWhiteSpace(username) && !identity.HasClaim(c => c.Type == "Username"))
+            identity.AddClaim(new Claim("Username", username));
     }
 }

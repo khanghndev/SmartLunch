@@ -1,6 +1,8 @@
 @{
-    ViewData["Title"] = "Đăng Ký Tài Khoản";
+    ViewData["Title"] = "Đăng Ký Doanh Nghiệp";
     Layout = null;
+    var loginRole = ViewBag.LoginRole as string ?? "Customer";
+    var loginUrl = $"/Auth/Login?role={Uri.EscapeDataString(loginRole)}";
 }
 <!DOCTYPE html>
 <html lang="vi">
@@ -21,7 +23,13 @@
             font-size: 14px; background: #fafafa;
             transition: all 0.2s ease; outline: none;
         }
-        .input-field:focus { background: #fff; border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,0.12); }
+        .select-field {
+            display: block; width: 100%; padding: 12px 14px;
+            border: 1.5px solid #e5e7eb; border-radius: 12px;
+            font-size: 14px; background: #fafafa;
+            transition: all 0.2s ease; outline: none;
+        }
+        .input-field:focus, .select-field:focus { background: #fff; border-color: #f97316; box-shadow: 0 0 0 3px rgba(249,115,22,0.12); }
         .input-field::placeholder { color: #9ca3af; }
     </style>
 </head>
@@ -29,63 +37,53 @@
 
 <div class="min-h-screen flex">
 
-    <!-- ===== LEFT: Visual Panel ===== -->
     <div class="hidden lg:flex lg:w-[45%] relative overflow-hidden">
-        <img src="https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=1920" class="absolute inset-0 w-full h-full object-cover" />
-        <div class="absolute inset-0 bg-gradient-to-br from-gray-900/90 via-gray-900/60 to-gray-900/30"></div>
+        <img src="https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1920" class="absolute inset-0 w-full h-full object-cover" />
+        <div class="absolute inset-0 bg-gradient-to-br from-gray-900/90 via-gray-900/70 to-gray-900/40"></div>
 
-        <!-- Content -->
         <div class="relative z-10 flex flex-col justify-between h-full p-14">
-            <!-- Logo top -->
             <a href="/Customer" class="flex items-center gap-3">
                 <img src="/assets/images/Logo.jpg" class="h-10 w-auto object-contain rounded-lg" />
                 <span class="text-white font-black text-lg tracking-tight">HuitMeal</span>
             </a>
 
-            <!-- Hero text -->
             <div class="max-w-md">
                 <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-orange-500/20 border border-orange-400/30 text-orange-300 text-[10px] font-bold uppercase tracking-[0.25em] mb-6">
-                    <i data-lucide="user-plus" class="w-3 h-3"></i>
-                    Gia nhập cộng đồng
+                    <i data-lucide="building-2" class="w-3 h-3"></i>
+                    Khách hàng doanh nghiệp
                 </span>
                 <h2 class="text-4xl font-black text-white leading-tight tracking-tight mb-4">
-                    Bắt đầu hành trình <br/><span class="text-orange-400">ăn sạch & sống khỏe</span>
+                    Đăng ký suất ăn <br/><span class="text-orange-400">chuẩn doanh nghiệp</span>
                 </h2>
-                <p class="text-gray-300 text-lg leading-relaxed font-medium">Đăng ký ngay để nhận ưu đãi cho đơn hàng đầu tiên và quản lý thực đơn cá nhân hóa.</p>
+                <p class="text-gray-300 text-lg leading-relaxed font-medium">Tạo tài khoản đại diện đơn vị để đặt suất ăn theo hợp đồng, theo dõi đơn hàng và quản lý thực đơn tuần.</p>
             </div>
 
-            <!-- Features -->
-            <div class="space-y-6">
-                @foreach(var (icon, text) in new[]{("zap", "Đặt hàng siêu tốc trong 30s"), ("gift", "Tích điểm đổi quà hấp dẫn"), ("bell", "Thông báo thực đơn mới mỗi ngày")})
+            <div class="grid grid-cols-3 gap-3">
+                @foreach (var (value, label) in new[] { ("500+", "Doanh nghiệp"), ("150k", "Suất/ngày"), ("4.9★", "Đánh giá") })
                 {
-                    <div class="flex items-center gap-4 text-white">
-                        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center">
-                            <i data-lucide="@icon" class="w-5 h-5 text-orange-400"></i>
-                        </div>
-                        <span class="font-bold">@text</span>
+                    <div class="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-md px-4 py-3 text-center">
+                        <div class="text-xl font-black text-white">@value</div>
+                        <div class="text-[10px] font-bold uppercase tracking-widest text-orange-200 mt-1">@label</div>
                     </div>
                 }
             </div>
         </div>
     </div>
 
-    <!-- ===== RIGHT: Form Panel ===== -->
-    <div class="flex-1 flex items-center justify-center p-6 sm:p-10 bg-white lg:bg-gray-50">
-        <div class="w-full max-w-[480px] py-10">
+    <div class="flex-1 flex items-center justify-center p-6 sm:p-10 bg-white lg:bg-gray-50 overflow-y-auto">
+        <div class="w-full max-w-[560px] py-8">
 
-            <!-- Mobile logo -->
             <div class="lg:hidden flex items-center gap-3 mb-8">
                 <img src="/assets/images/Logo.jpg" class="h-9 w-auto object-contain rounded-lg" />
                 <span class="font-black text-lg text-gray-900 tracking-tight">HuitMeal</span>
             </div>
 
-            <!-- Title -->
             <div class="mb-8">
-                <h1 class="text-3xl font-black text-gray-900 tracking-tight mb-2">Tạo tài khoản</h1>
-                <p class="text-gray-500 text-sm font-medium leading-relaxed">Vui lòng điền các thông tin dưới đây để đăng ký thành viên HuitMeal.</p>
+                <p class="text-[11px] font-black uppercase tracking-[0.2em] text-orange-600 mb-2">Tài khoản doanh nghiệp</p>
+                <h1 class="text-3xl font-black text-gray-900 tracking-tight mb-2">Đăng ký đơn vị</h1>
+                <p class="text-gray-500 text-sm font-medium leading-relaxed">Thông tin bên dưới sẽ được dùng để tạo hồ sơ doanh nghiệp và tài khoản đại diện đặt suất ăn.</p>
             </div>
 
-            <!-- Error/Success -->
             @if (TempData["Error"] != null)
             {
                 <div class="flex items-center gap-3 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 text-sm font-semibold">
@@ -101,89 +99,131 @@
                 </div>
             }
 
-            <!-- Form -->
-            <form action="/Auth/Register" method="post" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                
-                <!-- Full Name -->
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-bold text-gray-700 mb-1.5">Họ và tên</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="user" class="w-4.5 h-4.5 text-gray-400"></i>
+            <form action="/Auth/Register" method="post" class="space-y-6">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="role" value="@loginRole" />
+                <input type="hidden" name="AccountType" value="Organization" />
+
+                <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm space-y-4">
+                    <h2 class="text-sm font-black text-gray-900 flex items-center gap-2">
+                        <i data-lucide="building-2" class="w-4 h-4 text-orange-500"></i>
+                        Thông tin doanh nghiệp
+                    </h2>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1.5">Tên doanh nghiệp / đơn vị</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="briefcase" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                            <input type="text" name="OrganizationName" required class="input-field" placeholder="Công ty TNHH ABC / Trường THPT XYZ" />
                         </div>
-                        <input type="text" name="FullName" required class="input-field" placeholder="Nguyễn Văn A" />
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1.5">Loại hình</label>
+                            <select name="OrganizationType" required class="select-field font-medium">
+                                <option value="Office">Văn phòng / Công ty</option>
+                                <option value="School">Trường học</option>
+                                <option value="Factory">Nhà máy / Xí nghiệp</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1.5">Mã số thuế <span class="font-normal text-gray-400">(tùy chọn)</span></label>
+                            <input type="text" name="TaxCode" class="select-field" placeholder="0123456789" />
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1.5">Địa chỉ giao suất ăn</label>
+                        <div class="relative">
+                            <div class="absolute top-3 left-0 pl-3 flex items-start pointer-events-none">
+                                <i data-lucide="map-pin" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                            <input type="text" name="OrganizationAddress" required class="input-field" placeholder="123 Nguyễn Huệ, Q.1, TP.HCM" />
+                        </div>
                     </div>
                 </div>
 
-                <!-- Email -->
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1.5">Email</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="mail" class="w-4.5 h-4.5 text-gray-400"></i>
+                <div class="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm space-y-4">
+                    <h2 class="text-sm font-black text-gray-900 flex items-center gap-2">
+                        <i data-lucide="user-round" class="w-4 h-4 text-orange-500"></i>
+                        Người đại diện & đăng nhập
+                    </h2>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1.5">Họ và tên người liên hệ</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i data-lucide="user" class="w-4 h-4 text-gray-400"></i>
+                            </div>
+                            <input type="text" name="FullName" required class="input-field" placeholder="Nguyễn Văn A" />
                         </div>
-                        <input type="email" name="Email" required class="input-field" placeholder="example@gmail.com" />
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1.5">Email đăng nhập</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="mail" class="w-4 h-4 text-gray-400"></i>
+                                </div>
+                                <input type="email" name="Email" required class="input-field" placeholder="contact@company.vn" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1.5">Số điện thoại</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="phone" class="w-4 h-4 text-gray-400"></i>
+                                </div>
+                                <input type="tel" name="Phone" required class="input-field" placeholder="09xx xxx xxx" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1.5">Mật khẩu</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="lock" class="w-4 h-4 text-gray-400"></i>
+                                </div>
+                                <input type="password" name="Password" required minlength="6" class="input-field" placeholder="Tối thiểu 6 ký tự" />
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-bold text-gray-700 mb-1.5">Xác nhận mật khẩu</label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i data-lucide="shield-check" class="w-4 h-4 text-gray-400"></i>
+                                </div>
+                                <input type="password" name="ConfirmPassword" required minlength="6" class="input-field" placeholder="Nhập lại mật khẩu" />
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Phone -->
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1.5">Số điện thoại</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="phone" class="w-4.5 h-4.5 text-gray-400"></i>
-                        </div>
-                        <input type="tel" name="Phone" required class="input-field" placeholder="09xx xxx xxx" />
-                    </div>
-                </div>
+                <label class="flex items-start gap-3 cursor-pointer select-none px-1">
+                    <input type="checkbox" required class="w-4 h-4 mt-1 rounded border-gray-300 accent-orange-500">
+                    <span class="text-sm font-medium text-gray-600 leading-snug">
+                        Tôi xác nhận đại diện cho doanh nghiệp nêu trên và đồng ý với
+                        <a href="#" class="text-orange-600 font-bold hover:underline">Điều khoản dịch vụ</a> của HuitMeal.
+                    </span>
+                </label>
 
-                <!-- Password -->
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1.5">Mật khẩu</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="lock" class="w-4.5 h-4.5 text-gray-400"></i>
-                        </div>
-                        <input type="password" name="Password" required class="input-field" placeholder="••••••••" />
-                    </div>
-                </div>
-
-                <!-- Confirm Password -->
-                <div>
-                    <label class="block text-sm font-bold text-gray-700 mb-1.5">Xác nhận mật khẩu</label>
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <i data-lucide="shield-check" class="w-4.5 h-4.5 text-gray-400"></i>
-                        </div>
-                        <input type="password" name="ConfirmPassword" required class="input-field" placeholder="••••••••" />
-                    </div>
-                </div>
-
-                <!-- Terms -->
-                <div class="md:col-span-2 py-2">
-                    <label class="flex items-start gap-3 cursor-pointer select-none">
-                        <input type="checkbox" required class="w-4 h-4 mt-1 rounded border-gray-300 accent-orange-500">
-                        <span class="text-sm font-medium text-gray-600 leading-snug">
-                            Tôi đồng ý với các <a href="#" class="text-orange-600 font-bold hover:underline">Điều khoản dịch vụ</a> và <a href="#" class="text-orange-600 font-bold hover:underline">Chính sách bảo mật</a> của HuitMeal.
-                        </span>
-                    </label>
-                </div>
-
-                <!-- Submit -->
-                <div class="md:col-span-2 pt-2">
-                    <button type="submit"
-                            class="w-full py-3.5 rounded-xl font-black text-white text-sm tracking-wide bg-orange-500 hover:bg-orange-400 shadow-lg shadow-orange-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
-                        <i data-lucide="user-plus" class="w-4 h-4"></i>
-                        ĐĂNG KÝ NGAY
-                    </button>
-                </div>
+                <button type="submit"
+                        class="w-full py-3.5 rounded-xl font-black text-white text-sm tracking-wide bg-orange-500 hover:bg-orange-400 shadow-lg shadow-orange-500/25 transition-all active:scale-[0.98] flex items-center justify-center gap-2">
+                    <i data-lucide="building-2" class="w-4 h-4"></i>
+                    ĐĂNG KÝ DOANH NGHIỆP
+                </button>
             </form>
 
-            <!-- Footer links -->
             <div class="mt-8 pt-6 border-t border-gray-100 text-center">
                 <p class="text-sm text-gray-600 font-medium">
                     Đã có tài khoản?
-                    <a href="/Auth/Login" class="font-black text-orange-600 hover:text-orange-700 ml-1">Đăng nhập ngay</a>
+                    <a href="@loginUrl" class="font-black text-orange-600 hover:text-orange-700 ml-1">Đăng nhập ngay</a>
                 </p>
                 <div class="mt-6">
                     <a href="/Customer" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 font-semibold transition-all hover:gap-3">

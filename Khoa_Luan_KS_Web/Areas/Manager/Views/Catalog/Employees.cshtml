@@ -7,6 +7,7 @@
     var pageSize = (int)(ViewBag.PageSize ?? 10);
     var serverSearch = ViewBag.SearchTerm as string ?? "";
     var roleFilter = ViewBag.RoleName as string ?? "";
+    var staffRoles = ViewBag.StaffRoles as List<Khoa_Luan_KS_Web.Services.RoleDto> ?? new();
     var pagination = ViewBag.Pagination as ManagerPaginationVm ?? new ManagerPaginationVm
     {
         Controller = "Catalog",
@@ -160,7 +161,7 @@
                             <td class="px-6 py-4">
                                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold border @RoleBadgeClass(role)">@role</span>
                             </td>
-                            <td class="px-6 py-4 text-gray-600 font-medium">@(u.LastLoginAt?.ToString("dd/MM/yyyy") ?? "—")</td>
+                            <td class="px-6 py-4 text-gray-600 font-medium">@(u.CreatedAt != default ? u.CreatedAt.ToString("dd/MM/yyyy") : "—")</td>
                             <td class="px-6 py-4">
                                 @if (u.IsActive)
                                 {
@@ -177,8 +178,13 @@
                             </td>
                             <td class="px-6 py-4 text-center opacity-70 group-hover:opacity-100 transition-opacity">
                                 <div class="flex items-center justify-center gap-2">
-                                    <a href="/Manager/EmployeeDetail/@u.Id" class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shadow-sm" title="Xem chi tiết">
+                                    <a asp-area="Manager" asp-controller="Catalog" asp-action="EmployeeDetail" asp-route-id="@u.Id"
+                                       class="w-8 h-8 rounded-lg bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-600 hover:text-white transition shadow-sm" title="Xem chi tiết">
                                         <i class="fas fa-eye text-xs"></i>
+                                    </a>
+                                    <a asp-area="Manager" asp-controller="Catalog" asp-action="EmployeeDetail" asp-route-id="@u.Id"
+                                       class="w-8 h-8 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-green-600 hover:text-white transition border border-gray-200" title="Sửa thông tin">
+                                        <i class="fas fa-pen text-xs"></i>
                                     </a>
                                     <button type="button" @@click="resetPassword(@u.Id)" class="w-8 h-8 rounded-lg bg-gray-50 text-gray-600 flex items-center justify-center hover:bg-gray-200 hover:text-gray-900 transition border border-gray-200" title="Đặt lại mật khẩu">
                                         <i class="fas fa-key text-xs"></i>
@@ -206,30 +212,73 @@
         <partial name="_PaginationBar" model="pagination" />
     </div>
 
-    <!-- MODAL: Thêm Nhân Viên (giữ UI, chưa nối API) -->
+    <!-- MODAL: Thêm Nhân Viên -->
     <div x-show="isModalOpen" style="display: none;" class="fixed inset-0 z-[100] flex items-center justify-center px-4" x-transition.opacity.duration.300ms>
         <div x-on:click="isModalOpen = false" class="absolute inset-0 bg-gray-900/60 backdrop-blur-sm transition-opacity"></div>
-        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-3xl z-10 overflow-hidden transform transition-all relative">
-            <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
-                <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center font-bold shadow-sm">
-                        <i class="fas fa-user-plus"></i>
+        <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl z-10 overflow-hidden transform transition-all relative" x-on:click.stop>
+            <form method="post" asp-area="Manager" asp-controller="Catalog" asp-action="CreateEmployee">
+                @Html.AntiForgeryToken()
+
+                <div class="px-6 py-5 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 rounded-xl bg-green-100 text-green-600 flex items-center justify-center font-bold shadow-sm">
+                            <i class="fas fa-user-plus"></i>
+                        </div>
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900 tracking-tight">Tạo Hồ Sơ Nhân Viên Mới</h3>
+                            <p class="text-xs font-medium text-gray-500 mt-0.5">Cấp tài khoản đăng nhập và phân bộ phận</p>
+                        </div>
+                    </div>
+                    <button type="button" x-on:click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 bg-white hover:bg-gray-100 w-8 h-8 rounded-lg flex items-center justify-center transition border border-gray-100 shadow-sm">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="px-6 py-6 space-y-4 max-h-[70vh] overflow-y-auto">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Họ</label>
+                            <input type="text" name="LastName" class="w-full bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 font-medium" placeholder="Nguyễn Văn" />
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Tên</label>
+                            <input type="text" name="FirstName" class="w-full bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 font-medium" placeholder="An" />
+                        </div>
                     </div>
                     <div>
-                        <h3 class="text-xl font-bold text-gray-900 tracking-tight">Tạo Hồ Sơ Nhân Viên Mới</h3>
-                        <p class="text-xs font-medium text-gray-500 mt-0.5">Chức năng tạo mới sẽ được bổ sung qua API</p>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Số điện thoại</label>
+                        <input type="text" name="PhoneNumber" class="w-full bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 font-medium" placeholder="0901234567" />
                     </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Email đăng nhập</label>
+                        <input type="email" name="Email" required id="createEmployeeEmail" class="w-full bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 font-medium" placeholder="nhanvien@huitmeal.com" />
+                        <input type="hidden" name="Username" id="createEmployeeUsername" />
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Bộ phận / Vai trò</label>
+                        <select name="roleName" required class="w-full bg-white border border-gray-200 text-gray-900 text-sm rounded-lg focus:ring-green-500 focus:border-green-500 block p-2.5 font-bold">
+                            <option value="">— Chọn bộ phận —</option>
+                            @foreach (var r in staffRoles)
+                            {
+                                <option value="@r.Name">@r.Name</option>
+                            }
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-[11px] font-bold text-gray-500 uppercase tracking-wide mb-1.5">Mật khẩu tạm</label>
+                        <input type="text" name="Password" value="HuitMeal@2026" readonly class="w-full bg-gray-50 border border-gray-200 text-gray-700 text-sm rounded-lg block p-2.5 font-bold" />
+                        <p class="text-[11px] text-gray-500 mt-1">Nhân viên nên đổi mật khẩu sau lần đăng nhập đầu.</p>
+                    </div>
+                    <input type="hidden" name="IsActive" value="true" />
                 </div>
-                <button type="button" x-on:click="isModalOpen = false" class="text-gray-400 hover:text-gray-600 bg-white hover:bg-gray-100 w-8 h-8 rounded-lg flex items-center justify-center transition border border-gray-100 shadow-sm">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-            <div class="px-6 py-8 text-center text-gray-500 text-sm">
-                Vui lòng tạo nhân viên qua quản trị hệ thống hoặc API <code class="text-xs bg-gray-100 px-1 rounded">POST /api/v1/master-data/User</code>.
-            </div>
-            <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end">
-                <button type="button" x-on:click="isModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100">Đóng</button>
-            </div>
+
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                    <button type="button" x-on:click="isModalOpen = false" class="px-5 py-2.5 text-sm font-bold text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-100">Hủy</button>
+                    <button type="submit" class="px-5 py-2.5 text-sm font-bold text-white bg-green-600 hover:bg-green-700 rounded-xl shadow-sm flex items-center gap-2">
+                        <i class="fas fa-check"></i> Tạo nhân viên
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -239,6 +288,16 @@
         document.addEventListener('alpine:init', () => {
             Alpine.data('employeeManager', () => ({
                 isModalOpen: false,
+
+                init() {
+                    const emailInput = document.getElementById('createEmployeeEmail');
+                    const usernameInput = document.getElementById('createEmployeeUsername');
+                    if (emailInput && usernameInput) {
+                        const sync = () => { usernameInput.value = emailInput.value.trim(); };
+                        emailInput.addEventListener('input', sync);
+                        sync();
+                    }
+                },
 
                 lockEmployee(id) {
                     if (confirm('Bạn có chắc chắn muốn khóa hồ sơ nhân viên này?')) {

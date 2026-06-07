@@ -20,7 +20,8 @@ public sealed class DishDetailPageViewModel
     public string? LoadError { get; set; }
     /// <summary>Khi mở từ thực đơn tuần (menuId + scheduleId).</summary>
     public DishDetailMenuContext? MenuContext { get; set; }
-    public List<SuggestedDishItemClientDto> SuggestedDishes { get; set; } = new();
+    public List<PublicDishBrowseItemClientDto> RelatedDishes { get; set; } = new();
+    public int? RelatedCategoryId { get; set; }
 }
 
 public sealed class DishDetailMenuContext

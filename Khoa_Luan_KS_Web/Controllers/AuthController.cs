@@ -4,6 +4,7 @@ using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Khoa_Luan_KS_Web.Services;
+using Khoa_Luan_KS_Web.Helpers;
 
 namespace Khoa_Luan_KS_Web.Controllers
 {
@@ -66,7 +67,7 @@ namespace Khoa_Luan_KS_Web.Controllers
                     login.AccessToken,
                     login.RefreshToken,
                     login.Email,
-                    login.FullName);
+                    UserDisplayNameHelper.Resolve(login.FullName, login.Email, login.Username));
 
                 await HttpContext.SignInAsync(
                     CookieAuthenticationDefaults.AuthenticationScheme,
@@ -126,28 +127,110 @@ namespace Khoa_Luan_KS_Web.Controllers
         }
 
         [HttpGet]
-        public IActionResult Register() => View();
+        public IActionResult Register(string? role)
+        {
+            ViewBag.LoginRole = string.IsNullOrWhiteSpace(role) ? "Customer" : role;
+            return View();
+        }
 
         [HttpPost]
-        public async Task<IActionResult> Register(string FullName, string Email, string Phone, string Password, string ConfirmPassword, CancellationToken cancellationToken)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Register(
+            string FullName,
+            string Email,
+            string Phone,
+            string Password,
+            string ConfirmPassword,
+            string OrganizationName,
+            string OrganizationType,
+            string OrganizationAddress,
+            string? TaxCode,
+            string? role,
+            CancellationToken cancellationToken)
         {
+            if (string.IsNullOrWhiteSpace(OrganizationName))
+            {
+                TempData["Error"] = "Vui lòng nhập tên doanh nghiệp / đơn vị.";
+                return RedirectToAction(nameof(Register), new { role });
+            }
+
+            if (string.IsNullOrWhiteSpace(OrganizationAddress))
+            {
+                TempData["Error"] = "Vui lòng nhập địa chỉ doanh nghiệp.";
+                return RedirectToAction(nameof(Register), new { role });
+            }
+
+            if (string.IsNullOrWhiteSpace(FullName))
+            {
+                TempData["Error"] = "Vui lòng nhập họ tên người liên hệ.";
+                return RedirectToAction(nameof(Register), new { role });
+            }
+
+            if (string.IsNullOrWhiteSpace(Email))
+            {
+                TempData["Error"] = "Vui lòng nhập email.";
+                return RedirectToAction(nameof(Register), new { role });
+            }
+
             if (Password != ConfirmPassword)
             {
                 TempData["Error"] = "Mật khẩu xác nhận không khớp.";
-                return RedirectToAction("Register");
+                return RedirectToAction(nameof(Register), new { role });
+            }
+
+            if (Password.Length < 6)
+            {
+                TempData["Error"] = "Mật khẩu phải có ít nhất 6 ký tự.";
+                return RedirectToAction(nameof(Register), new { role });
             }
 
             try
             {
-                await _backendAuthClient.RegisterAsync(Email, Password, ConfirmPassword, null, cancellationToken);
-                TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
+                await _backendAuthClient.RegisterAsync(new RegisterClientRequest
+                {
+                    Email = Email.Trim(),
+                    Password = Password,
+                    ConfirmPassword = ConfirmPassword,
+                    FullName = FullName.Trim(),
+                    PhoneNumber = string.IsNullOrWhiteSpace(Phone) ? null : Phone.Trim(),
+                    AccountType = "Organization",
+                    OrganizationName = OrganizationName.Trim(),
+                    OrganizationType = string.IsNullOrWhiteSpace(OrganizationType) ? "Office" : OrganizationType.Trim(),
+                    OrganizationAddress = OrganizationAddress.Trim(),
+                    TaxCode = string.IsNullOrWhiteSpace(TaxCode) ? null : TaxCode.Trim()
+                }, cancellationToken);
+
+                TempData["Success"] = "Đăng ký tài khoản doanh nghiệp thành công! Vui lòng đăng nhập để đặt suất ăn.";
                 return RedirectToAction("Login", new { role = "CUSTOMER" });
             }
             catch (Exception ex)
             {
-                TempData["Error"] = ex.Message;
-                return RedirectToAction("Register");
+                TempData["Error"] = TranslateRegisterError(ex.Message);
+                return RedirectToAction(nameof(Register), new { role });
             }
+        }
+
+        private static string TranslateRegisterError(string message)
+        {
+            if (string.IsNullOrWhiteSpace(message))
+                return "Không thể đăng ký. Vui lòng thử lại.";
+
+            return message switch
+            {
+                "Email already exists" => "Email này đã được sử dụng. Vui lòng đăng nhập hoặc dùng email khác.",
+                "Email and password are required" => "Vui lòng nhập email và mật khẩu.",
+                "Password must be at least 6 characters" => "Mật khẩu phải có ít nhất 6 ký tự.",
+                "Password and confirm password do not match" => "Mật khẩu xác nhận không khớp.",
+                "Organization name is required" => "Vui lòng nhập tên doanh nghiệp / đơn vị.",
+                "Organization address is required" => "Vui lòng nhập địa chỉ doanh nghiệp.",
+                "Contact person name is required" => "Vui lòng nhập họ tên người liên hệ.",
+                var m when m.Contains("Customer role", StringComparison.OrdinalIgnoreCase)
+                    => "Hệ thống chưa cấu hình vai trò Khách hàng. Liên hệ quản trị viên.",
+                var m when m.Contains("Organization", StringComparison.OrdinalIgnoreCase) && m.Contains("not configured", StringComparison.OrdinalIgnoreCase)
+                    => "Hệ thống chưa cấu hình vai trò Doanh nghiệp. Liên hệ quản trị viên.",
+                "An internal server error occurred" => "Lỗi máy chủ khi đăng ký. Vui lòng thử lại sau.",
+                _ => message
+            };
         }
 
         [HttpGet]
@@ -241,16 +324,7 @@ namespace Khoa_Luan_KS_Web.Controllers
                 ClaimTypes.Name,
                 ClaimTypes.Role);
 
-            // Ensure Name is set correctly for UI usage if not already in standard claim
-            if (!identity.HasClaim(c => c.Type == ClaimTypes.Name))
-            {
-                var name = token.Claims.FirstOrDefault(c => c.Type == "FullName")?.Value
-                           ?? token.Claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value
-                           ?? token.Claims.FirstOrDefault(c => c.Type == "unique_name")?.Value
-                           ?? token.Claims.FirstOrDefault(c => c.Type == "name")?.Value;
-                if (!string.IsNullOrWhiteSpace(name))
-                    identity.AddClaim(new Claim(ClaimTypes.Name, name));
-            }
+            ApplyDisplayNameClaim(identity, token.Claims);
 
             // Ensure Role is set correctly for IsInRole usage
             var roles = token.Claims.Where(c => c.Type == "role" || c.Type == "roles" || c.Type == ClaimTypes.Role).Select(c => c.Value).ToList();
@@ -263,6 +337,25 @@ namespace Khoa_Luan_KS_Web.Controllers
             }
 
             return new ClaimsPrincipal(identity);
+        }
+
+        private static void ApplyDisplayNameClaim(ClaimsIdentity identity, IEnumerable<Claim> jwtClaims)
+        {
+            var claims = jwtClaims.ToList();
+            var fullName = claims.FirstOrDefault(c => c.Type == "FullName")?.Value;
+            var username = claims.FirstOrDefault(c => c.Type == ClaimTypes.Name)?.Value
+                           ?? claims.FirstOrDefault(c => c.Type == "unique_name")?.Value;
+            var email = claims.FirstOrDefault(c => c.Type == ClaimTypes.Email)?.Value;
+            var displayName = UserDisplayNameHelper.Resolve(fullName, email, username);
+
+            var existing = identity.FindFirst(ClaimTypes.Name);
+            if (existing != null)
+                identity.RemoveClaim(existing);
+
+            identity.AddClaim(new Claim(ClaimTypes.Name, displayName));
+
+            if (!string.IsNullOrWhiteSpace(username) && !identity.HasClaim(c => c.Type == "Username"))
+                identity.AddClaim(new Claim("Username", username));
         }
 
         private static bool IsAdmin(ClaimsPrincipal principal) =>

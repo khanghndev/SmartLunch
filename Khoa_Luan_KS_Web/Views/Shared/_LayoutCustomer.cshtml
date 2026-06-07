@@ -1,13 +1,10 @@
 @using Khoa_Luan_KS_Web.Services
+@using Khoa_Luan_KS_Web.Helpers
 @{
     var user = Context.User;
     var cartBadgeCount = CartSessionHelper.GetBadgeCount(Context.Session);
 
-    var userName =
-        user?.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value
-        ?? user?.FindFirst("unique_name")?.Value
-        ?? user?.FindFirst("name")?.Value
-        ?? "";
+    var userName = UserDisplayNameHelper.FromPrincipal(user, Context.Session);
 
     var roles = user?.Claims
         .Where(c => c.Type == System.Security.Claims.ClaimTypes.Role)

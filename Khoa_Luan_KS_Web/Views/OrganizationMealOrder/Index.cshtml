@@ -23,13 +23,158 @@
 <style>
     [x-cloak] { display: none !important; }
     .org-meal-page {
-        background-color: #f1f5f9;
-        background-image: radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.22) 1px, transparent 0);
-        background-size: 24px 24px;
+        background-color: #eef2f7;
+        background-image:
+            linear-gradient(180deg, rgba(255,255,255,0.85) 0%, transparent 220px),
+            radial-gradient(circle at 1px 1px, rgba(148, 163, 184, 0.18) 1px, transparent 0);
+        background-size: auto, 20px 20px;
     }
-    .org-step-line { flex: 1; height: 2px; min-width: 2rem; max-width: 5rem; border-radius: 999px; }
+    .org-panel {
+        border: 1px solid #dbe3ee;
+        background: #fff;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px -8px rgba(15, 23, 42, 0.08);
+    }
+    .org-panel-head {
+        border-bottom: 1px solid #e8edf3;
+        background: linear-gradient(180deg, #fafbfc 0%, #fff 100%);
+    }
+    .org-section-label {
+        font-size: 0.6875rem;
+        font-weight: 800;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #64748b;
+    }
+    .org-field-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-size: 0.8125rem;
+        font-weight: 700;
+        color: #334155;
+    }
+    .org-input {
+        height: 2.75rem;
+        width: 100%;
+        border: 1px solid #cbd5e1;
+        border-radius: 0.75rem;
+        background: #fff;
+        padding: 0 0.875rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #0f172a;
+        transition: border-color .15s ease, box-shadow .15s ease;
+    }
+    .org-input:focus {
+        border-color: #34d399;
+        outline: none;
+        box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.18);
+    }
+    .org-price-chip {
+        border: 1px solid #cbd5e1;
+        border-radius: 0.875rem;
+        background: #fff;
+        padding: 0.75rem 0.5rem;
+        text-align: center;
+        font-size: 0.9375rem;
+        font-weight: 800;
+        color: #334155;
+        transition: border-color .15s ease, background .15s ease, box-shadow .15s ease, color .15s ease;
+    }
+    .org-price-chip:hover {
+        border-color: #fdba74;
+        background: #fff7ed;
+    }
+    .org-price-chip.is-active {
+        border-color: #f97316;
+        background: linear-gradient(180deg, #fff7ed 0%, #fff 100%);
+        color: #c2410c;
+        box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12);
+    }
+    .org-step-track {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.25rem;
+        align-items: start;
+    }
+    @@media (min-width: 640px) {
+        .org-step-track { gap: 0.5rem; }
+    }
+    .org-step-node {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0 0.25rem;
+        text-align: center;
+    }
+    .org-step-node:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        top: 1.25rem;
+        left: calc(50% + 1.35rem);
+        width: calc(100% - 1.35rem);
+        height: 2px;
+        border-radius: 999px;
+        background: #e2e8f0;
+    }
+    @@media (min-width: 640px) {
+        .org-step-node:not(:last-child)::after {
+            top: 1.375rem;
+            left: calc(50% + 1.5rem);
+            width: calc(100% - 1.5rem);
+        }
+    }
+    .org-step-node.is-done:not(:last-child)::after { background: #34d399; }
+    .org-step-node.is-active:not(:last-child)::after { background: linear-gradient(90deg, #34d399 0%, #e2e8f0 100%); }
+    .org-day-tab-btn {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.75rem;
+        background: #fff;
+        padding: 0.5rem 0.875rem;
+        min-width: 6.5rem;
+        text-align: left;
+        transition: border-color .15s ease, background .15s ease, box-shadow .15s ease;
+    }
+    .org-day-tab-btn:hover { border-color: #cbd5e1; background: #f8fafc; }
+    .org-day-tab-btn.is-active {
+        border-color: #059669;
+        background: linear-gradient(180deg, #ecfdf5 0%, #fff 100%);
+        box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12);
+    }
+    .org-stat-tile {
+        border: 1px solid #e2e8f0;
+        border-radius: 0.875rem;
+        background: #fff;
+        padding: 0.75rem 0.875rem;
+    }
+    .org-stat-tile.is-ok { border-color: #a7f3d0; background: #ecfdf5; }
+    .org-stat-tile.is-warn { border-color: #fde68a; background: #fffbeb; }
+    .org-stat-tile.is-bad { border-color: #fecaca; background: #fef2f2; }
+    .org-slot-head-main { background: linear-gradient(90deg, #047857 0%, #059669 100%); }
+    .org-slot-head-side { background: linear-gradient(90deg, #6d28d9 0%, #7c3aed 100%); }
+    .org-slot-head-soup { background: linear-gradient(90deg, #334155 0%, #475569 100%); }
+    .org-empty-slot {
+        border: 1px dashed #cbd5e1;
+        border-radius: 0.875rem;
+        background: #f8fafc;
+        padding: 1.25rem 1rem;
+        transition: border-color .15s ease, background .15s ease, color .15s ease;
+    }
+    .org-empty-slot:hover {
+        border-color: #fdba74;
+        background: #fff7ed;
+        color: #c2410c;
+    }
+    .org-summary-head {
+        border-bottom: 1px solid rgba(255,255,255,0.15);
+        background: linear-gradient(135deg, #ea580c 0%, #f59e0b 100%);
+    }
     .org-day-tab { scroll-snap-align: start; }
-    .org-slot-card { transition: box-shadow 0.2s ease, transform 0.2s ease; }
+    .org-slot-card {
+        border: 1px solid #dbe3ee;
+        transition: box-shadow 0.2s ease;
+    }
     .org-slot-card:hover { box-shadow: 0 12px 40px -12px rgba(15, 23, 42, 0.12); }
     .org-picker-drawer-panel {
         box-shadow: -12px 0 48px -12px rgba(15, 23, 42, 0.25);
@@ -41,7 +186,6 @@
     }
     .no-scrollbar::-webkit-scrollbar { display: none; }
     .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-    /* Ẩn nút Zalo / Gọi / Chat khi mở drawer chọn món */
     body.hm-picker-open .hm-contact-fab-stack,
     body.hm-picker-open .hm-chat-panel {
         visibility: hidden !important;
@@ -53,13 +197,13 @@
 <div class="org-meal-page min-h-screen w-full font-sans text-slate-900" x-data="orgMealOrderApp" x-cloak>
 
     <!-- Hero -->
-    <section class="relative h-[280px] overflow-hidden sm:h-[320px] lg:h-[360px]">
+    <section class="relative h-[200px] overflow-hidden sm:h-[240px] lg:h-[260px]">
         <img src="https://images.unsplash.com/photo-1555244162-803834f70033?q=80&w=1920&auto=format&fit=crop"
              alt="" class="absolute inset-0 h-full w-full object-cover brightness-[0.45]" />
         <div class="absolute inset-0 bg-gradient-to-r from-slate-900/90 via-slate-900/55 to-slate-900/20"></div>
         <div class="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
         <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_20%,rgba(249,115,22,0.25),transparent_55%)]"></div>
-        <div class="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-10 pt-24 sm:px-6 lg:pb-14 lg:pt-28">
+        <div class="relative z-10 mx-auto flex h-full max-w-7xl flex-col justify-end px-4 pb-8 pt-20 sm:px-6 lg:pb-10 lg:pt-24">
             <nav class="mb-4 flex flex-wrap items-center gap-2 text-xs font-semibold text-white/70">
                 <a href="/Customer/Index" class="transition hover:text-orange-300">Trang chủ</a>
                 <span class="text-white/30">/</span>
@@ -69,7 +213,7 @@
                 <i data-lucide="building-2" class="h-3 w-3"></i>
                 Hợp đồng suất ăn theo đơn vị
             </span>
-            <h1 class="max-w-3xl text-3xl font-black tracking-tight text-white sm:text-4xl lg:text-5xl">
+            <h1 class="max-w-3xl text-2xl font-black tracking-tight text-white sm:text-3xl lg:text-4xl">
                 Thiết lập thực đơn <span class="text-orange-400">cho đơn vị của bạn</span>
             </h1>
             <p class="mt-3 max-w-2xl text-sm leading-relaxed text-slate-300 sm:text-base">
@@ -89,7 +233,7 @@
         </div>
     </section>
 
-    <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:py-10">
+    <section class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:py-8">
         <div x-show="cartImportNotice" x-cloak
              class="mb-6 flex flex-col gap-3 rounded-2xl border border-orange-200 bg-orange-50 px-5 py-4 text-sm text-orange-950 shadow-sm sm:flex-row sm:items-center sm:justify-between">
             <div class="flex items-start gap-3">
@@ -134,33 +278,26 @@
         else if (Model.OrganizationId > 0)
         {
             <!-- Stepper -->
-            <div class="mb-8 overflow-hidden rounded-3xl border border-slate-200/80 bg-white px-4 py-5 shadow-sm ring-1 ring-slate-900/5 sm:px-8">
-                <div class="flex items-center justify-center gap-0 sm:gap-1">
+            <div class="org-panel mb-6 overflow-hidden rounded-2xl px-3 py-4 sm:px-6 sm:py-5">
+                <div class="org-step-track">
                     <template x-for="(s, idx) in stepMeta" :key="s.key">
-                        <div class="flex items-center gap-0 sm:gap-1">
-                            <div class="flex flex-col items-center gap-2 px-2 sm:px-4">
-                                <span class="relative flex h-10 w-10 items-center justify-center rounded-2xl text-sm font-black transition-all duration-300 sm:h-11 sm:w-11"
-                                      :class="step === idx + 1
-                                        ? 'bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-500/35 scale-105'
-                                        : (step > idx + 1
-                                            ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/25'
-                                            : 'border-2 border-slate-200 bg-slate-50 text-slate-400')">
-                                    <template x-if="step > idx + 1">
-                                        <i data-lucide="check" class="h-5 w-5"></i>
-                                    </template>
-                                    <template x-if="step <= idx + 1">
-                                        <span x-text="idx + 1"></span>
-                                    </template>
-                                </span>
-                                <div class="text-center">
-                                    <p class="text-xs font-black sm:text-sm"
-                                       :class="step === idx + 1 ? 'text-orange-600' : (step > idx + 1 ? 'text-emerald-700' : 'text-slate-400')"
-                                       x-text="s.label"></p>
-                                    <p class="hidden text-[10px] text-slate-400 sm:block" x-text="s.hint"></p>
-                                </div>
+                        <div class="org-step-node"
+                             :class="step === idx + 1 ? 'is-active' : (step > idx + 1 ? 'is-done' : '')">
+                            <span class="relative z-[1] flex h-9 w-9 items-center justify-center rounded-xl text-xs font-black transition-all sm:h-10 sm:w-10 sm:text-sm"
+                                  :class="step === idx + 1
+                                    ? 'bg-gradient-to-br from-orange-500 to-amber-500 text-white shadow-md shadow-orange-500/30'
+                                    : (step > idx + 1
+                                        ? 'bg-emerald-500 text-white shadow-sm'
+                                        : 'border border-slate-200 bg-white text-slate-400')">
+                                <span x-show="step > idx + 1" x-cloak class="text-base font-black leading-none" aria-hidden="true">✓</span>
+                                <span x-show="step <= idx + 1" x-text="idx + 1"></span>
+                            </span>
+                            <div class="relative z-[1] min-w-0">
+                                <p class="text-[11px] font-bold leading-tight sm:text-xs"
+                                   :class="step === idx + 1 ? 'text-orange-600' : (step > idx + 1 ? 'text-emerald-700' : 'text-slate-500')"
+                                   x-text="s.label"></p>
+                                <p class="mt-0.5 hidden text-[10px] leading-snug text-slate-400 sm:block" x-text="s.hint"></p>
                             </div>
-                            <div x-show="idx < 2" class="org-step-line mb-6 hidden sm:block"
-                                 :class="step > idx + 1 ? 'bg-emerald-400' : 'bg-slate-200'"></div>
                         </div>
                     </template>
                 </div>
@@ -168,119 +305,145 @@
 
             <!-- Step 1 -->
             <div x-show="step === 1" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
-                <div class="grid gap-8 lg:grid-cols-[1fr_320px]">
-                    <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xl ring-1 ring-slate-900/5">
-                        <div class="border-b border-slate-100 bg-gradient-to-r from-slate-50 via-white to-orange-50/30 px-6 py-5 sm:px-8">
-                            <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600">Bước 1</p>
-                            <h2 class="mt-1 text-xl font-black text-slate-900 sm:text-2xl">Thiết lập đơn hàng</h2>
-                            <p class="mt-1 text-sm text-slate-500">Chọn giá/suất và thêm các ngày phục vụ trước khi chọn món.</p>
-                        </div>
-                        <div class="space-y-8 p-6 sm:p-8">
-                            <!-- Price -->
-                            <div class="rounded-2xl border border-orange-100 bg-gradient-to-br from-orange-50/80 to-amber-50/40 p-5 sm:p-6">
-                                <div class="flex items-start gap-4">
-                                    <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-500/30">
-                                        <i data-lucide="badge-dollar-sign" class="h-6 w-6"></i>
-                                    </div>
-                                    <div class="min-w-0 flex-1">
-                                        <label class="block text-[11px] font-black uppercase tracking-wider text-orange-800/80">Giá thỏa thuận / suất (VND)</label>
-                                        <div class="relative mt-2">
-                                            <select x-model.number="pricePerPortion"
-                                                    class="w-full cursor-pointer appearance-none rounded-2xl border border-orange-200/80 bg-white py-3.5 pl-4 pr-14 text-2xl font-black text-slate-900 shadow-inner focus:border-orange-400 focus:outline-none focus:ring-2 focus:ring-orange-200">
-                                                <option value="25000">25.000 đ</option>
-                                                <option value="30000">30.000 đ</option>
-                                                <option value="45000">45.000 đ</option>
-                                                <option value="60000">60.000 đ</option>
-                                            </select>
-                                            <i data-lucide="chevron-down" class="pointer-events-none absolute right-4 top-1/2 h-5 w-5 -translate-y-1/2 text-slate-400"></i>
-                                        </div>
-                                    </div>
+                <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-6">
+                    <div class="org-panel overflow-hidden rounded-2xl">
+                        <div class="org-panel-head px-5 py-4 sm:px-6">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                    <p class="org-section-label text-orange-600">Bước 1</p>
+                                    <h2 class="mt-1 text-lg font-black text-slate-900 sm:text-xl">Thiết lập đơn hàng</h2>
+                                    <p class="mt-1 text-sm leading-relaxed text-slate-500">Chọn mức giá suất và thêm ngày phục vụ trước khi lập thực đơn.</p>
+                                </div>
+                                <div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-right text-xs">
+                                    <p class="font-semibold text-slate-500">Khoảng ngày</p>
+                                    <p class="mt-0.5 font-bold text-slate-800">@Model.DateMin.ToString("dd/MM/yyyy") – @Model.DateMax.ToString("dd/MM/yyyy")</p>
                                 </div>
                             </div>
+                        </div>
+
+                        <div class="space-y-5 px-5 py-5 sm:px-6">
+                            <!-- Price -->
+                            <section>
+                                <label class="org-field-label">Giá thỏa thuận / suất (VND)</label>
+                                <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                                    <template x-for="p in pricePerPortionOptions" :key="p">
+                                        <button type="button"
+                                                @@click="pricePerPortion = p"
+                                                class="org-price-chip"
+                                                :class="pricePerPortion === p ? 'is-active' : ''">
+                                            <span x-text="formatMoney(p)"></span>
+                                            <span class="block text-[10px] font-semibold text-slate-400">đ/suất</span>
+                                        </button>
+                                    </template>
+                                </div>
+                                <p class="mt-2 text-xs text-slate-500">Tổng đơn = giá/suất × tổng suất món chính (tất cả ngày).</p>
+                            </section>
+
+                            <div class="border-t border-slate-200"></div>
 
                             <!-- Dates -->
-                            <div>
-                                <div class="mb-3 flex items-center gap-2">
-                                    <div class="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-100 text-emerald-700">
-                                        <i data-lucide="calendar-plus" class="h-4 w-4"></i>
-                                    </div>
-                                    <div>
-                                        <label class="block text-[11px] font-black uppercase tracking-wider text-slate-500">Thêm ngày phục vụ</label>
-                                        <p class="text-xs text-slate-400">Khoảng: @Model.DateMin.ToString("dd/MM/yyyy") – @Model.DateMax.ToString("dd/MM/yyyy")</p>
-                                    </div>
-                                </div>
-                                <div class="flex flex-col gap-3 sm:flex-row">
+                            <section>
+                                <label class="org-field-label">Thêm ngày phục vụ</label>
+                                <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
                                     <input type="date" x-model="newDate" :min="dateMin" :max="dateMax"
-                                           class="h-12 flex-1 rounded-2xl border border-slate-200 bg-slate-50/50 px-4 text-sm font-semibold text-slate-900 focus:border-emerald-400 focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-200" />
+                                           class="org-input sm:max-w-[220px]" />
                                     <button type="button" @@click="addDay()"
-                                            class="inline-flex h-12 items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 px-6 text-sm font-black text-white shadow-lg shadow-emerald-600/25 transition hover:from-emerald-700 hover:to-teal-700">
+                                            class="inline-flex h-11 shrink-0 items-center justify-center gap-2 rounded-xl border border-emerald-600 bg-emerald-600 px-5 text-sm font-bold text-white transition hover:bg-emerald-700">
                                         <i data-lucide="plus" class="h-4 w-4"></i> Thêm ngày
                                     </button>
                                 </div>
-                                <div class="mt-4 flex gap-3 rounded-2xl border border-blue-100 bg-blue-50/90 p-4">
-                                    <i data-lucide="clock" class="mt-0.5 h-5 w-5 shrink-0 text-blue-600"></i>
-                                    <p class="text-xs leading-relaxed text-blue-900">@dateRuleHint</p>
+                                <div class="mt-3 flex gap-2.5 rounded-xl border border-sky-200 bg-sky-50 px-3.5 py-3">
+                                    <i data-lucide="clock" class="mt-0.5 h-4 w-4 shrink-0 text-sky-600"></i>
+                                    <p class="text-xs leading-relaxed text-sky-900">@dateRuleHint</p>
                                 </div>
-                                <div x-show="mealDays.length > 0" class="mt-5">
-                                    <p class="mb-2 text-[10px] font-black uppercase tracking-wider text-slate-400">
-                                        Đã chọn <span x-text="mealDays.length"></span> ngày
-                                    </p>
-                                    <div class="flex flex-wrap gap-2">
-                                        <template x-for="day in mealDays" :key="day.serviceDate">
-                                            <span class="group inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white py-2 pl-3 pr-2 text-sm font-bold text-slate-800 shadow-sm transition hover:border-orange-200 hover:shadow-md">
-                                                <i data-lucide="calendar-days" class="h-4 w-4 text-emerald-600"></i>
-                                                <span x-text="formatDate(day.serviceDate)"></span>
-                                                <button type="button" @@click="removeDay(day.serviceDate)"
-                                                        class="flex h-7 w-7 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                                                        title="Xóa ngày">&times;</button>
-                                            </span>
-                                        </template>
+
+                                <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50/80">
+                                    <div class="flex items-center justify-between border-b border-slate-200 px-3.5 py-2.5">
+                                        <p class="text-xs font-bold text-slate-600">
+                                            Ngày đã chọn: <span class="text-orange-600" x-text="mealDays.length"></span>
+                                        </p>
+                                        <p x-show="mealDays.length > 0" class="text-[11px] font-semibold text-slate-400">Bấm × để xóa</p>
+                                    </div>
+                                    <div class="p-3">
+                                        <div x-show="mealDays.length > 0" class="flex flex-wrap gap-2">
+                                            <template x-for="day in mealDays" :key="day.serviceDate">
+                                                <span class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white py-1.5 pl-2.5 pr-1.5 text-sm font-semibold text-slate-800 shadow-sm">
+                                                    <i data-lucide="calendar-days" class="h-3.5 w-3.5 text-emerald-600"></i>
+                                                    <span x-text="formatDate(day.serviceDate)"></span>
+                                                    <button type="button" @@click="removeDay(day.serviceDate)"
+                                                            class="flex h-6 w-6 items-center justify-center rounded-md text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                                                            title="Xóa ngày">&times;</button>
+                                                </span>
+                                            </template>
+                                        </div>
+                                        <div x-show="mealDays.length === 0" class="flex items-center gap-3 py-2 text-sm text-slate-500">
+                                            <i data-lucide="calendar-x" class="h-5 w-5 shrink-0 text-slate-300"></i>
+                                            <span>Chưa có ngày — thêm ít nhất một ngày để tiếp tục.</span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div x-show="mealDays.length === 0" class="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/80 px-4 py-8 text-center">
-                                    <i data-lucide="calendar-x" class="mx-auto mb-2 h-8 w-8 text-slate-300"></i>
-                                    <p class="text-sm font-medium text-slate-500">Chưa có ngày phục vụ — hãy thêm ít nhất một ngày.</p>
-                                </div>
-                            </div>
+                            </section>
+                        </div>
 
-                            <div x-show="formError" class="flex items-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
+                        <div class="border-t border-slate-200 bg-slate-50/80 px-5 py-4 sm:px-6">
+                            <div x-show="formError" class="mb-3 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700">
                                 <i data-lucide="circle-alert" class="h-4 w-4 shrink-0"></i>
                                 <span x-text="formError"></span>
                             </div>
-
                             <button type="button" @@click="goStep2()"
-                                    class="group flex w-full items-center justify-center gap-2 rounded-2xl bg-gradient-to-r from-orange-500 to-amber-500 py-4 text-sm font-black text-white shadow-xl shadow-orange-500/30 transition hover:from-orange-600 hover:to-amber-600 hover:shadow-orange-500/40">
+                                    class="group flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 py-3.5 text-sm font-black text-white shadow-md shadow-orange-500/25 transition hover:from-orange-600 hover:to-amber-600">
                                 Tiếp tục — lập thực đơn
-                                <i data-lucide="arrow-right" class="h-5 w-5 transition group-hover:translate-x-0.5"></i>
+                                <i data-lucide="arrow-right" class="h-4 w-4 transition group-hover:translate-x-0.5"></i>
                             </button>
                         </div>
                     </div>
 
                     <!-- Step 1 sidebar -->
-                    <aside class="space-y-4 lg:sticky lg:top-28 lg:self-start">
-                        <div class="overflow-hidden rounded-3xl border border-slate-200/80 bg-white p-5 shadow-lg ring-1 ring-slate-900/5">
-                            <p class="text-[10px] font-black uppercase tracking-wider text-slate-400">Quy trình</p>
-                            <ul class="mt-4 space-y-3">
-                                <li class="flex gap-3 text-sm">
-                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-xs font-black text-orange-700">1</span>
-                                    <span class="text-slate-600"><strong class="text-slate-800">Thiết lập</strong> — giá/suất và ngày giao</span>
+                    <aside class="space-y-4 lg:sticky lg:top-24 lg:self-start">
+                        <div class="org-panel rounded-2xl p-4 sm:p-5">
+                            <p class="org-section-label">Tóm tắt thiết lập</p>
+                            <dl class="mt-3 space-y-2.5 text-sm">
+                                <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5">
+                                    <dt class="text-slate-500">Giá / suất</dt>
+                                    <dd class="font-black text-slate-900"><span x-text="formatMoney(pricePerPortion)"></span> đ</dd>
+                                </div>
+                                <div class="flex items-center justify-between gap-3 border-b border-slate-100 pb-2.5">
+                                    <dt class="text-slate-500">Ngày phục vụ</dt>
+                                    <dd class="font-black" :class="mealDays.length > 0 ? 'text-emerald-700' : 'text-slate-400'" x-text="mealDays.length"></dd>
+                                </div>
+                                <div class="flex items-center justify-between gap-3">
+                                    <dt class="text-slate-500">Đơn vị</dt>
+                                    <dd class="max-w-[140px] truncate text-right font-bold text-slate-800" title="@Model.OrganizationName">@Model.OrganizationName</dd>
+                                </div>
+                            </dl>
+                        </div>
+                        <div class="org-panel rounded-2xl p-4 sm:p-5">
+                            <p class="org-section-label">Quy trình</p>
+                            <ul class="mt-3 space-y-2.5">
+                                <li class="flex gap-2.5 text-sm leading-snug">
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-orange-100 text-[11px] font-black text-orange-700">1</span>
+                                    <span class="text-slate-600"><strong class="text-slate-800">Thiết lập</strong> — giá suất &amp; ngày giao</span>
                                 </li>
-                                <li class="flex gap-3 text-sm">
-                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-black text-slate-500">2</span>
+                                <li class="flex gap-2.5 text-sm leading-snug">
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-[11px] font-black text-slate-500">2</span>
                                     <span class="text-slate-600"><strong class="text-slate-800">Thực đơn</strong> — chọn món từng ngày</span>
                                 </li>
-                                <li class="flex gap-3 text-sm">
-                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-xs font-black text-slate-500">3</span>
-                                    <span class="text-slate-600"><strong class="text-slate-800">Khuyến mãi</strong> — chọn mã, rồi xem nháp HĐ</span>
+                                <li class="flex gap-2.5 text-sm leading-snug">
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-[11px] font-black text-slate-500">3</span>
+                                    <span class="text-slate-600"><strong class="text-slate-800">Khuyến mãi</strong> — mã giảm (tuỳ chọn)</span>
+                                </li>
+                                <li class="flex gap-2.5 text-sm leading-snug">
+                                    <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-slate-100 text-[11px] font-black text-slate-500">4</span>
+                                    <span class="text-slate-600"><strong class="text-slate-800">Giao hàng</strong> — người nhận &amp; địa chỉ</span>
                                 </li>
                             </ul>
                         </div>
-                        <div class="rounded-3xl border border-emerald-100 bg-gradient-to-br from-emerald-50 to-teal-50/50 p-5">
+                        <div class="rounded-2xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50/60 p-4 sm:p-5">
                             <div class="flex items-center gap-2 text-emerald-800">
-                                <i data-lucide="shield-check" class="h-5 w-5"></i>
-                                <p class="text-sm font-black">Cam kết HuitMeal</p>
+                                <i data-lucide="shield-check" class="h-4 w-4"></i>
+                                <p class="text-sm font-bold">Cam kết HuitMeal</p>
                             </div>
-                            <p class="mt-2 text-xs leading-relaxed text-emerald-900/80">
+                            <p class="mt-2 text-xs leading-relaxed text-emerald-900/85">
                                 Chuẩn ATTP, nguồn nguyên liệu kiểm soát, giao đúng khối lượng suất theo hợp đồng đơn vị.
                             </p>
                         </div>
@@ -291,222 +454,224 @@
             <!-- Step 2 -->
             <div x-show="step === 2" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-2" x-transition:enter-end="opacity-100 translate-y-0">
                 <div x-show="cartImportLines.length > 0" x-cloak
-                     class="mb-5 flex flex-col gap-3 rounded-2xl border border-orange-200/90 bg-gradient-to-r from-orange-50 to-amber-50/60 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                     class="org-panel mb-4 flex flex-col gap-3 rounded-2xl px-4 py-3.5 sm:flex-row sm:items-center sm:justify-between">
                     <div class="flex items-start gap-3 text-sm text-orange-950">
-                        <i data-lucide="shopping-bag" class="mt-0.5 h-5 w-5 shrink-0 text-orange-600"></i>
+                        <i data-lucide="shopping-bag" class="mt-0.5 h-4 w-4 shrink-0 text-orange-600"></i>
                         <div>
                             <p class="font-bold">Có <span x-text="cartImportLines.length"></span> món trong giỏ hàng</p>
-                            <p class="mt-0.5 text-xs text-orange-900/80">Chọn tab <strong>「Từ giỏ hàng」</strong> khi thêm món, hoặc áp dụng nhanh cho ngày đang chọn.</p>
+                            <p class="mt-0.5 text-xs text-orange-900/80">Chọn tab «Từ giỏ hàng» khi thêm món, hoặc áp dụng nhanh bên dưới.</p>
                         </div>
                     </div>
                     <div class="flex flex-wrap gap-2 shrink-0">
                         <button type="button" @@click="applyCartToDay(activeDay, false)"
-                                class="rounded-xl border border-orange-300 bg-white px-3 py-2 text-xs font-bold text-orange-800 hover:bg-orange-100">
-                            Áp dụng cho ngày này
+                                class="rounded-lg border border-orange-300 bg-white px-3 py-2 text-xs font-bold text-orange-800 hover:bg-orange-50">
+                            Áp dụng ngày này
                         </button>
                         <button type="button" @@click="applyCartToAllDays()"
-                                class="rounded-xl bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-700">
+                                class="rounded-lg bg-orange-600 px-3 py-2 text-xs font-bold text-white hover:bg-orange-700">
                             Áp dụng mọi ngày
                         </button>
                     </div>
                 </div>
-                <div class="mb-6 flex flex-wrap items-end justify-between gap-4">
-                    <div>
-                        <p class="text-[10px] font-black uppercase tracking-[0.2em] text-orange-600">Bước 2</p>
-                        <h2 class="text-xl font-black text-slate-900 sm:text-2xl">Thực đơn theo ngày</h2>
-                        <p class="mt-1 max-w-xl text-sm text-slate-500">
-                            <strong class="text-orange-600">SL</strong> = số suất. Tổng món phụ và canh mỗi ngày
-                            <strong class="text-violet-700">không vượt</strong> tổng suất món chính.
-                        </p>
-                    </div>
-                    <button type="button" @@click="step = 1"
-                            class="inline-flex items-center gap-1.5 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-bold text-slate-600 shadow-sm hover:border-orange-200 hover:text-orange-600">
-                        <i data-lucide="pencil" class="h-4 w-4"></i> Sửa thiết lập
-                    </button>
-                </div>
 
-                <div class="grid gap-8 lg:grid-cols-[1fr_340px]">
-                    <div class="space-y-5">
-                        <!-- Day tabs -->
-                        <div class="overflow-hidden rounded-2xl border border-slate-200/80 bg-white p-2 shadow-sm">
-                            <div class="flex gap-2 overflow-x-auto pb-1 no-scrollbar scroll-smooth" style="scroll-snap-type: x mandatory;">
-                                <template x-for="day in mealDays" :key="day.serviceDate">
-                                    <button type="button" @@click="activeDay = day.serviceDate"
-                                            class="org-day-tab shrink-0 rounded-xl px-4 py-2.5 text-xs font-black transition-all"
-                                            :class="activeDay === day.serviceDate
-                                                ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-600/25'
-                                                : 'bg-slate-50 text-slate-600 hover:bg-slate-100'">
-                                        <span x-text="formatDate(day.serviceDate)"></span>
-                                        <span class="mt-0.5 block text-[10px] font-semibold opacity-80"
-                                              x-text="daySlotTotal(day, 'main') + ' suất chính'"></span>
-                                    </button>
-                                </template>
+                <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-6">
+                    <div class="org-panel overflow-hidden rounded-2xl">
+                        <div class="org-panel-head px-5 py-4 sm:px-6">
+                            <div class="flex flex-wrap items-start justify-between gap-3">
+                                <div>
+                                    <p class="org-section-label text-orange-600">Bước 2</p>
+                                    <h2 class="mt-1 text-lg font-black text-slate-900 sm:text-xl">Thực đơn theo ngày</h2>
+                                    <p class="mt-1 text-sm leading-relaxed text-slate-500">
+                                        <strong class="text-slate-700">SL</strong> = số suất. Món phụ và canh mỗi ngày
+                                        <strong class="text-violet-700">không vượt</strong> tổng suất món chính.
+                                    </p>
+                                </div>
+                                <button type="button" @@click="step = 1"
+                                        class="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-600 hover:border-orange-200 hover:text-orange-600">
+                                    <i data-lucide="pencil" class="h-3.5 w-3.5"></i> Sửa thiết lập
+                                </button>
+                            </div>
+                            <div class="mt-4 border-t border-slate-200 pt-4">
+                                <p class="org-section-label mb-2">Chọn ngày phục vụ</p>
+                                <div class="flex gap-2 overflow-x-auto pb-0.5 no-scrollbar scroll-smooth" style="scroll-snap-type: x mandatory;">
+                                    <template x-for="day in mealDays" :key="day.serviceDate">
+                                        <button type="button" @@click="activeDay = day.serviceDate"
+                                                class="org-day-tab org-day-tab-btn shrink-0"
+                                                :class="activeDay === day.serviceDate ? 'is-active' : ''">
+                                            <span class="block text-xs font-bold text-slate-800" x-text="formatDate(day.serviceDate)"></span>
+                                            <span class="mt-0.5 block text-[10px] font-semibold"
+                                                  :class="activeDay === day.serviceDate ? 'text-emerald-700' : 'text-slate-500'"
+                                                  x-text="daySlotTotal(day, 'main') + ' suất chính'"></span>
+                                        </button>
+                                    </template>
+                                </div>
                             </div>
                         </div>
 
-                        <template x-for="day in mealDays" :key="'panel-' + day.serviceDate">
-                            <div x-show="activeDay === day.serviceDate" class="space-y-4">
-                                <!-- Day stats bar -->
-                                <div class="grid gap-3 sm:grid-cols-3">
-                                    <div class="flex items-center gap-3 rounded-2xl border border-emerald-100 bg-emerald-50/80 px-4 py-3">
-                                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-600 text-white">
-                                            <i data-lucide="utensils" class="h-5 w-5"></i>
+                        <div class="px-5 py-5 sm:px-6">
+                            <template x-for="day in mealDays" :key="'panel-' + day.serviceDate">
+                                <div x-show="activeDay === day.serviceDate" class="space-y-4">
+                                    <div class="grid gap-2 sm:grid-cols-3">
+                                        <div class="org-stat-tile flex items-center gap-2.5"
+                                             :class="daySlotTotal(day, 'main') > 0 ? 'is-ok' : ''">
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-emerald-600 text-white">
+                                                <i data-lucide="utensils" class="h-4 w-4"></i>
+                                            </span>
+                                            <div class="min-w-0">
+                                                <p class="text-[10px] font-bold uppercase text-emerald-800/80">Món chính</p>
+                                                <p class="text-base font-black text-emerald-900"><span x-text="daySlotTotal(day, 'main')"></span> suất</p>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p class="text-[10px] font-bold uppercase text-emerald-700/80">Món chính</p>
-                                            <p class="text-lg font-black text-emerald-900"><span x-text="daySlotTotal(day, 'main')"></span> suất</p>
+                                        <div class="org-stat-tile flex items-center gap-2.5" :class="daySlotBalanceUiClass(day, 'side')">
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-violet-600 text-white">
+                                                <i data-lucide="salad" class="h-4 w-4"></i>
+                                            </span>
+                                            <div class="min-w-0">
+                                                <p class="text-[10px] font-bold uppercase text-violet-800/80">Món phụ</p>
+                                                <p class="text-base font-black text-slate-900" x-text="daySlotTotal(day, 'side') + ' / ' + daySlotTotal(day, 'main')"></p>
+                                            </div>
+                                        </div>
+                                        <div class="org-stat-tile flex items-center gap-2.5" :class="daySlotBalanceUiClass(day, 'soup')">
+                                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-slate-600 text-white">
+                                                <i data-lucide="soup" class="h-4 w-4"></i>
+                                            </span>
+                                            <div class="min-w-0">
+                                                <p class="text-[10px] font-bold uppercase text-slate-600">Canh</p>
+                                                <p class="text-base font-black text-slate-900" x-text="daySlotTotal(day, 'soup') + ' / ' + daySlotTotal(day, 'main')"></p>
+                                            </div>
                                         </div>
                                     </div>
-                                    <div class="flex items-center gap-3 rounded-2xl border px-4 py-3"
-                                         :class="daySlotBalanceUiClass(day, 'side')">
-                                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-600 text-white">
-                                            <i data-lucide="salad" class="h-5 w-5"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-[10px] font-bold uppercase text-violet-700/80">Món phụ</p>
-                                            <p class="text-lg font-black" x-text="daySlotTotal(day, 'side') + ' / ' + daySlotTotal(day, 'main') + ' suất'"></p>
-                                        </div>
-                                    </div>
-                                    <div class="flex items-center gap-3 rounded-2xl border px-4 py-3"
-                                         :class="daySlotBalanceUiClass(day, 'soup')">
-                                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-slate-700 text-white">
-                                            <i data-lucide="soup" class="h-5 w-5"></i>
-                                        </div>
-                                        <div>
-                                            <p class="text-[10px] font-bold uppercase text-slate-500">Canh</p>
-                                            <p class="text-lg font-black" x-text="daySlotTotal(day, 'soup') + ' / ' + daySlotTotal(day, 'main') + ' suất'"></p>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-amber-100 bg-amber-50/80 px-4 py-3 text-xs text-amber-950">
-                                    <span>Mỗi suất ăn = món chính + món phụ + canh <strong>cùng số lượng</strong> trong ngày.</span>
-                                    <button type="button" @@click="balanceSideSoupToMain(day)"
-                                            class="rounded-lg bg-amber-600 px-3 py-1.5 font-bold text-white hover:bg-amber-700">
-                                        Cân bằng món phụ &amp; canh
-                                    </button>
-                                </div>
 
-                                <template x-for="slot in slots" :key="slot.key">
-                                    <article class="org-slot-card overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm ring-1 ring-slate-900/5">
-                                        <div class="flex flex-wrap items-center justify-between gap-3 px-5 py-4 sm:px-6"
-                                             :class="slot.key === 'main'
-                                                ? 'bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600'
-                                                : (slot.key === 'side' ? 'bg-gradient-to-r from-violet-800 to-violet-600' : 'bg-gradient-to-r from-slate-800 to-slate-700')">
-                                            <div class="flex items-center gap-3 text-white">
-                                                <span class="flex h-10 w-10 items-center justify-center rounded-xl bg-white/15 backdrop-blur">
-                                                    <i :data-lucide="slot.icon" class="h-5 w-5"></i>
-                                                </span>
-                                                <div>
-                                                    <p class="text-sm font-black uppercase tracking-wide" x-text="slot.label"></p>
-                                                    <p class="text-[10px] font-semibold text-white/70" x-text="slot.desc"></p>
-                                                </div>
-                                            </div>
-                                            <div class="flex items-center gap-2">
-                                                <span x-show="slot.key === 'main'" class="rounded-full bg-amber-400/90 px-2.5 py-0.5 text-[10px] font-black text-amber-950">Tính tiền</span>
-                                                <button type="button" @@click="openPicker(day.serviceDate, slot.key)"
-                                                        :disabled="slot.key !== 'main' && daySlotTotal(day, 'main') > 0 && daySlotTotal(day, slot.key) >= daySlotTotal(day, 'main')"
-                                                        :class="slot.key !== 'main' && daySlotTotal(day, 'main') > 0 && daySlotTotal(day, slot.key) >= daySlotTotal(day, 'main') ? 'cursor-not-allowed opacity-50' : 'hover:bg-white/25'"
-                                                        :title="slot.key !== 'main' ? 'Tổng suất phải bằng món chính' : ''"
-                                                        class="inline-flex items-center gap-1.5 rounded-xl border border-white/20 bg-white/10 px-4 py-2 text-xs font-black text-white backdrop-blur transition">
-                                                    <i data-lucide="plus-circle" class="h-4 w-4"></i> Thêm món
-                                                </button>
-                                            </div>
-                                        </div>
-                                        <div class="p-5 sm:p-6">
-                                            <template x-if="getLines(day, slot.key).length === 0">
-                                                <button type="button" @@click="openPicker(day.serviceDate, slot.key)"
-                                                        class="flex w-full flex-col items-center gap-2 rounded-2xl border-2 border-dashed border-slate-200 bg-slate-50/50 py-10 text-slate-400 transition hover:border-orange-200 hover:bg-orange-50/30 hover:text-orange-600">
-                                                    <i data-lucide="plus" class="h-8 w-8"></i>
-                                                    <span class="text-sm font-bold">Chưa có món — nhấn để thêm</span>
-                                                </button>
-                                            </template>
-                                            <ul class="space-y-2">
-                                                <template x-for="(line, li) in getLines(day, slot.key)" :key="line.dishId">
-                                                    <li class="flex flex-wrap items-center gap-3 rounded-2xl border border-slate-100 bg-gradient-to-r from-white to-slate-50/80 p-4 transition hover:border-orange-100 hover:shadow-sm">
-                                                        <div class="relative h-12 w-12 shrink-0 overflow-hidden rounded-xl bg-gradient-to-br from-orange-50 to-amber-50 ring-1 ring-slate-100/90">
-                                                            <img x-show="lineThumbSrc(line) && !dishThumbFailed(line)"
-                                                                 :src="lineThumbSrc(line)"
-                                                                 :alt="line.dishName"
-                                                                 loading="lazy"
-                                                                 decoding="async"
-                                                                 @@error="onDishThumbError(line)"
-                                                                 class="absolute inset-0 h-full w-full object-cover" />
-                                                            <div x-show="!lineThumbSrc(line) || dishThumbFailed(line)"
-                                                                 class="absolute inset-0 flex items-center justify-center text-orange-500">
-                                                                <i data-lucide="utensils" class="h-5 w-5"></i>
-                                                            </div>
+                                    <div class="flex flex-col gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-3 sm:flex-row sm:items-center sm:justify-between">
+                                        <p class="text-xs leading-relaxed text-amber-950">
+                                            Mỗi suất ăn = món chính + món phụ + canh <strong>cùng số lượng</strong> trong ngày.
+                                        </p>
+                                        <button type="button" @@click="balanceSideSoupToMain(day)"
+                                                class="shrink-0 rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-amber-700">
+                                            Cân bằng món phụ &amp; canh
+                                        </button>
+                                    </div>
+
+                                    <div class="space-y-3">
+                                        <template x-for="slot in slots" :key="slot.key">
+                                            <article class="org-slot-card overflow-hidden rounded-xl bg-white">
+                                                <div class="flex flex-wrap items-center justify-between gap-2 px-4 py-3 text-white sm:px-5"
+                                                     :class="slot.key === 'main' ? 'org-slot-head-main' : (slot.key === 'side' ? 'org-slot-head-side' : 'org-slot-head-soup')">
+                                                    <div class="flex min-w-0 items-center gap-2.5">
+                                                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/15">
+                                                            <i :data-lucide="slot.icon" class="h-4 w-4"></i>
+                                                        </span>
+                                                        <div class="min-w-0">
+                                                            <p class="text-xs font-black uppercase tracking-wide" x-text="slot.label"></p>
+                                                            <p class="truncate text-[10px] font-medium text-white/75" x-text="slot.desc"></p>
                                                         </div>
-                                                        <div class="min-w-0 flex-1">
-                                                            <p class="font-bold text-slate-900" x-text="line.dishName"></p>
-                                                            <p class="text-[11px] text-slate-400" x-show="slot.key === 'main'">Tính vào tổng suất</p>
-                                                        </div>
-                                                        <div class="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 shadow-sm">
-                                                            <button type="button" @@click="changeQty(day.serviceDate, slot.key, line.dishId, -1)"
-                                                                    class="flex h-9 w-9 items-center justify-center rounded-lg font-bold text-slate-600 hover:bg-orange-50 hover:text-orange-600">−</button>
-                                                            <input type="number" min="1" x-model.number="line.quantity"
-                                                                   @@blur="normalizeQty(line, day.serviceDate, slot.key)"
-                                                                   class="w-14 border-0 bg-transparent py-1 text-center text-sm font-black text-slate-900 focus:ring-0" />
-                                                            <button type="button" @@click="changeQty(day.serviceDate, slot.key, line.dishId, 1)"
-                                                                    class="flex h-9 w-9 items-center justify-center rounded-lg font-bold text-slate-600 hover:bg-orange-50 hover:text-orange-600">+</button>
-                                                        </div>
-                                                        <button type="button" @@click="removeLine(day.serviceDate, slot.key, line.dishId)"
-                                                                class="flex h-9 w-9 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
-                                                                title="Xóa món">
-                                                            <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                                    </div>
+                                                    <div class="flex items-center gap-2">
+                                                        <span x-show="slot.key === 'main'" class="rounded-md bg-amber-300/90 px-2 py-0.5 text-[10px] font-black text-amber-950">Tính tiền</span>
+                                                        <button type="button" @@click="openPicker(day.serviceDate, slot.key)"
+                                                                :disabled="slot.key !== 'main' && daySlotTotal(day, 'main') > 0 && daySlotTotal(day, slot.key) >= daySlotTotal(day, 'main')"
+                                                                :class="slot.key !== 'main' && daySlotTotal(day, 'main') > 0 && daySlotTotal(day, slot.key) >= daySlotTotal(day, 'main') ? 'cursor-not-allowed opacity-50' : 'hover:bg-white/20'"
+                                                                class="inline-flex items-center gap-1 rounded-lg border border-white/25 bg-white/10 px-3 py-1.5 text-[11px] font-bold text-white transition">
+                                                            <i data-lucide="plus" class="h-3.5 w-3.5"></i> Thêm món
                                                         </button>
-                                                    </li>
-                                                </template>
-                                            </ul>
-                                        </div>
-                                    </article>
-                                </template>
-                            </div>
-                        </template>
+                                                    </div>
+                                                </div>
+                                                <div class="p-4 sm:p-5">
+                                                    <template x-if="getLines(day, slot.key).length === 0">
+                                                        <button type="button" @@click="openPicker(day.serviceDate, slot.key)"
+                                                                class="org-empty-slot flex w-full items-center justify-center gap-2 text-slate-500">
+                                                            <i data-lucide="plus-circle" class="h-5 w-5 shrink-0"></i>
+                                                            <span class="text-sm font-semibold">Chưa có món — bấm để thêm</span>
+                                                        </button>
+                                                    </template>
+                                                    <ul class="space-y-2">
+                                                        <template x-for="(line, li) in getLines(day, slot.key)" :key="line.dishId">
+                                                            <li class="flex flex-wrap items-center gap-2.5 rounded-xl border border-slate-200 bg-white p-3 transition hover:border-orange-200">
+                                                                <div class="relative h-11 w-11 shrink-0 overflow-hidden rounded-lg bg-slate-100 ring-1 ring-slate-200/80">
+                                                                    <img x-show="lineThumbSrc(line) && !dishThumbFailed(line)"
+                                                                         :src="lineThumbSrc(line)"
+                                                                         :alt="line.dishName"
+                                                                         loading="lazy"
+                                                                         decoding="async"
+                                                                         @@error="onDishThumbError(line)"
+                                                                         class="absolute inset-0 h-full w-full object-cover" />
+                                                                    <div x-show="!lineThumbSrc(line) || dishThumbFailed(line)"
+                                                                         class="absolute inset-0 flex items-center justify-center text-orange-500">
+                                                                        <i data-lucide="utensils" class="h-4 w-4"></i>
+                                                                    </div>
+                                                                </div>
+                                                                <div class="min-w-0 flex-1">
+                                                                    <p class="text-sm font-bold text-slate-900 line-clamp-1" x-text="line.dishName"></p>
+                                                                    <p class="text-[11px] text-slate-500" x-show="slot.key === 'main'">Tính vào tổng suất</p>
+                                                                </div>
+                                                                <div class="flex items-center gap-0.5 rounded-lg border border-slate-200 bg-slate-50 p-0.5">
+                                                                    <button type="button" @@click="changeQty(day.serviceDate, slot.key, line.dishId, -1)"
+                                                                            class="flex h-8 w-8 items-center justify-center rounded-md font-bold text-slate-600 hover:bg-white hover:text-orange-600">−</button>
+                                                                    <input type="number" min="1" x-model.number="line.quantity"
+                                                                           @@blur="normalizeQty(line, day.serviceDate, slot.key)"
+                                                                           class="w-12 border-0 bg-transparent py-1 text-center text-sm font-black text-slate-900 focus:ring-0" />
+                                                                    <button type="button" @@click="changeQty(day.serviceDate, slot.key, line.dishId, 1)"
+                                                                            class="flex h-8 w-8 items-center justify-center rounded-md font-bold text-slate-600 hover:bg-white hover:text-orange-600">+</button>
+                                                                </div>
+                                                                <button type="button" @@click="removeLine(day.serviceDate, slot.key, line.dishId)"
+                                                                        class="flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-600"
+                                                                        title="Xóa món">
+                                                                    <i data-lucide="trash-2" class="h-4 w-4"></i>
+                                                                </button>
+                                                            </li>
+                                                        </template>
+                                                    </ul>
+                                                </div>
+                                            </article>
+                                        </template>
+                                    </div>
+                                </div>
+                            </template>
 
-                        <div x-show="formError" class="flex items-center justify-center gap-2 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm font-medium text-red-700">
-                            <i data-lucide="circle-alert" class="h-4 w-4"></i>
-                            <span x-text="formError"></span>
+                            <div x-show="formError" class="mt-4 flex items-center gap-2 rounded-xl border border-red-200 bg-red-50 px-3.5 py-2.5 text-sm font-medium text-red-700">
+                                <i data-lucide="circle-alert" class="h-4 w-4 shrink-0"></i>
+                                <span x-text="formError"></span>
+                            </div>
                         </div>
                     </div>
 
                     <!-- Step 2 sidebar -->
-                    <aside class="lg:sticky lg:top-28 lg:self-start">
-                        <div class="overflow-hidden rounded-3xl border border-orange-200/80 bg-white shadow-xl ring-1 ring-orange-500/10">
-                            <div class="bg-gradient-to-br from-orange-500 to-amber-500 px-6 py-5 text-white">
-                                <p class="text-[10px] font-black uppercase tracking-wider text-orange-100">Tạm tính đơn</p>
-                                <p class="mt-1 text-3xl font-black">
-                                    <span x-text="formatMoney(estimatedTotal())"></span>
-                                    <span class="text-lg font-bold opacity-80">đ</span>
+                    <aside class="lg:sticky lg:top-24 lg:self-start">
+                        <div class="org-panel overflow-hidden rounded-2xl">
+                            <div class="org-summary-head px-5 py-4 text-white">
+                                <p class="text-[10px] font-bold uppercase tracking-wider text-orange-100">Tạm tính đơn</p>
+                                <p class="mt-1 text-2xl font-black tabular-nums">
+                                    <span x-text="formatMoney(estimatedTotal())"></span><span class="text-base font-bold opacity-90"> đ</span>
                                 </p>
                             </div>
-                            <div class="space-y-4 p-6">
-                                <div class="flex justify-between text-sm">
+                            <div class="space-y-0 p-4 sm:p-5 text-sm">
+                                <div class="flex items-center justify-between gap-3 border-b border-slate-100 py-2.5">
                                     <span class="text-slate-500">Giá / suất</span>
-                                    <span class="font-black text-slate-900"><span x-text="formatMoney(pricePerPortion)"></span> đ</span>
+                                    <span class="font-black text-slate-900 tabular-nums"><span x-text="formatMoney(pricePerPortion)"></span> đ</span>
                                 </div>
-                                <div class="flex justify-between text-sm">
+                                <div class="flex items-center justify-between gap-3 border-b border-slate-100 py-2.5">
                                     <span class="text-slate-500">Tổng suất món chính</span>
-                                    <span class="font-black text-emerald-700" x-text="totalMainQty()"></span>
+                                    <span class="font-black text-emerald-700 tabular-nums" x-text="totalMainQty()"></span>
                                 </div>
-                                <div class="flex justify-between text-sm">
+                                <div class="flex items-center justify-between gap-3 border-b border-slate-100 py-2.5">
                                     <span class="text-slate-500">Số ngày phục vụ</span>
-                                    <span class="font-black text-slate-900" x-text="mealDays.length"></span>
+                                    <span class="font-black text-slate-900 tabular-nums" x-text="mealDays.length"></span>
                                 </div>
-                                <div class="border-t border-slate-100 pt-4">
-                                    <p class="mb-2 text-[10px] font-black uppercase tracking-wider text-slate-400">Công thức</p>
+                                <div class="py-3">
+                                    <p class="org-section-label mb-1.5">Công thức</p>
                                     <p class="text-xs leading-relaxed text-slate-500">
                                         Tổng = giá/suất × tổng SL món chính (tất cả ngày). Món phụ &amp; canh: 0đ.
                                     </p>
                                 </div>
-                                <div class="flex flex-col gap-2 pt-2">
+                                <div class="flex flex-col gap-2 border-t border-slate-100 pt-3">
                                     <button type="button" @@click="step = 1"
-                                            class="rounded-xl border border-slate-200 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">
+                                            class="rounded-lg border border-slate-200 py-2.5 text-sm font-bold text-slate-600 hover:bg-slate-50">
                                         Quay lại thiết lập
                                     </button>
                                     <button type="button" @@click="goStep3()"
-                                            class="flex items-center justify-center gap-2 rounded-2xl bg-slate-900 py-3.5 text-sm font-black text-white shadow-lg transition hover:bg-orange-600">
+                                            class="flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-orange-500 to-amber-500 py-3 text-sm font-black text-white shadow-md shadow-orange-500/20 transition hover:from-orange-600 hover:to-amber-600">
                                         <i data-lucide="arrow-right" class="h-4 w-4"></i>
-                                        Tiếp tục — chọn khuyến mãi
+                                        Tiếp tục — khuyến mãi
                                     </button>
                                 </div>
                             </div>
@@ -1224,11 +1389,11 @@
             },
             daySlotBalanceUiClass(dayOrIso, slot) {
                 const main = this.daySlotTotal(dayOrIso, 'main');
-                if (main <= 0) return slot === 'side' ? 'border-violet-100 bg-violet-50/80' : 'border-slate-200 bg-slate-50';
+                if (main <= 0) return slot === 'side' ? 'is-warn' : '';
                 const t = this.daySlotTotal(dayOrIso, slot);
-                if (t === main) return 'border-emerald-200 bg-emerald-50';
-                if (t > main) return 'border-red-200 bg-red-50';
-                return 'border-amber-200 bg-amber-50';
+                if (t === main) return 'is-ok';
+                if (t > main) return 'is-bad';
+                return 'is-warn';
             },
             balanceSideSoupToMain(dayOrIso) {
                 const day = this.resolveDay(dayOrIso);
@@ -1913,7 +2078,10 @@
                     this.$nextTick(() => this.loadEligiblePromotions());
                 }
                 this.$nextTick(() => this.hydrateMealLineImages());
-                this.$watch('step', () => this.scheduleDraftCacheSave());
+                this.$watch('step', () => {
+                    this.scheduleDraftCacheSave();
+                    this.$nextTick(() => { if (window.lucide) lucide.createIcons(); });
+                });
                 this.$watch('pricePerPortion', () => this.scheduleDraftCacheSave());
                 this.$watch('mealDays', () => this.scheduleDraftCacheSave(), { deep: true });
                 this.$watch('activeDay', () => this.scheduleDraftCacheSave());

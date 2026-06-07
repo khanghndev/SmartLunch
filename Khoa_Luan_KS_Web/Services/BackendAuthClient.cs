@@ -35,10 +35,9 @@ public class BackendAuthClient
         _ = await PostAsync<object>("/api/v1/Auth/logout", payload, bearerToken: accessToken, ct);
     }
 
-    public async Task<RegisterResponse> RegisterAsync(string email, string password, string confirmPassword, int? roleId, CancellationToken ct)
+    public async Task<RegisterResponse> RegisterAsync(RegisterClientRequest request, CancellationToken ct)
     {
-        var payload = new { email, password, confirmPassword, roleId };
-        return await PostAsync<RegisterResponse>("/api/v1/Auth/register", payload, bearerToken: null, ct);
+        return await PostAsync<RegisterResponse>("/api/v1/Auth/register", request, bearerToken: null, ct);
     }
 
     public async Task<UserProfileResponse> GetProfileAsync(string accessToken, CancellationToken ct)
@@ -214,6 +213,24 @@ public sealed class RegisterResponse
 {
     public string Username { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
+    public string AccountType { get; set; } = "Organization";
+    public int? OrganizationId { get; set; }
+    public string? OrganizationName { get; set; }
+}
+
+public sealed class RegisterClientRequest
+{
+    public string Email { get; set; } = string.Empty;
+    public string Password { get; set; } = string.Empty;
+    public string ConfirmPassword { get; set; } = string.Empty;
+    public string? FullName { get; set; }
+    public string? PhoneNumber { get; set; }
+    public int? RoleId { get; set; }
+    public string AccountType { get; set; } = "Organization";
+    public string? OrganizationName { get; set; }
+    public string? OrganizationType { get; set; }
+    public string? OrganizationAddress { get; set; }
+    public string? TaxCode { get; set; }
 }
 
 public sealed class UserProfileResponse

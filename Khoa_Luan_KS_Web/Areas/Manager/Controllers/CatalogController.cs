@@ -36,6 +36,16 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
 
             try
             {
+                var rolesResponse = await _masterDataClient.GetRolesAsync(token, isActive: true, ct: ct);
+                var staffRoleNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                {
+                    "Admin", "Manager", "WarehouseStaff", "ChefStaff", "SalesStaff", "Shipper"
+                };
+                ViewBag.StaffRoles = rolesResponse.Items
+                    .Where(r => staffRoleNames.Contains(r.Name))
+                    .OrderBy(r => r.Name)
+                    .ToList();
+
                 var response = await _masterDataClient.GetUsersAsync(
                     token, page, pageSize, searchTerm, roleName, staffOnly: true, ct: ct);
 
@@ -73,8 +83,85 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             catch (Exception ex)
             {
                 TempData["Error"] = ex.Message;
+                ViewBag.StaffRoles = new List<Services.RoleDto>();
                 return View(new Services.AdminGetUsersResponse());
             }
+        }
+
+        private static readonly HashSet<string> StaffRoleNames = new(StringComparer.OrdinalIgnoreCase)
+        {
+            "Admin", "Manager", "WarehouseStaff", "ChefStaff", "SalesStaff", "Shipper"
+        };
+
+        private IActionResult RedirectAfterEmployeeAction(string? returnUrl)
+        {
+            if (!string.IsNullOrWhiteSpace(returnUrl) && Url.IsLocalUrl(returnUrl))
+                return Redirect(returnUrl);
+
+            return RedirectToEmployeesList();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CreateEmployee(
+            [FromForm] Services.CreateUserRequest request,
+            string? roleName,
+            CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
+
+            try
+            {
+                if (string.IsNullOrWhiteSpace(request.Username))
+                    request.Username = request.Email.Trim();
+                if (string.IsNullOrWhiteSpace(request.Password))
+                    request.Password = "HuitMeal@2026";
+
+                if (!string.IsNullOrWhiteSpace(roleName))
+                {
+                    var roles = await _masterDataClient.GetRolesAsync(token, isActive: true, ct: ct);
+                    var role = roles.Items.FirstOrDefault(r =>
+                        string.Equals(r.Name, roleName, StringComparison.OrdinalIgnoreCase));
+                    if (role != null)
+                        request.InitialRoleId = role.Id;
+                }
+
+                var created = await _masterDataClient.CreateUserAsync(request, token, ct);
+                TempData["Success"] = "Đã tạo hồ sơ nhân viên mới thành công.";
+                if (created.User.Id > 0)
+                    return RedirectToAction(nameof(EmployeeDetail), new { id = created.User.Id });
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
+            return RedirectToEmployeesList();
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UpdateEmployee(
+            int id,
+            [FromForm] Services.UpdateUserRequest request,
+            string? returnUrl,
+            CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
+
+            try
+            {
+                await _masterDataClient.UpdateUserAsync(id, request, token, ct);
+                TempData["Success"] = "Đã cập nhật thông tin nhân viên thành công.";
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+            }
+
+            return RedirectAfterEmployeeAction(returnUrl);
         }
 
         private IActionResult RedirectToEmployeesList()
@@ -89,7 +176,8 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> LockEmployee(int id, CancellationToken ct)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> LockEmployee(int id, string? returnUrl, CancellationToken ct)
         {
             var token = HttpContext.Session.GetString("access_token");
             try
@@ -101,11 +189,12 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             {
                 TempData["Error"] = ex.Message;
             }
-            return RedirectToEmployeesList();
+            return RedirectAfterEmployeeAction(returnUrl);
         }
 
         [HttpPost]
-        public async Task<IActionResult> UnlockEmployee(int id, CancellationToken ct)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> UnlockEmployee(int id, string? returnUrl, CancellationToken ct)
         {
             var token = HttpContext.Session.GetString("access_token");
             try
@@ -117,11 +206,12 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             {
                 TempData["Error"] = ex.Message;
             }
-            return RedirectToEmployeesList();
+            return RedirectAfterEmployeeAction(returnUrl);
         }
 
         [HttpPost]
-        public async Task<IActionResult> ResetEmployeePassword(int id, string newPassword, CancellationToken ct)
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ResetEmployeePassword(int id, string newPassword, string? returnUrl, CancellationToken ct)
         {
             var token = HttpContext.Session.GetString("access_token");
             try
@@ -133,10 +223,40 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
             {
                 TempData["Error"] = ex.Message;
             }
-            return RedirectToEmployeesList();
+            return RedirectAfterEmployeeAction(returnUrl);
         }
 
-        public IActionResult EmployeeDetail(string id) => View();
+        public async Task<IActionResult> EmployeeDetail(int id, CancellationToken ct = default)
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
+
+            try
+            {
+                var response = await _masterDataClient.GetUserAsync(id, token, ct);
+                if (response?.User == null || response.User.Id == 0)
+                {
+                    TempData["Error"] = "Không tìm thấy nhân viên.";
+                    return RedirectToAction(nameof(Employees));
+                }
+
+                var user = response.User;
+                var primaryRole = user.RoleNames.FirstOrDefault(r => StaffRoleNames.Contains(r));
+                if (primaryRole == null && user.RoleNames.Count > 0)
+                {
+                    TempData["Error"] = "Tài khoản này không thuộc danh sách nhân viên nội bộ.";
+                    return RedirectToAction(nameof(Employees));
+                }
+
+                ViewBag.ReturnListUrl = Url.Action(nameof(Employees), "Catalog", new { area = "Manager" });
+                return View(user);
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToAction(nameof(Employees));
+            }
+        }
 
         public async Task<IActionResult> Suppliers(int page = 1, int pageSize = 10, string? searchTerm = null, CancellationToken ct = default)
         {

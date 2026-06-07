@@ -123,14 +123,19 @@ public class BackendMasterDataClient
         await PostAsync<object>($"/api/v1/master-data/User/{userId}/reset-password", newPassword, accessToken, ct);
     }
 
-    public async Task<AdminUserDto> CreateUserAsync(CreateUserRequest request, string accessToken, CancellationToken ct = default)
+    public async Task<GetUserResponse> CreateUserAsync(CreateUserRequest request, string accessToken, CancellationToken ct = default)
     {
-        return await PostAsync<AdminUserDto>("/api/v1/master-data/User", request, accessToken, ct);
+        return await PostAsync<GetUserResponse>("/api/v1/master-data/User", request, accessToken, ct);
     }
 
     public async Task<AdminUserDto> UpdateUserAsync(int id, UpdateUserRequest request, string accessToken, CancellationToken ct = default)
     {
         return await PutAsync<AdminUserDto>($"/api/v1/master-data/User/{id}", request, accessToken, ct);
+    }
+
+    public async Task<GetUserResponse> GetUserAsync(int id, string accessToken, CancellationToken ct = default)
+    {
+        return await GetAsync<GetUserResponse>($"/api/v1/master-data/User/{id}", accessToken, ct);
     }
 
     // --- System Management ---
@@ -1226,8 +1231,15 @@ public class AdminUserDto
     public string FullName => $"{FirstName} {LastName}".Trim();
     public string? PhoneNumber { get; set; }
     public bool IsActive { get; set; }
+    public bool IsEmailVerified { get; set; }
     public DateTime? LastLoginAt { get; set; }
+    public DateTime CreatedAt { get; set; }
     public List<string> RoleNames { get; set; } = new();
+}
+
+public class GetUserResponse
+{
+    public AdminUserDto User { get; set; } = new();
 }
 
 public class CreateUserRequest
