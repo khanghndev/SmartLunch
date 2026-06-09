@@ -59,6 +59,9 @@ FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('organiz
 CREATE TRIGGER trg_user_organizations_code BEFORE INSERT ON user_organizations
 FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('user_organizations'); END IF; END //
 
+CREATE TRIGGER trg_dish_values_code BEFORE INSERT ON dish_values
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('dish_values'); END IF; END //
+
 CREATE TRIGGER trg_partners_code BEFORE INSERT ON partners
 FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('partners'); END IF; END //
 
@@ -160,5 +163,8 @@ FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('dish_di
 
 CREATE TRIGGER trg_cooking_methods_code BEFORE INSERT ON cooking_methods
 FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('cooking_methods'); END IF; END //
+
+CREATE TRIGGER trg_contact_inquiries_code BEFORE INSERT ON contact_inquiries
+FOR EACH ROW BEGIN IF NEW.Code IS NULL THEN SET NEW.Code = fn_next_code('contact_inquiries'); END IF; END //
 
 DELIMITER ;

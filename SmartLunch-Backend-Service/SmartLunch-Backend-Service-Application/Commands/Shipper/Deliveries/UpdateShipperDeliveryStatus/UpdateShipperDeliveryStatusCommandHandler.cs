@@ -100,6 +100,8 @@ public class UpdateShipperDeliveryStatusCommandHandler
             RecipientConfirmedName = delivery.RecipientConfirmedName,
             RecipientConfirmedAtUtc = delivery.RecipientConfirmedAt,
             RecipientSignatureUrl = delivery.RecipientSignatureUrl,
+            ShipperSignatureUrl = delivery.ShipperSignatureUrl,
+            HandoverDocumentUrl = delivery.HandoverDocumentUrl,
             RequiresRecipientSignature = string.Equals(
                 delivery.DeliveryStatus, "in_transit", StringComparison.OrdinalIgnoreCase),
         };

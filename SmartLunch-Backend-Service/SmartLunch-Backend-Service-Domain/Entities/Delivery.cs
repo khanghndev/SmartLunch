@@ -19,6 +19,10 @@ public class Delivery
     public string? RecipientConfirmationCode { get; set; }
     /// <summary>Ảnh chữ ký người nhận (object storage URL).</summary>
     public string? RecipientSignatureUrl { get; set; }
+    /// <summary>PDF biên bản bàn giao có chữ ký người nhận (object storage URL).</summary>
+    public string? HandoverDocumentUrl { get; set; }
+    /// <summary>Ảnh chữ ký shipper trên biên bản bàn giao (object storage URL).</summary>
+    public string? ShipperSignatureUrl { get; set; }
     public DateTime? RecipientConfirmedAt { get; set; }
     public string? DeliveryOtp { get; set; }
     public DateTime? DeliveryOtpExpiresAt { get; set; }

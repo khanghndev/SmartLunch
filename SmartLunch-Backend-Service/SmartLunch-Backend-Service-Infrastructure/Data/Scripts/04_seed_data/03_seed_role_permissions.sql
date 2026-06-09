@@ -41,8 +41,9 @@ WHERE p.Resource IN (
     'ingredient_actual_intakes', 'ingredient_actual_intake_lines',
     'dishes', 'dish_ingredients', 'weekly_menus', 'menu_schedule', 'orders', 'order_items', 'media_files'
 )
--- NCC / Hợp đồng / Thanh toán NCC: chỉ đọc để xem công nợ phải trả & chọn nhà cung cấp khi nhập kho
-OR (p.Resource IN ('partners', 'contracts', 'partner_payments') AND p.Action IN ('read', 'list'));
+-- NCC / Hợp đồng: đọc; Thanh toán NCC: đọc + ghi nhận chi công nợ
+OR (p.Resource IN ('partners', 'contracts') AND p.Action IN ('read', 'list'))
+OR (p.Resource = 'partner_payments' AND p.Action IN ('read', 'list', 'create'));
 
 -- ChefStaff (Nhân viên bếp)
 INSERT INTO role_permissions (RoleId, PermissionId, AssignedAt, IsActive)

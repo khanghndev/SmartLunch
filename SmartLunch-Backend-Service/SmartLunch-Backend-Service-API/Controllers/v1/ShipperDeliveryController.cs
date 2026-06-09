@@ -29,17 +29,20 @@ public class ShipperDeliveryController : ControllerBase
     private readonly IMediator _mediator;
     private readonly IStorageService _storage;
     private readonly IDeliveryRepository _deliveryRepository;
+    private readonly IDeliveryHandoverPdfService _handoverPdfService;
 
     public ShipperDeliveryController(
         ILogger<ShipperDeliveryController> logger,
         IMediator mediator,
         IStorageService storage,
-        IDeliveryRepository deliveryRepository)
+        IDeliveryRepository deliveryRepository,
+        IDeliveryHandoverPdfService handoverPdfService)
     {
         _logger = logger;
         _mediator = mediator;
         _storage = storage;
         _deliveryRepository = deliveryRepository;
+        _handoverPdfService = handoverPdfService;
     }
 
     /// <summary>
@@ -142,7 +145,7 @@ public class ShipperDeliveryController : ControllerBase
     }
 
     /// <summary>
-    /// Xác nhận giao hàng: ảnh PoD + chữ ký người nhận + tên người nhận.
+    /// Xác nhận giao hàng: ảnh PoD + chữ ký shipper + chữ ký người nhận → sinh PDF biên bản bàn giao.
     /// </summary>
     [HttpPost("{id:int}/proof")]
     [Authorize(Policy = "permission:deliveries.update")]
@@ -151,6 +154,7 @@ public class ShipperDeliveryController : ControllerBase
         int id,
         [FromForm] IFormFile file,
         [FromForm] IFormFile signature,
+        [FromForm] IFormFile shipperSignature,
         [FromForm] UploadDeliveryProofRequest request)
     {
         try
@@ -161,6 +165,9 @@ public class ShipperDeliveryController : ControllerBase
 
             if (signature == null || signature.Length <= 0)
                 return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("Signature is required", new[] { "Missing recipient signature." }));
+
+            if (shipperSignature == null || shipperSignature.Length <= 0)
+                return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("ShipperSignature is required", new[] { "Missing shipper signature." }));
 
             if (string.IsNullOrWhiteSpace(request?.RecipientConfirmedName))
                 return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("RecipientConfirmedName is required", new[] { "Missing recipient name." }));
@@ -181,28 +188,96 @@ public class ShipperDeliveryController : ControllerBase
                     new[] { $"Current status: {delivery.DeliveryStatus}" }));
 
             var now = VietnamTime.Now;
-            string proofUrl;
-            string signatureUrl;
+            byte[] proofBytes;
+            byte[] signatureBytes;
+            byte[] shipperSignatureBytes;
+            string proofContentType;
             try
             {
-                proofUrl = await UploadDeliveryImageAsync(file, id, "proof", now, HttpContext.RequestAborted);
-                signatureUrl = await UploadDeliveryImageAsync(signature, id, "signature", now, HttpContext.RequestAborted);
+                proofContentType = file.ContentType ?? "image/jpeg";
+                await using (var proofStream = new MemoryStream())
+                {
+                    await file.CopyToAsync(proofStream, HttpContext.RequestAborted);
+                    proofBytes = proofStream.ToArray();
+                }
+                await using (var sigStream = new MemoryStream())
+                {
+                    await signature.CopyToAsync(sigStream, HttpContext.RequestAborted);
+                    signatureBytes = sigStream.ToArray();
+                }
+                await using (var shipperSigStream = new MemoryStream())
+                {
+                    await shipperSignature.CopyToAsync(shipperSigStream, HttpContext.RequestAborted);
+                    shipperSignatureBytes = shipperSigStream.ToArray();
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult(
+                    "Could not read uploaded files.",
+                    new[] { ex.Message }));
+            }
+
+            string proofUrl;
+            string signatureUrl;
+            string shipperSignatureUrl;
+            try
+            {
+                proofUrl = await UploadDeliveryImageBytesAsync(
+                    proofBytes, proofContentType, id, "proof", now, HttpContext.RequestAborted);
+                signatureUrl = await UploadDeliveryImageBytesAsync(
+                    signatureBytes, "image/png", id, "signature", now, HttpContext.RequestAborted);
+                shipperSignatureUrl = await UploadDeliveryImageBytesAsync(
+                    shipperSignatureBytes, "image/png", id, "shipper-signature", now, HttpContext.RequestAborted);
             }
             catch (ArgumentException ex)
             {
                 return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
 
+            var recipientName = request!.RecipientConfirmedName.Trim();
+            var notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
+            var mealCount = delivery.Order?.OrderItems?.Sum(i => i.Quantity) ?? 0;
+            var shipperName = FormatStaffName(delivery.AssignedStaff);
+
+            string handoverPdfUrl;
+            try
+            {
+                handoverPdfUrl = await _handoverPdfService.GenerateUploadAndResolveUrlAsync(
+                    delivery,
+                    mealCount,
+                    recipientName,
+                    signatureBytes,
+                    shipperSignatureBytes,
+                    proofBytes,
+                    proofContentType,
+                    shipperName,
+                    notes,
+                    now,
+                    HttpContext.RequestAborted);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to generate handover PDF for delivery {DeliveryId}", id);
+                return StatusCode(
+                    (int)HttpStatusCode.InternalServerError,
+                    BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult(
+                        "An error occurred while generating handover document",
+                        new[] { ex.Message }));
+            }
+
             delivery.ProofImageUrl = proofUrl;
             delivery.ProofCapturedAt = now;
             delivery.DeliveredAt ??= now;
             delivery.DeliveryStatus = "completed";
-            delivery.RecipientConfirmedName = request!.RecipientConfirmedName.Trim();
+            delivery.RecipientConfirmedName = recipientName;
             delivery.RecipientSignatureUrl = signatureUrl;
+            delivery.ShipperSignatureUrl = shipperSignatureUrl;
+            delivery.HandoverDocumentUrl = handoverPdfUrl;
             delivery.RecipientConfirmationCode = null;
             delivery.RecipientConfirmedAt = now;
-            if (!string.IsNullOrWhiteSpace(request.Notes))
-                delivery.Notes = request.Notes.Trim();
+            if (notes != null)
+                delivery.Notes = notes;
 
             // Keep order in sync (same as status update handler)
             if (delivery.Order != null)
@@ -217,7 +292,7 @@ public class ShipperDeliveryController : ControllerBase
             var refreshed = await _deliveryRepository.GetByIdWithOrderAsync(id, HttpContext.RequestAborted)
                 ?? throw new InvalidOperationException("Delivery updated but failed to reload.");
 
-            var mealCount = refreshed.Order?.OrderItems?.Sum(i => i.Quantity) ?? 0;
+            mealCount = refreshed.Order?.OrderItems?.Sum(i => i.Quantity) ?? 0;
             var resp = new GetShipperDeliveryResponse
             {
                 Delivery = new ShipperDeliveryDetailDto
@@ -235,11 +310,14 @@ public class ShipperDeliveryController : ControllerBase
                     RecipientConfirmedName = refreshed.RecipientConfirmedName,
                     RecipientConfirmedAtUtc = refreshed.RecipientConfirmedAt,
                     RecipientSignatureUrl = refreshed.RecipientSignatureUrl,
+                    ShipperSignatureUrl = refreshed.ShipperSignatureUrl,
+                    HandoverDocumentUrl = refreshed.HandoverDocumentUrl,
                     RequiresRecipientSignature = false,
                 }
             };
 
-            return Ok(BaseApiResponse<GetShipperDeliveryResponse>.SuccessResult(resp, "Delivery proof uploaded successfully"));
+            return Ok(BaseApiResponse<GetShipperDeliveryResponse>.SuccessResult(
+                resp, "Delivery proof uploaded and handover document generated"));
         }
         catch (Exception ex)
         {
@@ -274,6 +352,23 @@ public class ShipperDeliveryController : ControllerBase
         if (!AllowedImageContentTypes.Contains(contentType))
             throw new ArgumentException($"Unsupported image ContentType: {contentType}");
 
+        await using var stream = file.OpenReadStream();
+        await using var ms = new MemoryStream();
+        await stream.CopyToAsync(ms, cancellationToken);
+        return await UploadDeliveryImageBytesAsync(ms.ToArray(), contentType, deliveryId, folder, now, cancellationToken);
+    }
+
+    private async Task<string> UploadDeliveryImageBytesAsync(
+        byte[] bytes,
+        string contentType,
+        int deliveryId,
+        string folder,
+        DateTime now,
+        CancellationToken cancellationToken)
+    {
+        if (!AllowedImageContentTypes.Contains(contentType))
+            throw new ArgumentException($"Unsupported image ContentType: {contentType}");
+
         var ext = contentType.ToLowerInvariant() switch
         {
             "image/jpeg" => ".jpg",
@@ -283,7 +378,7 @@ public class ShipperDeliveryController : ControllerBase
         };
 
         var objectName = $"deliveries/{deliveryId:D}/{folder}/{now:yyyy}/{now:MM}/{Guid.NewGuid():N}{ext}";
-        await using (var stream = file.OpenReadStream())
+        await using (var stream = new MemoryStream(bytes))
         {
             await _storage.UploadObjectAsync(objectName, stream, contentType, cancellationToken);
         }
@@ -294,6 +389,13 @@ public class ShipperDeliveryController : ControllerBase
             contentType: null,
             expiresIn: TimeSpan.FromMinutes(30));
         return signed.Url;
+    }
+
+    private static string? FormatStaffName(Domain.Entities.User? user)
+    {
+        if (user == null) return null;
+        var name = $"{user.FirstName} {user.LastName}".Trim();
+        return string.IsNullOrWhiteSpace(name) ? user.Username : name;
     }
 }
 

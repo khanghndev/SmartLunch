@@ -25,6 +25,9 @@ public class ShipperDeliveryDetailDto
     public string? RecipientConfirmedName { get; set; }
     public DateTime? RecipientConfirmedAtUtc { get; set; }
     public string? RecipientSignatureUrl { get; set; }
+    public string? ShipperSignatureUrl { get; set; }
+    /// <summary>PDF biên bản bàn giao có chữ ký người nhận.</summary>
+    public string? HandoverDocumentUrl { get; set; }
     /// <summary>Đơn đang giao — cần chữ ký người nhận khi POST /proof.</summary>
     public bool RequiresRecipientSignature { get; set; }
 }

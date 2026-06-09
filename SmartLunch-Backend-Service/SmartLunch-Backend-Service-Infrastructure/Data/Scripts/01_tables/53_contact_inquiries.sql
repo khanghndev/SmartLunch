@@ -1,0 +1,21 @@
+CREATE TABLE contact_inquiries (
+    Id INT NOT NULL AUTO_INCREMENT,
+    Code VARCHAR(20) NULL,
+    UserId INT NULL COMMENT 'Nếu khách đã đăng nhập',
+    FullName VARCHAR(200) NOT NULL,
+    Phone VARCHAR(30) NOT NULL,
+    Email VARCHAR(255) NOT NULL,
+    InterestedService VARCHAR(100) NOT NULL DEFAULT '',
+    Message TEXT NULL,
+    Status VARCHAR(20) NOT NULL DEFAULT 'pending' COMMENT 'pending|replied|closed',
+    ManagerReply TEXT NULL,
+    RepliedAt DATETIME NULL,
+    RepliedByUserId INT NULL,
+    CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    PRIMARY KEY (Id),
+    INDEX IX_contact_inquiries_status (Status),
+    INDEX IX_contact_inquiries_created (CreatedAt),
+    INDEX IX_contact_inquiries_email (Email),
+    CONSTRAINT FK_contact_inquiries_user FOREIGN KEY (UserId) REFERENCES users (Id) ON DELETE SET NULL,
+    CONSTRAINT FK_contact_inquiries_replied_by FOREIGN KEY (RepliedByUserId) REFERENCES users (Id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Liên hệ từ website';

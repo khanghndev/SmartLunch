@@ -6,6 +6,9 @@ CREATE TABLE reviews (
     OrderId INT NULL,
     Rating INT NOT NULL COMMENT '1-5',
     Comment TEXT NULL,
+    ManagerReply TEXT NULL COMMENT 'Nội dung trả lời từ CSKH/Quản lý',
+    RepliedAt DATETIME NULL,
+    RepliedByUserId INT NULL,
     CreatedAt DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     PRIMARY KEY (Id),
     UNIQUE KEY UK_reviews_code (Code),
@@ -13,5 +16,6 @@ CREATE TABLE reviews (
     INDEX IX_reviews_dish (DishId),
     CONSTRAINT FK_reviews_user FOREIGN KEY (UserId) REFERENCES users (Id) ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT FK_reviews_dish FOREIGN KEY (DishId) REFERENCES dishes (Id) ON DELETE SET NULL ON UPDATE CASCADE,
-    CONSTRAINT FK_reviews_order FOREIGN KEY (OrderId) REFERENCES orders (Id) ON DELETE SET NULL ON UPDATE CASCADE
+    CONSTRAINT FK_reviews_order FOREIGN KEY (OrderId) REFERENCES orders (Id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT FK_reviews_replied_by FOREIGN KEY (RepliedByUserId) REFERENCES users (Id) ON DELETE SET NULL ON UPDATE CASCADE
 ) ENGINE = InnoDB DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_unicode_ci ROW_FORMAT = DYNAMIC COMMENT = 'Đánh giá';

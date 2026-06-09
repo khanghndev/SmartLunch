@@ -30,6 +30,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.DependencyInjection
             services.AddScoped<IContractPdfService, QuestPdfContractFileService>();
             services.AddScoped<IOrganizationMealDocumentPdfService, QuestPdfOrganizationMealDocumentService>();
             services.AddScoped<IOrderAnnexPdfService, QuestPdfOrderAnnexPdfService>();
+            services.AddScoped<IDeliveryHandoverPdfService, QuestPdfDeliveryHandoverPdfService>();
             services.AddScoped<IEmailSender, MailKitEmailSender>();
             services.AddScoped<IOrganizationOrderEmailService, OrganizationOrderEmailService>();
 

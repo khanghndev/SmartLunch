@@ -1031,6 +1031,8 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.Property(e => e.RecipientConfirmedName).HasMaxLength(200);
                 entity.Property(e => e.RecipientConfirmationCode).HasMaxLength(20);
                 entity.Property(e => e.RecipientSignatureUrl).HasMaxLength(500);
+                entity.Property(e => e.HandoverDocumentUrl).HasMaxLength(500);
+                entity.Property(e => e.ShipperSignatureUrl).HasMaxLength(500);
                 entity.Property(e => e.DeliveryOtp).HasMaxLength(6);
                 entity.HasOne(e => e.Order).WithMany(o => o.Deliveries).HasForeignKey(e => e.OrderId).OnDelete(DeleteBehavior.Cascade);
                 entity.HasOne(e => e.AssignedStaff).WithMany(u => u.DeliveriesAssigned).HasForeignKey(e => e.AssignedStaffId).OnDelete(DeleteBehavior.SetNull);

@@ -23,6 +23,7 @@ public class DeliveryRepository : IDeliveryRepository
     public async Task<Delivery?> GetByIdWithOrderAsync(int id, CancellationToken cancellationToken = default)
     {
         return await _context.Deliveries
+            .Include(d => d.AssignedStaff)
             .Include(d => d.Order)
                 .ThenInclude(o => o.OrderItems)
             .Include(d => d.Order)

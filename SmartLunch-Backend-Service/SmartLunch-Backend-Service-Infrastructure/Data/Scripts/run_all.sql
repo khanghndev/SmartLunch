@@ -1,20 +1,18 @@
 -- =====================================
--- SmartLunch Database - Master Runner
+-- SmartLunch Database - FULL RESET
 -- MySQL 8.0+ | UTF-8 (utf8mb4)
 --
--- Full reset: mysql -u root -p < run_all.sql
+-- Chạy: run_sql.bat  (mặc định reset)
 -- Hoặc: run_sql.bat reset
---
--- Bao gồm run_update.sql (maintenance idempotent) ở cuối.
 -- =====================================
 
--- Step 0: Init Database + UTF-8
+-- Step 0: Drop + tạo database
 SOURCE 00_init_database.sql;
 
--- Step 0.5: Config table (prefix + sequence)
+-- Step 1: Config (prefix + sequence)
 SOURCE 00_config/01_code_prefix_config.sql;
 
--- Step 1: Create Tables (dependency order)
+-- Step 2: Tables (theo thứ tự phụ thuộc FK)
 SOURCE 01_tables/01_users.sql;
 SOURCE 01_tables/02_roles.sql;
 SOURCE 01_tables/03_permissions.sql;
@@ -50,6 +48,8 @@ SOURCE 01_tables/46_customer_type.sql;
 SOURCE 01_tables/25_weekly_menus.sql;
 SOURCE 01_tables/26_menu_schedule.sql;
 SOURCE 01_tables/27_orders.sql;
+SOURCE 01_tables/12d_contracts_source_order_fk.sql;
+SOURCE 01_tables/12c_contract_weekly_selections.sql;
 SOURCE 01_tables/28_order_items.sql;
 SOURCE 01_tables/29_deliveries.sql;
 SOURCE 01_tables/30_payments.sql;
@@ -69,30 +69,33 @@ SOURCE 01_tables/39_banners.sql;
 SOURCE 01_tables/40_notifications.sql;
 SOURCE 01_tables/41_system_logs.sql;
 SOURCE 01_tables/42_system_backups.sql;
-SOURCE 01_tables/51_system_backups_add_source.sql;
 SOURCE 01_tables/50_system_backup_schedule.sql;
+SOURCE 01_tables/51_system_backups_add_source.sql;
 SOURCE 01_tables/43_dish_images.sql;
 SOURCE 01_tables/44_weekly_menu_images.sql;
 SOURCE 01_tables/45_partner_documents.sql;
 SOURCE 01_tables/47_promotions.sql;
 SOURCE 01_tables/48_promotion_targets.sql;
 SOURCE 01_tables/49_order_promotion_applications.sql;
+SOURCE 01_tables/52_company_public_documents.sql;
+SOURCE 01_tables/53_contact_inquiries.sql;
+SOURCE 01_tables/54_organization_legal_documents.sql;
 
--- Step 1.5: Code generation (function + triggers) — SAU khi tạo bảng
+-- Step 3: Code generation (function + triggers) — sau khi tạo bảng
 SOURCE 00_config/02_code_triggers.sql;
 
--- Step 2: Views
+-- Step 4: Views
 SOURCE 02_views/01_vw_active_users_with_roles.sql;
 SOURCE 02_views/02_vw_user_permissions.sql;
 SOURCE 02_views/03_vw_role_permissions_summary.sql;
 
--- Step 3: Stored Procedures
+-- Step 5: Stored Procedures
 SOURCE 03_stored_procedures/01_sp_check_user_permission.sql;
 SOURCE 03_stored_procedures/02_sp_get_user_permissions.sql;
 SOURCE 03_stored_procedures/03_sp_get_user_roles.sql;
 SOURCE 03_stored_procedures/04_sp_get_users_by_role.sql;
 
--- Step 4: Seed Data
+-- Step 6: Seed Data
 SOURCE 04_seed_data/01_seed_roles.sql;
 SOURCE 04_seed_data/02_seed_permissions.sql;
 SOURCE 04_seed_data/03_seed_role_permissions.sql;
@@ -118,7 +121,11 @@ SOURCE 04_seed_data/16_seed_orders.sql;
 SOURCE 04_seed_data/21_seed_bulk_upcoming_orders_for_ai.sql;
 SOURCE 04_seed_data/17_seed_remaining_tables.sql;
 
--- Step 5: Incremental maintenance (gộp từ run_update.sql — idempotent)
-SOURCE run_update.sql;
+-- Step 7: Quyền bổ sung (idempotent)
+SOURCE 05_maintenance/07_promotions_permissions.sql;
+SOURCE 05_maintenance/08_systems_backup_permissions.sql;
+
+-- Step 8: Tối ưu thống kê
+SOURCE 05_maintenance/01_analyze_optimize.sql;
 
 SELECT 'SmartLunch database setup completed!' AS Status;
