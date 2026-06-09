@@ -64,6 +64,9 @@ class ShipperDeliveryDetailModel {
   final String? recipientConfirmedName;
   final DateTime? recipientConfirmedAtUtc;
   final String? recipientSignatureUrl;
+  final String? shipperSignatureUrl;
+  /// PDF biên bản bàn giao (BE sinh sau POST /proof).
+  final String? handoverDocumentUrl;
   /// BE: đơn `in_transit` — cần chữ ký người nhận khi POST /proof.
   final bool requiresRecipientSignature;
 
@@ -81,6 +84,8 @@ class ShipperDeliveryDetailModel {
     this.recipientConfirmedName,
     this.recipientConfirmedAtUtc,
     this.recipientSignatureUrl,
+    this.shipperSignatureUrl,
+    this.handoverDocumentUrl,
     this.requiresRecipientSignature = false,
   });
 
@@ -107,6 +112,8 @@ class ShipperDeliveryDetailModel {
           ? DateTime.tryParse(json['recipientConfirmedAtUtc'] as String)
           : null,
       recipientSignatureUrl: json['recipientSignatureUrl'] as String?,
+      shipperSignatureUrl: json['shipperSignatureUrl'] as String?,
+      handoverDocumentUrl: json['handoverDocumentUrl'] as String?,
       requiresRecipientSignature: json['requiresRecipientSignature'] as bool? ??
           json['requiresDeliveryOtp'] as bool? ??
           false,

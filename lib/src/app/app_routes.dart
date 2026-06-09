@@ -22,6 +22,7 @@ class AppRoutes {
   static const shipperDeliveryDetail = '/shipper/delivery-detail';
   static const shipperRouteMap = '/shipper/route-map';
   static const shipperProof = '/shipper/proof-of-delivery';
+  static const shipperHandoverPdf = '/shipper/handover-pdf';
   static const shipperProfile = '/shipper/profile';
   static const shipperNotifications = '/shipper/notifications';
   static const shipperSchedule = '/shipper/schedule';

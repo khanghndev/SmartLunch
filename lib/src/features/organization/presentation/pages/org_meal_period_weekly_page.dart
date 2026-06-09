@@ -69,7 +69,8 @@ class _OrgMealPeriodWeeklyPageState extends State<OrgMealPeriodWeeklyPage> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
       initialDate: _weekStart,
       helpText: 'Chọn tuần (bấm vào Thứ 2)',
-      locale: const Locale('vi', 'VN'),
+      cancelText: 'Hủy',
+      confirmText: 'Chọn',
     );
     if (picked == null) return;
     final monday = _mondayOf(picked);

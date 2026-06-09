@@ -27,6 +27,7 @@ import '../features/shipper/presentation/pages/delivery_list_page.dart';
 import '../features/shipper/presentation/pages/delivery_detail_page.dart';
 import '../features/shipper/presentation/pages/route_map_page.dart';
 import '../features/shipper/presentation/pages/proof_of_delivery_page.dart';
+import '../features/shipper/presentation/pages/shipper_handover_pdf_page.dart';
 import '../features/shipper/presentation/pages/shipper_profile_page.dart';
 import '../features/shipper/presentation/pages/shipper_notifications_page.dart';
 import '../features/shipper/presentation/pages/delivery_schedule_page.dart';
@@ -123,6 +124,27 @@ class AppRouter {
         final id = settings.arguments is int ? settings.arguments as int : 0;
         return MaterialPageRoute(
           builder: (_) => ProofOfDeliveryPage(deliveryId: id),
+          settings: settings,
+        );
+      }
+      case AppRoutes.shipperHandoverPdf: {
+        final args = settings.arguments;
+        String? pdfUrl;
+        String? subtitle;
+        var title = 'Biên bản bàn giao';
+        if (args is Map) {
+          pdfUrl = args['pdfUrl'] as String?;
+          subtitle = args['subtitle'] as String?;
+          title = args['title'] as String? ?? title;
+        } else if (args is String) {
+          pdfUrl = args;
+        }
+        return MaterialPageRoute(
+          builder: (_) => ShipperHandoverPdfPage(
+            title: title,
+            pdfUrl: pdfUrl,
+            subtitle: subtitle,
+          ),
           settings: settings,
         );
       }

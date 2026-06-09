@@ -8,6 +8,7 @@ import 'models/contract_models.dart';
 import 'models/customer_review_models.dart';
 import 'models/org_meal_contract_models.dart';
 import 'models/org_meal_period_weekly_models.dart';
+import '../utils/org_meal_period_promotion_builder.dart';
 import '../utils/org_meal_promotion_builder.dart';
 
 class OrgRepository {
@@ -131,6 +132,53 @@ class OrgRepository {
   // Period-Based meal contract order
   // ────────────────────────────────────────────────────────────────────────────
 
+  Future<List<MealPortionPriceOptionModel>> getMealPortionPrices() =>
+      _remote.getMealPortionPrices();
+
+  Future<ListEligiblePromotionsModel> listEligiblePeriodPromotions({
+    required int organizationId,
+    required String startDate,
+    required String endDate,
+    required List<String> excludedDates,
+    required int mealsPerDay,
+    required double mealUnitPrice,
+    Map<String, int>? dailyMealOverrides,
+  }) {
+    final body = OrgMealPeriodPromotionBuilder.toPreviewRequest(
+      organizationId: organizationId,
+      startDate: startDate,
+      endDate: endDate,
+      excludedDates: excludedDates,
+      mealsPerDay: mealsPerDay,
+      mealUnitPrice: mealUnitPrice,
+      dailyMealOverrides: dailyMealOverrides,
+    );
+    return _remote.listEligiblePromotions(body);
+  }
+
+  Future<PreviewPromotionModel> previewPeriodPromotion({
+    required int organizationId,
+    required String startDate,
+    required String endDate,
+    required List<String> excludedDates,
+    required int mealsPerDay,
+    required double mealUnitPrice,
+    required String promotionCode,
+    Map<String, int>? dailyMealOverrides,
+  }) {
+    final body = OrgMealPeriodPromotionBuilder.toPreviewRequest(
+      organizationId: organizationId,
+      startDate: startDate,
+      endDate: endDate,
+      excludedDates: excludedDates,
+      mealsPerDay: mealsPerDay,
+      mealUnitPrice: mealUnitPrice,
+      dailyMealOverrides: dailyMealOverrides,
+      promotionCode: promotionCode,
+    );
+    return _remote.previewPromotion(body);
+  }
+
   Future<DishesByCategoryResponseModel> getMealContractMainDishes({
     int page = 1,
     int pageSize = 50,
@@ -146,6 +194,10 @@ class OrgRepository {
     required int mealsPerDay,
     required double mealUnitPrice,
     required OrganizationMealDeliveryModel delivery,
+    List<Map<String, dynamic>> dailyMealPortions = const [],
+    int? dishValueId,
+    String? promotionCode,
+    int? promotionId,
   }) =>
       _remote.prepareMealPeriodContract(
         organizationId: organizationId,
@@ -155,6 +207,10 @@ class OrgRepository {
         mealsPerDay: mealsPerDay,
         mealUnitPrice: mealUnitPrice,
         delivery: delivery,
+        dailyMealPortions: dailyMealPortions,
+        dishValueId: dishValueId,
+        promotionCode: promotionCode,
+        promotionId: promotionId,
       );
 
   Future<CheckoutMealResultModel> checkoutMealPeriodContract({

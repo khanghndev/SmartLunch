@@ -152,6 +152,19 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
         .then((_) => _load());
   }
 
+  void _openHandoverPdf(ShipperDeliveryDetailModel d) {
+    final url = d.handoverDocumentUrl?.trim();
+    if (url == null || url.isEmpty) return;
+    Navigator.of(context).pushNamed(
+      AppRoutes.shipperHandoverPdf,
+      arguments: {
+        'pdfUrl': url,
+        'title': 'Biên bản bàn giao',
+        'subtitle': 'Đơn #${d.orderId} · ${d.recipientConfirmedName ?? 'Người nhận'}',
+      },
+    );
+  }
+
   void _copyAddress(String address) {
     Clipboard.setData(ClipboardData(text: address));
     ScaffoldMessenger.of(context).showSnackBar(
@@ -283,6 +296,16 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
                     style: AppDesignSystem.body(size: 12),
                   ),
                 ],
+                if (d.shipperSignatureUrl != null &&
+                    d.shipperSignatureUrl!.isNotEmpty) ...[
+                  const SizedBox(height: 12),
+                  Text(
+                    'Chữ ký shipper',
+                    style: AppDesignSystem.label(color: AppDesignSystem.gray500),
+                  ),
+                  const SizedBox(height: 8),
+                  ShipperProofImage(imageUrl: d.shipperSignatureUrl, height: 120),
+                ],
                 if (d.recipientSignatureUrl != null &&
                     d.recipientSignatureUrl!.isNotEmpty) ...[
                   const SizedBox(height: 12),
@@ -292,6 +315,15 @@ class _DeliveryDetailPageState extends State<DeliveryDetailPage> {
                   ),
                   const SizedBox(height: 8),
                   ShipperProofImage(imageUrl: d.recipientSignatureUrl, height: 120),
+                ],
+                if (d.handoverDocumentUrl != null &&
+                    d.handoverDocumentUrl!.isNotEmpty) ...[
+                  const SizedBox(height: 14),
+                  ShipperOutlineButton(
+                    label: 'Xem biên bản bàn giao (PDF)',
+                    icon: Icons.picture_as_pdf_outlined,
+                    onPressed: () => _openHandoverPdf(d),
+                  ),
                 ],
               ],
             ),

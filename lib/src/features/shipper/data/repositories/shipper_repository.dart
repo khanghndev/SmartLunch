@@ -41,6 +41,7 @@ class ShipperRepository {
     required String filename,
     required String contentType,
     required List<int> signatureBytes,
+    required List<int> shipperSignatureBytes,
     required String recipientConfirmedName,
     String? notes,
   }) =>
@@ -50,6 +51,7 @@ class ShipperRepository {
         filename: filename,
         contentType: contentType,
         signatureBytes: signatureBytes,
+        shipperSignatureBytes: shipperSignatureBytes,
         recipientConfirmedName: recipientConfirmedName,
         notes: notes,
       );

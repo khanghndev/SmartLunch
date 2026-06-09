@@ -20,6 +20,8 @@ class OrgSignaturePadState extends State<OrgSignaturePad> {
   final GlobalKey _boundaryKey = GlobalKey();
   final List<List<Offset>> _strokes = [];
   List<Offset> _current = [];
+  Uint8List? _cachedExportBytes;
+  Size _lastLayoutSize = const Size(320, 180);
 
   bool get hasSignature =>
       _strokes.any((s) => s.length >= 2) || _current.length >= 2;
@@ -28,18 +30,65 @@ class OrgSignaturePadState extends State<OrgSignaturePad> {
     setState(() {
       _strokes.clear();
       _current.clear();
+      _cachedExportBytes = null;
     });
     widget.onSignatureChanged?.call(false);
   }
 
   Future<Uint8List?> exportPngBytes() async {
     if (!hasSignature) return null;
+    if (_cachedExportBytes != null && _cachedExportBytes!.isNotEmpty) {
+      return _cachedExportBytes;
+    }
+
     final boundary = _boundaryKey.currentContext?.findRenderObject();
-    if (boundary is! RenderRepaintBoundary) return null;
-    final image = await boundary.toImage(pixelRatio: 2);
+    if (boundary is RenderRepaintBoundary) {
+      try {
+        final image = await boundary.toImage(pixelRatio: 2);
+        final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
+        if (bytes != null) {
+          _cachedExportBytes = bytes.buffer.asUint8List();
+          return _cachedExportBytes;
+        }
+      } catch (_) {
+        /* fallback below */
+      }
+    }
+
+    _cachedExportBytes = await _renderStrokesToPng(_lastLayoutSize);
+    return _cachedExportBytes;
+  }
+
+  Future<Uint8List?> _renderStrokesToPng(Size size) async {
+    if (!hasSignature) return null;
+    final w = (size.width * 2).round().clamp(1, 4096);
+    final h = (size.height * 2).round().clamp(1, 4096);
+    final recorder = ui.PictureRecorder();
+    final canvas = Canvas(recorder);
+    canvas.drawRect(
+      Rect.fromLTWH(0, 0, w.toDouble(), h.toDouble()),
+      Paint()..color = AppDesignSystem.gray50,
+    );
+    final scaleX = w / size.width;
+    final scaleY = h / size.height;
+    canvas.scale(scaleX, scaleY);
+    _SignaturePainter(
+      _strokes.map((s) => List<Offset>.from(s)).toList(growable: false),
+    ).paint(canvas, size);
+    final picture = recorder.endRecording();
+    final image = picture.toImageSync(w, h);
     final bytes = await image.toByteData(format: ui.ImageByteFormat.png);
-    if (bytes == null) return null;
-    return bytes.buffer.asUint8List();
+    return bytes?.buffer.asUint8List();
+  }
+
+  void _syncExportCache() {
+    if (!hasSignature) {
+      _cachedExportBytes = null;
+      return;
+    }
+    _renderStrokesToPng(_lastLayoutSize).then((bytes) {
+      _cachedExportBytes = bytes;
+    });
   }
 
   Future<String?> exportDataUrl() async {
@@ -63,6 +112,7 @@ class OrgSignaturePadState extends State<OrgSignaturePad> {
   }
 
   void _end() {
+    _syncExportCache();
     widget.onSignatureChanged?.call(hasSignature);
   }
 
@@ -71,33 +121,41 @@ class OrgSignaturePadState extends State<OrgSignaturePad> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        RepaintBoundary(
-          key: _boundaryKey,
-          child: Container(
-            height: 180,
-            decoration: BoxDecoration(
-              color: AppDesignSystem.gray50,
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: AppDesignSystem.gray200, width: 2),
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(12),
-              child: GestureDetector(
-                onPanStart: (d) => _start(d.localPosition),
-                onPanUpdate: (d) => _move(d.localPosition),
-                onPanEnd: (_) => _end(),
-                child: SizedBox.expand(
-                  child: CustomPaint(
-                    painter: _SignaturePainter(
-                      _strokes
-                          .map((s) => List<Offset>.from(s))
-                          .toList(growable: false),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final width = constraints.maxWidth.isFinite && constraints.maxWidth > 0
+                ? constraints.maxWidth
+                : 320.0;
+            _lastLayoutSize = Size(width, 180);
+            return RepaintBoundary(
+              key: _boundaryKey,
+              child: Container(
+                height: 180,
+                decoration: BoxDecoration(
+                  color: AppDesignSystem.gray50,
+                  borderRadius: BorderRadius.circular(14),
+                  border: Border.all(color: AppDesignSystem.gray200, width: 2),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: GestureDetector(
+                    onPanStart: (d) => _start(d.localPosition),
+                    onPanUpdate: (d) => _move(d.localPosition),
+                    onPanEnd: (_) => _end(),
+                    child: SizedBox.expand(
+                      child: CustomPaint(
+                        painter: _SignaturePainter(
+                          _strokes
+                              .map((s) => List<Offset>.from(s))
+                              .toList(growable: false),
+                        ),
+                      ),
                     ),
                   ),
                 ),
               ),
-            ),
-          ),
+            );
+          },
         ),
         const SizedBox(height: 8),
         Row(

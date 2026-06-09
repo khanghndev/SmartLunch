@@ -1,5 +1,31 @@
 import 'bulk_order_models.dart';
 
+/// Mức giá suất ăn — `GET /organization/meal-contract-order/portion-prices`.
+class MealPortionPriceOptionModel {
+  final int id;
+  final double amount;
+  final String label;
+
+  const MealPortionPriceOptionModel({
+    required this.id,
+    required this.amount,
+    required this.label,
+  });
+
+  factory MealPortionPriceOptionModel.fromJson(Map<String, dynamic> json) {
+    final amount = (json['amount'] as num?)?.toDouble() ?? 0;
+    final id = json['id'] as int? ?? 0;
+    final rawLabel = json['label']?.toString().trim();
+    return MealPortionPriceOptionModel(
+      id: id,
+      amount: amount,
+      label: rawLabel != null && rawLabel.isNotEmpty
+          ? rawLabel
+          : '${amount.toStringAsFixed(0)} đ/suất',
+    );
+  }
+}
+
 /// Draft response cho hợp đồng theo kỳ (Period-Based) — `/organization/meal-contract-order/contract`.
 class PrepareMealPeriodDraftModel {
   final String draftId;

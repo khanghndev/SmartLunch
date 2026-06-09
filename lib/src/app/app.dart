@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 
 import '../core/navigation/session_guard.dart';
 import '../core/theme/app_design_system.dart';
@@ -20,6 +21,16 @@ class SmartLunchApp extends StatelessWidget {
       title: config.appName,
       theme: AppTheme.light(config.flavor),
       debugShowCheckedModeBanner: false,
+      locale: const Locale('vi', 'VN'),
+      supportedLocales: const [
+        Locale('vi', 'VN'),
+        Locale('en', 'US'),
+      ],
+      localizationsDelegates: const [
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
+      ],
       onGenerateRoute: router.onGenerateRoute,
       initialRoute: AppRoutes.initialFor(config.flavor),
       builder: (context, child) {

@@ -321,6 +321,24 @@ class OrgRemoteDataSource {
   // Period-Based meal contract order (meal-contract-order)
   // ────────────────────────────────────────────────────────────────────────────
 
+  Future<List<MealPortionPriceOptionModel>> getMealPortionPrices() async {
+    try {
+      final response = await _client.get(
+        '$_prefix/organization/meal-contract-order/portion-prices',
+      );
+      final data = response['data'] as Map<String, dynamic>? ?? response;
+      final items = data['items'] as List? ?? [];
+      return items
+          .whereType<Map<String, dynamic>>()
+          .map(MealPortionPriceOptionModel.fromJson)
+          .toList();
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải mức giá suất ăn: $e', statusCode: 500);
+    }
+  }
+
   Future<DishesByCategoryResponseModel> getMealContractMainDishes({
     int page = 1,
     int pageSize = 50,
@@ -351,6 +369,10 @@ class OrgRemoteDataSource {
     required int mealsPerDay,
     required double mealUnitPrice,
     required OrganizationMealDeliveryModel delivery,
+    List<Map<String, dynamic>> dailyMealPortions = const [],
+    int? dishValueId,
+    String? promotionCode,
+    int? promotionId,
   }) async {
     try {
       final response = await _client.post(
@@ -361,7 +383,12 @@ class OrgRemoteDataSource {
           'endDate': endDate,
           'excludedDates': excludedDates,
           'mealsPerDay': mealsPerDay,
+          'dailyMealPortions': dailyMealPortions,
           'mealUnitPrice': mealUnitPrice,
+          if (dishValueId != null && dishValueId > 0) 'dishValueId': dishValueId,
+          if (promotionCode != null && promotionCode.isNotEmpty)
+            'promotionCode': promotionCode,
+          if (promotionId != null) 'promotionId': promotionId,
           'delivery': delivery.toJson(),
         },
       );
