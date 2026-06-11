@@ -266,6 +266,8 @@ builder.Services.AddSingleton<IAuthorizationPolicyProvider, DynamicAuthorization
 builder.Services.AddScoped<IAuthorizationHandler, RoleRequirementHandler>();
 builder.Services.AddScoped<IAuthorizationHandler, PermissionRequirementHandler>();
 
+builder.Services.AddHealthChecks();
+
 // CORS
 builder.Services.AddCors(options =>
 {
@@ -394,6 +396,8 @@ app.MapControllers();
 
 // SignalR hubs
 app.MapHub<ChatHub>("/hubs/chat");
+
+app.MapHealthChecks("/health");
 
 try
 {
