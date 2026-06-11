@@ -21,6 +21,7 @@ using System.Threading.RateLimiting;
 using SmartLunch.Backend.Service.Application.Integration.Email;
 using SmartLunch.Backend.Service.Application.Integration.PayOS;
 using SmartLunch.Backend.Service.Infrastructure.ExternalServices;
+using Microsoft.AspNetCore.HttpOverrides;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -316,6 +317,13 @@ builder.Services.AddRateLimiter(options =>
     });
 });
 
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders =
+        ForwardedHeaders.XForwardedFor |
+        ForwardedHeaders.XForwardedProto;
+});
+
 var app = builder.Build();
 
 // Auto-migrate database if enabled
@@ -369,6 +377,7 @@ app.UseSerilogRequestLogging(options =>
     };
 });
 
+app.UseForwardedHeaders();
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
 app.UseAuthentication();

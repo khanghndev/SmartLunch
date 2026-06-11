@@ -27,7 +27,6 @@ public class PayOSWebhookController : ControllerBase
         _mediator = mediator;
     }
 
-    /// <summary>Webhook thanh toán (application/json). <c>data.orderCode</c> = Id bản ghi <c>payments</c> (đã map khi tạo link PayOS).</summary>
     [HttpPost("webhook")]
     [Consumes("application/json")]
     public async Task<IActionResult> Webhook([FromBody] System.Text.Json.JsonElement body, CancellationToken cancellationToken)
