@@ -1,0 +1,4 @@
+{
+  "SMARTLUNCH_API": "https://localhost:5001",
+  "SMARTLUNCH_WEB": "https://localhost:5000"
+}
