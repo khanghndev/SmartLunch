@@ -1,6 +1,8 @@
 using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 
+AppContext.SetSwitch("System.Net.DisableIPv6", true);
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -12,6 +14,14 @@ builder.Services.AddControllersWithViews()
 
 builder.Services.AddHttpClient();
 builder.Services.AddHttpContextAccessor();
+builder.Services.ConfigureAll<Microsoft.Extensions.Http.HttpClientFactoryOptions>(options =>
+{
+    options.HttpClientActions.Add(client =>
+    {
+        client.DefaultRequestHeaders.Add("ngrok-skip-browser-warning", "true");
+    });
+});
+
 
 builder.Services.AddSession(options =>
 {
