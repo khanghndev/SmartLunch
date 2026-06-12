@@ -152,14 +152,18 @@ public class ShipperDeliveryController : ControllerBase
     [RequestSizeLimit(15 * 1024 * 1024)]
     public async Task<ActionResult<BaseApiResponse<GetShipperDeliveryResponse>>> UploadProof(
         int id,
-        [FromForm] IFormFile file,
-        [FromForm] IFormFile signature,
-        [FromForm] IFormFile shipperSignature,
-        [FromForm] UploadDeliveryProofRequest request)
+        [FromForm] UploadDeliveryProofForm form)
     {
         try
         {
             var shipperId = RequireUserId();
+            if (form == null)
+                return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("Form is required", new[] { "Form data is missing." }));
+
+            var file = form.File;
+            var signature = form.Signature;
+            var shipperSignature = form.ShipperSignature;
+
             if (file == null || file.Length <= 0)
                 return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("File is required", new[] { "Missing proof photo." }));
 
@@ -169,7 +173,7 @@ public class ShipperDeliveryController : ControllerBase
             if (shipperSignature == null || shipperSignature.Length <= 0)
                 return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("ShipperSignature is required", new[] { "Missing shipper signature." }));
 
-            if (string.IsNullOrWhiteSpace(request?.RecipientConfirmedName))
+            if (string.IsNullOrWhiteSpace(form.RecipientConfirmedName))
                 return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult("RecipientConfirmedName is required", new[] { "Missing recipient name." }));
 
             var delivery = await _deliveryRepository.GetByIdWithOrderAsync(id, HttpContext.RequestAborted);
@@ -235,8 +239,8 @@ public class ShipperDeliveryController : ControllerBase
                 return BadRequest(BaseApiResponse<GetShipperDeliveryResponse>.ErrorResult(ex.Message, new[] { ex.Message }));
             }
 
-            var recipientName = request!.RecipientConfirmedName.Trim();
-            var notes = string.IsNullOrWhiteSpace(request.Notes) ? null : request.Notes.Trim();
+            var recipientName = form.RecipientConfirmedName.Trim();
+            var notes = string.IsNullOrWhiteSpace(form.Notes) ? null : form.Notes.Trim();
             var mealCount = delivery.Order?.OrderItems?.Sum(i => i.Quantity) ?? 0;
             var shipperName = FormatStaffName(delivery.AssignedStaff);
 
@@ -397,5 +401,14 @@ public class ShipperDeliveryController : ControllerBase
         var name = $"{user.FirstName} {user.LastName}".Trim();
         return string.IsNullOrWhiteSpace(name) ? user.Username : name;
     }
+}
+
+public class UploadDeliveryProofForm
+{
+    public IFormFile File { get; set; } = null!;
+    public IFormFile Signature { get; set; } = null!;
+    public IFormFile ShipperSignature { get; set; } = null!;
+    public string RecipientConfirmedName { get; set; } = string.Empty;
+    public string? Notes { get; set; }
 }
 

@@ -1,0 +1,37 @@
+{
+  "Serilog": {
+    "WriteTo": [
+      {},
+      {},
+      {
+        "Name": "MySQL",
+        "Args": {
+          "connectionString": "YOUR_DATABASE_CONNECTION_STRING"
+        }
+      }
+    ]
+  },
+  "Database": {
+    "ConnectionString": "YOUR_DATABASE_CONNECTION_STRING"
+  },
+  "Jwt": {
+    "Secret": "YOUR_JWT_SECRET_KEY"
+  },
+  "Redis": {
+    "Configuration": "YOUR_REDIS_CONNECTION_STRING"
+  },
+  "Appwrite": {
+    "ApiKey": "YOUR_APPWRITE_API_KEY"
+  },
+  "OrganizationChatbot": {
+    "ApiKey": "YOUR_GEMINI_API_KEY"
+  },
+  "Smtp": {
+    "Password": "YOUR_SMTP_PASSWORD"
+  },
+  "PayOS": {
+    "ClientId": "YOUR_PAYOS_CLIENT_ID",
+    "ApiKey": "YOUR_PAYOS_API_KEY",
+    "ChecksumKey": "YOUR_PAYOS_CHECKSUM_KEY"
+  }
+}

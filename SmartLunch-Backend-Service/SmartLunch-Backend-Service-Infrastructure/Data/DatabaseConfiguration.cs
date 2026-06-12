@@ -78,50 +78,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
             bool usePooling = true)
         {
             // Register DatabaseOptions
-            services.Configure<DatabaseOptions>(options =>
-            {
-                var section = configuration.GetSection(DatabaseOptions.SectionName);
-                if (section.Exists())
-                {
-                    options.ConnectionString = section[nameof(DatabaseOptions.ConnectionString)] ?? string.Empty;
-
-                    var autoMigrateValue = section[nameof(DatabaseOptions.AutoMigrate)];
-                    if (bool.TryParse(autoMigrateValue, out var autoMigrate))
-                        options.AutoMigrate = autoMigrate;
-
-                    var enableSensitiveDataLoggingValue = section[nameof(DatabaseOptions.EnableSensitiveDataLogging)];
-                    if (bool.TryParse(enableSensitiveDataLoggingValue, out var enableSensitiveDataLogging))
-                        options.EnableSensitiveDataLogging = enableSensitiveDataLogging;
-
-                    var commandTimeoutValue = section[nameof(DatabaseOptions.CommandTimeout)];
-                    if (int.TryParse(commandTimeoutValue, out var commandTimeout) && commandTimeout > 0)
-                        options.CommandTimeout = commandTimeout;
-
-                    var maxRetryCountValue = section[nameof(DatabaseOptions.MaxRetryCount)];
-                    if (int.TryParse(maxRetryCountValue, out var maxRetryCount) && maxRetryCount > 0)
-                        options.MaxRetryCount = maxRetryCount;
-
-                    var maxRetryDelayValue = section[nameof(DatabaseOptions.MaxRetryDelay)];
-                    if (int.TryParse(maxRetryDelayValue, out var maxRetryDelay) && maxRetryDelay > 0)
-                        options.MaxRetryDelay = maxRetryDelay;
-
-                    var enableQuerySplittingValue = section[nameof(DatabaseOptions.EnableQuerySplitting)];
-                    if (bool.TryParse(enableQuerySplittingValue, out var enableQuerySplitting))
-                        options.EnableQuerySplitting = enableQuerySplitting;
-
-                    var poolSizeValue = section[nameof(DatabaseOptions.PoolSize)];
-                    if (int.TryParse(poolSizeValue, out var poolSize) && poolSize > 0)
-                        options.PoolSize = poolSize;
-
-                    var enableHealthChecksValue = section[nameof(DatabaseOptions.EnableHealthChecks)];
-                    if (bool.TryParse(enableHealthChecksValue, out var enableHealthChecks))
-                        options.EnableHealthChecks = enableHealthChecks;
-
-                    var healthCheckIntervalValue = section[nameof(DatabaseOptions.HealthCheckInterval)];
-                    if (int.TryParse(healthCheckIntervalValue, out var healthCheckInterval) && healthCheckInterval > 0)
-                        options.HealthCheckInterval = healthCheckInterval;
-                }
-            });
+            services.Configure<DatabaseOptions>(configuration.GetSection(DatabaseOptions.SectionName));
 
             // Get the options to use during configuration
             var databaseOptions = GetDatabaseOptions(configuration);
@@ -152,55 +109,10 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
             return services;
         }
 
-        /// <summary>
-        /// Gets database options from configuration
-        /// </summary>
         private static DatabaseOptions GetDatabaseOptions(IConfiguration configuration)
         {
             var options = new DatabaseOptions();
-            var section = configuration.GetSection(DatabaseOptions.SectionName);
-
-            if (section.Exists())
-            {
-                options.ConnectionString = section[nameof(DatabaseOptions.ConnectionString)] ?? string.Empty;
-
-                var autoMigrateValue = section[nameof(DatabaseOptions.AutoMigrate)];
-                if (bool.TryParse(autoMigrateValue, out var autoMigrate))
-                    options.AutoMigrate = autoMigrate;
-
-                var enableSensitiveDataLoggingValue = section[nameof(DatabaseOptions.EnableSensitiveDataLogging)];
-                if (bool.TryParse(enableSensitiveDataLoggingValue, out var enableSensitiveDataLogging))
-                    options.EnableSensitiveDataLogging = enableSensitiveDataLogging;
-
-                var commandTimeoutValue = section[nameof(DatabaseOptions.CommandTimeout)];
-                if (int.TryParse(commandTimeoutValue, out var commandTimeout) && commandTimeout > 0)
-                    options.CommandTimeout = commandTimeout;
-
-                var maxRetryCountValue = section[nameof(DatabaseOptions.MaxRetryCount)];
-                if (int.TryParse(maxRetryCountValue, out var maxRetryCount) && maxRetryCount > 0)
-                    options.MaxRetryCount = maxRetryCount;
-
-                var maxRetryDelayValue = section[nameof(DatabaseOptions.MaxRetryDelay)];
-                if (int.TryParse(maxRetryDelayValue, out var maxRetryDelay) && maxRetryDelay > 0)
-                    options.MaxRetryDelay = maxRetryDelay;
-
-                var enableQuerySplittingValue = section[nameof(DatabaseOptions.EnableQuerySplitting)];
-                if (bool.TryParse(enableQuerySplittingValue, out var enableQuerySplitting))
-                    options.EnableQuerySplitting = enableQuerySplitting;
-
-                var poolSizeValue = section[nameof(DatabaseOptions.PoolSize)];
-                if (int.TryParse(poolSizeValue, out var poolSize) && poolSize > 0)
-                    options.PoolSize = poolSize;
-
-                var enableHealthChecksValue = section[nameof(DatabaseOptions.EnableHealthChecks)];
-                if (bool.TryParse(enableHealthChecksValue, out var enableHealthChecks))
-                    options.EnableHealthChecks = enableHealthChecks;
-
-                var healthCheckIntervalValue = section[nameof(DatabaseOptions.HealthCheckInterval)];
-                if (int.TryParse(healthCheckIntervalValue, out var healthCheckInterval) && healthCheckInterval > 0)
-                    options.HealthCheckInterval = healthCheckInterval;
-            }
-
+            configuration.GetSection(DatabaseOptions.SectionName).Bind(options);
             return options;
         }
 
