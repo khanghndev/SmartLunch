@@ -41,13 +41,20 @@ class ApiClient {
   final Uri _baseUri;
   final http.Client _client;
 
-  Map<String, String> get _defaultHeaders {
-    final headers = <String, String>{'Content-Type': 'application/json'};
+  Map<String, String> get _ngrokHeaders {
+    final headers = <String, String>{};
     final host = _baseUri.host.toLowerCase();
     if (host.contains('ngrok')) {
       headers['ngrok-skip-browser-warning'] = 'true';
     }
     return headers;
+  }
+
+  Map<String, String> get _defaultHeaders {
+    return {
+      'Content-Type': 'application/json',
+      ..._ngrokHeaders,
+    };
   }
 
   Future<Map<String, String>> _getAuthHeaders() async {
@@ -90,7 +97,11 @@ class ApiClient {
         final uri = _baseUri.resolve(path);
         final request = http.MultipartRequest('POST', uri);
         final authHeaders = await _getAuthHeaders();
-        request.headers.addAll({...authHeaders, ...?headers});
+        request.headers.addAll({
+          ..._ngrokHeaders,
+          ...authHeaders,
+          ...?headers,
+        });
         request.fields.addAll(fields);
         request.files.addAll(files);
         final streamed = await _client.send(request);
@@ -128,7 +139,11 @@ class ApiClient {
         final authHeaders = await _getAuthHeaders();
         return _client.get(
           uri,
-          headers: {...authHeaders, ...?headers},
+          headers: {
+            ..._ngrokHeaders,
+            ...authHeaders,
+            ...?headers,
+          },
         );
       },
     );
