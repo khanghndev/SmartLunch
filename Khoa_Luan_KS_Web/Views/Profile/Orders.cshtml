@@ -268,18 +268,84 @@
         </div>
         @if (totalCount > pageSize)
         {
+            var pageNumbers = new List<int?>();
+            if (totalPages <= 7)
+            {
+                for (int i = 1; i <= totalPages; i++)
+                {
+                    pageNumbers.Add(i);
+                }
+            }
+            else
+            {
+                if (currentPage <= 4)
+                {
+                    for (int i = 1; i <= 5; i++)
+                    {
+                        pageNumbers.Add(i);
+                    }
+                    pageNumbers.Add(null); // "..."
+                    pageNumbers.Add(totalPages);
+                }
+                else if (currentPage >= totalPages - 3)
+                {
+                    pageNumbers.Add(1);
+                    pageNumbers.Add(null); // "..."
+                    for (int i = totalPages - 4; i <= totalPages; i++)
+                    {
+                        pageNumbers.Add(i);
+                    }
+                }
+                else
+                {
+                    pageNumbers.Add(1);
+                    pageNumbers.Add(null); // "..."
+                    pageNumbers.Add(currentPage - 1);
+                    pageNumbers.Add(currentPage);
+                    pageNumbers.Add(currentPage + 1);
+                    pageNumbers.Add(null); // "..."
+                    pageNumbers.Add(totalPages);
+                }
+            }
+
             <div class="flex flex-col items-center justify-between gap-3 border-t border-gray-100 bg-gray-50/50 px-6 py-4 text-sm text-gray-600 sm:flex-row">
                 <span>Trang @currentPage / @totalPages — tổng @totalCount đơn</span>
-                <div class="flex gap-2">
+                <div class="flex items-center gap-1.5">
                     @if (currentPage > 1)
                     {
                         <a asp-action="Orders" asp-route-page="@(currentPage - 1)" asp-route-status="@Model?.FilterStatus" asp-route-paymentStatus="@Model?.FilterPaymentStatus" asp-route-search="@Model?.Search" asp-route-scheduledOn="@Model?.ScheduledOn?.ToString("yyyy-MM-dd")"
-                           class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100">← Trước</a>
+                           class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100 transition-colors">← Trước</a>
                     }
+                    else
+                    {
+                        <span class="rounded-lg border border-gray-100 bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-400 cursor-not-allowed select-none">← Trước</span>
+                    }
+
+                    @foreach (var p in pageNumbers)
+                    {
+                        if (p == null)
+                        {
+                            <span class="px-2 py-1.5 text-xs font-bold text-gray-400 select-none">...</span>
+                        }
+                        else if (p == currentPage)
+                        {
+                            <span class="rounded-lg border border-orange-500 bg-orange-500 px-3 py-1.5 text-xs font-bold text-white select-none">@p</span>
+                        }
+                        else
+                        {
+                            <a asp-action="Orders" asp-route-page="@p" asp-route-status="@Model?.FilterStatus" asp-route-paymentStatus="@Model?.FilterPaymentStatus" asp-route-search="@Model?.Search" asp-route-scheduledOn="@Model?.ScheduledOn?.ToString("yyyy-MM-dd")"
+                               class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100 transition-colors">@p</a>
+                        }
+                    }
+
                     @if (currentPage < totalPages)
                     {
                         <a asp-action="Orders" asp-route-page="@(currentPage + 1)" asp-route-status="@Model?.FilterStatus" asp-route-paymentStatus="@Model?.FilterPaymentStatus" asp-route-search="@Model?.Search" asp-route-scheduledOn="@Model?.ScheduledOn?.ToString("yyyy-MM-dd")"
-                           class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100">Sau →</a>
+                           class="rounded-lg border border-gray-200 bg-white px-3 py-1.5 text-xs font-bold text-gray-700 hover:bg-gray-100 transition-colors">Sau →</a>
+                    }
+                    else
+                    {
+                        <span class="rounded-lg border border-gray-100 bg-gray-50 px-3 py-1.5 text-xs font-bold text-gray-400 cursor-not-allowed select-none">Sau →</span>
                     }
                 </div>
             </div>
