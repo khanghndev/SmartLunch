@@ -79,4 +79,30 @@ class CustomerMenuRemoteDataSource {
       throw ApiException('Không tải được chi tiết thực đơn: $e', statusCode: 500);
     }
   }
+
+  /// `GET /api/v1/organization/meal-order/dish/{id}` — chi tiết món + định mức NL.
+  Future<CustomerDishDetailModel> getPublicDishDetail(int dishId) async {
+    if (dishId <= 0) {
+      throw ApiException('Mã món không hợp lệ', statusCode: 400);
+    }
+    try {
+      final response = await _apiClient.get(
+        ApiPaths.orgMealOrderPublicDish(dishId),
+        queryParameters: const {},
+      );
+      final data = response['data'] as Map<String, dynamic>?;
+      if (data == null) {
+        throw ApiException('Không có dữ liệu món ăn', statusCode: 200);
+      }
+      final detail = CustomerDishDetailModel.fromJson(data);
+      if (detail.id <= 0) {
+        throw ApiException('Không tìm thấy món ăn', statusCode: 404);
+      }
+      return detail;
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Không tải được chi tiết món: $e', statusCode: 500);
+    }
+  }
 }

@@ -273,6 +273,11 @@ class RolePalette {
     focus: Color(0xFF14B8A6),
   );
 
-  /// Customer module — dùng brand cam.
-  static const customer = brand;
+  /// Customer module — dùng màu xanh lá dịu mắt.
+  static const customer = RolePalette(
+    primary: Color(0xFF059669),
+    primaryAlt: Color(0xFF34D399),
+    link: Color(0xFF047857),
+    focus: Color(0xFF059669),
+  );
 }

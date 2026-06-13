@@ -518,7 +518,7 @@ class _QuickTileState extends State<_QuickTile> {
         child: Padding(
           padding: EdgeInsets.symmetric(
             horizontal: compact ? 4 : 6,
-            vertical: 10,
+            vertical: 8,
           ),
           child: Column(
             mainAxisSize: MainAxisSize.min,

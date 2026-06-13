@@ -42,17 +42,6 @@ abstract final class CustomerShellConfig {
         ),
       ],
     ),
-    DrawerSection(
-      title: 'Tài khoản',
-      items: [
-        DrawerItem(
-          icon: Icons.person_rounded,
-          label: 'profile',
-          labelVi: 'Hồ sơ cá nhân',
-          route: AppRoutes.profile,
-        ),
-      ],
-    ),
   ];
 }
 

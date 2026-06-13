@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../../../../app/app_routes.dart';
 import '../../../../core/theme/app_design_system.dart';
 import '../../../../core/widgets/app_confirm_dialog.dart';
-import '../../../../core/widgets/premium_drawer.dart';
 import '../../../../core/widgets/role_tab_shell.dart';
 import '../../../organization/data/models/bulk_order_models.dart';
 import '../../../organization/data/org_repository.dart';
@@ -48,8 +47,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
     await performAppLogout(context, role: kCustomerRole);
   }
 
-  void _openLogin() => navigateAppToLogin(context);
-
   @override
   Widget build(BuildContext context) {
     return CustomerTabShell(
@@ -67,7 +64,6 @@ class _CustomerHomePageState extends State<CustomerHomePage> {
           categoriesSectionKey: _categoriesSectionKey,
           onNavigateToMenu: _goToMenu,
           onScrollToCategories: _scrollToCategories,
-          onLogin: _openLogin,
         ),
         MenuPage(initialCategoryId: _menuInitialCategoryId),
       ],
@@ -79,13 +75,11 @@ class _CustomerDashboard extends StatefulWidget {
   final GlobalKey categoriesSectionKey;
   final void Function({int? categoryId}) onNavigateToMenu;
   final VoidCallback onScrollToCategories;
-  final VoidCallback onLogin;
 
   const _CustomerDashboard({
     required this.categoriesSectionKey,
     required this.onNavigateToMenu,
     required this.onScrollToCategories,
-    required this.onLogin,
   });
 
   @override
@@ -220,14 +214,6 @@ class _CustomerDashboardState extends State<_CustomerDashboard> {
       slivers: [
         const SliverToBoxAdapter(child: CustomerWelcomeBanner()),
         const SliverToBoxAdapter(child: CustomerTrustStrip()),
-        SliverToBoxAdapter(
-          child: CustomerSessionScope(
-            builder: (context, hasSession) {
-              if (hasSession) return const SizedBox.shrink();
-              return CustomerGuestPromptBar(onLogin: widget.onLogin);
-            },
-          ),
-        ),
         SliverToBoxAdapter(
           child: CustomerQuickActions(
             onOpenMenu: () => widget.onNavigateToMenu(),

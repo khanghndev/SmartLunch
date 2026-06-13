@@ -63,8 +63,11 @@ class AuthTextField extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label, style: AuthTheme.labelStyle()),
-        const SizedBox(height: 6),
+        Text(
+          label,
+          style: AuthTheme.labelStyle().copyWith(fontSize: 13),
+        ),
+        const SizedBox(height: 8),
         TextFormField(
           controller: controller,
           obscureText: obscureText,
@@ -73,37 +76,51 @@ class AuthTextField extends StatelessWidget {
           style: AuthTheme.displayFont.copyWith(
             fontSize: 14,
             color: AuthTheme.gray900,
-            fontWeight: FontWeight.w500,
+            fontWeight: FontWeight.w600,
           ),
           decoration: InputDecoration(
             hintText: hint,
             hintStyle: AuthTheme.displayFont.copyWith(
               fontSize: 14,
               color: AuthTheme.gray400,
+              fontWeight: FontWeight.w500,
             ),
-            prefixIcon: Icon(prefixIcon, color: AuthTheme.gray400, size: 20),
+            prefixIcon: Padding(
+              padding: const EdgeInsets.only(left: 12, right: 6),
+              child: Container(
+                width: 38,
+                height: 38,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: style.focusColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(11),
+                ),
+                child: Icon(prefixIcon, color: style.focusColor, size: 18),
+              ),
+            ),
+            prefixIconConstraints: const BoxConstraints(minWidth: 56, minHeight: 48),
             suffixIcon: suffix,
             filled: true,
             fillColor: AuthTheme.inputFill,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 15),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AuthTheme.gray200, width: 1.5),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AuthTheme.gray200, width: 1.2),
             ),
             enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
-              borderSide: const BorderSide(color: AuthTheme.gray200, width: 1.5),
+              borderRadius: BorderRadius.circular(14),
+              borderSide: const BorderSide(color: AuthTheme.gray200, width: 1.2),
             ),
             focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               borderSide: BorderSide(color: style.focusColor, width: 1.5),
             ),
             focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
             ),
             errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(12),
+              borderRadius: BorderRadius.circular(14),
               borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
             ),
           ),
@@ -135,44 +152,58 @@ class AuthPrimaryButton extends StatelessWidget {
     return SizedBox(
       height: 52,
       width: double.infinity,
-      child: ElevatedButton(
-        onPressed: loading ? null : onPressed,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: style.buttonColor,
-          foregroundColor: Colors.white,
-          disabledBackgroundColor: style.buttonColor.withValues(alpha: 0.6),
-          elevation: 0,
-          shadowColor: style.buttonColor.withValues(alpha: 0.35),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        ).copyWith(
-          elevation: WidgetStateProperty.resolveWith((states) {
-            if (states.contains(WidgetState.pressed)) return 2;
-            return 8;
-          }),
-        ),
-        child: loading
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  if (icon != null) ...[
-                    Icon(icon, size: 18),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    label,
-                    style: AuthTheme.displayFont.copyWith(
-                      fontWeight: FontWeight.w900,
-                      fontSize: 14,
-                      letterSpacing: 0.6,
-                    ),
+      child: DecoratedBox(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [style.buttonColor, style.buttonHover],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(14),
+          boxShadow: loading
+              ? null
+              : [
+                  BoxShadow(
+                    color: style.buttonColor.withValues(alpha: 0.35),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
                   ),
                 ],
-              ),
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: loading ? null : onPressed,
+            borderRadius: BorderRadius.circular(14),
+            child: Center(
+              child: loading
+                  ? const SizedBox(
+                      width: 22,
+                      height: 22,
+                      child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white),
+                    )
+                  : Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (icon != null) ...[
+                          Icon(icon, size: 18, color: Colors.white),
+                          const SizedBox(width: 8),
+                        ],
+                        Text(
+                          label,
+                          style: AuthTheme.displayFont.copyWith(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 14,
+                            letterSpacing: 0.4,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -195,23 +226,31 @@ class AuthOutlinedButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SizedBox(
-      height: 52,
+      height: 50,
       width: double.infinity,
       child: OutlinedButton.icon(
         onPressed: onPressed,
-        icon: Icon(icon, color: style.accent, size: 20),
+        icon: Container(
+          width: 32,
+          height: 32,
+          decoration: BoxDecoration(
+            color: style.accent.withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(icon, color: style.accent, size: 18),
+        ),
         label: Text(
           label,
           style: AuthTheme.displayFont.copyWith(
-            color: style.accent,
+            color: AuthTheme.gray900,
             fontWeight: FontWeight.w700,
             fontSize: 14,
           ),
         ),
         style: OutlinedButton.styleFrom(
-          side: BorderSide(color: AuthTheme.gray200, width: 1.5),
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          side: BorderSide(color: AuthTheme.gray200, width: 1.2),
+          backgroundColor: AuthTheme.gray50,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
         ),
       ),
     );
@@ -439,8 +478,9 @@ class AuthRememberRow extends StatelessWidget {
 class AuthFeatureRow extends StatelessWidget {
   final IconData icon;
   final String text;
+  final Color? color;
 
-  const AuthFeatureRow({super.key, required this.icon, required this.text});
+  const AuthFeatureRow({super.key, required this.icon, required this.text, this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -455,7 +495,7 @@ class AuthFeatureRow extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: Icon(icon, color: AuthTheme.orange400, size: 20),
+            child: Icon(icon, color: color ?? AuthTheme.emerald400, size: 20),
           ),
           const SizedBox(width: 14),
           Expanded(

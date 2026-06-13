@@ -8,6 +8,10 @@ abstract final class AuthTheme {
   static const orange400 = AppDesignSystem.orange400;
   static const orange600 = AppDesignSystem.orange600;
 
+  static const emerald500 = Color(0xFF059669);
+  static const emerald400 = Color(0xFF34D399);
+  static const emerald600 = Color(0xFF047857);
+
   static const indigo600 = AppDesignSystem.info;
   static const indigo700 = Color(0xFF4338CA);
   static const slate900 = AppDesignSystem.gray900;
@@ -74,21 +78,27 @@ class AuthPageStyle {
   });
 
   static const login = AuthPageStyle(
-    roleLabel: '',
+    roleLabel: 'NỀN TẢNG B2B',
     title: 'Đăng nhập',
-    subtitle: 'Chào mừng trở lại.',
-    heroTitle: '',
-    heroSubtitle: '',
+    subtitle: 'Quản lý suất ăn doanh nghiệp — an toàn, minh bạch & tiện lợi.',
+    heroTitle: 'Suất ăn sạch cho mọi đơn vị',
+    heroSubtitle: 'Đặt suất · Hợp đồng · Theo dõi giao hàng',
     heroImageUrl:
         'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1200',
     icon: Icons.restaurant_menu_rounded,
-    accent: AuthTheme.orange600,
-    buttonColor: AuthTheme.orange500,
-    buttonHover: AuthTheme.orange400,
-    linkColor: AuthTheme.orange600,
-    focusColor: AuthTheme.orange500,
-    minimalHero: true,
-    showFormRoleBadge: false,
+    accent: AuthTheme.emerald600,
+    buttonColor: AuthTheme.emerald500,
+    buttonHover: AuthTheme.emerald400,
+    linkColor: AuthTheme.emerald600,
+    focusColor: AuthTheme.emerald500,
+    showTrustStats: true,
+    minimalHero: false,
+    showFormRoleBadge: true,
+    trustStats: [
+      (value: '500+', label: 'Đơn vị'),
+      (value: '150k', label: 'Suất/ngày'),
+      (value: '4.9★', label: 'Đánh giá'),
+    ],
   );
 
   static const customer = AuthPageStyle(
@@ -100,11 +110,11 @@ class AuthPageStyle {
     heroImageUrl:
         'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=1200',
     icon: Icons.restaurant_rounded,
-    accent: AuthTheme.orange600,
-    buttonColor: AuthTheme.orange500,
-    buttonHover: AuthTheme.orange400,
-    linkColor: AuthTheme.orange600,
-    focusColor: AuthTheme.orange500,
+    accent: AuthTheme.emerald600,
+    buttonColor: AuthTheme.emerald500,
+    buttonHover: AuthTheme.emerald400,
+    linkColor: AuthTheme.emerald600,
+    focusColor: AuthTheme.emerald500,
     showTrustStats: true,
     trustStats: [
       (value: '500+', label: 'Doanh nghiệp'),
@@ -123,11 +133,11 @@ class AuthPageStyle {
     heroImageUrl:
         'https://images.unsplash.com/photo-1547592180-85f173990554?q=80&w=1200',
     icon: Icons.person_add_rounded,
-    accent: AuthTheme.orange600,
-    buttonColor: AuthTheme.orange500,
-    buttonHover: AuthTheme.orange400,
-    linkColor: AuthTheme.orange600,
-    focusColor: AuthTheme.orange500,
+    accent: AuthTheme.emerald600,
+    buttonColor: AuthTheme.emerald500,
+    buttonHover: AuthTheme.emerald400,
+    linkColor: AuthTheme.emerald600,
+    focusColor: AuthTheme.emerald500,
     features: [
       (icon: Icons.bolt_rounded, text: 'Đặt hàng siêu tốc trong 30s'),
       (icon: Icons.card_giftcard_rounded, text: 'Tích điểm đổi quà hấp dẫn'),
@@ -144,10 +154,10 @@ class AuthPageStyle {
     heroImageUrl:
         'https://images.unsplash.com/photo-1563986768609-322da13575f3?q=80&w=1200',
     icon: Icons.lock_reset_rounded,
-    accent: AuthTheme.orange600,
-    buttonColor: AuthTheme.orange500,
-    buttonHover: AuthTheme.orange400,
-    linkColor: AuthTheme.orange600,
-    focusColor: AuthTheme.orange500,
+    accent: AuthTheme.emerald600,
+    buttonColor: AuthTheme.emerald500,
+    buttonHover: AuthTheme.emerald400,
+    linkColor: AuthTheme.emerald600,
+    focusColor: AuthTheme.emerald500,
   );
 }

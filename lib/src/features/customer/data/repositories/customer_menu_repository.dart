@@ -30,4 +30,9 @@ class CustomerMenuRepository {
   Future<CustomerWeeklyMenuModel?> getWeeklyMenuDetail(int weeklyMenuId) {
     return _remote.getWeeklyMenuDetail(weeklyMenuId);
   }
+
+  /// Chi tiết món công khai (nguyên liệu, dinh dưỡng, …).
+  Future<CustomerDishDetailModel> getPublicDishDetail(int dishId) {
+    return _remote.getPublicDishDetail(dishId);
+  }
 }

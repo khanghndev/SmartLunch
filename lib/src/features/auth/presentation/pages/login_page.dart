@@ -74,16 +74,16 @@ class _LoginPageState extends State<LoginPage> {
         style: _style,
         footer: [
           const AuthDivider(),
-          const SizedBox(height: 16),
+          const SizedBox(height: 12),
           AuthOutlinedButton(
-            label: 'Xem thực đơn',
+            label: 'Xem thực đơn không cần đăng nhập',
             icon: Icons.menu_book_rounded,
             style: _style,
             onPressed: () {
               Navigator.of(context).pushReplacementNamed(AppRoutes.customerHome);
             },
           ),
-          const SizedBox(height: 12),
+          const SizedBox(height: 6),
           AuthLinkRow(
             prompt: 'Chưa có tài khoản?',
             action: 'Đăng ký ngay',
@@ -141,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                 ),
                 const SizedBox(height: 16),
                 AuthPrimaryButton(
-                  label: 'ĐĂNG NHẬP',
+                  label: 'Đăng nhập',
                   icon: Icons.login_rounded,
                   loading: _isLoading,
                   onPressed: _handleLogin,

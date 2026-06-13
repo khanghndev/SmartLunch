@@ -114,54 +114,56 @@ class _PremiumDrawerState extends State<PremiumDrawer> {
 
     return Drawer(
       width: (MediaQuery.sizeOf(context).width * 0.86).clamp(280.0, 340.0),
-      backgroundColor: AppDesignSystem.gray50,
+      backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.only(
-          topRight: Radius.circular(20),
-          bottomRight: Radius.circular(20),
+          topRight: Radius.circular(24),
+          bottomRight: Radius.circular(24),
         ),
       ),
-      child: SafeArea(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            _DrawerProfileHeader(
-              userName: displayName,
-              subtitle: displaySubtitle,
-              roleBadge: displayBadge,
-              avatarUrl: profile?.avatarUrl,
-              gradient: widget.gradient,
-              accentColor: widget.accentColor,
-              isLoading: _loadingProfile,
-              onClose: () => Navigator.of(context).pop(),
-            ),
-            Expanded(
-              child: ListView(
-                padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
-                children: [
-                  for (var i = 0; i < widget.sections.length; i++) ...[
-                    if (i > 0) const SizedBox(height: 4),
-                    _DrawerSectionWidget(
-                      section: widget.sections[i],
-                      selectedIndex: widget.selectedIndex,
-                      accentColor: widget.accentColor,
-                      onSelectTab: (index) => _selectTab(context, index),
-                      onNavigate: (route) => _navigate(context, route),
-                    ),
-                  ],
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _DrawerProfileHeader(
+            userName: displayName,
+            subtitle: displaySubtitle,
+            roleBadge: displayBadge,
+            avatarUrl: profile?.avatarUrl,
+            gradient: widget.gradient,
+            accentColor: widget.accentColor,
+            isLoading: _loadingProfile,
+            onClose: () => Navigator.of(context).pop(),
+          ),
+          Expanded(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(16, 12, 16, 16),
+              children: [
+                for (var i = 0; i < widget.sections.length; i++) ...[
+                  if (i > 0) const SizedBox(height: 12),
+                  _DrawerSectionWidget(
+                    section: widget.sections[i],
+                    selectedIndex: widget.selectedIndex,
+                    accentColor: widget.accentColor,
+                    onSelectTab: (index) => _selectTab(context, index),
+                    onNavigate: (route) => _navigate(context, route),
+                  ),
                 ],
-              ),
+              ],
             ),
-            const _DrawerBrandFooter(),
-            _DrawerAuthAction(
+          ),
+          const _DrawerBrandFooter(),
+          const SizedBox(height: 4),
+          SafeArea(
+            top: false,
+            child: _DrawerAuthAction(
               label: isLoggedIn ? 'Đăng xuất' : 'Đăng nhập',
               icon: isLoggedIn ? Icons.logout_rounded : Icons.login_rounded,
               color: isLoggedIn ? AppDesignSystem.danger : widget.accentColor,
               onTap: () => _handleAuthAction(context),
             ),
-            const SizedBox(height: 8),
-          ],
-        ),
+          ),
+          const SizedBox(height: 16),
+        ],
       ),
     );
   }
@@ -233,38 +235,38 @@ class _DrawerProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final topPadding = MediaQuery.paddingOf(context).top;
     return Container(
-      margin: const EdgeInsets.fromLTRB(12, 8, 12, 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: gradient,
         ),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
         boxShadow: [
           BoxShadow(
-            color: gradient.first.withValues(alpha: 0.28),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+            color: gradient.first.withValues(alpha: 0.15),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: const BorderRadius.vertical(bottom: Radius.circular(24)),
         child: Stack(
           children: [
             Positioned(
-              right: -24,
-              top: -24,
+              right: -16,
+              top: -16,
               child: Icon(
                 Icons.restaurant_menu_rounded,
-                size: 120,
-                color: Colors.white.withValues(alpha: 0.08),
+                size: 110,
+                color: Colors.white.withValues(alpha: 0.06),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(14, 12, 14, 16),
+              padding: EdgeInsets.fromLTRB(20, topPadding + 16, 20, 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -276,7 +278,7 @@ class _DrawerProfileHeader extends StatelessWidget {
                           color: Colors.white.withValues(alpha: 0.9),
                           fontWeight: FontWeight.w800,
                           fontSize: 13,
-                          letterSpacing: 0.2,
+                          letterSpacing: 0.4,
                         ),
                       ),
                       const Spacer(),
@@ -286,52 +288,62 @@ class _DrawerProfileHeader extends StatelessWidget {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
+                  const SizedBox(height: 18),
                   if (isLoading)
                     const _HeaderSkeleton()
                   else
                     Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         _DrawerAvatar(url: avatarUrl, accent: accentColor),
-                        const SizedBox(width: 12),
+                        const SizedBox(width: 14),
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
                                 userName,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: AppDesignSystem.title(
-                                  size: 18,
+                                style: AppDesignSystem.font.copyWith(
+                                  fontSize: 17,
+                                  fontWeight: FontWeight.w800,
                                   color: Colors.white,
+                                  letterSpacing: -0.2,
                                 ),
                               ),
-                              const SizedBox(height: 3),
+                              const SizedBox(height: 2),
                               Text(
                                 subtitle,
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: AppDesignSystem.body(
-                                  size: 12,
-                                  color: Colors.white.withValues(alpha: 0.88),
+                                style: AppDesignSystem.font.copyWith(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w500,
+                                  color: Colors.white.withValues(alpha: 0.8),
                                 ),
                               ),
-                              const SizedBox(height: 8),
+                              const SizedBox(height: 6),
                               Container(
                                 padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
+                                  horizontal: 8,
+                                  vertical: 3,
                                 ),
                                 decoration: BoxDecoration(
-                                  color: Colors.white.withValues(alpha: 0.18),
+                                  color: Colors.white.withValues(alpha: 0.16),
                                   borderRadius: BorderRadius.circular(999),
-                                  border: Border.all(color: Colors.white24),
+                                  border: Border.all(
+                                    color: Colors.white.withValues(alpha: 0.2),
+                                  ),
                                 ),
                                 child: Text(
                                   roleBadge,
-                                  style: AppDesignSystem.roleBadge(Colors.white),
+                                  style: AppDesignSystem.font.copyWith(
+                                    fontSize: 10,
+                                    fontWeight: FontWeight.w700,
+                                    color: Colors.white,
+                                  ),
                                 ),
                               ),
                             ],
@@ -359,22 +371,21 @@ class _DrawerAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     final trimmed = url?.trim();
     return Container(
-      width: 52,
-      height: 52,
+      width: 54,
+      height: 54,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.5), width: 2),
+        shape: BoxShape.circle,
+        border: Border.all(color: Colors.white, width: 2),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.12),
+            color: Colors.black.withValues(alpha: 0.1),
             blurRadius: 8,
-            offset: const Offset(0, 2),
+            offset: const Offset(0, 3),
           ),
         ],
       ),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(12),
+      child: ClipOval(
         child: trimmed != null && trimmed.isNotEmpty
             ? Image.network(
                 trimmed,
@@ -392,7 +403,7 @@ class _DrawerAvatar extends StatelessWidget {
 
   Widget _fallback(Color accent) {
     return ColoredBox(
-      color: accent.withValues(alpha: 0.15),
+      color: accent.withValues(alpha: 0.08),
       child: Icon(Icons.person_rounded, color: accent, size: 28),
     );
   }
@@ -410,7 +421,7 @@ class _HeaderSkeleton extends StatelessWidget {
           height: 52,
           decoration: BoxDecoration(
             color: Colors.white.withValues(alpha: 0.2),
-            borderRadius: BorderRadius.circular(14),
+            shape: BoxShape.circle,
           ),
         ),
         const SizedBox(width: 12),
@@ -488,23 +499,15 @@ class _DrawerSectionWidget extends StatelessWidget {
       children: [
         if (section.title != null) ...[
           Padding(
-            padding: const EdgeInsets.fromLTRB(4, 10, 4, 6),
-            child: Row(
-              children: [
-                Container(
-                  width: 3,
-                  height: 14,
-                  decoration: BoxDecoration(
-                    color: accentColor,
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  section.title!.toUpperCase(),
-                  style: AppDesignSystem.roleBadge(accentColor),
-                ),
-              ],
+            padding: const EdgeInsets.fromLTRB(8, 14, 8, 8),
+            child: Text(
+              section.title!.toUpperCase(),
+              style: AppDesignSystem.font.copyWith(
+                fontSize: 10.5,
+                fontWeight: FontWeight.w800,
+                color: AppDesignSystem.gray400,
+                letterSpacing: 0.8,
+              ),
             ),
           ),
         ],
@@ -542,10 +545,10 @@ class _DrawerItemTile extends StatelessWidget {
     final iconColor = item.iconColor ?? accentColor;
 
     return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
+      padding: const EdgeInsets.only(bottom: 4),
       child: Material(
-        color: isSelected ? accentColor.withValues(alpha: 0.1) : Colors.white,
-        borderRadius: BorderRadius.circular(14),
+        color: isSelected ? accentColor.withValues(alpha: 0.09) : Colors.transparent,
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: () {
             final tabIndex = item.tabIndex;
@@ -556,67 +559,35 @@ class _DrawerItemTile extends StatelessWidget {
               onNavigate(route);
             }
           },
-          borderRadius: BorderRadius.circular(14),
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                color: isSelected
-                    ? accentColor.withValues(alpha: 0.35)
-                    : AppDesignSystem.gray100,
-              ),
-              boxShadow: isSelected
-                  ? null
-                  : [
-                      BoxShadow(
-                        color: Colors.black.withValues(alpha: 0.03),
-                        blurRadius: 6,
-                        offset: const Offset(0, 2),
-                      ),
-                    ],
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-              child: Row(
-                children: [
-                  Container(
-                    width: 38,
-                    height: 38,
-                    decoration: BoxDecoration(
-                      color: isSelected
-                          ? accentColor.withValues(alpha: 0.15)
-                          : iconColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(11),
-                    ),
-                    child: Icon(
-                      item.icon,
-                      color: isSelected ? accentColor : iconColor,
-                      size: 20,
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Icon(
+                  item.icon,
+                  color: isSelected ? iconColor : AppDesignSystem.gray500,
+                  size: 20,
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    item.labelVi,
+                    style: AppDesignSystem.font.copyWith(
+                      color: isSelected ? accentColor : AppDesignSystem.gray700,
+                      fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                      fontSize: 14,
+                      letterSpacing: -0.15,
                     ),
                   ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Text(
-                      item.labelVi,
-                      style: AppDesignSystem.label(
-                        color: isSelected ? accentColor : AppDesignSystem.gray900,
-                      ).copyWith(
-                        fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                        fontSize: 14,
-                      ),
-                    ),
+                ),
+                if (!isSelected)
+                  const Icon(
+                    Icons.chevron_right_rounded,
+                    color: AppDesignSystem.gray400,
+                    size: 18,
                   ),
-                  Icon(
-                    isSelected
-                        ? Icons.radio_button_checked_rounded
-                        : Icons.chevron_right_rounded,
-                    color: isSelected
-                        ? accentColor
-                        : AppDesignSystem.gray400,
-                    size: 20,
-                  ),
-                ],
-              ),
+              ],
             ),
           ),
         ),
@@ -664,31 +635,29 @@ class _DrawerAuthAction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16),
       child: Material(
         color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(12),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(14),
-          child: Ink(
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(color: color.withValues(alpha: 0.22)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(icon, color: color, size: 20),
-                  const SizedBox(width: 8),
-                  Text(
-                    label,
-                    style: AppDesignSystem.label(color: color),
+          borderRadius: BorderRadius.circular(12),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon, color: color, size: 20),
+                const SizedBox(width: 8),
+                Text(
+                  label,
+                  style: AppDesignSystem.font.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14,
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
         ),

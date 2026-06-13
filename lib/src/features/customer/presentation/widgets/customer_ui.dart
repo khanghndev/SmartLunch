@@ -65,63 +65,91 @@ class CustomerWelcomeBanner extends StatelessWidget {
     return Container(
       margin: const EdgeInsets.fromLTRB(20, 14, 20, 0),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
             kCustomerRole.primary,
-            Color.lerp(kCustomerRole.primaryAlt, kCustomerRole.primary, 0.35)!,
+            kCustomerRole.primaryAlt,
           ],
         ),
         boxShadow: [
           BoxShadow(
-            color: kCustomerRole.primary.withValues(alpha: 0.28),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            color: kCustomerRole.primary.withValues(alpha: 0.3),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         child: Stack(
           children: [
             Positioned(
-              right: -20,
-              bottom: -20,
+              right: -30,
+              bottom: -30,
               child: Icon(
                 Icons.restaurant_rounded,
-                size: 120,
-                color: Colors.white.withValues(alpha: 0.12),
+                size: 140,
+                color: Colors.white.withValues(alpha: 0.15),
+              ),
+            ),
+            Positioned(
+              top: -20,
+              right: 40,
+              child: Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: Colors.white.withValues(alpha: 0.1),
+                ),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(18, 18, 18, 18),
+              padding: const EdgeInsets.fromLTRB(20, 20, 20, 20),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
+                      color: Colors.white.withValues(alpha: 0.25),
                       borderRadius: BorderRadius.circular(999),
-                      border: Border.all(color: Colors.white24),
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.4)),
                     ),
-                    child: Text(
-                      'Không cần đăng nhập để xem',
-                      style: AppDesignSystem.body(size: 11, color: Colors.white)
-                          .copyWith(fontWeight: FontWeight.w700),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star_rounded, color: Colors.white, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Xem không giới hạn',
+                          style: AppDesignSystem.body(size: 11, color: Colors.white)
+                              .copyWith(fontWeight: FontWeight.w800, letterSpacing: 0.3),
+                        ),
+                      ],
                     ),
                   ),
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 12),
                   Text(
                     'Thực đơn HUITMeal',
-                    style: AppDesignSystem.title(size: 22, color: Colors.white),
+                    style: AppDesignSystem.title(size: 24, color: Colors.white).copyWith(
+                      shadows: [
+                        Shadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
                   ),
-                  const SizedBox(height: 6),
+                  const SizedBox(height: 8),
                   Text(
                     'Duyệt món theo danh mục, xem ảnh và chi tiết — phù hợp khách vãng lai và nhân viên muốn tham khảo nhanh.',
-                    style: AppDesignSystem.body(size: 13, color: Colors.white.withValues(alpha: 0.92)),
+                    style: AppDesignSystem.body(size: 13, color: Colors.white.withValues(alpha: 0.95))
+                        .copyWith(height: 1.4),
                   ),
                 ],
               ),
@@ -240,26 +268,34 @@ class _TrustMiniCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-      decoration: AppDesignSystem.card(radius: 14),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+      decoration: AppDesignSystem.card(radius: 16),
       child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(icon, size: 20, color: kCustomerRole.primary),
-          const SizedBox(height: 6),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: kCustomerRole.primary.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 22, color: kCustomerRole.primary),
+          ),
+          const SizedBox(height: 8),
           Text(
             title,
             textAlign: TextAlign.center,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
-            style: AppDesignSystem.label().copyWith(fontSize: 11),
+            style: AppDesignSystem.label().copyWith(fontSize: 12),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           Text(
             subtitle,
             textAlign: TextAlign.center,
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
-            style: AppDesignSystem.body(size: 9, color: AppDesignSystem.gray500),
+            style: AppDesignSystem.body(size: 10, color: AppDesignSystem.gray500),
           ),
         ],
       ),
@@ -604,7 +640,7 @@ class CustomerHeaderSearchPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(12, 12, 12, 12),
+      padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
       child: ListenableBuilder(
         listenable: controller,
         builder: (context, _) {
@@ -632,7 +668,7 @@ class CustomerHeaderSearchPanel extends StatelessWidget {
           ),
           filled: true,
           fillColor: AppDesignSystem.gray50,
-              contentPadding: const EdgeInsets.symmetric(vertical: 12),
+              contentPadding: const EdgeInsets.symmetric(vertical: 10),
             ),
           );
         },
@@ -674,7 +710,7 @@ class CustomerHeaderCategoryPanel extends StatelessWidget {
       );
     }
     return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 12, 8, 14),
+      padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
       child: SingleChildScrollView(
         scrollDirection: Axis.horizontal,
         primary: false,
@@ -772,7 +808,7 @@ class CustomerQuickActions extends StatelessWidget {
           RoleHeaderQuickAction(
             label: 'Danh mục món',
             icon: Icons.grid_view_rounded,
-            color: AppDesignSystem.orange600,
+            color: const Color(0xFF0EA5E9),
             onTap: onScrollCategories ?? onOpenMenu,
           ),
           RoleHeaderQuickAction(
@@ -805,23 +841,36 @@ class CustomerStatBanner extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(20),
           border: Border.all(color: AppDesignSystem.gray100),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: 0.04),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
+              color: Colors.black.withValues(alpha: 0.05),
+              blurRadius: 16,
+              offset: const Offset(0, 6),
             ),
           ],
         ),
         child: Row(
           children: [
-            _StatPill(value: '$categoryCount', label: 'Nhóm món', icon: Icons.grid_view_rounded),
+            Expanded(
+              child: _StatPill(value: '$categoryCount', label: 'Nhóm món', icon: Icons.grid_view_rounded),
+            ),
+            const SizedBox(width: 12),
             Container(width: 1, height: 36, color: AppDesignSystem.gray200),
-            _StatPill(value: '$dishCount', label: 'Đang hiển thị', icon: Icons.ramen_dining_rounded),
-            const Spacer(),
-            Icon(Icons.verified_rounded, color: kCustomerRole.primary, size: 28),
+            const SizedBox(width: 12),
+            Expanded(
+              child: _StatPill(value: '$dishCount', label: 'Đang hiển thị', icon: Icons.ramen_dining_rounded),
+            ),
+            const SizedBox(width: 12),
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: kCustomerRole.primary.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(Icons.verified_rounded, color: kCustomerRole.primary, size: 24),
+            ),
           ],
         ),
       ),
@@ -853,21 +902,21 @@ class CustomerFeaturedCard extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(24),
         child: Ink(
-          width: 200,
-          height: 260,
-          decoration: AppDesignSystem.card(radius: 20).copyWith(
+          width: 220,
+          height: 280,
+          decoration: AppDesignSystem.card(radius: 24).copyWith(
             boxShadow: [
               BoxShadow(
-                color: kCustomerRole.primary.withValues(alpha: 0.14),
-                blurRadius: 22,
+                color: Colors.black.withValues(alpha: 0.08),
+                blurRadius: 24,
                 offset: const Offset(0, 10),
               ),
             ],
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(20),
+            borderRadius: BorderRadius.circular(24),
             child: Stack(
               fit: StackFit.expand,
               children: [
@@ -880,32 +929,46 @@ class CustomerFeaturedCard extends StatelessWidget {
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Color(0xD9000000)],
-                        stops: [0.4, 1.0],
+                        colors: [Colors.transparent, Colors.black87],
+                        stops: [0.35, 1.0],
                       ),
                     ),
                   ),
                 ),
                 Positioned(
-                  top: 10,
-                  left: 10,
+                  top: 12,
+                  left: 12,
                   child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                     decoration: BoxDecoration(
                       color: kCustomerRole.primary,
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(10),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.2),
+                          blurRadius: 4,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
                     ),
-                    child: Text(
-                      'Gợi ý',
-                      style: AppDesignSystem.body(size: 10, color: Colors.white)
-                          .copyWith(fontWeight: FontWeight.w800),
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        const Icon(Icons.star_rounded, color: Colors.white, size: 12),
+                        const SizedBox(width: 4),
+                        Text(
+                          'Gợi ý',
+                          style: AppDesignSystem.body(size: 11, color: Colors.white)
+                              .copyWith(fontWeight: FontWeight.w800),
+                        ),
+                      ],
                     ),
                   ),
                 ),
                 Positioned(
-                  left: 12,
-                  right: 12,
-                  bottom: 12,
+                  left: 16,
+                  right: 16,
+                  bottom: 16,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
@@ -915,7 +978,8 @@ class CustomerFeaturedCard extends StatelessWidget {
                           categoryName!,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
-                          style: AppDesignSystem.body(size: 11, color: Colors.white70),
+                          style: AppDesignSystem.body(size: 12, color: kCustomerRole.primaryAlt)
+                              .copyWith(fontWeight: FontWeight.w700),
                         ),
                         const SizedBox(height: 4),
                       ],
@@ -923,17 +987,17 @@ class CustomerFeaturedCard extends StatelessWidget {
                         name,
                         maxLines: 2,
                         overflow: TextOverflow.ellipsis,
-                        style: AppDesignSystem.sectionTitle(color: Colors.white),
+                        style: AppDesignSystem.title(size: 18, color: Colors.white),
                       ),
-                      const SizedBox(height: 8),
+                      const SizedBox(height: 10),
                       Row(
                         children: [
                           Text(
-                            'Xem món',
-                            style: AppDesignSystem.label(color: Colors.white).copyWith(fontSize: 11),
+                            'Xem chi tiết',
+                            style: AppDesignSystem.label(color: Colors.white).copyWith(fontSize: 12),
                           ),
                           const SizedBox(width: 4),
-                          const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 14),
+                          const Icon(Icons.arrow_forward_rounded, color: Colors.white, size: 16),
                         ],
                       ),
                     ],
@@ -1344,20 +1408,32 @@ class _StatPill extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Row(
-        children: [
-          Icon(icon, size: 18, color: kCustomerRole.primary),
-          const SizedBox(width: 8),
-          Column(
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 18, color: kCustomerRole.primary),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Text(value, style: AppDesignSystem.title(size: 18, color: AppDesignSystem.gray900)),
-              Text(label, style: AppDesignSystem.body(size: 11)),
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppDesignSystem.title(size: 16, color: AppDesignSystem.gray900),
+              ),
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: AppDesignSystem.body(size: 11),
+              ),
             ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }
@@ -1379,14 +1455,14 @@ IconData customerCategoryIcon(int index) {
 
 Color customerCategoryColor(int index) {
   const colors = [
-    AppDesignSystem.orange500,
-    AppDesignSystem.orange600,
-    AppDesignSystem.orange400,
-    Color(0xFFFB7185),
-    Color(0xFFFBBF24),
-    Color(0xFF34D399),
-    Color(0xFF60A5FA),
-    Color(0xFFA78BFA),
+    Color(0xFF0D9488), // Teal
+    Color(0xFF2563EB), // Blue
+    Color(0xFF8B5CF6), // Purple
+    Color(0xFF059669), // Emerald
+    Color(0xFF4F46E5), // Indigo
+    Color(0xFF0284C7), // Light Blue
+    Color(0xFF16A34A), // Green
+    Color(0xFF0F766E), // Dark Teal
   ];
   return colors[index % colors.length];
 }

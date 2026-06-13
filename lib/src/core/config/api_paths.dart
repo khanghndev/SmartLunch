@@ -40,6 +40,8 @@ abstract final class ApiPaths {
   static const String orgMealOrderContract = '$prefix/organization/meal-order/contract';
   static const String orgMealOrderCheckout = '$prefix/organization/meal-order/checkout';
   static const String orgMealOrderPay = '$prefix/organization/meal-order/pay';
+  static String orgMealOrderPublicDish(int id) =>
+      '$prefix/organization/meal-order/dish/$id';
   static const String orgContracts = '$prefix/company/contracts';
   static String orgContractDetail(int id) => '$prefix/company/contracts/$id';
   static String orgContractSign(int id) => '$prefix/company/contracts/$id/sign';
