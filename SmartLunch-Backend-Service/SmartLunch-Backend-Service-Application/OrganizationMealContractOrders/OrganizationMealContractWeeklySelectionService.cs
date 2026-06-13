@@ -95,17 +95,19 @@ public sealed class OrganizationMealContractWeeklySelectionService
 
             if (needsItemsSync)
             {
-                foreach (var item in order.OrderItems)
-                {
-                    if (!item.ServiceDate.HasValue)
-                        continue;
-
-                    sel.Items.Add(new ContractWeeklySelectionItem
+                var groupedItems = order.OrderItems
+                    .Where(item => item.ServiceDate.HasValue)
+                    .GroupBy(item => new { ServiceDate = item.ServiceDate!.Value, item.DishId })
+                    .Select(g => new ContractWeeklySelectionItem
                     {
-                        ServiceDate = item.ServiceDate.Value,
-                        DishId = item.DishId,
-                        Quantity = item.Quantity,
+                        ServiceDate = g.Key.ServiceDate,
+                        DishId = g.Key.DishId,
+                        Quantity = g.Sum(item => item.Quantity)
                     });
+
+                foreach (var item in groupedItems)
+                {
+                    sel.Items.Add(item);
                 }
 
                 changed = true;

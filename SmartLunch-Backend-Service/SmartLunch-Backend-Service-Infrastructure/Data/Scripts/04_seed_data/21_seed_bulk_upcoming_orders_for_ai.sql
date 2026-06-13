@@ -131,33 +131,25 @@ WHERE d.IsActive = 1
   );
 
 -- ---- Insert order items (random dishes, random quantities) ----
-DROP TEMPORARY TABLE IF EXISTS tmp_seed_item_seq;
-CREATE TEMPORARY TABLE tmp_seed_item_seq AS
-WITH RECURSIVE seq AS (
-  SELECT 1 AS n
-  UNION ALL
-  SELECT n + 1 FROM seq WHERE n + 1 <= @items_per_order
-)
-SELECT n AS ItemSeq FROM seq;
-
 INSERT INTO order_items (OrderId, DishId, Quantity, ServiceDate, UnitPrice, TotalPrice)
 SELECT
-  so.OrderId,
-  chosen.DishId,
-  chosen.Quantity,
-  so.ServiceDate,
+  x.OrderId,
+  x.DishId,
+  (@min_qty + FLOOR(RAND() * (@max_qty - @min_qty + 1))) AS Quantity,
+  x.ServiceDate,
   0.00 AS UnitPrice,
   0.00 AS TotalPrice
-FROM tmp_seed_orders so
-CROSS JOIN tmp_seed_item_seq iseq
-INNER JOIN (
+FROM (
   SELECT
-    (SELECT DishId FROM tmp_seed_dish_candidates ORDER BY RAND() LIMIT 1) AS DishId,
-    (@min_qty + FLOOR(RAND() * (@max_qty - @min_qty + 1))) AS Quantity,
-    0.00 AS UnitPrice
-) chosen
-  ON 1 = 1
-WHERE MOD(iseq.ItemSeq + so.OrderId, 7) <> 0; -- small sparsity so not all orders identical
+    so.OrderId,
+    dc.DishId,
+    so.ServiceDate,
+    ROW_NUMBER() OVER (PARTITION BY so.OrderId ORDER BY RAND()) as rn
+  FROM tmp_seed_orders so
+  CROSS JOIN tmp_seed_dish_candidates dc
+) x
+WHERE x.rn <= @items_per_order AND MOD(x.rn + x.OrderId, 7) <> 0;
+
 
 -- Fill unit price from contract.MealUnitPrice or dish catalog price
 UPDATE order_items oi
