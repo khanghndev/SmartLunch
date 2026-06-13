@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 
 import '../theme/app_design_system.dart';
@@ -26,125 +28,229 @@ class RoleModuleHeader extends StatelessWidget {
     this.trustPill = 'HUITMeal',
   });
 
-  static const _heroBodyHeight = 148.0;
+  static double heroBodyHeight(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    if (width < 360) return 112;
+    if (width < 400) return 120;
+    return _heroBodyHeight;
+  }
+
+  static const _heroBodyHeight = 128.0;
   static const _panelOverlap = 14.0;
+  /// Chiều cao panel quick actions (đo theo layout thực tế).
+  static const _quickPanelHeight = 76.0;
 
   @override
   Widget build(BuildContext context) {
     final openDrawer = RoleTabScope.of(context).openDrawer;
     final top = MediaQuery.paddingOf(context).top;
     final dpr = MediaQuery.devicePixelRatioOf(context);
-    final cacheWidth = (MediaQuery.sizeOf(context).width * dpr).round();
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final compact = screenWidth < 380;
+    final heroHeight = heroBodyHeight(context);
+    final cacheWidth = (screenWidth * dpr).round();
     final hasPanel = bottomPanel != null;
     final overlay = _gradientOverlay(role);
+    final heroTotal = heroHeight + top;
+    final panelCard = hasPanel ? _buildPanelCard(bottomPanel!, role) : null;
 
     return DecoratedBox(
+      decoration: const BoxDecoration(color: AppDesignSystem.gray50),
+      child: hasPanel
+          ? SizedBox(
+              height: heroTotal + _quickPanelHeight - _panelOverlap,
+              width: double.infinity,
+              child: Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    height: heroTotal,
+                    child: _buildHeroClip(
+                      role: role,
+                      overlay: overlay,
+                      cacheWidth: cacheWidth,
+                      top: top,
+                      compact: compact,
+                      openDrawer: openDrawer,
+                      title: title,
+                      subtitle: subtitle,
+                      trailing: trailing,
+                      trustPill: trustPill,
+                    ),
+                  ),
+                  Positioned(
+                    top: heroTotal - _panelOverlap,
+                    left: 16,
+                    right: 16,
+                    child: panelCard!,
+                  ),
+                ],
+              ),
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                SizedBox(
+                  height: heroTotal,
+                  width: double.infinity,
+                  child: _buildHeroClip(
+                    role: role,
+                    overlay: overlay,
+                    cacheWidth: cacheWidth,
+                    top: top,
+                    compact: compact,
+                    openDrawer: openDrawer,
+                    title: title,
+                    subtitle: subtitle,
+                    trailing: trailing,
+                    trustPill: trustPill,
+                  ),
+                ),
+              ],
+            ),
+    );
+  }
+
+  Widget _buildPanelCard(Widget bottomPanel, RolePalette role) {
+    return DecoratedBox(
       decoration: BoxDecoration(
-        color: AppDesignSystem.gray50,
+        borderRadius: BorderRadius.circular(20),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 12,
+            color: role.primary.withValues(alpha: 0.16),
+            blurRadius: 32,
+            offset: const Offset(0, 12),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.08),
+            blurRadius: 16,
             offset: const Offset(0, 4),
           ),
         ],
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(20),
+        child: Material(color: Colors.white, child: bottomPanel),
+      ),
+    );
+  }
+
+  Widget _buildHeroClip({
+    required RolePalette role,
+    required List<Color> overlay,
+    required int cacheWidth,
+    required double top,
+    required bool compact,
+    required VoidCallback openDrawer,
+    required String title,
+    required String subtitle,
+    required Widget? trailing,
+    required String trustPill,
+  }) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.only(
+        bottomLeft: Radius.circular(28),
+        bottomRight: Radius.circular(28),
+      ),
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.only(
-              bottomLeft: Radius.circular(24),
-              bottomRight: Radius.circular(24),
+          IgnorePointer(
+            child: Image.network(
+              kModuleHeroImageUrl,
+              fit: BoxFit.cover,
+              alignment: const Alignment(0, -0.2),
+              cacheWidth: cacheWidth,
+              errorBuilder: (_, __, ___) => ColoredBox(color: role.primary),
             ),
-            child: SizedBox(
-              height: _heroBodyHeight + top,
-              width: double.infinity,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  IgnorePointer(
-                    child: Image.network(
-                      kModuleHeroImageUrl,
-                      fit: BoxFit.cover,
-                      alignment: Alignment.center,
-                      cacheWidth: cacheWidth,
-                      errorBuilder: (_, __, ___) => ColoredBox(color: role.primary),
-                    ),
-                  ),
-                  IgnorePointer(
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                          colors: overlay,
-                        ),
-                      ),
-                    ),
-                  ),
-                  Padding(
-                    padding: EdgeInsets.fromLTRB(12, top + 6, 12, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            RoleModuleIconButton(
-                              icon: Icons.menu_rounded,
-                              onTap: openDrawer,
-                            ),
-                            const SizedBox(width: 8),
-                            RoleModuleBrandMark(accent: role.primary),
-                            const Spacer(),
-                            if (trailing != null) trailing!,
-                            if (trailing == null) RoleModuleTrustPill(label: trustPill),
-                          ],
-                        ),
-                        const Spacer(),
-                        Text(
-                          title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppDesignSystem.title(size: 26, color: Colors.white),
-                        ),
-                        const SizedBox(height: 4),
-                        Text(
-                          subtitle,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                          style: AppDesignSystem.body(
-                            size: 13,
-                            color: Colors.white.withValues(alpha: 0.88),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
+          ),
+          IgnorePointer(
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: overlay,
+                  stops: const [0.0, 0.45, 1.0],
+                ),
               ),
             ),
           ),
-          if (hasPanel)
-            Transform.translate(
-              offset: const Offset(0, -_panelOverlap),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-                child: Material(
-                  color: Colors.white,
-                  elevation: 6,
-                  shadowColor: Colors.black.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(16),
-                  child: Container(
-                    width: double.infinity,
-                    decoration: AppDesignSystem.card(radius: 16),
-                    child: bottomPanel!,
+          IgnorePointer(
+            child: Stack(
+              children: [
+                Positioned(
+                  top: -40,
+                  right: -30,
+                  child: _HeroGlow(
+                    color: role.primaryAlt.withValues(alpha: 0.35),
+                    size: 140,
                   ),
                 ),
-              ),
-            )
-          else
-            const SizedBox(height: 4),
+                Positioned(
+                  bottom: 20,
+                  left: -50,
+                  child: _HeroGlow(
+                    color: role.primary.withValues(alpha: 0.25),
+                    size: 100,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: EdgeInsets.fromLTRB(16, top + 6, 16, 12),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    RoleModuleIconButton(
+                      icon: Icons.menu_rounded,
+                      onTap: openDrawer,
+                    ),
+                    const SizedBox(width: 8),
+                    RoleModuleBrandMark(accent: role.primary, compact: compact),
+                    const Spacer(),
+                    if (trailing != null) trailing,
+                    if (trailing == null) RoleModuleTrustPill(label: trustPill),
+                  ],
+                ),
+                const Spacer(),
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppDesignSystem.title(
+                    size: compact ? 22 : 24,
+                    color: Colors.white,
+                  ).copyWith(
+                    height: 1.1,
+                    shadows: [
+                      Shadow(
+                        color: Colors.black.withValues(alpha: 0.25),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  subtitle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppDesignSystem.body(
+                    size: compact ? 12 : 13,
+                    color: Colors.white.withValues(alpha: 0.9),
+                  ).copyWith(height: 1.3),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
@@ -152,33 +258,62 @@ class RoleModuleHeader extends StatelessWidget {
 
   static List<Color> _gradientOverlay(RolePalette role) {
     final p = role.primary;
-    final a = role.primaryAlt;
     return [
-      const Color(0x99000000),
-      p.withValues(alpha: 0.45),
-      Color.lerp(a, p, 0.65) ?? p,
+      const Color(0xCC0A0A0A),
+      p.withValues(alpha: 0.72),
+      p.withValues(alpha: 0.88),
     ];
+  }
+}
+
+class _HeroGlow extends StatelessWidget {
+  final Color color;
+  final double size;
+
+  const _HeroGlow({required this.color, required this.size});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: RadialGradient(
+          colors: [color, color.withValues(alpha: 0)],
+        ),
+      ),
+    );
   }
 }
 
 class RoleModuleBrandMark extends StatelessWidget {
   final Color accent;
+  final bool compact;
 
-  const RoleModuleBrandMark({super.key, required this.accent});
+  const RoleModuleBrandMark({super.key, required this.accent, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
+    final box = compact ? 32.0 : 34.0;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
         Container(
-          width: 36,
-          height: 36,
+          width: box,
+          height: box,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(10),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.12),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
-          child: Icon(Icons.restaurant_menu_rounded, color: accent, size: 20),
+          child: Icon(Icons.restaurant_menu_rounded, color: accent, size: compact ? 17 : 18),
         ),
         const SizedBox(width: 8),
         Text(
@@ -186,8 +321,8 @@ class RoleModuleBrandMark extends StatelessWidget {
           style: AppDesignSystem.font.copyWith(
             color: Colors.white,
             fontWeight: FontWeight.w800,
-            fontSize: 18,
-            letterSpacing: 0,
+            fontSize: compact ? 16 : 17,
+            letterSpacing: -0.3,
             height: 1.2,
           ),
         ),
@@ -204,15 +339,18 @@ class RoleModuleTrustPill extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
+        color: Colors.white.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: Colors.white24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.28)),
       ),
       child: Text(
         label,
-        style: AppDesignSystem.body(size: 11, color: Colors.white),
+        style: AppDesignSystem.body(size: 11, color: Colors.white).copyWith(
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.5,
+        ),
       ),
     );
   }
@@ -226,15 +364,25 @@ class RoleModuleIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.white.withValues(alpha: 0.14),
-      borderRadius: BorderRadius.circular(10),
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(10),
-        child: Padding(
-          padding: const EdgeInsets.all(8),
-          child: Icon(icon, color: Colors.white, size: 22),
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(12),
+      child: BackdropFilter(
+        filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+        child: Material(
+          color: Colors.white.withValues(alpha: 0.16),
+          borderRadius: BorderRadius.circular(12),
+          child: InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.all(9),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.22)),
+              ),
+              child: Icon(icon, color: Colors.white, size: 22),
+            ),
+          ),
         ),
       ),
     );
@@ -297,7 +445,7 @@ class RoleHeaderChip extends StatelessWidget {
   }
 }
 
-/// Shortcut trong panel header (dashboard): icon trên, nhãn đầy đủ bên dưới.
+/// Shortcut trong panel header (dashboard): icon + nhãn ngang, gọn chiều cao.
 class RoleHeaderQuickActionsPanel extends StatelessWidget {
   final List<RoleHeaderQuickAction> actions;
 
@@ -306,11 +454,16 @@ class RoleHeaderQuickActionsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
       child: Row(
         children: [
           for (var i = 0; i < actions.length; i++) ...[
-            if (i > 0) const SizedBox(width: 10),
+            if (i > 0)
+              Container(
+                width: 1,
+                height: 36,
+                color: AppDesignSystem.gray100,
+              ),
             Expanded(child: _QuickTile(action: actions[i])),
           ],
         ],
@@ -333,45 +486,82 @@ class RoleHeaderQuickAction {
   });
 }
 
-class _QuickTile extends StatelessWidget {
+class _QuickTile extends StatefulWidget {
   final RoleHeaderQuickAction action;
 
   const _QuickTile({required this.action});
 
   @override
+  State<_QuickTile> createState() => _QuickTileState();
+}
+
+class _QuickTileState extends State<_QuickTile> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: action.onTap,
-        borderRadius: BorderRadius.circular(12),
-        child: Ink(
-          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 14),
-          decoration: AppDesignSystem.card(radius: 12),
+    final compact = MediaQuery.sizeOf(context).width < 380;
+    final iconBox = compact ? 34.0 : 38.0;
+    final color = widget.action.color;
+
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        widget.action.onTap();
+      },
+      onTapCancel: () => setState(() => _pressed = false),
+      child: AnimatedScale(
+        scale: _pressed ? 0.93 : 1.0,
+        duration: const Duration(milliseconds: 100),
+        curve: Curves.easeOut,
+        child: Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: compact ? 4 : 6,
+            vertical: 10,
+          ),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+            mainAxisSize: MainAxisSize.min,
             children: [
-              Center(
-                child: Container(
-                  padding: const EdgeInsets.all(10),
-                  decoration: BoxDecoration(
-                    color: action.color.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
+              Container(
+                width: iconBox,
+                height: iconBox,
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                    colors: [
+                      color.withValues(alpha: 0.22),
+                      color.withValues(alpha: 0.09),
+                    ],
                   ),
-                  child: Icon(action.icon, color: action.color, size: 22),
+                  borderRadius: BorderRadius.circular(11),
+                  border: Border.all(
+                    color: color.withValues(alpha: 0.18),
+                    width: 0.5,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: color.withValues(alpha: 0.18),
+                      blurRadius: 8,
+                      offset: const Offset(0, 3),
+                    ),
+                  ],
                 ),
+                child: Icon(widget.action.icon, color: color, size: compact ? 18 : 20),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 6),
               Text(
-                action.label,
+                widget.action.label,
                 textAlign: TextAlign.center,
-                style: AppDesignSystem.label().copyWith(
-                  fontSize: 11.5,
-                  height: 1.3,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: AppDesignSystem.font.copyWith(
+                  fontSize: compact ? 10.5 : 11,
+                  height: 1.15,
                   fontWeight: FontWeight.w700,
+                  color: AppDesignSystem.gray700,
                 ),
-                softWrap: true,
               ),
             ],
           ),

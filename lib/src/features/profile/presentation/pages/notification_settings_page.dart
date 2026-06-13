@@ -1,13 +1,2 @@
-import 'package:flutter/material.dart';
-
-class NotificationSettingsPage extends StatelessWidget {
-  const NotificationSettingsPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('NotificationSettingsPage')),
-      body: const Center(child: Text('Placeholder for NotificationSettingsPage')),
-    );
-  }
-}
+// Re-exported from personal_info_page.dart (shared profile sub-pages file)
+export 'personal_info_page.dart' show NotificationSettingsPage;

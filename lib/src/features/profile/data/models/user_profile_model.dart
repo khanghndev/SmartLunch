@@ -41,6 +41,7 @@ class UserProfileModel {
   final DateTime? birthDate;
   final List<String> roles;
   final UserUnitModel? unit;
+  final String? address;
 
   UserProfileModel({
     required this.id,
@@ -55,10 +56,83 @@ class UserProfileModel {
     this.birthDate,
     required this.roles,
     this.unit,
+    this.address,
   });
 
   String get displayName =>
       fullName?.isNotEmpty == true ? fullName! : username;
+
+  bool get isOrganizationRole =>
+      roles.contains('Organization') || roles.contains('Company');
+
+  bool get isManagerRole => roles.contains('Manager');
+
+  bool get isShipperRole => roles.contains('Shipper');
+
+  String get unitDisplayName {
+    final name = unit?.name.trim() ?? '';
+    return name.isNotEmpty ? name : '';
+  }
+
+  bool get hasPersonalName {
+    if (fullName?.trim().isNotEmpty == true) return true;
+    return firstName?.trim().isNotEmpty == true &&
+        lastName?.trim().isNotEmpty == true;
+  }
+
+  bool get hasPhone => phoneNumber?.trim().isNotEmpty == true;
+
+  bool get hasUnitCoreInfo {
+    if (!isOrganizationRole) return true;
+    return unitDisplayName.isNotEmpty;
+  }
+
+  bool get hasUnitContactInfo {
+    if (!isOrganizationRole) return true;
+    final u = unit;
+    if (u == null) return false;
+    return u.address?.trim().isNotEmpty == true ||
+        u.phone?.trim().isNotEmpty == true ||
+        u.contactEmail?.trim().isNotEmpty == true;
+  }
+
+  /// Hồ sơ đủ điều kiện hiển thị tích xanh xác minh.
+  bool get isProfileComplete =>
+      email.trim().isNotEmpty &&
+      hasPersonalName &&
+      hasPhone &&
+      hasUnitCoreInfo &&
+      hasUnitContactInfo &&
+      (isOrganizationRole || birthDate != null);
+
+  int get profileCompletionPercent {
+    final checks = <bool>[
+      hasPersonalName,
+      hasPhone,
+      email.trim().isNotEmpty,
+      if (isOrganizationRole) ...[
+        hasUnitCoreInfo,
+        hasUnitContactInfo,
+      ] else
+        birthDate != null,
+    ];
+    if (checks.isEmpty) return 0;
+    final filled = checks.where((c) => c).length;
+    return ((filled / checks.length) * 100).round();
+  }
+
+  List<String> get missingProfileHints {
+    final missing = <String>[];
+    if (!hasPersonalName) missing.add('Họ tên');
+    if (!hasPhone) missing.add('Số điện thoại');
+    if (isOrganizationRole) {
+      if (!hasUnitCoreInfo) missing.add('Tên đơn vị');
+      if (!hasUnitContactInfo) missing.add('Địa chỉ hoặc liên hệ đơn vị');
+    } else if (birthDate == null) {
+      missing.add('Ngày sinh');
+    }
+    return missing;
+  }
 
   factory UserProfileModel.fromJson(Map<String, dynamic> json) {
     return UserProfileModel(
@@ -81,6 +155,7 @@ class UserProfileModel {
       unit: json['unit'] is Map<String, dynamic>
           ? UserUnitModel.fromJson(json['unit'] as Map<String, dynamic>)
           : null,
+      address: json['address'] as String?,
     );
   }
 }

@@ -1,13 +1,2 @@
-import 'package:flutter/material.dart';
-
-class SecurityPage extends StatelessWidget {
-  const SecurityPage({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('SecurityPage')),
-      body: const Center(child: Text('Placeholder for SecurityPage')),
-    );
-  }
-}
+// Re-exported from personal_info_page.dart (shared profile sub-pages file)
+export 'personal_info_page.dart' show SecurityPage;

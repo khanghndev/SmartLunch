@@ -11,10 +11,6 @@ import '../features/auth/presentation/pages/forgot_password_page.dart';
 // Profile
 import '../features/profile/presentation/pages/profile_page.dart';
 import '../features/profile/presentation/pages/personal_info_page.dart';
-import '../features/profile/presentation/pages/security_page.dart';
-import '../features/profile/presentation/pages/address_book_page.dart';
-import '../features/profile/presentation/pages/notification_settings_page.dart';
-import '../features/profile/presentation/pages/help_center_page.dart';
 
 // Customer
 import '../features/customer/presentation/pages/customer_home_page.dart';

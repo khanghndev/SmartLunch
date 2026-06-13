@@ -13,4 +13,28 @@ class ProfileRepository {
   final ProfileRemoteDataSource _remote;
 
   Future<UserProfileModel> getProfile() => _remote.getProfile();
+
+  Future<UserProfileModel> updateProfile({
+    required String firstName,
+    required String lastName,
+    required String phoneNumber,
+    String? address,
+  }) =>
+      _remote.updateProfile(
+        firstName: firstName,
+        lastName: lastName,
+        phoneNumber: phoneNumber,
+        address: address,
+      );
+
+  Future<String> uploadAvatar({
+    required List<int> bytes,
+    required String filename,
+    required String contentType,
+  }) =>
+      _remote.uploadAvatar(
+        bytes: bytes,
+        filename: filename,
+        contentType: contentType,
+      );
 }
