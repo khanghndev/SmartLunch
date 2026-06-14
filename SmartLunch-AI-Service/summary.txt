@@ -83,7 +83,7 @@ Phương pháp C — Heuristic (rule-based + greedy)
 
 - Ngôn ngữ: Python (AI Service), C#/.NET (Backend).
 - Framework: Google OR-Tools CP-SAT.
-- Database: SQL Server (SmartLunch Backend).
+- Database: MySQL (SmartLunch Backend).
 - Train model: Không train ML; cấu hình rules.json + tuning scoring.
 
 7) Quy trình hoạt động AI

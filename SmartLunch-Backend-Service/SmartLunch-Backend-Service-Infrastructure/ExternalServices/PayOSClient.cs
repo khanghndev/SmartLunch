@@ -159,12 +159,12 @@ public sealed class PayOSClient : IPayOSClient
     }
 
     public Task<PayOSPaymentRequestInfoResult> GetPaymentRequestAsync(
-        int orderCode,
+        long orderCode,
         CancellationToken cancellationToken = default)
         => SendPaymentRequestInfoAsync(HttpMethod.Get, $"v2/payment-requests/{orderCode}", null, cancellationToken);
 
     public Task<PayOSPaymentRequestInfoResult> CancelPaymentRequestAsync(
-        int orderCode,
+        long orderCode,
         string? cancellationReason = null,
         CancellationToken cancellationToken = default)
     {
@@ -393,7 +393,7 @@ public sealed class PayOSClient : IPayOSClient
         int amount,
         string cancelUrl,
         string description,
-        int orderCode,
+        long orderCode,
         string returnUrl,
         string checksumKey)
     {
@@ -428,7 +428,7 @@ public sealed class PayOSClient : IPayOSClient
 
     private sealed class PayOSPaymentRequestDto
     {
-        public int OrderCode { get; set; }
+        public long OrderCode { get; set; }
         public int Amount { get; set; }
         public string Description { get; set; } = "";
         public string ReturnUrl { get; set; } = "";

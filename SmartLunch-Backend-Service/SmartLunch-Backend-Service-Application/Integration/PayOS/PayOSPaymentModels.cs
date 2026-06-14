@@ -8,9 +8,9 @@ namespace SmartLunch.Backend.Service.Application.Integration.PayOS;
 public sealed class PayOSCreatePaymentInput
 {
     /// <summary>
-    /// Mã đơn thanh toán trên PayOS — kiểu int theo API. Phải unique trong kênh; thường map từ hợp đồng/phiên thanh toán (lưu ý giới hạn int).
+    /// Mã đơn thanh toán trên PayOS — kiểu long theo API. Phải unique trong kênh; thường map từ hợp đồng/phiên thanh toán.
     /// </summary>
-    public int OrderCode { get; set; }
+    public long OrderCode { get; set; }
 
     /// <summary>
     /// Số tiền VND (số nguyên, không xu).

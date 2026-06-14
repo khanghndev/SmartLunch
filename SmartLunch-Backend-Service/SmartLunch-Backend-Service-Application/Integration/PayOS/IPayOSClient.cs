@@ -11,12 +11,12 @@ public interface IPayOSClient
 
     /// <summary>Tra cứu phiên thanh toán theo orderCode (thường = Payment.Id).</summary>
     Task<PayOSPaymentRequestInfoResult> GetPaymentRequestAsync(
-        int orderCode,
+        long orderCode,
         CancellationToken cancellationToken = default);
 
     /// <summary>Hủy phiên thanh toán để có thể tạo lại cùng orderCode (nếu PayOS cho phép).</summary>
     Task<PayOSPaymentRequestInfoResult> CancelPaymentRequestAsync(
-        int orderCode,
+        long orderCode,
         string? cancellationReason = null,
         CancellationToken cancellationToken = default);
 }

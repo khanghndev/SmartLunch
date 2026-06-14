@@ -7,6 +7,7 @@ using SmartLunch.Backend.Service.Application.Constants;
 using SmartLunch.Backend.Service.Application.Helpers;
 using SmartLunch.Backend.Service.Application.Integration.PayOS;
 using SmartLunch.Backend.Service.Application.Interfaces;
+using SmartLunch.Backend.Service.Domain.Entities;
 
 namespace SmartLunch.Backend.Service.Application.Commands.PayOS.ProcessPayOSWebhook;
 
@@ -85,14 +86,27 @@ public sealed class ProcessPayOSWebhookCommandHandler
         if (!TryParsePayOSAmount(amountEl, out var webhookAmount))
             return Fail(PayOSWebhookProcessStatus.InvalidPayload, "Invalid data.amount.");
 
-        var payment = await _paymentRepository.GetByIdWithOrderAndPaymentsAsync(orderCode, cancellationToken);
+        int paymentId = (int)(orderCode % 100000);
+
+        var payment = await _paymentRepository.GetByIdWithOrderAndPaymentsAsync(paymentId, cancellationToken);
         if (payment == null)
         {
             _logger.LogWarning(
-                "PayOS webhook: no local payment for orderCode {OrderCode} (dữ liệu mẫu khi confirm URL hoặc giao dịch ngoài hệ thống).",
-                orderCode);
+                "PayOS webhook: no local payment for orderCode {OrderCode} (paymentId {PaymentId}) (dữ liệu mẫu khi confirm URL hoặc giao dịch ngoài hệ thống).",
+                orderCode, paymentId);
             return Ack(PayOSWebhookProcessStatus.AcknowledgedNoUpdate,
                 "No matching payment; webhook received (e.g. PayOS URL test payload).");
+        }
+
+        var isMatch = GeneratePayOsOrderCode(payment) == orderCode || payment.Id == orderCode;
+
+        if (!isMatch)
+        {
+            _logger.LogWarning(
+                "PayOS webhook: payment mismatch for orderCode {OrderCode}. Expected {ExpectedCode}, ID: {DbId}",
+                orderCode, GeneratePayOsOrderCode(payment), payment.Id);
+            return Ack(PayOSWebhookProcessStatus.AcknowledgedNoUpdate,
+                "Payment code does not match; ignored.");
         }
 
         if (!string.Equals(payment.Method, "payos", StringComparison.OrdinalIgnoreCase))
@@ -179,18 +193,17 @@ public sealed class ProcessPayOSWebhookCommandHandler
         return false;
     }
 
-    private static bool TryParsePayOSOrderCode(JsonElement el, out int orderCode)
+    private static bool TryParsePayOSOrderCode(JsonElement el, out long orderCode)
     {
         orderCode = 0;
         switch (el.ValueKind)
         {
             case JsonValueKind.Number:
-                if (!el.TryGetInt64(out var n) || n <= 0 || n > int.MaxValue)
+                if (!el.TryGetInt64(out orderCode) || orderCode <= 0)
                     return false;
-                orderCode = (int)n;
                 return true;
             case JsonValueKind.String:
-                return int.TryParse(
+                return long.TryParse(
                     el.GetString(),
                     NumberStyles.Integer,
                     CultureInfo.InvariantCulture,
@@ -198,6 +211,17 @@ public sealed class ProcessPayOSWebhookCommandHandler
             default:
                 return false;
         }
+    }
+
+    private static long GeneratePayOsOrderCode(Payment payment)
+    {
+        var dt = payment.CreatedAt;
+        if (dt.Kind == DateTimeKind.Unspecified)
+        {
+            dt = DateTime.SpecifyKind(dt, DateTimeKind.Local);
+        }
+        var unixSecs = ((DateTimeOffset)dt).ToUnixTimeSeconds();
+        return unixSecs * 100000L + (payment.Id % 100000);
     }
 
     private static bool TryParsePayOSAmount(JsonElement el, out decimal amount)

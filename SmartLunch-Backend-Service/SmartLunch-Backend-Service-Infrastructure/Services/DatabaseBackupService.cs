@@ -298,7 +298,7 @@ public class DatabaseBackupService : IDatabaseBackupService
         if (string.IsNullOrWhiteSpace(opts.ConnectionString))
         {
             // fallback to main DB connection string
-            opts.ConnectionString = _configuration.GetConnectionString("SmartLunchDatabase") ?? string.Empty;
+            opts.ConnectionString = _configuration.GetConnectionString("Database:ConnectionString") ?? string.Empty;
         }
 
         if (string.IsNullOrWhiteSpace(opts.ConnectionString))

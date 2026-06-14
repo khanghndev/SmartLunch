@@ -67,6 +67,7 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
             throw new ArgumentException("Deposit amount is invalid.");
 
         var payer = await _userRepository.GetByIdAsync(command.UserId);
+
         var payInput = BuildPayOsInput(req, order, pendingPayment, depositVnd, payer);
 
         var payOs = await CreateOrReusePayOsSessionAsync(
@@ -115,6 +116,17 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
             "Đơn hàng chưa ở trạng thái chờ thanh toán. Vui lòng hoàn tất ký phụ lục.");
     }
 
+    private static long GeneratePayOsOrderCode(Payment payment)
+    {
+        var dt = payment.CreatedAt;
+        if (dt.Kind == DateTimeKind.Unspecified)
+        {
+            dt = DateTime.SpecifyKind(dt, DateTimeKind.Local);
+        }
+        var unixSecs = ((DateTimeOffset)dt).ToUnixTimeSeconds();
+        return unixSecs * 100000L + (payment.Id % 100000);
+    }
+
     private static PayOSCreatePaymentInput BuildPayOsInput(
         DTOs.Request.OrganizationMealOrders.InitiateOrganizationMealPaymentRequest req,
         Order order,
@@ -132,7 +144,7 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
 
         return new PayOSCreatePaymentInput
         {
-            OrderCode = pendingPayment.Id,
+            OrderCode = GeneratePayOsOrderCode(pendingPayment),
             Amount = depositVnd,
             Description = $"Đặt cọc đơn suất ăn #{order.Id}",
             ReturnUrl = req.ReturnUrl,
@@ -161,7 +173,7 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
         CancellationToken cancellationToken)
     {
         var reused = await TryReuseExistingPayOsSessionAsync(
-            pendingPayment.Id,
+            GeneratePayOsOrderCode(pendingPayment),
             pendingPayment,
             order,
             depositVnd,
@@ -177,7 +189,7 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
             return created;
 
         reused = await TryReuseExistingPayOsSessionAsync(
-            pendingPayment.Id,
+            GeneratePayOsOrderCode(pendingPayment),
             pendingPayment,
             order,
             depositVnd,
@@ -197,7 +209,7 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
     }
 
     private async Task<PayOSCreatePaymentResult?> TryReuseExistingPayOsSessionAsync(
-        int payOsOrderCode,
+        long payOsOrderCode,
         Payment pendingPayment,
         Order order,
         int depositVnd,
@@ -264,8 +276,9 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
         int depositVnd,
         CancellationToken cancellationToken)
     {
+        var currentOrderCode = GeneratePayOsOrderCode(stalePending);
         await _payOSClient.CancelPaymentRequestAsync(
-            stalePending.Id,
+            currentOrderCode,
             "Tạo phiên thanh toán mới",
             cancellationToken);
 
@@ -284,9 +297,10 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
         };
 
         freshPayment = await _paymentRepository.CreateForOrderAsync(freshPayment, cancellationToken);
+        
         order.Payments.Add(freshPayment);
 
-        payInput.OrderCode = freshPayment.Id;
+        payInput.OrderCode = GeneratePayOsOrderCode(freshPayment);
 
         var created = await _payOSClient.CreatePaymentRequestAsync(payInput, cancellationToken);
         if (created.Success && !string.IsNullOrWhiteSpace(created.CheckoutUrl))
@@ -296,7 +310,7 @@ public sealed class InitiateOrganizationMealPaymentCommandHandler
             return created;
 
         var reused = await TryReuseExistingPayOsSessionAsync(
-            freshPayment.Id,
+            GeneratePayOsOrderCode(freshPayment),
             freshPayment,
             order,
             depositVnd,
