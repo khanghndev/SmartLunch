@@ -21,8 +21,11 @@ public static class OrderPaymentStatusDisplay
         _ => "bg-slate-100 text-slate-600",
     };
 
-    public static bool CanPayDeposit(string? status, string? annexPdfUrl = null)
+    public static bool CanPayDeposit(string? status, string? annexPdfUrl = null, string? orderStatus = null)
     {
+        if (string.Equals(orderStatus, "cancelled", StringComparison.OrdinalIgnoreCase))
+            return false;
+
         if (string.Equals(status, "awaiting_payment", StringComparison.OrdinalIgnoreCase))
             return true;
 

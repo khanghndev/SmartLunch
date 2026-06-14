@@ -321,7 +321,7 @@ else
                     Xuất hóa đơn (in / PDF)
                 </a>
             }
-            @if (isOrg && OrderPaymentStatusDisplay.CanPayDeposit(order.PaymentStatus, order.AnnexPdfUrl))
+            @if (isOrg && OrderPaymentStatusDisplay.CanPayDeposit(order.PaymentStatus, order.AnnexPdfUrl, order.Status))
             {
                 <form asp-controller="OrganizationMealOrder" asp-action="PayDeposit" method="post" class="inline">
                     @Html.AntiForgeryToken()

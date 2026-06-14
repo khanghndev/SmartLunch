@@ -177,7 +177,7 @@
                                 </td>
                                 <td class="px-4 py-4 lg:px-6">
                                     @{
-                                        var canPayDeposit = isOrg && OrderPaymentStatusDisplay.CanPayDeposit(o.PaymentStatus, o.AnnexPdfUrl);
+                                        var canPayDeposit = isOrg && OrderPaymentStatusDisplay.CanPayDeposit(o.PaymentStatus, o.AnnexPdfUrl, o.Status);
                                         var showSignAnnex = isOrg && string.Equals(o.PaymentStatus, "unpaid", StringComparison.OrdinalIgnoreCase) && string.IsNullOrEmpty(o.AnnexPdfUrl);
                                         var canCancel = OrderCustomerCancelDisplay.CanCancel(o.Status, o.PaymentStatus, o.ScheduledDate);
                                         var placeMealLink = OrderMealPlacementDisplay.TryGetPlaceMealLink(o, isOrg, todayVn);
