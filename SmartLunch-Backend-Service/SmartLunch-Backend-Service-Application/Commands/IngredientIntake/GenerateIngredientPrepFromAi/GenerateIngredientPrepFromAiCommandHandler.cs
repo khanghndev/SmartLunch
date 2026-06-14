@@ -175,20 +175,29 @@ public sealed class GenerateIngredientPrepFromAiCommandHandler
 
         var plan = await _aiClient.RecommendIndustrialIngredientPreparationAsync(aiReq, cancellationToken);
 
+        var allIngredients = await _ingredientRepository.GetAllWithCategoryAsync(cancellationToken);
+        var activeIngredients = allIngredients.Where(i => i.IsActive).ToList();
+        var nameToId = activeIngredients
+            .Select(i => new
+            {
+                Id = i.Id,
+                Key = (i.NameEnglish ?? i.Name).Trim().ToLowerInvariant()
+            })
+            .GroupBy(x => x.Key)
+            .ToDictionary(g => g.Key, g => g.First().Id);
+        var englishKeyToVietnameseName = activeIngredients
+            .Select(i => new
+            {
+                Key = (i.NameEnglish ?? i.Name).Trim().ToLowerInvariant(),
+                DisplayName = i.Name
+            })
+            .GroupBy(x => x.Key)
+            .ToDictionary(g => g.Key, g => g.First().DisplayName);
+
         IngredientIntakeProposalDetailDto? proposalDto = null;
         if (req.PersistAsProposal)
         {
             // Map AI total_buy_kg -> IngredientId, then persist as intake proposal
-            var allIngredients = await _ingredientRepository.GetAllWithCategoryAsync(cancellationToken);
-            var nameToId = allIngredients
-                .Where(i => i.IsActive)
-                .Select(i => new
-                {
-                    Id = i.Id,
-                    Key = (i.NameEnglish ?? i.Name).Trim().ToLowerInvariant()
-                })
-                .GroupBy(x => x.Key)
-                .ToDictionary(g => g.Key, g => g.First().Id);
 
             var lines = new List<IngredientIntakeProposalLine>();
             foreach (var ing in plan.Ingredients)
@@ -231,6 +240,13 @@ public sealed class GenerateIngredientPrepFromAiCommandHandler
                 var reloaded = await _proposalRepository.GetByIdWithDetailsAsync(proposal.Id, cancellationToken);
                 proposalDto = reloaded == null ? null : IngredientIntakeProposalMapping.ToDetail(reloaded);
             }
+        }
+
+        foreach (var ing in plan.Ingredients)
+        {
+            var key = (ing.IngredientName ?? "").Trim().ToLowerInvariant();
+            if (!string.IsNullOrWhiteSpace(key) && englishKeyToVietnameseName.TryGetValue(key, out var vnName))
+                ing.IngredientName = vnName;
         }
 
         return new GenerateIngredientPrepFromAiResponse
