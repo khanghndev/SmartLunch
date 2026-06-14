@@ -1,9 +1,16 @@
 @model Khoa_Luan_KS_Web.Services.GenerateIngredientPrepFromAiClientRequest
 @using Khoa_Luan_KS_Web.Services
+@using System.Text.Json
 
 @{
     ViewData["Title"] = "Gợi ý nhập nguyên liệu (AI)";
     Layout = "~/Areas/Manager/Views/Shared/_LayoutManager.cshtml";
+    var ingredients = ViewBag.Ingredients as List<IngredientClientDto> ?? new();
+    var ingredientNameMapJson = JsonSerializer.Serialize(
+        ingredients
+            .Where(i => !string.IsNullOrWhiteSpace(i.NameEnglish) || !string.IsNullOrWhiteSpace(i.Name))
+            .GroupBy(i => ((i.NameEnglish ?? i.Name).Trim().ToLowerInvariant()))
+            .ToDictionary(g => g.Key, g => g.First().Name));
 }
 
 <style>
@@ -324,6 +331,7 @@ document.addEventListener('alpine:init', () => {
             proposalHeaderNote: ''
         },
         result: null,
+        ingredientNameMap: @Html.Raw(ingredientNameMapJson),
 
         init() {
             lucide.createIcons();
@@ -352,6 +360,11 @@ document.addEventListener('alpine:init', () => {
             };
         },
 
+        displayIngredientName(rawName) {
+            const key = (rawName || '').trim().toLowerCase();
+            return this.ingredientNameMap[key] || rawName || '';
+        },
+
         normalizeResult(raw) {
             if (!raw) return raw;
             const r = raw;
@@ -368,7 +381,7 @@ document.addEventListener('alpine:init', () => {
                     totalEndInventoryKg: d.totalEndInventoryKg ?? d.total_end_inventory_kg ?? 0
                 })),
                 ingredients: (planRaw.ingredients ?? []).map(it => ({
-                    ingredientName: it.ingredientName ?? it.ingredient_name ?? '',
+                    ingredientName: this.displayIngredientName(it.ingredientName ?? it.ingredient_name ?? ''),
                     unit: it.unit ?? 'kg',
                     totalDemandKg: it.totalDemandKg ?? it.total_demand_kg ?? 0,
                     totalBuyKg: it.totalBuyKg ?? it.total_buy_kg ?? 0,

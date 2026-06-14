@@ -41,11 +41,21 @@ namespace Khoa_Luan_KS_Web.Areas.Manager.Controllers
         public IActionResult Receipt(string? id) => RedirectToAction(nameof(Index));
 
         [HttpGet]
-        public IActionResult AiGenerate()
+        public async Task<IActionResult> AiGenerate(CancellationToken ct = default)
         {
             var token = HttpContext.Session.GetString("access_token");
             if (string.IsNullOrEmpty(token))
                 return RedirectToAction("Login", "Auth", new { area = "" });
+
+            try
+            {
+                var ingredients = await _warehouseClient.GetIngredientsAsync(token, 1, 500, isActive: true, ct: ct);
+                ViewBag.Ingredients = ingredients.Items;
+            }
+            catch
+            {
+                ViewBag.Ingredients = new List<IngredientClientDto>();
+            }
 
             var model = new GenerateIngredientPrepFromAiClientRequest
             {
