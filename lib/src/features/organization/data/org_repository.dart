@@ -10,6 +10,7 @@ import 'models/org_meal_contract_models.dart';
 import 'models/org_meal_period_weekly_models.dart';
 import '../utils/org_meal_period_promotion_builder.dart';
 import '../utils/org_meal_promotion_builder.dart';
+import 'models/org_order_models.dart';
 
 class OrgRepository {
   OrgRepository._({OrgRemoteDataSource? remote})
@@ -264,5 +265,20 @@ class OrgRepository {
         orderId: orderId,
         rating: rating,
         comment: comment,
+      );
+
+  Future<OrgOrderListModel> getOrders({
+    int page = 1,
+    int pageSize = 20,
+    String? status,
+    String? paymentStatus,
+    String? search,
+  }) =>
+      _remote.getOrders(
+        page: page,
+        pageSize: pageSize,
+        status: status,
+        paymentStatus: paymentStatus,
+        search: search,
       );
 }

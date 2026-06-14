@@ -62,6 +62,12 @@ abstract final class OrganizationShellConfig {
           tabIndex: 2,
         ),
         DrawerItem(
+          icon: Icons.receipt_long_rounded,
+          label: 'orders',
+          labelVi: 'Lịch sử đặt món',
+          route: AppRoutes.orgOrders,
+        ),
+        DrawerItem(
           icon: Icons.star_rounded,
           label: 'reviews',
           labelVi: 'Đánh giá suất ăn',

@@ -44,6 +44,7 @@ class AppRoutes {
   static const orgNotifications = '/org/notifications';
   static const orgContractSettlement = '/org/contract-settlement';
   static const orgReviews = '/org/reviews';
+  static const orgOrders = '/org/orders';
 
   static const chatbot = '/chatbot';
   static const notifications = '/notifications';

@@ -49,6 +49,7 @@ import '../features/organization/presentation/pages/org_notifications_page.dart'
 import '../features/organization/presentation/pages/contract_settlement_page.dart';
 import '../features/organization/presentation/pages/org_reviews_page.dart';
 import '../features/organization/presentation/pages/chatbot_page.dart';
+import '../features/organization/presentation/pages/org_orders_page.dart';
 
 // Manager
 import '../features/manager/presentation/pages/manager_home_page.dart';
@@ -228,6 +229,8 @@ class AppRouter {
         return MaterialPageRoute(builder: (_) => const ContractSettlementPage(), settings: settings);
       case AppRoutes.orgReviews:
         return MaterialPageRoute(builder: (_) => const OrgReviewsPage(), settings: settings);
+      case AppRoutes.orgOrders:
+        return MaterialPageRoute(builder: (_) => const OrgOrdersPage(), settings: settings);
 
       // Shared
       case AppRoutes.chatbot:

@@ -8,6 +8,7 @@ import '../models/bulk_order_models.dart';
 import '../models/contract_models.dart';
 import '../models/customer_review_models.dart';
 import '../models/org_meal_contract_models.dart';
+import '../models/org_order_models.dart';
 
 /// Remote datasource Organization — meal-order + contracts.
 class OrgRemoteDataSource {
@@ -459,6 +460,36 @@ class OrgRemoteDataSource {
       rethrow;
     } catch (e) {
       throw ApiException('Lỗi gửi chọn món theo tuần: $e', statusCode: 500);
+    }
+  }
+
+  // ────────────────────────────────────────────────────────────────────────────
+  // Orders (Lịch sử đặt món)
+  // ────────────────────────────────────────────────────────────────────────────
+
+  Future<OrgOrderListModel> getOrders({
+    int page = 1,
+    int pageSize = 20,
+    String? status,
+    String? paymentStatus,
+    String? search,
+  }) async {
+    try {
+      final response = await _client.get(
+        '$_prefix/master-data/Order',
+        queryParameters: {
+          'page': page,
+          'pageSize': pageSize,
+          if (status != null && status.isNotEmpty) 'status': status,
+          if (paymentStatus != null && paymentStatus.isNotEmpty) 'paymentStatus': paymentStatus,
+          if (search != null && search.isNotEmpty) 'search': search,
+        },
+      );
+      return OrgOrderListModel.fromJson(response);
+    } on ApiException {
+      rethrow;
+    } catch (e) {
+      throw ApiException('Lỗi tải danh sách đơn hàng: $e', statusCode: 500);
     }
   }
 }
