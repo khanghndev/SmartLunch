@@ -42,6 +42,7 @@ SOURCE 03_alter/10_recipient_signature.sql;
 SOURCE 03_alter/14_contract_weekly_selections.sql;
 SOURCE 03_alter/15_delivery_handover_document.sql;
 SOURCE 03_alter/16_shipper_signature.sql;
+SOURCE 03_alter/17_menusuggestion_add_status_date.sql;
 
 -- ---------- 04_seed_data (bổ sung seed idempotent) ----------
 SOURCE 04_seed_data/22_seed_manager_intake_permissions.sql;

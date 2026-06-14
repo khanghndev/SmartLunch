@@ -184,7 +184,7 @@ File: `app/services/industrial_planner_service.py`.
    - Phở: `covers_categories = [main, side, soup]` → một món nằm trong pool của 3 slot.
 4. **Validate pool:** Mỗi `slot` trong `meal_structure` phải có ≥ 1 món → nếu thiếu → `plans: []`.
 5. **`base_scores[i]`** ∈ [0,1] cho từng món:
-   - `base_score` + fit ngân sách + popularity/5 + bonus NL có trong kho + trọng số `tags`.
+   - `base_score` + thưởng điểm tuyệt đối nếu món trong ngân sách (tránh phạt các món rẻ như Canh/Tráng miệng) + popularity/5 + bonus NL kho + trọng số `tags`.
 
 ### 5.2. Mô hình CP-SAT (`_solve_cpsat_top_k`)
 
@@ -209,14 +209,14 @@ File: `app/services/industrial_planner_service.py`.
 - **Reuse NL:** bonus nếu cùng `main_ingredient` trong 2–3 ngày gần (`prefer_ingredient_reuse`).
 - **Penalty:** lặp cùng món cover `main` hai ngày liên tiếp (`repeat_main_dish_penalty` từ scoring).
 
-### 5.3. Sinh Top-K
+### 5.3. Sinh Top-K (Model mới cho mỗi Plan)
 
-Vòng lặp `plan_idx = 0 .. top_k-1`:
+Vòng lặp `plan_idx = 0 .. top_k-1`, **xây CP-SAT model mới hoàn toàn** cho mỗi plan:
 
-1. `solver.Solve(model)` với `random_seed = 10007 + plan_idx * 9973` (đa dạng hóa phương án).
-2. Trích `chosen_by_day[d][cat] = dish_index` từ các `y[d,i]=1`.
-3. **No-good cut:** cấm chọn **đúng cùng tập** `(d,i)` đã chọn: `sum(picked_literals) ≤ len - 1`.
-4. Solve lại → phương án khác (nếu còn feasible).
+1. Xây model mới với đầy đủ ràng buộc cứng (slot, budget, group freq, cooking method, …).
+2. **Ràng buộc đa dạng (Multiset Diversity):** Với mỗi plan đã sinh trước đó, đếm **tập hợp món chính** (không phân biệt ngày) — ví dụ `{A:2, B:2, C:1}` nếu Plan 1 dùng A hai ngày, B hai ngày, C một ngày. Ràng buộc: `overlap ≤ total − min_diff` với `min_diff = max(2, 40%)`. Đảm bảo **tổ hợp món chính phải thay đổi thực chất**, không chỉ hoán vị ngày.
+3. Cấm trùng hoàn toàn tập `(day, dish)` của mọi plan trước (safety net).
+4. Solve với `random_seed` khác nhau.
 
 Kết quả sort theo `objective_value` giảm dần → gán `rank` 1..K.
 

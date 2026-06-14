@@ -155,6 +155,7 @@ public class GenerateMenuSuggestionFromAiCommandHandler
 
             return new AiIndustrialDish
             {
+                Id = d.Id,
                 Name = d.Name,                                              // Vietnamese — displayed in output
                 NameEnglish = d.NameEnglish ?? d.Name,                     // English — used by AI for grouping
                 Category = primaryCategory,                                // Primary shelf for Python dishes_by_cat
@@ -249,6 +250,7 @@ public class GenerateMenuSuggestionFromAiCommandHandler
                     dayEntity.Items.Add(new MenuSuggestionPlanItem
                     {
                         SlotCategory = item.Category,
+                        DishId = item.DishId,
                         DishName = item.Name,
                         DishSourceCategory = null,
                         Score = item.Score,
@@ -310,6 +312,7 @@ public class GenerateMenuSuggestionFromAiCommandHandler
                                         {
                                             Id = i.Id,
                                             SlotCategory = i.SlotCategory,
+                                            DishId = i.DishId,
                                             DishName = i.DishName,
                                             DishSourceCategory = i.DishSourceCategory,
                                             Score = i.Score,

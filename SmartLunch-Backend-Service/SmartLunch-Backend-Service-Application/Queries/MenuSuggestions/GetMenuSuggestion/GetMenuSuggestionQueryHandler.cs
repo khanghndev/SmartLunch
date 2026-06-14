@@ -64,6 +64,7 @@ public class GetMenuSuggestionQueryHandler : IRequestHandler<GetMenuSuggestionQu
                                         {
                                             Id = i.Id,
                                             SlotCategory = i.SlotCategory,
+                                            DishId = i.DishId,
                                             DishName = i.DishName,
                                             DishSourceCategory = i.DishSourceCategory,
                                             Score = i.Score,

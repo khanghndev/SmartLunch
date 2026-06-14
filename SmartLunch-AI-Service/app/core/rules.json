@@ -30,17 +30,17 @@
     "industrial": {
       "scoring": {
         "base_score": 0.3,
-        "budget_fit_weight": 0.25,
-        "popularity_weight": 0.15,
+        "budget_fit_weight": 0.30,
+        "popularity_weight": 0.20,
         "ingredient_reuse_bonus": 0.14,
         "cooking_diversity_bonus": 0.14,
-        "repeat_main_dish_penalty": 0.28,
+        "repeat_main_dish_penalty": 0.35,
         "available_ingredient_bonus": 0.15,
         "tag_weights": {
-          "traditional": 0.10,
-          "comfort": 0.08,
+          "traditional": 0.15,
+          "comfort": 0.10,
           "healthy": 0.05,
-          "budget": 0.12
+          "budget": 0.15
         }
       },
       "constraints": {
@@ -58,18 +58,18 @@
     "org_company": {
       "scoring": {
         "base_score": 0.28,
-        "budget_fit_weight": 0.30,
+        "budget_fit_weight": 0.25,
         "popularity_weight": 0.18,
         "ingredient_reuse_bonus": 0.10,
-        "cooking_diversity_bonus": 0.18,
-        "repeat_main_dish_penalty": 0.35,
+        "cooking_diversity_bonus": 0.20,
+        "repeat_main_dish_penalty": 0.40,
         "available_ingredient_bonus": 0.18,
         "tag_weights": {
-          "budget": 0.16,
+          "budget": 0.10,
           "traditional": 0.10,
           "comfort": 0.08,
-          "healthy": 0.08,
-          "high_protein": 0.14
+          "healthy": 0.15,
+          "high_protein": 0.15
         }
       },
       "constraints": {
@@ -87,16 +87,16 @@
     "org_elementary": {
       "scoring": {
         "base_score": 0.35,
-        "budget_fit_weight": 0.15,
+        "budget_fit_weight": 0.10,
         "popularity_weight": 0.10,
         "ingredient_reuse_bonus": 0.10,
         "cooking_diversity_bonus": 0.15,
         "tag_weights": {
-          "healthy": 0.20,
-          "kid_friendly": 0.25,
-          "soft_texture": 0.15,
+          "healthy": 0.25,
+          "kid_friendly": 0.30,
+          "soft_texture": 0.20,
           "low_spice": 0.10,
-          "spicy": -0.50
+          "spicy": -0.80
         }
       },
       "constraints": {
@@ -116,10 +116,10 @@
         "budget_fit_weight": 0.18,
         "popularity_weight": 0.12,
         "tag_weights": {
-          "healthy": 0.18,
-          "kid_friendly": 0.20,
+          "healthy": 0.20,
+          "kid_friendly": 0.25,
           "high_fiber": 0.10,
-          "spicy": -0.30
+          "spicy": -0.60
         }
       },
       "constraints": {
@@ -140,9 +140,9 @@
         "popularity_weight": 0.15,
         "tag_weights": {
           "healthy": 0.15,
-          "high_protein": 0.10,
+          "high_protein": 0.15,
           "high_fiber": 0.10,
-          "budget": 0.05
+          "budget": 0.10
         }
       },
       "constraints": {
@@ -163,7 +163,7 @@
         "popularity_weight": 0.18,
         "tag_weights": {
           "healthy": 0.10,
-          "high_protein": 0.15,
+          "high_protein": 0.20,
           "budget": 0.08,
           "traditional": 0.05
         }
@@ -188,8 +188,9 @@
         "cooking_diversity_bonus": 0.15,
         "available_ingredient_bonus": 0.15,
         "tag_weights": {
-          "vegetarian": 0.25,
-          "healthy": 0.15,
+          "vegetarian": 0.30,
+          "vegan": 0.10,
+          "healthy": 0.20,
           "high_fiber": 0.10,
           "traditional": 0.05
         }

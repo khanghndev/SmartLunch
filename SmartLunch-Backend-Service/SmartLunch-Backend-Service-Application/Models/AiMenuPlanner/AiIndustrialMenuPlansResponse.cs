@@ -34,6 +34,9 @@ public class AiIndustrialDayMenu
 
 public class AiDishRecommendation
 {
+    [JsonPropertyName("dish_id")]
+    public int? DishId { get; set; }
+
     [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
 

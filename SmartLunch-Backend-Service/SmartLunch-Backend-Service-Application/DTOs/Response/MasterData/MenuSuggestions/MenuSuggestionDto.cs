@@ -61,6 +61,9 @@ public class MenuSuggestionPlanItemDto
     /// <summary>Danh mục slot: main | side | soup | vegetable | noodle_soup | dessert</summary>
     public string SlotCategory { get; set; } = string.Empty;
 
+    /// <summary>Backend Dish ID</summary>
+    public int? DishId { get; set; }
+
     /// <summary>Tên món ăn (tiếng Việt, để hiển thị).</summary>
     public string DishName { get; set; } = string.Empty;
 

@@ -1218,6 +1218,7 @@ namespace SmartLunch.Backend.Service.Infrastructure.Data
                 entity.HasIndex(e => e.MenuSuggestionPlanDayId);
                 entity.Property(e => e.Id).ValueGeneratedOnAdd();
                 entity.Property(e => e.SlotCategory).IsRequired().HasMaxLength(20);
+                entity.Property(e => e.DishId);
                 entity.Property(e => e.DishName).IsRequired().HasMaxLength(255);
                 entity.Property(e => e.DishSourceCategory).HasMaxLength(20);
                 entity.Property(e => e.Score).HasPrecision(6, 3);

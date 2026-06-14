@@ -48,7 +48,7 @@ Input chính:
 3) Phân tích các phương pháp AI
 
 Phương pháp A — CP-SAT (OR-Tools) [giải pháp đang dùng]
-- Nguyên lý: biến nhị phân y[d,i] chọn món i cho ngày d; ràng buộc cứng (slot, budget, min/max nhóm NL, không lặp NL chính/cooking method…); maximize hàm mục tiêu (điểm + popularity + bonus kho − penalty lặp); top-K bằng solve lặp + no-good cut.
+- Nguyên lý: biến nhị phân y[d,i] chọn món i cho ngày d; ràng buộc cứng (slot, budget, min/max nhóm NL, không lặp NL chính/cooking method…); maximize hàm mục tiêu (điểm + popularity + bonus kho − penalty lặp); top-K bằng xây model mới mỗi plan + ràng buộc đa dạng multiset món chính (khác ≥ 40%).
 - Ưu điểm: đảm bảo ràng buộc nghiệp vụ, giải thích reasons, multi-cover, cấu hình rules_key.
 - Nhược điểm: cần tuning scoring; timeout/infeasible nếu ràng buộc chặt hoặc pool món thiếu.
 - Khả năng áp dụng: Rất phù hợp — ưu tiên ràng buộc vận hành hơn sở thích cá nhân sâu.
@@ -91,7 +91,7 @@ Phương pháp C — Heuristic (rule-based + greedy)
 - Thu thập: dishes, inventory, ingredient groups, popularity 28 ngày, rules_key.
 - Tiền xử lý: lowercase nguyên liệu; merge constraints; index theo covers_categories.
 - Huấn luyện: Không có — cấu hình rules + scoring.
-- Sinh gợi ý: CP-SAT top-K + no-good cut → week_menu, plan_score, reasons.
+- Sinh gợi ý: CP-SAT top-K + no-good cut (đảm bảo đa dạng ≥ 20%) → week_menu, plan_score, reasons.
 - Trả kết quả: plans[] → Backend lưu MenuSuggestion → UI.
 
 ================================================================================
@@ -115,7 +115,7 @@ Phương pháp C — Heuristic (rule-based + greedy)
 - Input: days, meal_structure, dishes, available_ingredients, budget_per_serving, ingredient_groups, constraints, top_k, time_limit_seconds.
 - Xử lý: base_scores[i] ∈ [0,1]; index dishes_by_cat theo covers_categories.
 - Độ tương đồng: scoring (popularity, tag, budget fit, inventory bonus) + penalty/bonus lặp NL — không dùng embedding.
-- Sinh recommendation: CP-SAT y[d,i] + top-K (no-good cut + random seed).
+- Sinh recommendation: CP-SAT y[d,i] + top-K (no-good cut 20% diff + random seed).
 
 4) Thiết kế luồng xử lý
 

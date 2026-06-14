@@ -252,6 +252,7 @@ class IndustrialPlannerService:
                 dish = dishes[dish_idx]
                 reasons = self._build_reasons(dish, base_scores[dish_idx])
                 day_dishes.append(DishRecommendation(
+                    dish_id=dish.id,
                     name=dish.name,
                     category=cat,
                     score=round(base_scores[dish_idx], 3),
@@ -289,13 +290,14 @@ class IndustrialPlannerService:
         for dish in dishes:
             s = base
 
-            # Budget fit: closer to budget (but not over) is better
+            # Budget fit: Thưởng điểm tuyệt đối cho các món nằm trong ngân sách ngày.
+            # Không dùng tỷ lệ ratio (cost/budget) vì nó sẽ "phạt" các món Canh/Tráng miệng (vốn dĩ rẻ).
             if budget > 0:
-                ratio = dish.cost_per_serving / budget
-                if ratio <= 1.0:
-                    s += budget_w * (1.0 - abs(1.0 - ratio))
+                if dish.cost_per_serving <= budget:
+                    s += budget_w
                 else:
-                    # Over budget → penalty
+                    # Nếu bản thân món ăn đã vượt qua tổng budget ngày -> Phạt
+                    ratio = dish.cost_per_serving / budget
                     s -= budget_w * min(1.0, ratio - 1.0)
 
             # Popularity
@@ -541,13 +543,12 @@ class IndustrialPlannerService:
         time_limit_seconds: float,
     ) -> list[tuple[list[dict[DishCategory, int]], float]]:
         """
-        Solve CP-SAT repeatedly to get K distinct plans.
+        Generate K diverse menu plans by building a FRESH model for each plan.
 
-        Model supports "multi-cover" dishes, e.g. phở/mì can cover (main, side, soup),
-        so a single chosen dish can satisfy multiple daily slots.
-
-        Implementation: solve repeatedly and add a "no-good cut" to exclude the last
-        exact selection set, then resolve.
+        For each subsequent plan, we add hard constraints that ban the exact
+        main-dish MULTISET (order-agnostic) of every previous plan.
+        This guarantees that every plan uses a genuinely different combination
+        of main dishes, not just a day-permutation of the same set.
 
         Returns list of (chosen_by_day_category, objective_value), best-first.
         """
@@ -557,203 +558,245 @@ class IndustrialPlannerService:
         D = len(days)
         SCALE = 1000
 
-        model = cp_model.CpModel()
-
         required_cats = list(meal_structure)
         required_set = set(required_cats)
-
         covers_by_dish: list[set[DishCategory]] = [self._dish_covers(d) for d in dishes]
 
-        # Candidate dish indices: covers at least 1 required slot
         candidate_idxs = [
             i for i, cov in enumerate(covers_by_dish)
             if cov.intersection(required_set)
         ]
 
-        # Validate: for each required slot, there must be at least 1 dish that can cover it
         cover_pool: dict[DishCategory, list[int]] = {}
         for cat in required_cats:
             cover_pool[cat] = [i for i in candidate_idxs if cat in covers_by_dish[i]]
             if not cover_pool[cat]:
                 return []
 
-        # Dishes that can cover primary slots (main / noodle_soup) — mirrors
-        # primary_slot_indices in _solve_cpsat; used for protein/group freq & diversity.
         _primary_cats = frozenset({DishCategory.main, DishCategory.noodle_soup})
-        main_cover_idxs = [
+        main_cover_idxs_list = [
             i for i in candidate_idxs if covers_by_dish[i].intersection(_primary_cats)
         ]
-
-        # Variables: y[d,i] = 1 if dish i is selected on day d
-        y: dict[tuple[int, int], cp_model.IntVar] = {}
-        for d in range(D):
-            for i in candidate_idxs:
-                y[(d, i)] = model.NewBoolVar(f"y_d{d}_i{i}")
-
-        # Coverage constraints: each required slot must be covered exactly once
-        for d in range(D):
-            for cat in required_cats:
-                model.AddExactlyOne(y[(d, i)] for i in cover_pool[cat])
-
-        # max_per_week: limit dish appearance across days
-        for i in candidate_idxs:
-            model.Add(sum(y[(d, i)] for d in range(D)) <= dishes[i].max_per_week)
-
-        # ── Generic Group Frequency Constraints ──
-        group_freqs = list(constraints.group_frequencies)
-        if not group_freqs:
-            if constraints.max_same_protein_per_week is not None:
-                group_freqs.append(GroupFrequencyConstraint(group_name="protein", max_count=constraints.max_same_protein_per_week))
-            if constraints.min_fish_per_week is not None:
-                group_freqs.append(GroupFrequencyConstraint(group_name="seafood", min_count=constraints.min_fish_per_week))
-
-        for cfg in group_freqs:
-            keywords = kw_sets.get(cfg.group_name)
-            if not keywords:
-                continue
-            idxs = [i for i in main_cover_idxs if dishes[i].main_ingredient.strip().lower() in keywords]
-            if not idxs:
-                continue
-            
-            terms = [y[(d, i)] for d in range(D) for i in idxs]
-            if terms:
-                if cfg.max_count is not None:
-                    model.Add(sum(terms) <= cfg.max_count)
-                if cfg.min_count is not None:
-                    model.Add(sum(terms) >= cfg.min_count)
+        main_cover_idxs_set = frozenset(main_cover_idxs_list)
 
         ingredient_groups: dict[str, list[int]] = defaultdict(list)
         for i in candidate_idxs:
             ing = dishes[i].main_ingredient.strip().lower()
             ingredient_groups[ing].append(i)
 
-        if constraints.no_repeat_main_ingredient_consecutive_days:
-            for ing, idxs in ingredient_groups.items():
-                idxs_main = [i for i in idxs if i in main_cover_idxs]
-                if not idxs_main:
-                    continue
-                for d in range(D - 1):
-                    model.Add(
-                        sum(y[(d, i)] for i in idxs_main)
-                        + sum(y[(d + 1, i)] for i in idxs_main)
-                        <= 1
-                    )
-
-        if constraints.alternate_cooking_methods:
-            method_groups: dict[CookingMethod, list[int]] = defaultdict(list)
-            for i in main_cover_idxs:
-                method_groups[dishes[i].cooking_method].append(i)
-
-            for method, idxs in method_groups.items():
-                for d in range(D - 1):
-                    model.Add(
-                        sum(y[(d, i)] for i in idxs) + sum(y[(d + 1, i)] for i in idxs)
-                        <= 1
-                    )
-
-        # ── Constraint: main dish not more than N consecutive days ──
-        # Apply to dishes that can cover the `main` slot.
-        n = int(constraints.max_consecutive_same_main_dish)
-        if n > 0 and main_cover_idxs and D > n:
-            window = n + 1
-            for i in main_cover_idxs:
-                for start in range(0, D - window + 1):
-                    model.Add(sum(y[(start + t, i)] for t in range(window)) <= n)
-
-        for d in range(D):
-            model.Add(
-                sum(y[(d, i)] * int(dishes[i].cost_per_serving) for i in candidate_idxs)
-                <= int(budget_per_serving)
-            )
-
         reuse_bonus_w = float(scoring_cfg.get("ingredient_reuse_bonus", 0.0))
         repeat_penalty_w = float(scoring_cfg.get("repeat_main_dish_penalty", 0.0))
-        objective_terms = []
-        for d in range(D):
-            for i in candidate_idxs:
-                cover_count = len(covers_by_dish[i].intersection(required_set))
-                score_int = int(base_scores[i] * SCALE * max(1, cover_count))
-                objective_terms.append(y[(d, i)] * score_int)
 
-        # Soft diversity: penalize repeating the same main-cover dish on consecutive days.
-        if repeat_penalty_w > 0 and main_cover_idxs:
-            penalty = int(repeat_penalty_w * SCALE)
-            for i in main_cover_idxs:
-                for d in range(D - 1):
-                    rep = model.NewBoolVar(f"rep_main_i{i}_d{d}")
-                    model.AddBoolAnd([y[(d, i)], y[(d + 1, i)]]).OnlyEnforceIf(rep)
-                    model.AddBoolOr([y[(d, i)].Not(), y[(d + 1, i)].Not()]).OnlyEnforceIf(rep.Not())
-                    objective_terms.append(rep * (-penalty))
-
-        if constraints.prefer_ingredient_reuse and main_cover_idxs:
-            for ing, idxs in ingredient_groups.items():
-                for d in range(D - 1):
-                    for d2 in range(d + 1, min(d + 3, D)):
-                        idxs_main = [i for i in idxs if i in main_cover_idxs]
-                        for i1 in idxs_main:
-                            for i2 in idxs_main:
-                                reuse_var = model.NewBoolVar(
-                                    f"reuse_{ing}_d{d}_d{d2}_i{i1}_i{i2}"
-                                )
-                                model.AddBoolAnd([
-                                    y[(d, i1)],
-                                    y[(d2, i2)],
-                                ]).OnlyEnforceIf(reuse_var)
-                                model.AddBoolOr([
-                                    y[(d, i1)].Not(),
-                                    y[(d2, i2)].Not(),
-                                ]).OnlyEnforceIf(reuse_var.Not())
-                                bonus = int(reuse_bonus_w * SCALE * 0.5)
-                                objective_terms.append(reuse_var * bonus)
-
-        model.Maximize(sum(objective_terms))
-
-        solver = cp_model.CpSolver()
-        solver.parameters.max_time_in_seconds = time_limit_seconds
-        solver.parameters.num_search_workers = 8
+        # ── Accumulate previous solutions for diversity enforcement ──
+        # Each entry: dict[dish_index -> count_across_days] for main dishes
+        previous_main_multisets: list[dict[int, int]] = []
+        # Each entry: frozenset of (day, dish_index) for ALL dishes
+        previous_full_selections: list[frozenset[tuple[int, int]]] = []
 
         results: list[tuple[list[dict[DishCategory, int]], float]] = []
-        # no-good cut uses the count of actually selected dishes, which may be
-        # smaller than number of slots when multi-cover dishes are used.
 
         for plan_idx in range(max(1, int(top_k))):
-            # Many optimal/near-optimal menus share the same objective value; varying the
-            # CP-SAT random seed explores different branches so top-K plans diverge more for chefs.
+
+            model = cp_model.CpModel()
+
+            # ── Variables ──
+            y: dict[tuple[int, int], cp_model.IntVar] = {}
+            for d in range(D):
+                for i in candidate_idxs:
+                    y[(d, i)] = model.NewBoolVar(f"y_d{d}_i{i}")
+
+            # ── Coverage: each slot covered exactly once per day ──
+            for d in range(D):
+                for cat in required_cats:
+                    model.AddExactlyOne(y[(d, i)] for i in cover_pool[cat])
+
+            # ── max_per_week ──
+            for i in candidate_idxs:
+                model.Add(sum(y[(d, i)] for d in range(D)) <= dishes[i].max_per_week)
+
+            # ── Group Frequency ──
+            group_freqs = list(constraints.group_frequencies)
+            if not group_freqs:
+                if constraints.max_same_protein_per_week is not None:
+                    group_freqs.append(GroupFrequencyConstraint(
+                        group_name="protein", max_count=constraints.max_same_protein_per_week))
+                if constraints.min_fish_per_week is not None:
+                    group_freqs.append(GroupFrequencyConstraint(
+                        group_name="seafood", min_count=constraints.min_fish_per_week))
+
+            for cfg in group_freqs:
+                keywords = kw_sets.get(cfg.group_name)
+                if not keywords:
+                    continue
+                idxs = [i for i in main_cover_idxs_list
+                        if dishes[i].main_ingredient.strip().lower() in keywords]
+                if not idxs:
+                    continue
+                terms = [y[(d, i)] for d in range(D) for i in idxs]
+                if terms:
+                    if cfg.max_count is not None:
+                        model.Add(sum(terms) <= cfg.max_count)
+                    if cfg.min_count is not None:
+                        model.Add(sum(terms) >= cfg.min_count)
+
+            # ── No repeat main ingredient on consecutive days ──
+            if constraints.no_repeat_main_ingredient_consecutive_days:
+                for ing, idxs in ingredient_groups.items():
+                    idxs_main = [i for i in idxs if i in main_cover_idxs_set]
+                    if not idxs_main:
+                        continue
+                    for d in range(D - 1):
+                        model.Add(
+                            sum(y[(d, i)] for i in idxs_main)
+                            + sum(y[(d + 1, i)] for i in idxs_main)
+                            <= 1
+                        )
+
+            # ── Alternate cooking methods ──
+            if constraints.alternate_cooking_methods:
+                method_groups: dict[CookingMethod, list[int]] = defaultdict(list)
+                for i in main_cover_idxs_list:
+                    method_groups[dishes[i].cooking_method].append(i)
+                for method, idxs in method_groups.items():
+                    for d in range(D - 1):
+                        model.Add(
+                            sum(y[(d, i)] for i in idxs)
+                            + sum(y[(d + 1, i)] for i in idxs)
+                            <= 1
+                        )
+
+            # ── Max consecutive same main dish ──
+            n_consec = int(constraints.max_consecutive_same_main_dish)
+            if n_consec > 0 and main_cover_idxs_list and D > n_consec:
+                window = n_consec + 1
+                for i in main_cover_idxs_list:
+                    for start in range(0, D - window + 1):
+                        model.Add(sum(y[(start + t, i)] for t in range(window)) <= n_consec)
+
+            # ── Budget per day ──
+            for d in range(D):
+                model.Add(
+                    sum(y[(d, i)] * int(dishes[i].cost_per_serving) for i in candidate_idxs)
+                    <= int(budget_per_serving)
+                )
+
+            # ── Objective ──
+            objective_terms: list = []
+            for d in range(D):
+                for i in candidate_idxs:
+                    cover_count = len(covers_by_dish[i].intersection(required_set))
+                    score_int = int(base_scores[i] * SCALE * max(1, cover_count))
+                    objective_terms.append(y[(d, i)] * score_int)
+
+            if repeat_penalty_w > 0 and main_cover_idxs_list:
+                penalty = int(repeat_penalty_w * SCALE)
+                for i in main_cover_idxs_list:
+                    for d in range(D - 1):
+                        rep = model.NewBoolVar(f"rep_main_i{i}_d{d}")
+                        model.AddBoolAnd([y[(d, i)], y[(d + 1, i)]]).OnlyEnforceIf(rep)
+                        model.AddBoolOr([y[(d, i)].Not(), y[(d + 1, i)].Not()]).OnlyEnforceIf(rep.Not())
+                        objective_terms.append(rep * (-penalty))
+
+            if constraints.prefer_ingredient_reuse and main_cover_idxs_list:
+                for ing, idxs in ingredient_groups.items():
+                    idxs_main = [i for i in idxs if i in main_cover_idxs_set]
+                    for d in range(D - 1):
+                        for d2 in range(d + 1, min(d + 3, D)):
+                            for i1 in idxs_main:
+                                for i2 in idxs_main:
+                                    reuse_var = model.NewBoolVar(
+                                        f"reuse_{ing}_d{d}_d{d2}_i{i1}_i{i2}"
+                                    )
+                                    model.AddBoolAnd([
+                                        y[(d, i1)], y[(d2, i2)],
+                                    ]).OnlyEnforceIf(reuse_var)
+                                    model.AddBoolOr([
+                                        y[(d, i1)].Not(), y[(d2, i2)].Not(),
+                                    ]).OnlyEnforceIf(reuse_var.Not())
+                                    bonus = int(reuse_bonus_w * SCALE * 0.5)
+                                    objective_terms.append(reuse_var * bonus)
+
+            # ════════════════════════════════════════════════════════════
+            # DIVERSITY CONSTRAINTS — ban every previous plan's main-dish
+            # multiset (order-agnostic).  For each previous plan we count
+            # how many times each main dish appeared (across all days) and
+            # require the new plan to differ in at least `min_diff` of
+            # those dish-day appearances.
+            #
+            # Ví dụ Plan cũ chọn {A:2, B:2, C:1} (5 ngày, 3 món chính).
+            # Ta tính u[i] = sum_d y[d,i] cho mỗi main dish i.
+            # Constraint: Σ_i min(u[i], prev_count[i]) ≤ total - min_diff.
+            # Đảm bảo plan mới KHÔNG THỂ dùng cùng multiset.
+            # ════════════════════════════════════════════════════════════
+            for prev_idx, prev_multiset in enumerate(previous_main_multisets):
+                # u_min[i] = min(sum_d y[d,i], prev_count[i])
+                # We linearize min(A, K) as an auxiliary variable m:
+                #   m <= A, m <= K, m >= 0
+                # Then sum(m_i) <= total_prev - min_diff
+                overlap_terms: list = []
+                total_prev = sum(prev_multiset.values())
+                # Bắt buộc khác biệt ít nhất 2 ngày, hoặc 40% — cái nào lớn hơn
+                min_diff = max(2, int(total_prev * 0.40))
+                min_diff = min(min_diff, total_prev)  # safety
+
+                for i_dish, prev_count in prev_multiset.items():
+                    # m_i = min(sum_d y[d, i_dish], prev_count)
+                    m_i = model.NewIntVar(0, prev_count, f"overlap_p{prev_idx}_i{i_dish}")
+                    sum_days = sum(y[(d, i_dish)] for d in range(D) if (d, i_dish) in y)
+                    model.Add(m_i <= sum_days)
+                    model.Add(m_i <= prev_count)
+                    overlap_terms.append(m_i)
+
+                if overlap_terms:
+                    model.Add(sum(overlap_terms) <= total_prev - min_diff)
+
+            # Also ban identical full selections (day-specific, as a safety net)
+            for prev_sel in previous_full_selections:
+                literals = [y[(d, i)] for (d, i) in prev_sel if (d, i) in y]
+                if literals:
+                    model.Add(sum(literals) <= len(literals) - 1)
+
+            model.Maximize(sum(objective_terms))
+
+            # ── Solve ──
+            solver = cp_model.CpSolver()
+            solver.parameters.max_time_in_seconds = time_limit_seconds
+            solver.parameters.num_search_workers = 8
             solver.parameters.random_seed = 10_007 + plan_idx * 9_973
+
             status = solver.Solve(model)
             if status not in (cp_model.OPTIMAL, cp_model.FEASIBLE):
                 break
 
+            # ── Extract solution ──
             chosen_by_day: list[dict[DishCategory, int]] = []
-            picked_literals: list[cp_model.IntVar] = []
+            current_full_sel: set[tuple[int, int]] = set()
+            current_main_multiset: dict[int, int] = defaultdict(int)
 
             for d in range(D):
                 selected_idxs = [i for i in candidate_idxs if solver.Value(y[(d, i)]) == 1]
                 for i in selected_idxs:
-                    picked_literals.append(y[(d, i)])
+                    current_full_sel.add((d, i))
+                    if i in main_cover_idxs_set:
+                        current_main_multiset[i] += 1
 
                 day_map: dict[DishCategory, int] = {}
                 for cat in required_cats:
-                    # Find the (unique) selected dish that covers this category
                     picked_i = next(
                         (i for i in selected_idxs if cat in covers_by_dish[i]),
                         None,
                     )
                     if picked_i is None:
-                        # Should not happen because of AddExactlyOne coverage.
                         picked_i = cover_pool[cat][0]
                     day_map[cat] = picked_i
-
                 chosen_by_day.append(day_map)
 
             obj_val = float(solver.ObjectiveValue())
             results.append((chosen_by_day, obj_val))
 
-            # No-good cut: cannot pick exactly the same set again.
-            if picked_literals:
-                model.Add(sum(picked_literals) <= len(picked_literals) - 1)
-            else:
-                break
+            # ── Record for future diversity ──
+            previous_main_multisets.append(dict(current_main_multiset))
+            previous_full_selections.append(frozenset(current_full_sel))
 
         # Best-first
         results.sort(key=lambda t: t[1], reverse=True)

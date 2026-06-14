@@ -44,8 +44,7 @@ public class CreateWeeklyMenuCommandHandler : IRequestHandler<CreateWeeklyMenuCo
                 throw new ArgumentException("Loại khách hàng không hợp lệ.");
         }
 
-        if (await _weeklyMenuRepository.ExistsByPeriodAsync(start, end, menuType, req.CustomerTypeId, cancellationToken))
-            throw new ArgumentException("Đã tồn tại thực đơn cho cùng khoảng ngày, loại menu và đối tượng khách.");
+        // Removed ExistsByPeriodAsync check because one period can have multiple menus (e.g. from AI plans)
 
         var rawSchedules = req.Schedules ?? new List<CreateMenuScheduleItemRequest>();
         if (rawSchedules.Count == 0)

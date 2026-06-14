@@ -30,6 +30,7 @@ class CookingMethod(str, Enum):
 class IndustrialDish(BaseModel):
     """Mô tả đầy đủ 1 món ăn trong pool."""
 
+    id: int | None = Field(default=None, description="Backend Dish ID")
     name: str = Field(..., min_length=1, examples=["Gà kho gừng"])
     name_english: str = Field(
         default="",
@@ -164,6 +165,7 @@ class IndustrialWeekPlanRequest(BaseModel):
 class DishRecommendation(BaseModel):
     """1 món ăn trong thực đơn đã được chọn."""
 
+    dish_id: int | None = Field(default=None)
     name: str
     category: DishCategory
     score: float = Field(..., ge=0.0, le=1.0)
