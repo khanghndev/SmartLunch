@@ -271,6 +271,17 @@
                                 <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Ngày</p>
                                 <p class="text-sm font-bold text-slate-800">@plan.Days.Count ngày</p>
                             </div>
+                            <div class="border-l border-slate-100 pl-4">
+                                <form asp-action="ApplyAsWeeklyMenu" method="post" class="m-0">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="suggestionId" value="@Model.Id" />
+                                    <input type="hidden" name="planId" value="@plan.Id" />
+                                    <button type="submit" class="flex items-center gap-2 px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-bold rounded-lg transition-colors shadow-sm">
+                                        <i data-lucide="calendar-check" class="w-4 h-4"></i>
+                                        Áp dụng thực đơn
+                                    </button>
+                                </form>
+                            </div>
                         </div>
 
                         <!-- Weekly Calendar Grid -->

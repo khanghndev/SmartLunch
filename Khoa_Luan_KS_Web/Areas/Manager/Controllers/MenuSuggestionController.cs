@@ -141,4 +141,68 @@ public class MenuSuggestionController : Controller
             return RedirectToAction(nameof(Generate));
         }
     }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ApplyAsWeeklyMenu(int suggestionId, int planId)
+    {
+        try
+        {
+            var token = HttpContext.Session.GetString("access_token");
+            if (string.IsNullOrEmpty(token)) return RedirectToAction("Login", "Auth", new { area = "" });
+
+            var suggestion = await _menuSuggestionClient.GetMenuSuggestionAsync(suggestionId, token);
+            var plan = suggestion.Plans.FirstOrDefault(p => p.Id == planId);
+            
+            if (plan == null)
+            {
+                TempData["Error"] = "Không tìm thấy plan được chọn.";
+                return RedirectToAction(nameof(Details), new { id = suggestionId });
+            }
+
+            var request = new CreateWeeklyMenuClientRequest
+            {
+                StartDate = suggestion.WeekStart,
+                EndDate = suggestion.WeekStart.AddDays(6), // Assuming 7 days max, or we can calculate based on plan.Days
+                MenuType = "General",
+                Description = $"Áp dụng từ Gợi ý AI - Plan #{plan.Rank} (Version {suggestion.Version})"
+            };
+
+            // Only map items that have a DishId
+            foreach (var day in plan.Days)
+            {
+                // DayIndex 0 = Monday, so StartDate should be Monday
+                var currentDate = suggestion.WeekStart.AddDays(day.DayIndex);
+                
+                foreach (var item in day.Items)
+                {
+                    if (item.DishId.HasValue)
+                    {
+                        request.Schedules.Add(new CreateMenuScheduleItemClientRequest
+                        {
+                            Date = currentDate,
+                            MealSlot = "lunch",
+                            DishId = item.DishId.Value
+                        });
+                    }
+                }
+            }
+
+            if (!request.Schedules.Any())
+            {
+                TempData["Error"] = "Plan không có món ăn nào chứa ID hợp lệ để tạo thực đơn.";
+                return RedirectToAction(nameof(Details), new { id = suggestionId });
+            }
+
+            var result = await _masterDataClient.CreateWeeklyMenuAsync(request, token);
+            TempData["Success"] = "Đã chuyển đổi thành Thực đơn Tuần cố định thành công!";
+            return RedirectToAction("Detail", "Menu", new { id = result.WeeklyMenu.Id });
+        }
+        catch (Exception ex)
+        {
+            if (ex.Message.Contains("401")) return RedirectToAction("Logout", "Auth", new { area = "" });
+            TempData["Error"] = "Lỗi khi tạo Thực đơn Tuần: " + ex.Message;
+            return RedirectToAction(nameof(Details), new { id = suggestionId });
+        }
+    }
 }

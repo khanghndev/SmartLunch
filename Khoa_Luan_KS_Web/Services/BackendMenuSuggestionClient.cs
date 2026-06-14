@@ -163,6 +163,7 @@ public class MenuSuggestionPlanDayDto
 public class MenuSuggestionPlanItemDto
 {
     public int Id { get; set; }
+    public int? DishId { get; set; }
     public string SlotCategory { get; set; } = string.Empty;
     public string DishName { get; set; } = string.Empty;
     public string? DishSourceCategory { get; set; }
