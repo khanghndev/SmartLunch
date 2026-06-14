@@ -86,19 +86,10 @@ class AuthTextField extends StatelessWidget {
               fontWeight: FontWeight.w500,
             ),
             prefixIcon: Padding(
-              padding: const EdgeInsets.only(left: 12, right: 6),
-              child: Container(
-                width: 38,
-                height: 38,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: style.focusColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(11),
-                ),
-                child: Icon(prefixIcon, color: style.focusColor, size: 18),
-              ),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Icon(prefixIcon, color: AuthTheme.gray500, size: 22),
             ),
-            prefixIconConstraints: const BoxConstraints(minWidth: 56, minHeight: 48),
+            prefixIconConstraints: const BoxConstraints(minWidth: 54, minHeight: 48),
             suffixIcon: suffix,
             filled: true,
             fillColor: AuthTheme.inputFill,
