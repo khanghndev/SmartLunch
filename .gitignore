@@ -427,4 +427,6 @@ SmartLunch-Backend-Service/SmartLunch-Backend-Service-Infrastructure/Data/Assets
 
 # Local configuration overrides
 appsettings.Local.json
-appsettings.Local.*.json
+appsettings.Local.*.json
+SmartLunch-Backend-Service/SmartLunch-Backend-Service-API/appsettings.json
+SmartLunch-Backend-Service/SmartLunch-Backend-Service-API/appsettings.Development.json
